@@ -1,0 +1,116 @@
+Design a COMPLETE, production-ready application for an
+ASTROLOGY CHAT APPLICATION similar to InstaAstro.
+
+The system must strictly enforce CHAT TIMEFRAME BASED ON PAYMENT
+(plans / packages / wallet balance).
+
+---------------------------------------
+CORE REQUIREMENTS
+---------------------------------------
+
+1. Users can chat live with astrologers.
+2. Chat duration is strictly controlled by:
+   - Wallet balance (per-minute billing)
+   - Fixed-time packages (e.g., 5, 15, 30 minutes)
+3. Timer MUST start only when the astrologer sends the FIRST message
+   (not when chat is requested or accepted).
+4. Chat must AUTO-END when:
+   - Wallet balance reaches zero
+   - Package time is exhausted
+5. Support mid-chat recharge and resume.
+6. Timer must pause on:
+   - Network failure
+   - App crash (grace period)
+   - Astrologer disconnection
+7. All billing must be server-side and tamper-proof.
+
+---------------------------------------
+FUNCTIONAL SPECIFICATION
+---------------------------------------
+
+Provide detailed specs for:
+- User flow
+- Astrologer flow
+- Admin flow
+- Chat lifecycle states (FSM)
+- Time & billing engine logic
+- Low balance warning logic
+- Auto-end & refund rules
+
+---------------------------------------
+PAYMENT & PRICING LOGIC
+---------------------------------------
+
+Support:
+- Wallet-based per-minute billing
+- Fixed chat time packages
+- Hybrid model (wallet + free/promotional minutes)
+
+Include:
+- Minimum balance check before chat
+- Per-minute deduction logic
+- Pro-rated refunds
+- Edge cases (no astrologer reply, early disconnect)
+
+---------------------------------------
+CHAT LOGIC (VERY IMPORTANT)
+---------------------------------------
+
+Explain in detail:
+- When timer starts
+- When timer pauses
+- When timer resumes
+- When timer permanently stops
+- How concurrent sessions are prevented
+- Grace periods (user vs astrologer fault)
+
+---------------------------------------
+TECHNICAL DESIGN
+---------------------------------------
+
+Provide:
+- High-level system architecture
+- WebSocket-based real-time chat design
+- Timer & billing engine design
+- Database schema (tables & key fields)
+- Event-driven flow (chat started, billed, paused, ended)
+
+---------------------------------------
+ADMIN & COMPLIANCE
+---------------------------------------
+
+Include:
+- Admin controls
+- Audit logs
+- Dispute handling
+- Astrologer payout calculation
+- GST/Invoice readiness (India)
+
+---------------------------------------
+COMPARISON
+---------------------------------------
+
+Explicitly compare logic flow with InstaAstro:
+- What InstaAstro does
+- What is being replicated
+- What improvements are recommended
+
+---------------------------------------
+DELIVERABLE FORMAT
+---------------------------------------
+
+Present output as:
+1. Clear sections with headings
+2. Tables for pricing & states
+3. JSON examples where relevant
+4. Mermaid diagrams (if useful)
+5. No fluff – enterprise-ready documentation
+
+Assume this will be used by:
+- Product managers
+- Backend engineers
+- Frontend engineers
+- QA & auditors
+
+The final output must be IMPLEMENTATION-READY.
+Use admin, api and web folder for admin, api and web application respectively.
