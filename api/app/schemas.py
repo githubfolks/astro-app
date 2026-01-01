@@ -55,7 +55,7 @@ class SeekerProfileCreate(SeekerProfileBase):
 class SeekerProfile(SeekerProfileBase):
     user_id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Astrologer Profile Schemas
 class AstrologerProfileBase(BaseModel):
@@ -76,7 +76,7 @@ class AstrologerProfile(AstrologerProfileBase):
     rating_avg: Decimal
     total_consultations: int
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Wallet Schemas
 class WalletTransactionBase(BaseModel):
@@ -93,14 +93,14 @@ class WalletTransaction(WalletTransactionBase):
     user_id: int
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserWallet(BaseModel):
     user_id: int
     balance: Decimal
     updated_at: Optional[datetime]
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Consultation Schemas
 class ConsultationBase(BaseModel):
@@ -122,7 +122,7 @@ class Consultation(ConsultationBase):
     created_at: datetime
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Review Schemas
 class ReviewCreate(BaseModel):
@@ -134,14 +134,14 @@ class Review(ReviewCreate):
     id: int
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ChatMessage(BaseModel):
     sender_id: int
     message: str
     timestamp: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class AdminUserListItem(BaseModel):
     id: int
@@ -151,4 +151,4 @@ class AdminUserListItem(BaseModel):
     is_verified: bool
     created_at: datetime
     class Config:
-        orm_mode = True
+        from_attributes = True

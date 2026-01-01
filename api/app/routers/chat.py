@@ -126,7 +126,7 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
     # Debug Logging Setup
     def log_debug(msg):
         print(f"WS_DEBUG: {msg}") # Force print to console
-        with open(r"d:\project-workspace\InstaAstro\api\ws_debug.log", "a") as f:
+        with open("ws_debug.log", "a") as f:
             f.write(f"{datetime.utcnow()} - {msg}\n")
 
     log_debug(f"NEW CONNECTION: ConsID={consultation_id} TokenPrefix={token[:10]}...")
