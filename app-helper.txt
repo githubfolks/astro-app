@@ -1,8 +1,0 @@
-Seeker:
-Email: seeker@test.com
-Password: password
-
-Astrologer:
-Email: astro@test.com
-Password: password
-
