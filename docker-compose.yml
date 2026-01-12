@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    container_name: astro_api
+    # Connect to the host machine's network to access local Postgres
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      # Use host.docker.internal to access db on host machine
+      # Also including the search_path option we added earlier
+      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@host.docker.internal:5432/postgres?options=-csearch_path%3Dastroapp
+    ports:
+      - "8000:8000"
+
+  web:
+    build: ./web
+    container_name: astro_web
+    ports:
+      - "3000:80"
+
+  admin:
+    build: ./admin
+    container_name: astro_admin
+    ports:
+      - "3001:80"
