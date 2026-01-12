@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Chat } from './pages/Chat';
 import Home from './pages/Home';
 import AstrologersPage from './pages/AstrologersPage';
+import AstrologerProfile from './pages/AstrologerProfile';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Blog from './pages/Blog';
@@ -27,6 +28,7 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/chat-with-astrologers" element={<AstrologersPage />} />
+                    <Route path="/astrologer/:id" element={<AstrologerProfile />} />
                     <Route path="/about-us" element={<AboutUs />} />
                     <Route path="/contact-us" element={<ContactUs />} />
                     <Route path="/blog" element={<Blog />} />
@@ -36,6 +38,11 @@ function App() {
                         </ProtectedRoute>
                     } />
                     <Route path="/chat/:consultationId" element={
+                        <ProtectedRoute>
+                            <Chat />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/chat/new/:astrologerId" element={
                         <ProtectedRoute>
                             <Chat />
                         </ProtectedRoute>

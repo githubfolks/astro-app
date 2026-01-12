@@ -8,4 +8,8 @@ export interface Astrologer {
     consultation_fee_per_min: number;
     rating_avg: number;
     is_online: boolean;
+    about_me?: string;
+    availability_hours?: string;
 }
+
+export interface AstrologerProfile extends Astrologer { }

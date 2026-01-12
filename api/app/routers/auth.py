@@ -62,10 +62,12 @@ def get_current_admin(current_user: models.User = Depends(get_current_user)):
 
 @router.post("/signup", response_model=schemas.Token)
 def signup(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+    if user.role != models.UserRole.SEEKER:
+        raise HTTPException(status_code=400, detail="Only seekers can sign up via this endpoint")
     # Check existing
     db_user = db.query(models.User).filter((models.User.email == user.email) | (models.User.phone_number == user.phone_number)).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="Phone or Email already registered")
+        raise HTTPException(status_code=400, detail="Phone or Email either blank or already registered")
     
     hashed_password = get_password_hash(user.password)
     new_user = models.User(

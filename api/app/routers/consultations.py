@@ -40,8 +40,23 @@ def get_consultation_history(current_user: models.User = Depends(get_current_use
     if current_user.role == models.UserRole.SEEKER:
         return db.query(models.Consultation).filter(models.Consultation.seeker_id == current_user.id).all()
     elif current_user.role == models.UserRole.ASTROLOGER:
-        return db.query(models.Consultation).filter(models.Consultation.astrologer_id == current_user.id).all()
+        return db.query(models.Consultation).filter(
+            models.Consultation.astrologer_id == current_user.id,
+            models.Consultation.consultation_type == models.ConsultationType.CHAT
+        ).order_by(models.Consultation.created_at.asc()).all()
     return []
+
+@router.get("/{consultation_id}", response_model=schemas.Consultation)
+def get_consultation(consultation_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+        
+    # Verify access
+    if consultation.seeker_id != current_user.id and consultation.astrologer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this consultation")
+        
+    return consultation
 
 # --- Reviews ---
 

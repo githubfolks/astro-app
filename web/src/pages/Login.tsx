@@ -18,8 +18,24 @@ export const Login: React.FC = () => {
         try {
             setError('');
             const data = await api.auth.login(username, password);
-            login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '' });
-            navigate('/');
+
+            // Normalize role to handle potential casing/whitespace issues
+            const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
+            // console.log("Normalized Role:", role);
+
+            // Pass normalized role to AuthContext
+            login(data.access_token, {
+                id: data.user_id,
+                role: role as any,
+                email: '',
+                phone_number: ''
+            });
+
+            if (role === 'ASTROLOGER') {
+                navigate('/dashboard');
+            } else {
+                navigate('/');
+            }
         } catch (err: any) {
             setError(err.message || 'Login failed');
         } finally {

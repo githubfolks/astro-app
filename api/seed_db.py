@@ -1,3 +1,4 @@
+import random
 from app.database import SessionLocal, engine, Base
 from app.models import User, UserRole, SeekerProfile, AstrologerProfile, UserWallet, GenderType
 from app.routers.auth import get_password_hash
@@ -122,7 +123,7 @@ def seed():
                 experience_years=data["exp"],
                 consultation_fee_per_min=Decimal(data["fee"]),
                 about_me=data["about"],
-                is_online=True
+                is_online=random.choice([True, False])
             ))
             # Wallet
             db.add(UserWallet(user_id=astro.id, balance=Decimal("0.00")))

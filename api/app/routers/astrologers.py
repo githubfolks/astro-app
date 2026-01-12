@@ -23,7 +23,7 @@ def get_my_astrologer_profile(current_user: models.User = Depends(get_current_us
     return profile
 
 @router.put("/profile", response_model=schemas.AstrologerProfile)
-def update_astrologer_profile(profile_update: schemas.AstrologerProfileCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
     if current_user.role != models.UserRole.ASTROLOGER:
         raise HTTPException(status_code=400, detail="Not an astrologer account")
     

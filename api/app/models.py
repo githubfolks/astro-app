@@ -81,6 +81,7 @@ class AstrologerProfile(Base):
     is_online = Column(Boolean, default=False)
     rating_avg = Column(DECIMAL(3, 2), default=0.0)
     total_consultations = Column(Integer, default=0)
+    availability_hours = Column(String, nullable=True)
 
     user = relationship("User", back_populates="astrologer_profile")
 
@@ -125,6 +126,8 @@ class Consultation(Base):
     seeker = relationship("User", foreign_keys=[seeker_id])
     astrologer = relationship("User", foreign_keys=[astrologer_id])
     review = relationship("Review", back_populates="consultation", uselist=False)
+    seeker_profile = relationship("SeekerProfile", primaryjoin="foreign(Consultation.seeker_id) == SeekerProfile.user_id", viewonly=True, uselist=False)
+    astrologer_profile = relationship("AstrologerProfile", primaryjoin="foreign(Consultation.astrologer_id) == AstrologerProfile.user_id", viewonly=True, uselist=False)
 
 class Review(Base):
     __tablename__ = "reviews"

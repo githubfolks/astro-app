@@ -66,9 +66,21 @@ class AstrologerProfileBase(BaseModel):
     languages: Optional[str] = None
     specialties: Optional[str] = None
     consultation_fee_per_min: Decimal
+    availability_hours: Optional[str] = None
 
 class AstrologerProfileCreate(AstrologerProfileBase):
     pass
+
+class AstrologerProfileUPDATE(BaseModel):
+    full_name: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    about_me: Optional[str] = None
+    experience_years: Optional[int] = None
+    languages: Optional[str] = None
+    specialties: Optional[str] = None
+    consultation_fee_per_min: Optional[Decimal] = None
+    availability_hours: Optional[str] = None
+    is_online: Optional[bool] = None
 
 class AstrologerProfile(AstrologerProfileBase):
     user_id: int
@@ -120,6 +132,10 @@ class Consultation(ConsultationBase):
     duration_seconds: Optional[int] = 0
     total_cost: Optional[Decimal] = 0.0
     created_at: datetime
+    
+    seeker_profile: Optional[SeekerProfile] = None
+    astrologer_profile: Optional[AstrologerProfile] = None
+    review: Optional['Review'] = None
     
     class Config:
         from_attributes = True

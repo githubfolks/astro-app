@@ -34,8 +34,15 @@ def update_my_profile(profile_update: schemas.SeekerProfileCreate, current_user:
     db.refresh(db_profile)
     return db_profile
 
-@router.delete("/profile")
-def delete_my_account(current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
     db.delete(current_user) # This will cascade delete profile
     db.commit()
     return {"message": "Account deleted successfully"}
+
+@router.get("/{user_id}/profile", response_model=schemas.SeekerProfile)
+def get_user_profile(user_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    # In a real app, strict privacy controls would be here.
+    # For now, we allow fetching profile if authenticated, useful for Astrologer viewing Seeker.
+    profile = db.query(models.SeekerProfile).filter(models.SeekerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile

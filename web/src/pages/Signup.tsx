@@ -75,33 +75,6 @@ export const Signup: React.FC = () => {
                         />
                     </div>
 
-                    <div className="role-selector">
-                        <label className="role-option">
-                            <input
-                                type="radio"
-                                name="role"
-                                value="SEEKER"
-                                checked={formData.role === 'SEEKER'}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                className="hidden"
-                                style={{ display: 'none' }}
-                            />
-                            <div className="role-card">Seeker</div>
-                        </label>
-                        <label className="role-option">
-                            <input
-                                type="radio"
-                                name="role"
-                                value="ASTROLOGER"
-                                checked={formData.role === 'ASTROLOGER'}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                className="hidden"
-                                style={{ display: 'none' }}
-                            />
-                            <div className="role-card">Astrologer</div>
-                        </label>
-                    </div>
-
                     <button type="submit" className="auth-btn" disabled={isLoading}>
                         {isLoading ? 'Creating Account...' : 'Create Account'}
                     </button>

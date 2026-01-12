@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers
 from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
@@ -25,6 +25,7 @@ async def log_requests(request: Request, call_next):
 app.include_router(auth.router)
 app.include_router(users.router)
 app.include_router(astrologers.router)
+app.include_router(seekers.router)
 app.include_router(consultations.router)
 app.include_router(wallet.router)
 app.include_router(chat.router)

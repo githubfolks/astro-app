@@ -4,7 +4,9 @@ import { Search as SearchIcon, Heart, Briefcase, Home, Hash, Scroll, Star, Layou
 import AstrologerCard from './AstrologerCard';
 import type { Astrologer } from '../types';
 import LoginModal from './LoginModal';
+import ProfileCompletionModal from './ProfileCompletionModal';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import './AstrologerList.css';
 
 interface AstrologerListProps {
@@ -18,39 +20,79 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const [loading, setLoading] = useState(true);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [pendingChatAstroId, setPendingChatAstroId] = useState<number | null>(null);
-    const { isAuthenticated } = useAuth();
+    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const [seekerProfile, setSeekerProfile] = useState<any>(null);
+    const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
 
-    const handleChatClick = (astroId: number) => {
-        if (isAuthenticated) {
-            navigate(`/chat/new/${astroId}`);
-        } else {
-            setPendingChatAstroId(astroId);
-            setIsLoginModalOpen(true);
+    // Fetch seeker profile when authenticated
+    useEffect(() => {
+        if (isAuthenticated && user?.role === 'SEEKER') {
+            api.seekers.getProfile()
+                .then(setSeekerProfile)
+                .catch(console.error);
         }
+    }, [isAuthenticated, user]);
+
+    const isProfileComplete = (profile: any) => {
+        return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
     };
 
-    const handleLoginSuccess = () => {
+    const handleChatClick = (astroId: number) => {
+        if (!isAuthenticated) {
+            setPendingChatAstroId(astroId);
+            setIsLoginModalOpen(true);
+            return;
+        }
+
+        // Check if profile is complete
+        if (!isProfileComplete(seekerProfile)) {
+            setPendingChatAstroId(astroId);
+            setIsProfileModalOpen(true);
+            return;
+        }
+
+        navigate(`/chat/new/${astroId}`);
+    };
+
+    const handleProfileComplete = () => {
+        setIsProfileModalOpen(false);
         if (pendingChatAstroId) {
             navigate(`/chat/new/${pendingChatAstroId}`);
         }
     };
 
+    const handleLoginSuccess = () => {
+        // After login, refetch profile and check if complete
+        api.seekers.getProfile()
+            .then((profile) => {
+                setSeekerProfile(profile);
+                if (!isProfileComplete(profile) && pendingChatAstroId) {
+                    setIsProfileModalOpen(true);
+                } else if (pendingChatAstroId) {
+                    navigate(`/chat/new/${pendingChatAstroId}`);
+                }
+            })
+            .catch(console.error);
+    };
+
     useEffect(() => {
-        fetch('http://localhost:8000/users?skip=0&limit=10')
-            .then(res => res.json())
+        api.astrologers.list(0, 10)
             .then(data => {
-                if (data.length === 0) throw new Error("No data");
-                const astros = data.filter((u: any) => u.role === "ASTROLOGER").map((u: any) => ({
-                    id: u.id,
-                    full_name: u.astrologer_profile?.full_name || "Astrologer",
-                    profile_picture_url: u.astrologer_profile?.profile_picture_url,
-                    specialties: u.astrologer_profile?.specialties || "Vedic",
-                    languages: u.astrologer_profile?.languages || "English",
-                    experience_years: u.astrologer_profile?.experience_years || 5,
-                    consultation_fee_per_min: u.astrologer_profile?.consultation_fee_per_min || 10,
-                    rating_avg: u.astrologer_profile?.rating_avg || 5.0,
-                    is_online: u.astrologer_profile?.is_online || false
+                if (!Array.isArray(data)) throw new Error("Invalid response format");
+
+                // Map AstrologerProfile array to Astrologer type
+                const astros = data.map((profile: any) => ({
+                    id: profile.user_id,
+                    full_name: profile.full_name || "Astrologer",
+                    profile_picture_url: profile.profile_picture_url,
+                    specialties: profile.specialties || "Vedic",
+                    languages: profile.languages || "English",
+                    experience_years: profile.experience_years || 5,
+                    consultation_fee_per_min: profile.consultation_fee_per_min || 10,
+                    rating_avg: profile.rating_avg || 5.0,
+                    is_online: profile.is_online || false,
+                    availability_hours: profile.availability_hours || null
                 }));
                 setAstrologers(astros);
                 setLoading(false);
@@ -154,6 +196,13 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 isOpen={isLoginModalOpen}
                 onClose={() => setIsLoginModalOpen(false)}
                 onLoginSuccess={handleLoginSuccess}
+            />
+
+            <ProfileCompletionModal
+                isOpen={isProfileModalOpen}
+                onClose={() => setIsProfileModalOpen(false)}
+                onComplete={handleProfileComplete}
+                initialProfile={seekerProfile}
             />
         </section>
     );
