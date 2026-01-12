@@ -1,25 +1,33 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css';
+import './LoginModal.css';
 
-export const Login: React.FC = () => {
+interface Props {
+    isOpen: boolean;
+    onClose: () => void;
+    onLoginSuccess: () => void;
+}
+
+const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
-    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+
+    if (!isOpen) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
             setError('');
+            // Using the same API service as the main login page
             const data = await api.auth.login(username, password);
             login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '' });
-            navigate('/');
+            onLoginSuccess();
+            onClose();
         } catch (err: any) {
             setError(err.message || 'Login failed');
         } finally {
@@ -28,52 +36,43 @@ export const Login: React.FC = () => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="decor-circle decor-1"></div>
-            <div className="decor-circle decor-2"></div>
+        <div className="modal-overlay">
+            <div className="modal-content">
+                <button className="close-btn" onClick={onClose}>&times;</button>
+                <h2>Login to Chat</h2>
+                <p className="modal-subtitle">Connect with your favorite astrologer instantly.</p>
 
-            <div className="auth-card">
-                <div className="auth-header">
-                    <h2 className="auth-title">Welcome Back</h2>
-                    <p className="auth-subtitle">Login to continue your cosmic journey</p>
-                </div>
+                {error && <div className="error-msg">{error}</div>}
 
-                {error && <div className="error-banner">{error}</div>}
-
-                <form onSubmit={handleSubmit} className="auth-form">
+                <form onSubmit={handleSubmit}>
                     <div className="form-group">
+                        <label>Email or Phone</label>
                         <input
                             type="text"
-                            placeholder="Email or Phone"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            disabled={isLoading}
+                            required
                         />
                     </div>
-
                     <div className="form-group">
+                        <label>Password</label>
                         <input
                             type="password"
-                            placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            disabled={isLoading}
+                            required
                         />
                     </div>
-
-                    <button type="submit" className="auth-btn" disabled={isLoading}>
+                    <button type="submit" className="btn btn-primary btn-block" disabled={isLoading}>
                         {isLoading ? 'Logging in...' : 'Login'}
                     </button>
+                    <div className="modal-footer">
+                        <small>Don't have an account? <a href="/signup">Sign up</a></small>
+                    </div>
                 </form>
-
-                <div className="auth-footer">
-                    <p>
-                        Don't have an account?
-                        <Link to="/signup" className="auth-link">Sign up</Link>
-                    </p>
-                </div>
             </div>
         </div>
     );
 };
 
+export default LoginModal;

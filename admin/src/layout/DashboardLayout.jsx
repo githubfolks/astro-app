@@ -32,7 +32,7 @@ export default function DashboardLayout() {
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
                     <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                        InstaAstro Admin
+                        AstroApp Admin
                     </Typography>
                     <IconButton color="inherit" onClick={handleLogout}>
                         <LogoutIcon />

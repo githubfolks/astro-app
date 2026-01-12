@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="InstaAstro Replica API")
+app = FastAPI(title="AstroApp API")
 print("--- APP RELOADED ---")
 
 app.add_middleware(
@@ -32,4 +32,4 @@ app.include_router(admin.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to InstaAstro Replica API"}
+    return {"message": "Welcome to AstroApp API"}

@@ -14,7 +14,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def create_admin():
     db = SessionLocal()
-    email = "admin@instaastro.com"
+    email = "admin@astroapp.com"
     phone = "9999999999"
     password = "adminpassword"
     

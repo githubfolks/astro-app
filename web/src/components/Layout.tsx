@@ -18,7 +18,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <nav className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center sticky top-0 z-50">
                 <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                        InstaAstro
+                        AstroApp
                     </h1>
                 </div>
 

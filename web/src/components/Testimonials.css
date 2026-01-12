@@ -1,0 +1,50 @@
+.testimonials-section {
+    padding: 80px 0;
+    background-color: white;
+}
+
+.reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.review-card {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #eee;
+}
+
+.review-card .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.review-card .avatar {
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 20px;
+    color: white;
+}
+
+.review-card .details h4 {
+    margin-bottom: 5px;
+}
+
+.review-card .stars {
+    color: #FFC107;
+}
+
+.review-card .comment {
+    font-style: italic;
+    color: #555;
+}

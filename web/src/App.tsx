@@ -5,6 +5,11 @@ import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
 import { Dashboard } from './pages/Dashboard';
 import { Chat } from './pages/Chat';
+import Home from './pages/Home';
+import AstrologersPage from './pages/AstrologersPage';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
+import Blog from './pages/Blog';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -18,8 +23,13 @@ function App() {
         <Router>
             <AuthProvider>
                 <Routes>
+                    <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/chat-with-astrologers" element={<AstrologersPage />} />
+                    <Route path="/about-us" element={<AboutUs />} />
+                    <Route path="/contact-us" element={<ContactUs />} />
+                    <Route path="/blog" element={<Blog />} />
                     <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <Dashboard />
@@ -30,7 +40,6 @@ function App() {
                             <Chat />
                         </ProtectedRoute>
                     } />
-                    <Route path="/" element={<Navigate to="/dashboard" />} />
                 </Routes>
             </AuthProvider>
         </Router>
