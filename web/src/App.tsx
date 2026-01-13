@@ -11,6 +11,7 @@ import AstrologerProfile from './pages/AstrologerProfile';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Blog from './pages/Blog';
+import { MobileNavBar } from './components/MobileNavBar';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -48,6 +49,7 @@ function App() {
                         </ProtectedRoute>
                     } />
                 </Routes>
+                <MobileNavBar />
             </AuthProvider>
         </Router>
     );

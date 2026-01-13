@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 
 const Home: React.FC = () => {
     return (
-        <div className="home-page">
+        <div className="home-page pb-20 md:pb-0">
             <Header />
             <Hero />
             <HowItWorks />

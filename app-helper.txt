@@ -8,3 +8,6 @@ Password: password
 
 Email: admin@test.com
 Password: adminpassword
+
+
+npm run build && npx cap sync

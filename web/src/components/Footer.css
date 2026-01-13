@@ -121,13 +121,37 @@
 
 @media (max-width: 768px) {
     .footer-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .brand-column,
+    .contact-column {
+        grid-column: span 2;
+        text-align: center;
+    }
+
+    .footer-logo {
+        justify-content: center;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .footer-desc {
+        margin: 0 auto 25px;
     }
 
     .footer-bottom {
         flex-direction: column;
         gap: 20px;
         text-align: center;
+    }
+
+    /* Center contact items visually but keep icon-text alignment */
+    .contact-list {
+        display: inline-block;
+        text-align: left;
     }
 }
