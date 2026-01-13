@@ -3,10 +3,18 @@ from .database import engine, Base
 from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers
 from fastapi.middleware.cors import CORSMiddleware
 
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="AstroApp API")
-print("--- APP RELOADED ---")
+
+@app.on_event("startup")
+def startup_event():
+    print("--- APP STARTUP ---")
+    try:
+        print("Connecting to database and creating tables...")
+        Base.metadata.create_all(bind=engine)
+        print("Tables created successfully.")
+    except Exception as e:
+        print(f"FAILED to connect to DB or create tables: {e}")
+        # We don't raise here so the app can still start and show 500s on endpoints but not crash entirely
 
 app.add_middleware(
     CORSMiddleware,
