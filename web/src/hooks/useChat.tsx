@@ -26,13 +26,13 @@ export const useChat = (consultationId: string) => {
         ws.current = new WebSocket(url);
 
         ws.current.onopen = () => {
-            console.log('Connected to Chat WS');
+
             setStatus('ACTIVE');
         };
 
         ws.current.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log('WS Message:', data);
+
 
             switch (data.type) {
                 case 'STATE_SYNC':
@@ -65,7 +65,7 @@ export const useChat = (consultationId: string) => {
         };
 
         ws.current.onclose = () => {
-            console.log('Disconnected');
+
             if (status !== 'ENDED') setStatus('PAUSED');
         };
 

@@ -21,7 +21,7 @@ export const Login: React.FC = () => {
 
             // Normalize role to handle potential casing/whitespace issues
             const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
-            // console.log("Normalized Role:", role);
+
 
             // Pass normalized role to AuthContext
             login(data.access_token, {
