@@ -13,6 +13,8 @@ services:
       SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@host.docker.internal:5432/postgres?options=-csearch_path%3Dastroapp
     ports:
       - "8000:8000"
+    volumes:
+      - ./api/uploads:/app/uploads
 
   web:
     build: ./web
@@ -21,7 +23,10 @@ services:
       - "3000:80"
 
   admin:
-    build: ./admin
+    build:
+      context: ./admin
+      args:
+        VITE_API_URL: http://localhost:8000
     container_name: astro_admin
     ports:
       - "3001:80"

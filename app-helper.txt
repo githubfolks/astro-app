@@ -6,3 +6,5 @@ Astrologer:
 Email: astro@test.com
 Password: password
 
+Email: admin@test.com
+Password: adminpassword

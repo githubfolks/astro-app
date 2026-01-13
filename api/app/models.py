@@ -46,13 +46,14 @@ class User(Base):
     role = Column(Enum(UserRole), nullable=False)
     hashed_password = Column(String) # Valid for JWT auth
     is_verified = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
-    seeker_profile = relationship("SeekerProfile", back_populates="user", uselist=False)
-    astrologer_profile = relationship("AstrologerProfile", back_populates="user", uselist=False)
-    wallet = relationship("UserWallet", back_populates="user", uselist=False)
-    wallet_transactions = relationship("WalletTransaction", back_populates="user")
+    seeker_profile = relationship("SeekerProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    astrologer_profile = relationship("AstrologerProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    wallet = relationship("UserWallet", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    wallet_transactions = relationship("WalletTransaction", back_populates="user", cascade="all, delete-orphan")
 
 class SeekerProfile(Base):
     __tablename__ = "seeker_profiles"
@@ -73,6 +74,7 @@ class AstrologerProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     full_name = Column(String, nullable=False)
     profile_picture_url = Column(String)
+    short_bio = Column(String) # For card view
     about_me = Column(Text)
     experience_years = Column(Integer)
     languages = Column(String)

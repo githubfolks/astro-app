@@ -2,6 +2,10 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const handleResponse = async (response: Response, defaultError: string) => {
     if (!response.ok) {
+        if (response.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
         const error = await response.json().catch(() => ({}));
         if (response.status === 422 && Array.isArray(error.detail)) {
             const messages = error.detail.map((err: any) => {

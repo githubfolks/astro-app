@@ -4,14 +4,14 @@ from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # Determine environment: 'development' (default) or 'production'
 app_env = os.getenv("APP_ENV", "development")
 env_file = f".env.{app_env}"
 
-# Load the specific env file (override=True so it takes precedence over .env if both exist)
-load_dotenv(env_file, override=True)
+# Load the specific env file
+# override=False (default) ensures that system environment variables (like from Docker) 
+# take precedence over values in the .env file.
+load_dotenv(env_file)
 
 # Configured for PostgreSQL
 # Use environment variable for Docker/Production, fallback to localhost for local dev

@@ -1,9 +1,17 @@
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+import os
 from .database import engine, Base
 from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers
 from fastapi.middleware.cors import CORSMiddleware
 
+# Ensure upload directory exists
+os.makedirs("uploads", exist_ok=True)
+
 app = FastAPI(title="AstroApp API")
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
 @app.on_event("startup")
 def startup_event():
@@ -16,9 +24,20 @@ def startup_event():
         print(f"FAILED to connect to DB or create tables: {e}")
         # We don't raise here so the app can still start and show 500s on endpoints but not crash entirely
 
+origins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://127.0.0.1:5173",
+    "https://astro-app-web.vercel.app",
+    "https://astro-app-admin.vercel.app"
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

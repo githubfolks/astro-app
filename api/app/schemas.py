@@ -61,6 +61,7 @@ class SeekerProfile(SeekerProfileBase):
 class AstrologerProfileBase(BaseModel):
     full_name: str
     profile_picture_url: Optional[str] = None
+    short_bio: Optional[str] = None
     about_me: Optional[str] = None
     experience_years: Optional[int] = None
     languages: Optional[str] = None
@@ -74,6 +75,7 @@ class AstrologerProfileCreate(AstrologerProfileBase):
 class AstrologerProfileUPDATE(BaseModel):
     full_name: Optional[str] = None
     profile_picture_url: Optional[str] = None
+    short_bio: Optional[str] = None
     about_me: Optional[str] = None
     experience_years: Optional[int] = None
     languages: Optional[str] = None
@@ -168,3 +170,25 @@ class AdminUserListItem(BaseModel):
     created_at: datetime
     class Config:
         from_attributes = True
+
+class UserPaginationResponse(BaseModel):
+    total: int
+    users: List[AdminUserListItem]
+
+class AdminCreateAstrologer(BaseModel):
+    # User info
+    email: str
+    phone_number: str
+    password: str
+    # Profile info
+    full_name: str
+    short_bio: Optional[str] = None
+    about_me: Optional[str] = None
+    experience_years: int
+    languages: str
+    specialties: str
+    consultation_fee_per_min: Decimal
+    availability_hours: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    is_verified: bool = True
+
