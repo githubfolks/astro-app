@@ -39,6 +39,19 @@ class Token(BaseModel):
     token_type: str
     user_id: int
     role: str
+    full_name: Optional[str] = None
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class VerifyOTPRequest(BaseModel):
+    email: str
+    otp: str
+    verification_type: str = "FORGOT_PASSWORD"
+
+class ResetPasswordRequest(BaseModel):
+    token: str # The reset token received after verifying OTP
+    new_password: str
 
 # Seeker Profile Schemas
 class SeekerProfileBase(BaseModel):

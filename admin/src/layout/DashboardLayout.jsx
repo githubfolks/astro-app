@@ -5,6 +5,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import StarIcon from '@mui/icons-material/Star';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ArticleIcon from '@mui/icons-material/Article';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -24,6 +25,7 @@ export default function DashboardLayout() {
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
         { text: 'Users', icon: <PeopleIcon />, path: '/users' },
         { text: 'Astrologers', icon: <StarIcon />, path: '/astrologers' },
+        { text: 'Content (Blog)', icon: <ArticleIcon />, path: '/cms/posts' },
     ];
 
     return (

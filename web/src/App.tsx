@@ -12,6 +12,9 @@ import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Blog from './pages/Blog';
 import { MobileNavBar } from './components/MobileNavBar';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { VerifyOTP } from './pages/VerifyOTP';
+import { ResetPassword } from './pages/ResetPassword';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -28,6 +31,9 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/verify-otp" element={<VerifyOTP />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/chat-with-astrologers" element={<AstrologersPage />} />
                     <Route path="/astrologer/:id" element={<AstrologerProfile />} />
                     <Route path="/about-us" element={<AboutUs />} />

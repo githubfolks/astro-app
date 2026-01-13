@@ -40,6 +40,30 @@ export const api = {
                 body: JSON.stringify(data),
             });
             return handleResponse(response, 'Signup failed');
+        },
+        forgotPassword: async (email: string) => {
+            const response = await fetch(`${API_URL}/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            return handleResponse(response, 'Failed to send OTP');
+        },
+        verifyOtp: async (email: string, otp: string) => {
+            const response = await fetch(`${API_URL}/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp }),
+            });
+            return handleResponse(response, 'Failed to verify OTP');
+        },
+        resetPassword: async (token: string, new_password: string) => {
+             const response = await fetch(`${API_URL}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, new_password }),
+            });
+            return handleResponse(response, 'Failed to reset password');
         }
     },
     astrologers: {

@@ -41,7 +41,10 @@ const Header: React.FC = () => {
     // Get display name
     const getDisplayName = () => {
         if (!user) return '';
-        // Use email prefix or fallback to role-based name
+        // Use full name (first name) if available, otherwise email prefix, or role fallback
+        if (user.full_name) {
+            return user.full_name.split(' ')[0];
+        }
         return user.email?.split('@')[0] || (user.role === 'SEEKER' ? 'User' : 'Astrologer');
     };
 

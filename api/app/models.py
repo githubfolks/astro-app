@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Enum, DECIMAL, Text, Date, Time
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Enum, DECIMAL, Text, Date, Time, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -153,3 +153,84 @@ class ChatMessage(Base):
     sender_id = Column(Integer, ForeignKey("users.id"))
     message = Column(Text)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+class VerificationTokenType(str, enum.Enum):
+    FORGOT_PASSWORD = "FORGOT_PASSWORD"
+    EMAIL_VERIFICATION = "EMAIL_VERIFICATION"
+
+class VerificationToken(Base):
+    __tablename__ = "verification_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    token = Column(String, index=True)
+    verification_type = Column(Enum(VerificationTokenType), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    is_used = Column(Boolean, default=False)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+class PostStatus(str, enum.Enum):
+    DRAFT = "DRAFT"
+    PUBLISHED = "PUBLISHED"
+    ARCHIVED = "ARCHIVED"
+
+class Post(Base):
+    __tablename__ = "posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    slug = Column(String, unique=True, index=True, nullable=False)
+    content = Column(Text, nullable=False)
+    featured_image = Column(String, nullable=True)
+    status = Column(Enum(PostStatus), default=PostStatus.DRAFT)
+    author_id = Column(Integer, ForeignKey("users.id"))
+    published_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    author = relationship("User", backref="posts")
+
+class Page(Base):
+    __tablename__ = "pages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    slug = Column(String, unique=True, index=True, nullable=False)
+    content = Column(Text, nullable=False)
+    seo_title = Column(String, nullable=True)
+    seo_description = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class ZodiacSign(str, enum.Enum):
+    ARIES = "ARIES"
+    TAURUS = "TAURUS"
+    GEMINI = "GEMINI"
+    CANCER = "CANCER"
+    LEO = "LEO"
+    VIRGO = "VIRGO"
+    LIBRA = "LIBRA"
+    SCORPIO = "SCORPIO"
+    SAGITTARIUS = "SAGITTARIUS"
+    CAPRICORN = "CAPRICORN"
+    AQUARIUS = "AQUARIUS"
+    PISCES = "PISCES"
+
+class HoroscopePeriod(str, enum.Enum):
+    DAILY = "DAILY"
+    WEEKLY = "WEEKLY"
+    MONTHLY = "MONTHLY"
+    YEARLY = "YEARLY"
+
+class Horoscope(Base):
+    __tablename__ = "horoscopes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sign = Column(Enum(ZodiacSign), nullable=False)
+    period = Column(Enum(HoroscopePeriod), nullable=False)
+    date = Column(Date, nullable=False)
+    content = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
