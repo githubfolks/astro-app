@@ -1,47 +1,48 @@
-import os
-from app.database import SessionLocal, engine, Base
-from app.models import User, UserRole
+from app.database import SessionLocal
+from app.models import User, UserRole, UserWallet
 from app.routers.auth import get_password_hash
-from dotenv import load_dotenv
-
-# Ensure we are using the local configuration by ignoring existing env var if set to production
-# But actually, best way is to set APP_ENV explicitly in the code or loading the env file directly
-load_dotenv(".env.development", override=True) # Force local dev env
-
-# Ensure tables exist (just in case)
-Base.metadata.create_all(bind=engine)
-
-db = SessionLocal()
+import sys
 
 def create_admin():
-    email = "admin@test.com"
-    phone = "0000000000"
-    password = "adminpassword"
-    
-    # Check if admin exists
-    existing_admin = db.query(User).filter(User.email == email).first()
-    if existing_admin:
-        print(f"Admin user already exists: {email}")
-        return
-
-    print(f"Creating Admin User: {email}")
-    admin_user = User(
-        email=email,
-        phone_number=phone,
-        hashed_password=get_password_hash(password),
-        role=UserRole.ADMIN,
-        is_verified=True
-    )
-    
-    db.add(admin_user)
-    db.commit()
-    db.refresh(admin_user)
-    print(f"Admin user created successfully. ID: {admin_user.id}")
-    print(f"Email: {email}")
-    print(f"Password: {password}")
-
-if __name__ == "__main__":
+    db = SessionLocal()
     try:
-        create_admin()
+        email = "admin@test.com"
+        password = "adminpassword"
+        
+        user = db.query(User).filter(User.email == email).first()
+        if user:
+            print(f"Admin user {email} already exists. Updating password...")
+            user.hashed_password = get_password_hash(password)
+            user.role = UserRole.ADMIN
+            user.is_active = True
+        else:
+            print(f"Creating new admin user {email}...")
+            hashed_password = get_password_hash(password)
+            user = User(
+                email=email,
+                hashed_password=hashed_password,
+                role=UserRole.ADMIN,
+                is_active=True,
+                phone_number="0000000000" # Dummy phone for admin
+            )
+            db.add(user)
+            db.flush() # get ID
+            
+            # Create wallet if needed (though admins might not need it, schema might enforce or logic might expect it)
+            wallet = UserWallet(user_id=user.id)
+            db.add(wallet)
+            
+        db.commit()
+        print("Success! Admin configured:")
+        print(f"Email: {email}")
+        print(f"Password: {password}")
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        db.rollback()
     finally:
         db.close()
+
+if __name__ == "__main__":
+    print("Running Admin Creation Script...")
+    create_admin()
