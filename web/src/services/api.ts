@@ -40,6 +40,30 @@ export const api = {
                 body: JSON.stringify(data),
             });
             return handleResponse(response, 'Signup failed');
+        },
+        forgotPassword: async (email: string) => {
+            const response = await fetch(`${API_URL}/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            return handleResponse(response, 'Failed to send OTP');
+        },
+        verifyOtp: async (email: string, otp: string) => {
+            const response = await fetch(`${API_URL}/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp }),
+            });
+            return handleResponse(response, 'Failed to verify OTP');
+        },
+        resetPassword: async (token: string, new_password: string) => {
+            const response = await fetch(`${API_URL}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, new_password }),
+            });
+            return handleResponse(response, 'Failed to reset password');
         }
     },
     astrologers: {
@@ -150,6 +174,35 @@ export const api = {
                 body: JSON.stringify({ consultation_id, rating, comment })
             });
             return handleResponse(response, 'Failed to submit review');
+        }
+    },
+
+    cms: {
+        getPosts: async (skip = 0, limit = 10, search = '') => {
+            const params = new URLSearchParams({
+                skip: skip.toString(),
+                limit: limit.toString(),
+                ...(search && { search })
+            });
+            const response = await fetch(`${API_URL}/public/posts?${params}`);
+            return handleResponse(response, 'Failed to fetch posts');
+        },
+        getPostBySlug: async (slug: string) => {
+            const response = await fetch(`${API_URL}/public/posts/${slug}`);
+            return handleResponse(response, 'Failed to fetch post');
+        },
+        getPageBySlug: async (slug: string) => {
+            const response = await fetch(`${API_URL}/public/pages/${slug}`);
+            return handleResponse(response, 'Failed to fetch page');
+        },
+        getHoroscopes: async (sign?: string, period?: string, date?: string) => {
+            const params = new URLSearchParams();
+            if (sign) params.append('sign', sign);
+            if (period) params.append('period', period);
+            if (date) params.append('date', date);
+
+            const response = await fetch(`${API_URL}/public/horoscopes?${params}`);
+            return handleResponse(response, 'Failed to fetch horoscopes');
         }
     }
 };

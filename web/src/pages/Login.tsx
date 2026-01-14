@@ -19,6 +19,7 @@ export const Login: React.FC = () => {
             setError('');
             const data = await api.auth.login(username, password);
 
+
             // Normalize role to handle potential casing/whitespace issues
             const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
 
@@ -28,7 +29,8 @@ export const Login: React.FC = () => {
                 id: data.user_id,
                 role: role as any,
                 email: '',
-                phone_number: ''
+                phone_number: '',
+                full_name: data.full_name
             });
 
             if (role === 'ASTROLOGER') {
@@ -75,6 +77,9 @@ export const Login: React.FC = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={isLoading}
                         />
+                        <div style={{ textAlign: 'right', marginTop: '10px' }}>
+                            <Link to="/forgot-password" className="auth-link" style={{ fontSize: '0.9rem' }}>Forgot Password?</Link>
+                        </div>
                     </div>
 
                     <button type="submit" className="auth-btn" disabled={isLoading}>

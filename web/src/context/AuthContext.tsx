@@ -5,6 +5,7 @@ interface User {
     email: string;
     phone_number: string;
     role: 'SEEKER' | 'ASTROLOGER' | 'ADMIN';
+    full_name?: string;
 }
 
 interface AuthContextType {
