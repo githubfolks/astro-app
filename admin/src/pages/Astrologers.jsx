@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
-import { Switch } from '@mui/material'; // Using MUI switch for consistency
 import api from '../services/api';
-import { Button } from '../components/ui';
+import { Button, Switch } from '../components/ui';
 
 export default function Astrologers() {
     const navigate = useNavigate();
@@ -75,10 +74,11 @@ export default function Astrologers() {
                             <div className="absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
                                 {/* Status Toggle */}
                                 <Switch
-                                    size="small"
                                     checked={item.is_active !== false}
-                                    onChange={(e) => handleToggleStatus(item, e)}
-                                    color={item.is_active !== false ? "success" : "default"}
+                                    onCheckedChange={(checked) => handleToggleStatus(item, { stopPropagation: () => { } })}
+                                // Hack: handleToggleStatus expects an event with stopPropagation. 
+                                // But custom switch onCheckedChange just gives boolean.
+                                // Let's fix handler instead.
                                 />
                             </div>
 

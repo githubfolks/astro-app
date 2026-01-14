@@ -74,7 +74,9 @@ class PageUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     seo_title: Optional[str] = None
+    seo_title: Optional[str] = None
     seo_description: Optional[str] = None
+    slug: Optional[str] = None
 
 class Page(PageBase):
     id: int

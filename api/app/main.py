@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public
 from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure upload directory exists
@@ -37,7 +37,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,6 +58,7 @@ app.include_router(wallet.router)
 app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(cms.router)
+app.include_router(public.router)
 
 @app.get("/")
 def read_root():

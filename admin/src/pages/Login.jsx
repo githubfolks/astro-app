@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Container, Box, Typography, TextField, Button, Paper, Alert } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -22,56 +24,51 @@ export default function Login() {
     };
 
     return (
-        <Container component="main" maxWidth="xs">
-            <Box
-                sx={{
-                    marginTop: 8,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                }}
-            >
-                <Paper elevation={3} sx={{ p: 4, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <Typography component="h1" variant="h5">
-                        Admin Sign in
-                    </Typography>
-                    {error && <Alert severity="error" sx={{ mt: 2, width: '100%' }}>{error}</Alert>}
-                    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="username"
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center space-y-2">
+                    <CardTitle className="text-2xl font-bold text-gray-900">Admin Sign in</CardTitle>
+                    <p className="text-sm text-gray-500">
+                        Enter your credentials to access the dashboard
+                    </p>
+                </CardHeader>
+                <CardContent>
+                    {error && (
+                        <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
+                            {error}
+                        </div>
+                    )}
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <Input
                             label="Email Address / Phone"
+                            id="username"
                             name="username"
                             autoComplete="email"
                             autoFocus
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                        />
-                        <TextField
-                            margin="normal"
                             required
-                            fullWidth
-                            name="password"
+                        />
+                        <Input
                             label="Password"
                             type="password"
                             id="password"
+                            name="password"
                             autoComplete="current-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            required
                         />
                         <Button
                             type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
+                            className="w-full"
+                            size="lg"
                         >
                             Sign In
                         </Button>
-                    </Box>
-                </Paper>
-            </Box>
-        </Container>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
     );
 }

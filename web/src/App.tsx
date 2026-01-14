@@ -11,6 +11,8 @@ import AstrologerProfile from './pages/AstrologerProfile';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import PageViewer from './pages/PageViewer';
 import { MobileNavBar } from './components/MobileNavBar';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { VerifyOTP } from './pages/VerifyOTP';
@@ -39,6 +41,9 @@ function App() {
                     <Route path="/about-us" element={<AboutUs />} />
                     <Route path="/contact-us" element={<ContactUs />} />
                     <Route path="/blog" element={<Blog />} />
+                    <Route path="/blog/:slug" element={<BlogPost />} />
+                    {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
+                    <Route path="/:slug" element={<PageViewer />} />
                     <Route path="/dashboard" element={
                         <ProtectedRoute>
                             <Dashboard />

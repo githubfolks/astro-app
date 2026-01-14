@@ -148,6 +148,13 @@ def update_page(page_id: int, page_update: schemas_cms.PageUpdate, db: Session =
         db_page.seo_title = page_update.seo_title
     if page_update.seo_description is not None:
         db_page.seo_description = page_update.seo_description
+    if page_update.slug is not None:
+        new_slug = slugify(page_update.slug) if page_update.slug else slugify(page_update.title)
+        # Check uniqueness if changed
+        if new_slug != db_page.slug:
+             if db.query(models.Page).filter(models.Page.slug == new_slug).first():
+                raise HTTPException(status_code=400, detail="Page with this slug already exists")
+             db_page.slug = new_slug
         
     db.commit()
     db.refresh(db_page)

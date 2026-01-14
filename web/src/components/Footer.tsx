@@ -1,5 +1,6 @@
 import React from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer: React.FC = () => {
@@ -27,22 +28,22 @@ const Footer: React.FC = () => {
                     <div className="footer-column">
                         <h4 className="footer-title">Quick Links</h4>
                         <ul className="footer-links">
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">Our Astrologers</a></li>
-                            <li><a href="#">Blog</a></li>
-                            <li><a href="#">Contact Us</a></li>
-                            <li><a href="#">Join as Astrologer</a></li>
+                            <li><Link to="/about-us">About Us</Link></li>
+                            <li><Link to="/chat-with-astrologers">Our Astrologers</Link></li>
+                            <li><Link to="/blog">Blog</Link></li>
+                            <li><Link to="/contact-us">Contact Us</Link></li>
+                            {/* <li><Link to="/join">Join as Astrologer</Link></li> */}
                         </ul>
                     </div>
 
                     <div className="footer-column">
                         <h4 className="footer-title">Services</h4>
                         <ul className="footer-links">
-                            <li><a href="#">Horoscope</a></li>
-                            <li><a href="#">Kundli Matching</a></li>
-                            <li><a href="#">Tarot Reading</a></li>
-                            <li><a href="#">Vastu Shastra</a></li>
-                            <li><a href="#">Numerology</a></li>
+                            <li><Link to="/horoscopes">Horoscope</Link></li>
+                            <li><Link to="/kundli">Kundli Matching</Link></li>
+                            <li><Link to="/tarot">Tarot Reading</Link></li>
+                            <li><Link to="/vastu">Vastu Shastra</Link></li>
+                            <li><Link to="/numerology">Numerology</Link></li>
                         </ul>
                     </div>
 
@@ -69,8 +70,8 @@ const Footer: React.FC = () => {
                 <div className="footer-bottom">
                     <p>&copy; 2026 AstroApp. All rights reserved.</p>
                     <div className="footer-legal">
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
+                        <Link to="/privacy-policy">Privacy Policy</Link>
+                        <Link to="/terms-of-service">Terms of Service</Link>
                     </div>
                 </div>
             </div>

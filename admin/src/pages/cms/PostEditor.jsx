@@ -1,19 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {
-    Box,
-    Button,
-    Paper,
-    TextField,
-    Typography,
-    MenuItem,
-    Grid,
-    Select,
-    FormControl,
-    InputLabel
-} from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cms } from '../../services/api';
 import { RichTextEditor } from '../../components/RichTextEditor';
+import { Button, Input, Card } from '../../components/ui';
 
 export default function PostEditor() {
     const { id } = useParams();
@@ -62,97 +51,55 @@ export default function PostEditor() {
     };
 
     return (
-        <Box p={3}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-                <Typography variant="h5" gutterBottom>
-                    {isEdit ? 'Edit Post' : 'New Post'}
-                </Typography>
-                <form onSubmit={handleSubmit}>
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={8}>
-                            <TextField
-                                fullWidth
+        <div className="space-y-6 max-w-5xl mx-auto">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-gray-900">{isEdit ? 'Edit Post' : 'New Post'}</h1>
+                <div className="flex gap-2">
+                    <Button variant="outlined" onClick={() => navigate('/cms/posts')}>
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSubmit}>
+                        Save
+                    </Button>
+                </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <Card className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="md:col-span-3">
+                            <Input
                                 label="Title"
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 required
-                                margin="normal"
-                            />
-
-                            <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Content</Typography>
-                            <RichTextEditor
-                                value={formData.content}
-                                onChange={(content) => setFormData({ ...formData, content })}
-                                style={{ height: '300px', marginBottom: '50px' }}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <FormControl fullWidth margin="normal">
-                                <InputLabel>Status</InputLabel>
-                                <Select
-                                    value={formData.status}
-                                    label="Status"
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                >
-                                    <MenuItem value="DRAFT">Draft</MenuItem>
-                                    <MenuItem value="PUBLISHED">Published</MenuItem>
-                                    <MenuItem value="ARCHIVED">Archived</MenuItem>
-                                </Select>
-                            </FormControl>
-
-                            label="Featured Image URL"
-                            value={formData.featured_image}
-                            onChange={(e) => setFormData({ ...formData, featured_image: e.target.value })}
-                            margin="normal"
-                            />
-                            <Button
-                                variant="outlined"
-                                component="label"
                                 fullWidth
-                                sx={{ mt: 1 }}
+                            />
+                        </div>
+                        <div>
+                            <label className="text-sm font-medium text-gray-700 block mb-1.5">Status</label>
+                            <select
+                                className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                value={formData.status}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                             >
-                                Upload Image
-                                <input
-                                    type="file"
-                                    hidden
-                                    accept="image/*"
-                                    onChange={async (e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            const uploadData = new FormData();
-                                            uploadData.append('file', file);
-                                            try {
-                                                const res = await cms.upload(uploadData);
-                                                // Prepend API URL if it's relative
-                                                const url = res.data.url.startsWith('http') ? res.data.url : `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}${res.data.url}`;
-                                                setFormData(prev => ({ ...prev, featured_image: url }));
-                                            } catch (err) {
-                                                console.error("Upload failed", err);
-                                                alert("Upload failed");
-                                            }
-                                        }
-                                    }}
-                                />
-                            </Button>
-                            {formData.featured_image && (
-                                <Box mt={2}>
-                                    <img src={formData.featured_image} alt="Preview" style={{ width: '100%', borderRadius: 4 }} />
-                                </Box>
-                            )}
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Box display="flex" gap={2} mt={3}>
-                                <Button type="submit" variant="contained" size="large">
-                                    Save
-                                </Button>
-                                <Button variant="outlined" size="large" onClick={() => navigate('/cms/posts')}>
-                                    Cancel
-                                </Button>
-                            </Box>
-                        </Grid>
-                    </Grid>
-                </form>
-            </Paper>
-        </Box>
+                                <option value="DRAFT">Draft</option>
+                                <option value="PUBLISHED">Published</option>
+                                <option value="ARCHIVED">Archived</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-gray-700 block mb-2">Content</label>
+                        <RichTextEditor
+                            value={formData.content}
+                            onChange={(content) => setFormData({ ...formData, content })}
+                            className="h-[600px]"
+                        />
+                    </div>
+                </Card>
+            </form>
+        </div>
     );
 }

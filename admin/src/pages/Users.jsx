@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
-    TableHead, TableRow, Button, Chip, IconButton, TablePagination,
-    TextField, MenuItem, Select, FormControl, InputLabel, Stack, Switch
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from '../components/ui/Table';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Switch } from '../components/ui/Switch';
+import { Card } from '../components/ui/Card';
+import { Trash2, CheckCircle, Eye, RefreshCw } from 'lucide-react';
 import api from '../services/api';
+import clsx from 'clsx';
 
 export default function Users() {
     const [users, setUsers] = useState([]);
@@ -22,7 +23,7 @@ export default function Users() {
 
     // Filter state
     const [searchQuery, setSearchQuery] = useState("");
-    const [filterRole, setFilterRole] = useState("SEEKER"); // Default to SEEKER
+    const [filterRole, setFilterRole] = useState("SEEKER");
     const [filterVerified, setFilterVerified] = useState("");
 
     useEffect(() => {
@@ -60,15 +61,6 @@ export default function Users() {
         }
     };
 
-    const handleChangePage = (event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = (event) => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
     const handleDelete = async (userId) => {
         if (window.confirm("Are you sure you want to delete this user?")) {
             try {
@@ -91,138 +83,165 @@ export default function Users() {
 
     const handleToggleStatus = async (user) => {
         try {
-            // Need to optimistically update or re-fetch
             const newStatus = !user.is_active;
-            // Optimistic update
             setUsers(users.map(u => u.id === user.id ? { ...u, is_active: newStatus } : u));
-
             await api.put(`/admin/users/${user.id}/status`, { is_active: newStatus });
         } catch (error) {
             console.error("Status update failed", error);
-            fetchUsers(); // Revert on failure
+            fetchUsers();
         }
     };
 
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>
-                User Management
-            </Typography>
+        <div className="space-y-6">
+            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
 
-            <Paper sx={{ p: 2, mb: 2 }}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                    <TextField
-                        label="Search Email/Phone"
-                        variant="outlined"
-                        size="small"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        sx={{ flexGrow: 1 }}
-                    />
+            <Card className="p-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex-1 w-full">
+                        <Input
+                            label="Search Email/Phone"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Enter email or phone..."
+                        />
+                    </div>
 
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <InputLabel>Role</InputLabel>
-                        <Select
+                    <div className="w-full sm:w-48">
+                        <label className="text-sm font-medium text-gray-700 block mb-1.5">Role</label>
+                        <select
+                            className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             value={filterRole}
-                            label="Role"
                             onChange={(e) => { setFilterRole(e.target.value); setPage(0); }}
                         >
-                            <MenuItem value="">All Roles</MenuItem>
-                            <MenuItem value="SEEKER">Seeker</MenuItem>
-                            <MenuItem value="ASTROLOGER">Astrologer</MenuItem>
-                            <MenuItem value="ADMIN">Admin</MenuItem>
-                        </Select>
-                    </FormControl>
+                            <option value="">All Roles</option>
+                            <option value="SEEKER">Seeker</option>
+                            <option value="ASTROLOGER">Astrologer</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
 
-                    <FormControl size="small" sx={{ minWidth: 120 }}>
-                        <InputLabel>Verified</InputLabel>
-                        <Select
+                    <div className="w-full sm:w-48">
+                        <label className="text-sm font-medium text-gray-700 block mb-1.5">Verified</label>
+                        <select
+                            className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                             value={filterVerified}
-                            label="Verified"
                             onChange={(e) => { setFilterVerified(e.target.value); setPage(0); }}
                         >
-                            <MenuItem value="">All</MenuItem>
-                            <MenuItem value="true">Verified</MenuItem>
-                            <MenuItem value="false">Unverified</MenuItem>
-                        </Select>
-                    </FormControl>
+                            <option value="">All</option>
+                            <option value="true">Verified</option>
+                            <option value="false">Unverified</option>
+                        </select>
+                    </div>
 
-                    <Button variant="contained" onClick={fetchUsers}>
-                        Refresh
+                    <Button onClick={fetchUsers}>
+                        <RefreshCw size={16} className="mr-2" /> Refresh
                     </Button>
-                </Stack>
-            </Paper>
+                </div>
+            </Card>
 
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                    <TableHead>
+            <Card>
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell>ID</TableCell>
-                            <TableCell>Email</TableCell>
-                            <TableCell>Phone</TableCell>
-                            <TableCell>Role</TableCell>
-                            <TableCell>Verified</TableCell>
-                            <TableCell>Active</TableCell>
-                            <TableCell align="right">Actions</TableCell>
+                            <TableHead>ID</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Phone</TableHead>
+                            <TableHead>Role</TableHead>
+                            <TableHead>Verified</TableHead>
+                            <TableHead>Active</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
-                    </TableHead>
+                    </TableHeader>
                     <TableBody>
                         {users.map((user) => (
-                            <TableRow
-                                key={user.id}
-                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {user.id}
-                                </TableCell>
+                            <TableRow key={user.id}>
+                                <TableCell>{user.id}</TableCell>
                                 <TableCell>{user.email || '-'}</TableCell>
                                 <TableCell>{user.phone_number || '-'}</TableCell>
                                 <TableCell>
-                                    <Chip label={user.role} color={user.role === 'ADMIN' ? 'error' : user.role === 'ASTROLOGER' ? 'secondary' : 'default'} size="small" />
+                                    <span className={clsx(
+                                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+                                        user.role === 'ADMIN' ? "bg-red-100 text-red-800" :
+                                            user.role === 'ASTROLOGER' ? "bg-purple-100 text-purple-800" :
+                                                "bg-gray-100 text-gray-800"
+                                    )}>
+                                        {user.role}
+                                    </span>
                                 </TableCell>
                                 <TableCell>
                                     {user.is_verified ? (
-                                        <CheckCircleIcon color="success" />
+                                        <CheckCircle size={20} className="text-green-500" />
                                     ) : (
-                                        <Button size="small" variant="outlined" onClick={() => handleVerify(user.id)}>Verify</Button>
+                                        <Button variant="outlined" size="sm" onClick={() => handleVerify(user.id)}>
+                                            Verify
+                                        </Button>
                                     )}
                                 </TableCell>
                                 <TableCell>
                                     <Switch
-                                        checked={user.is_active !== false} // Default true if undefined/null? Backend defaults to True.
-                                        onChange={() => handleToggleStatus(user)}
-                                        color="primary"
+                                        checked={user.is_active !== false}
+                                        onCheckedChange={() => handleToggleStatus(user)}
                                     />
                                 </TableCell>
-                                <TableCell align="right">
-                                    <IconButton color="primary" onClick={() => navigate(`/users/view/${user.id}`)}>
-                                        <VisibilityIcon />
-                                    </IconButton>
-                                    <IconButton color="error" onClick={() => handleDelete(user.id)}>
-                                        <DeleteIcon />
-                                    </IconButton>
+                                <TableCell className="text-right space-x-2">
+                                    <Button variant="ghost" size="icon" onClick={() => navigate(`/users/view/${user.id}`)}>
+                                        <Eye size={18} className="text-blue-600" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id)}>
+                                        <Trash2 size={18} className="text-red-600" />
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))}
                         {users.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={7} align="center">
+                                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                                     No users found
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={totalUsers}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </TableContainer>
-        </Box>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+                    <div className="flex items-center text-sm text-gray-500">
+                        Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalUsers)} of {totalUsers} entries
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <select
+                            className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={rowsPerPage}
+                            onChange={(e) => {
+                                setRowsPerPage(Number(e.target.value));
+                                setPage(0);
+                            }}
+                        >
+                            <option value={5}>5 per page</option>
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                            <option value={50}>50 per page</option>
+                        </select>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setPage(p => Math.max(0, p - 1))}
+                            disabled={page === 0}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={(page + 1) * rowsPerPage >= totalUsers}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+        </div>
     );
 }
