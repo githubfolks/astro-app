@@ -33,7 +33,9 @@ origins = [
     "http://127.0.0.1:3001",
     "http://127.0.0.1:5173",
     "https://astro-app-web.vercel.app",
-    "https://astro-app-admin.vercel.app"
+    "https://astro-app-admin.vercel.app",
+    "https://dev.aadikarta.org",
+    "https://dev-admin.aadikarta.org"
 ]
 
 app.add_middleware(
