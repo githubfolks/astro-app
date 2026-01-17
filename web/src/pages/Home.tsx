@@ -13,7 +13,7 @@ const Home: React.FC = () => {
             <Header />
             <Hero />
             <HowItWorks />
-            <AstrologerList limit={4} topRankingOnly={true} showFilters={false} />
+            <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
             <Services />
 
             <section className="promise-section" style={{ textAlign: 'center' }}>

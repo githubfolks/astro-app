@@ -204,5 +204,40 @@ export const api = {
             const response = await fetch(`${API_URL}/public/horoscopes?${params}`);
             return handleResponse(response, 'Failed to fetch horoscopes');
         }
+    },
+    payment: {
+        createOrder: async (amount: number) => {
+            const response = await fetch(`${API_URL}/payment/order`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ amount })
+            });
+            return handleResponse(response, 'Failed to create payment order');
+        },
+        verifyPayment: async (data: { razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string }) => {
+            const response = await fetch(`${API_URL}/payment/verify`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to verify payment');
+        }
+    },
+    updateDeviceToken: async (token: string, platform = 'web') => {
+        const response = await fetch(`${API_URL}/users/device-token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ token, platform })
+        });
+        return handleResponse(response, 'Failed to update device token');
     }
 };

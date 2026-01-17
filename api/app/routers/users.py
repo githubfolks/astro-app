@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas, database
 from .auth import get_current_user
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/users",
@@ -46,3 +47,35 @@ def get_user_profile(user_id: int, current_user: models.User = Depends(get_curre
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile
+
+class DeviceTokenSchema(BaseModel):
+    token: str
+    platform: str = "web"
+
+@router.post("/device-token")
+def register_device_token(
+    data: DeviceTokenSchema,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Register a Firebase Cloud Messaging (FCM) token for push notifications.
+    """
+    # Check if token exists
+    existing = db.query(models.DeviceToken).filter(models.DeviceToken.fcm_token == data.token).first()
+    if existing:
+        # Update user association if changed
+        if existing.user_id != current_user.id:
+            existing.user_id = current_user.id
+            db.commit()
+        return {"status": "updated"}
+    
+    # Create new
+    new_token = models.DeviceToken(
+        user_id=current_user.id,
+        fcm_token=data.token,
+        platform=data.platform
+    )
+    db.add(new_token)
+    db.commit()
+    return {"status": "registered"}

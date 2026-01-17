@@ -9,3 +9,4 @@ seeker@test.com/password
 Astrologer:
 astro@test.com/password
 
+docker-compose up -d --build

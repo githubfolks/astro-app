@@ -36,6 +36,7 @@ class TransactionType(str, enum.Enum):
     WITHDRAWAL = "WITHDRAWAL"
     CHAT_DEDUCTION = "CHAT_DEDUCTION"
     CHAT_REFUND = "CHAT_REFUND"
+    PAYMENT_GATEWAY = "PAYMENT_GATEWAY"
 
 class User(Base):
     __tablename__ = "users"
@@ -80,6 +81,7 @@ class AstrologerProfile(Base):
     languages = Column(String)
     specialties = Column(String)
     consultation_fee_per_min = Column(DECIMAL(10, 2), default=0.0)
+    commission_percentage = Column(DECIMAL(5, 2), default=70.0) # Percentage share for Astrologer
     is_online = Column(Boolean, default=False)
     rating_avg = Column(DECIMAL(3, 2), default=0.0)
     total_consultations = Column(Integer, default=0)
@@ -234,3 +236,33 @@ class Horoscope(Base):
     content = Column(JSON, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class PayoutStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    PROCESSED = "PROCESSED"
+
+class Payout(Base):
+    __tablename__ = "payouts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    astrologer_id = Column(Integer, ForeignKey("users.id"))
+    amount = Column(DECIMAL(10, 2), nullable=False)
+    status = Column(Enum(PayoutStatus), default=PayoutStatus.PENDING)
+    period_start = Column(DateTime(timezone=True))
+    period_end = Column(DateTime(timezone=True))
+    transaction_reference = Column(String, nullable=True) # Bank ref ID
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    processed_at = Column(DateTime(timezone=True), nullable=True)
+
+    astrologer = relationship("User", foreign_keys=[astrologer_id])
+
+class DeviceToken(Base):
+    __tablename__ = "device_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    fcm_token = Column(String, unique=True, index=True, nullable=False)
+    platform = Column(String) # android, ios, web
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
+    user = relationship("User", backref="device_tokens")
