@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
                     <div className="footer-column brand-column">
                         <div className="footer-logo">
                             <span style={{ fontSize: '24px', marginRight: '8px' }}>✨</span>
-                            AstroApp
+                            Aadikarta
                         </div>
                         <p className="footer-desc">
                             Your trusted companion for astrological guidance.
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
                         <ul className="contact-list">
                             <li>
                                 <Mail size={16} className="contact-icon" />
-                                support@astroapp.com
+                                support@aadikarta.org
                             </li>
                             <li>
                                 <Phone size={16} className="contact-icon" />
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; 2026 AstroApp. All rights reserved.</p>
+                    <p>&copy; 2026 Aadikarta. All rights reserved.</p>
                     <div className="footer-legal">
                         <Link to="/privacy-policy">Privacy Policy</Link>
                         <Link to="/terms-of-service">Terms of Service</Link>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">AstroApp</string>
-    <string name="title_activity_main">AstroApp</string>
-    <string name="package_name">com.astroapp.web</string>
-    <string name="custom_url_scheme">com.astroapp.web</string>
+    <string name="app_name">Aadikarta</string>
+    <string name="title_activity_main">Aadikarta</string>
+    <string name="package_name">com.aadikarta.web</string>
+    <string name="custom_url_scheme">com.aadikarta.web</string>
 </resources>

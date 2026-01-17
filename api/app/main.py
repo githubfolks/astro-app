@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Ensure upload directory exists
 os.makedirs("uploads", exist_ok=True)
 
-app = FastAPI(title="AstroApp API")
+app = FastAPI(title="Aadikarta API")
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
@@ -64,4 +64,4 @@ app.include_router(public.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to AstroApp API"}
+    return {"message": "Welcome to Aadikarta API"}

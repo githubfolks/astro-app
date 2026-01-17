@@ -55,7 +55,7 @@ const Header: React.FC = () => {
                     <button className="mobile-menu-btn" onClick={toggleMenu}>
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
-                    <Link to="/" className="brand-logo">AstroApp</Link>
+                    <Link to="/" className="brand-logo">Aadikarta</Link>
                 </div>
 
                 <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
