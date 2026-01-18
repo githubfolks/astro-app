@@ -234,3 +234,20 @@ class Horoscope(Base):
     content = Column(JSON, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+class InquiryStatus(str, enum.Enum):
+    NEW = "NEW"
+    READ = "READ"
+    RESPONDED = "RESPONDED"
+    ARCHIVED = "ARCHIVED"
+
+class ContactInquiry(Base):
+    __tablename__ = "contact_inquiries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, index=True)
+    message = Column(Text, nullable=False)
+    status = Column(Enum(InquiryStatus), default=InquiryStatus.NEW)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

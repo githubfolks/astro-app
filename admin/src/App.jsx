@@ -16,6 +16,7 @@ import PageList from './pages/cms/PageList';
 import PageEditor from './pages/cms/PageEditor';
 import HoroscopeList from './pages/cms/HoroscopeList';
 import HoroscopeEditor from './pages/cms/HoroscopeEditor';
+import ContactInquiries from './pages/cms/ContactInquiries';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -58,6 +59,8 @@ function App() {
             <Route path="/cms/horoscopes" element={<HoroscopeList />} />
             <Route path="/cms/horoscopes/new" element={<HoroscopeEditor />} />
             <Route path="/cms/horoscopes/edit/:id" element={<HoroscopeEditor />} />
+
+            <Route path="/cms/contact-inquiries" element={<ContactInquiries />} />
           </Route>
         </Routes>
       </AuthProvider>

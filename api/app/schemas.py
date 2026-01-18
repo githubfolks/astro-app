@@ -205,3 +205,15 @@ class AdminCreateAstrologer(BaseModel):
     profile_picture_url: Optional[str] = None
     is_verified: bool = True
 
+class ContactInquiryCreate(BaseModel):
+    name: str # Combined first + last
+    email: str
+    message: str
+
+class ContactInquiry(ContactInquiryCreate):
+    id: int
+    status: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
+

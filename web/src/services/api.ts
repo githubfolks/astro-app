@@ -203,6 +203,14 @@ export const api = {
 
             const response = await fetch(`${API_URL}/public/horoscopes?${params}`);
             return handleResponse(response, 'Failed to fetch horoscopes');
+        },
+        contact: async (data: { name: string, email: string, message: string }) => {
+            const response = await fetch(`${API_URL}/public/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to submit inquiry');
         }
     }
 };

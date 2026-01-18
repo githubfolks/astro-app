@@ -50,6 +50,10 @@ export const cms = {
         update: (id, data) => api.put(`/cms/horoscopes/${id}`, data),
         delete: (id) => api.delete(`/cms/horoscopes/${id}`),
     },
+    inquiries: {
+        list: (params) => api.get('/cms/contact-inquiries', { params }),
+        // Add update/delete if needed later
+    },
     upload: (formData) => api.post('/admin/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     })

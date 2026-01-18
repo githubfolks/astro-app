@@ -273,9 +273,9 @@ export const Chat: React.FC = () => {
                                         </div>
 
                                         <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                                            <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Chart Notes</h3>
+                                            <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Notes</h3>
                                             <p className="text-yellow-900 text-sm">
-                                                (Placeholder for Kundli/Chart data. To be implemented.)
+                                                No additional notes.
                                             </p>
                                         </div>
                                     </div>

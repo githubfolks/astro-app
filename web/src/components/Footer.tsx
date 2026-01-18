@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
 
@@ -36,16 +36,6 @@ const Footer: React.FC = () => {
                         </ul>
                     </div>
 
-                    <div className="footer-column">
-                        <h4 className="footer-title">Services</h4>
-                        <ul className="footer-links">
-                            <li><Link to="/horoscopes">Horoscope</Link></li>
-                            <li><Link to="/kundli">Kundli Matching</Link></li>
-                            <li><Link to="/tarot">Tarot Reading</Link></li>
-                            <li><Link to="/vastu">Vastu Shastra</Link></li>
-                            <li><Link to="/numerology">Numerology</Link></li>
-                        </ul>
-                    </div>
 
                     <div className="footer-column contact-column">
                         <h4 className="footer-title">Contact Us</h4>
@@ -56,13 +46,13 @@ const Footer: React.FC = () => {
                             </li>
                             <li>
                                 <Phone size={16} className="contact-icon" />
-                                +91 98765 43210
+                                +91 86503 54783
                             </li>
-                            <li>
+                            {/* <li>
                                 <MapPin size={16} className="contact-icon" />
                                 123 Cosmic Way, Galaxy Tower,
                                 Mumbai, India
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                 </div>
@@ -71,6 +61,8 @@ const Footer: React.FC = () => {
                     <p>&copy; 2026 Aadikarta. All rights reserved.</p>
                     <div className="footer-legal">
                         <Link to="/privacy-policy">Privacy Policy</Link>
+                        <Link to="/refund-policy">Refund Policy</Link>
+                        <Link to="/disclaimer">Disclaimer</Link>
                         <Link to="/terms-of-service">Terms of Service</Link>
                     </div>
                 </div>

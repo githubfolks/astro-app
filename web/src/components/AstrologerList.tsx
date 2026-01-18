@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search as SearchIcon, Heart, Briefcase, Home, Hash, Scroll, Star, LayoutGrid } from 'lucide-react';
+import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
 import AstrologerCard from './AstrologerCard';
 import type { Astrologer } from '../types';
 import LoginModal from './LoginModal';
@@ -100,10 +100,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
             .catch(err => {
                 console.error("Failed to fetch astrologers, using fallback data", err);
                 const mockData: Astrologer[] = [
-                    { id: 101, full_name: "Mystic Luna", specialties: "Tarot, Psychic", languages: "English", experience_years: 8, consultation_fee_per_min: 15, rating_avg: 4.8, is_online: true },
                     { id: 102, full_name: "Guru Dev", specialties: "Vedic", languages: "Hindi, Sanskrit", experience_years: 15, consultation_fee_per_min: 20, rating_avg: 4.9, is_online: true },
-                    { id: 103, full_name: "Astro Bella", specialties: "Numerology", languages: "French, English", experience_years: 5, consultation_fee_per_min: 12, rating_avg: 4.5, is_online: false },
-                    { id: 104, full_name: "Pandit Ji", specialties: "Vastu", languages: "Hindi", experience_years: 25, consultation_fee_per_min: 25, rating_avg: 5.0, is_online: true },
                     { id: 105, full_name: "Cosmic Ray", specialties: "Nadi", languages: "Tamil", experience_years: 12, consultation_fee_per_min: 18, rating_avg: 4.7, is_online: false },
                 ];
                 setAstrologers(mockData);
@@ -117,9 +114,6 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const categories = [
         { name: 'All', icon: <LayoutGrid size={16} /> },
         { name: 'Vedic', icon: <Scroll size={16} /> },
-        { name: 'Tarot', icon: <Star size={16} /> },
-        { name: 'Numerology', icon: <Hash size={16} /> },
-        { name: 'Vastu', icon: <Home size={16} /> },
         { name: 'Love', icon: <Heart size={16} /> },
         { name: 'Career', icon: <Briefcase size={16} /> }
     ];

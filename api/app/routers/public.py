@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
-from .. import models, database, schemas_cms
+from .. import models, database, schemas_cms, schemas
 
 router = APIRouter(
     prefix="/public",
@@ -65,3 +65,16 @@ def get_public_horoscopes(
     
     # Defaults: unique entry if all params present, else list
     return query.order_by(models.Horoscope.date.desc()).limit(50).all()
+
+# --- Contact ---
+
+@router.post("/contact", response_model=dict)
+def submit_contact_inquiry(
+    inquiry: schemas.ContactInquiryCreate,
+    db: Session = Depends(database.get_db)
+):
+    db_inquiry = models.ContactInquiry(**inquiry.model_dump())
+    db.add(db_inquiry)
+    db.commit()
+    db.refresh(db_inquiry)
+    return {"message": "Inquiry submitted successfully", "id": db_inquiry.id}
