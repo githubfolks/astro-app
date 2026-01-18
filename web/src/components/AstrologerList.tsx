@@ -102,6 +102,12 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 const mockData: Astrologer[] = [
                     { id: 102, full_name: "Guru Dev", specialties: "Vedic", languages: "Hindi, Sanskrit", experience_years: 15, consultation_fee_per_min: 20, rating_avg: 4.9, is_online: true },
                     { id: 105, full_name: "Cosmic Ray", specialties: "Nadi", languages: "Tamil", experience_years: 12, consultation_fee_per_min: 18, rating_avg: 4.7, is_online: false },
+                    { id: 103, full_name: "Meera Ji", specialties: "Tarot", languages: "English", experience_years: 8, consultation_fee_per_min: 15, rating_avg: 4.8, is_online: true },
+                    { id: 104, full_name: "Pandit Rajesh", specialties: "Vedic", languages: "Hindi", experience_years: 20, consultation_fee_per_min: 25, rating_avg: 5.0, is_online: true },
+                    { id: 106, full_name: "Star Gazer", specialties: "Western", languages: "English", experience_years: 5, consultation_fee_per_min: 10, rating_avg: 4.5, is_online: false },
+                    { id: 107, full_name: "Mystic Aura", specialties: "Numerology", languages: "English, Hindi", experience_years: 10, consultation_fee_per_min: 22, rating_avg: 4.9, is_online: true },
+                    { id: 108, full_name: "Anil Shastri", specialties: "Palmistry", languages: "Hindi", experience_years: 18, consultation_fee_per_min: 12, rating_avg: 4.6, is_online: false },
+                    { id: 109, full_name: "Crystal Rose", specialties: "KP Astrology", languages: "English", experience_years: 7, consultation_fee_per_min: 30, rating_avg: 4.8, is_online: true },
                 ];
                 setAstrologers(mockData);
                 setLoading(false);

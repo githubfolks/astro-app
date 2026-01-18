@@ -3,13 +3,23 @@
     color: #aeaeae;
     padding: 80px 0 30px;
     font-size: 14px;
+    position: relative;
 }
 
 .footer-content {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1.2fr;
-    gap: 40px;
+    grid-template-columns: 1fr 1.5fr;
+    /* 2 Columns: Brand & Info */
+    gap: 60px;
     margin-bottom: 60px;
+}
+
+/* Right column layout containing both Quick Links and Contact */
+.info-column {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    /* Split right column into Links & Contact */
+    gap: 40px;
 }
 
 .footer-logo {
@@ -24,7 +34,7 @@
 .footer-desc {
     margin-bottom: 25px;
     line-height: 1.6;
-    max-width: 300px;
+    max-width: 350px;
 }
 
 .social-links {
@@ -119,39 +129,150 @@
     color: var(--primary);
 }
 
-@media (max-width: 768px) {
+/* Scroll to Top Button */
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 45px;
+    height: 45px;
+    background-color: var(--primary);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 900px) {
     .footer-content {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .info-column {
         grid-template-columns: 1fr 1fr;
         gap: 30px;
     }
+}
+
+@media (max-width: 768px) {
+    .footer-section {
+        padding: 60px 0 100px;
+        /* Reduced top padding, kept bottom safe area */
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 50px;
+        margin-bottom: 40px;
+    }
+
+    .info-column {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
 
     .brand-column,
-    .contact-column {
-        grid-column: span 2;
+    .info-column {
         text-align: center;
     }
 
     .footer-logo {
         justify-content: center;
-    }
-
-    .social-links {
-        justify-content: center;
+        margin-bottom: 15px;
     }
 
     .footer-desc {
         margin: 0 auto 25px;
+        font-size: 15px;
+        /* Slightly larger for readability */
+    }
+
+    .social-links {
+        justify-content: center;
+        gap: 20px;
+        /* More spacing between icons */
+    }
+
+    .footer-title {
+        font-size: 18px;
+        /* Larger heading */
+        margin-bottom: 20px;
+        color: white;
+        /* Ensure visibility */
+    }
+
+    .footer-links li {
+        margin-bottom: 18px;
+        /* More vertical space */
+    }
+
+    .footer-links a {
+        display: block;
+        /* Larger tap area */
+        padding: 5px 0;
+        font-size: 15px;
+    }
+
+    .contact-list {
+        display: flex;
+        /* Flex instead of inline-block for better centering control */
+        flex-direction: column;
+        align-items: center;
+        /* Center items */
+        text-align: center;
+        gap: 20px;
+    }
+
+    .contact-list li {
+        justify-content: center;
+        /* Center content within li */
+        margin-bottom: 0;
     }
 
     .footer-bottom {
         flex-direction: column;
-        gap: 20px;
+        gap: 25px;
         text-align: center;
+        padding-top: 25px;
     }
 
-    /* Center contact items visually but keep icon-text alignment */
-    .contact-list {
-        display: inline-block;
-        text-align: left;
+    .footer-legal {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .footer-legal a {
+        padding: 5px;
+        /* Tap target */
+    }
+
+    /* Adjust Scroll to Top for mobile */
+    .scroll-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
     }
 }
