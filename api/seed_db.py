@@ -44,7 +44,8 @@ def seed():
             "languages": "English, Hindi",
             "exp": 5,
             "fee": "10.00",
-            "about": "Expert in Vedic Astrology"
+            "about": "Expert in Vedic Astrology",
+            "rating": "5.0"
         },
         {
             "email": "luna@test.com",
@@ -54,7 +55,8 @@ def seed():
             "languages": "English, Spanish",
             "exp": 8,
             "fee": "15.00",
-            "about": "Intuitive Tarot reader and Psychic medium."
+            "about": "Intuitive Tarot reader and Psychic medium.",
+            "rating": "4.8"
         },
         {
             "email": "guru@test.com",
@@ -64,7 +66,8 @@ def seed():
             "languages": "Hindi, Sanskrit, English",
             "exp": 15,
             "fee": "20.00",
-            "about": "Traditional Vedic Astrologer with deep knowledge of scriptures."
+            "about": "Traditional Vedic Astrologer with deep knowledge of scriptures.",
+            "rating": "4.9"
         },
         {
             "email": "bella@test.com",
@@ -74,7 +77,8 @@ def seed():
             "languages": "English, French",
             "exp": 3,
             "fee": "12.00",
-            "about": "Helping you find your path through numbers and stars."
+            "about": "Helping you find your path through numbers and stars.",
+            "rating": "4.5"
         },
         {
             "email": "pandit@test.com",
@@ -84,7 +88,8 @@ def seed():
             "languages": "Hindi, English",
             "exp": 20,
             "fee": "25.00",
-            "about": "Expert in Vastu Shastra and Vedic remedies."
+            "about": "Expert in Vastu Shastra and Vedic remedies.",
+            "rating": "4.7"
         },
         {
             "email": "ray@test.com",
@@ -94,7 +99,8 @@ def seed():
             "languages": "English, Tamil",
             "exp": 10,
             "fee": "18.00",
-            "about": "Precision astrology using K.P. and Nadi systems."
+            "about": "Precision astrology using K.P. and Nadi systems.",
+            "rating": "4.6"
         }
     ]
 
@@ -123,7 +129,8 @@ def seed():
                 experience_years=data["exp"],
                 consultation_fee_per_min=Decimal(data["fee"]),
                 about_me=data["about"],
-                is_online=random.choice([True, False])
+                is_online=random.choice([True, False]),
+                rating_avg=Decimal(data["rating"])
             ))
             # Wallet
             db.add(UserWallet(user_id=astro.id, balance=Decimal("0.00")))

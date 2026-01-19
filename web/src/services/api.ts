@@ -67,8 +67,14 @@ export const api = {
         }
     },
     astrologers: {
-        list: async (skip = 0, limit = 20) => {
-            const response = await fetch(`${API_URL}/astrologers/?skip=${skip}&limit=${limit}`);
+        list: async (skip = 0, limit = 20, sort_by?: string) => {
+            const params = new URLSearchParams({
+                skip: skip.toString(),
+                limit: limit.toString()
+            });
+            if (sort_by) params.append('sort_by', sort_by);
+
+            const response = await fetch(`${API_URL}/astrologers/?${params.toString()}`);
             return handleResponse(response, 'Failed to fetch astrologers');
         },
         getOne: async (id: number | string) => {

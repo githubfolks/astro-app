@@ -9,8 +9,8 @@ Password: password
 Email: admin@test.com
 Password: adminpassword
 
-docker compose up -d --build api
-docker compose up -d admin
+docker compose down
+docker compose up -d --build
 
 
 npm run build && npx cap sync

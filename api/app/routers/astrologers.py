@@ -10,9 +10,13 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=List[schemas.AstrologerProfile])
-def list_astrologers(skip: int = 0, limit: int = 20, db: Session = Depends(database.get_db)):
-    # Assuming we want to search for astrologer profiles directly
-    profiles = db.query(models.AstrologerProfile).offset(skip).limit(limit).all()
+def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Session = Depends(database.get_db)):
+    query = db.query(models.AstrologerProfile)
+    
+    if sort_by == 'rating':
+        query = query.order_by(models.AstrologerProfile.rating_avg.desc())
+        
+    profiles = query.offset(skip).limit(limit).all()
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)
