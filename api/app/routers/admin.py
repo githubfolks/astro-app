@@ -7,7 +7,17 @@ import uuid
 import os
 from datetime import datetime, timedelta
 from .. import models, schemas, database
+from .. import models, schemas, database
 from .auth import get_current_admin, get_password_hash
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+  api_key = os.getenv('CLOUDINARY_API_KEY'),
+  api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+  secure = True
+)
 
 router = APIRouter(
     prefix="/admin",
@@ -17,18 +27,14 @@ router = APIRouter(
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    # Generate unique filename
-    file_extension = file.filename.split(".")[-1]
-    unique_filename = f"{uuid.uuid4()}.{file_extension}"
-    file_path = f"uploads/{unique_filename}"
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    # Return full URL (assuming localhost:8000 for now, or relative path)
-    # Ideally should use base_url but hardcoding for dev POC is fine or use relative if frontend handles it.
-    # Frontend will prepend API URL if we just return the static path.
-    return {"url": f"/static/{unique_filename}"}
+    try:
+        # Upload to Cloudinary
+        # file.file is a SpooledTemporaryFile which acts like a file object
+        result = cloudinary.uploader.upload(file.file, folder="admin_uploads")
+        return {"url": result.get("secure_url")}
+    except Exception as e:
+        print(f"Cloudinary upload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
 @router.get("/dashboard_stats")
 def get_dashboard_stats(db: Session = Depends(database.get_db)):

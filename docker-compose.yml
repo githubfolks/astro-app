@@ -6,6 +6,8 @@ services:
     container_name: astro_api
     depends_on:
       - db
+    env_file:
+      - ./api/.env
     environment:
       # Use internal db service
       SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@db:5432/postgres
