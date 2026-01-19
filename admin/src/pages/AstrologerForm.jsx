@@ -86,10 +86,14 @@ export default function AstrologerForm() {
             const response = await api.post('/admin/upload', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            // Construct absolute URL
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            const fullUrl = `${apiUrl}${response.data.url}`;
-            setFormData(prev => ({ ...prev, profile_picture_url: fullUrl }));
+            const url = response.data.url;
+            if (url.startsWith('http')) {
+                setFormData(prev => ({ ...prev, profile_picture_url: url }));
+            } else {
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+                const fullUrl = `${apiUrl}${url}`;
+                setFormData(prev => ({ ...prev, profile_picture_url: fullUrl }));
+            }
         } catch (error) {
             console.error("Upload failed", error);
             alert("Image upload failed");
