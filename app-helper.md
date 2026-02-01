@@ -1,3 +1,7 @@
+https://astro-app-web.vercel.app/
+
+https://astro-app-admin.vercel.app/
+
 Seeker:
 Email: seeker@test.com
 Password: password
@@ -30,3 +34,9 @@ python3 migrate.py down
 # Run specific revision:
 
 python3 migrate.py run <revision_id>
+
+
+http://manage.bigrock.in/linkhandler/servlet/ViewCustomerTransactionsServlet?transid=139482007&role=customer
+
+vikram@aavyalabs.com
+ViKr@m#2026

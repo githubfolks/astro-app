@@ -2,7 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts
+
 from fastapi.middleware.cors import CORSMiddleware
 
 # Ensure upload directory exists
@@ -31,8 +32,12 @@ origins = [
     "https://astro-app-web.vercel.app",
     "https://astro-app-admin.vercel.app",
     "https://dev.aadikarta.org",
+
+    "https://dev-admin.aadikarta.org"
+
     "https://dev-admin.aadikarta.org",
     "http://localhost:3002"
+
 ]
 
 app.add_middleware(
@@ -59,6 +64,8 @@ app.include_router(chat.router)
 app.include_router(admin.router)
 app.include_router(cms.router)
 app.include_router(public.router)
+app.include_router(payment.router)
+app.include_router(payouts.router)
 
 @app.get("/")
 def read_root():

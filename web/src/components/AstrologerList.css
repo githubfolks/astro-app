@@ -122,6 +122,38 @@
     .section-header p {
         font-size: 11px;
     }
+
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .search-box {
+        width: 100%;
+    }
+
+    .category-filters {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 5px;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        /* Hide scrollbar for cleaner look */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .category-filters::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-btn {
+        flex-shrink: 0;
+        font-size: 12px;
+        padding: 6px 12px;
+        white-space: nowrap;
+    }
 }
 
 @media (max-width: 380px) {

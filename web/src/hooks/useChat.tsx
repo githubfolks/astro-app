@@ -59,6 +59,11 @@ export const useChat = (consultationId: string) => {
                     setStatus('ENDED');
                     alert(`Chat Ended: ${data.reason}`);
                     break;
+                case 'CONSULTATION_PAUSED':
+                    setStatus('PAUSED');
+                    setTimerActive(false);
+                    alert("Consultation Paused: " + data.reason);
+                    break;
                 default:
                     break;
             }

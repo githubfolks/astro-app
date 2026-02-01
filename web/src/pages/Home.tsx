@@ -31,7 +31,8 @@ const Home: React.FC = () => {
             <Header />
             <Hero />
             <HowItWorks />
-            <AstrologerList limit={6} topRankingOnly={true} showFilters={false} />
+            <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
+            <Services />
 
             <section className="promise-section py-20 bg-indigo-50 text-center">
                 <div className="container mx-auto px-4">

@@ -9,8 +9,10 @@ services:
     env_file:
       - ./api/.env
     environment:
-      # Use internal db service
-      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@db:5432/postgres
+      # Use host.docker.internal to access db on host machine
+      # Also including the search_path option we added earlier
+      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@host.docker.internal:5432/postgres?options=-csearch_path%3Dastroapp
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     volumes:
@@ -46,5 +48,12 @@ services:
     ports:
       - "3001:80"
 
+  redis:
+    image: "redis:alpine"
+    container_name: astro_redis
+    ports:
+      - "6379:6379"
+
 volumes:
   postgres_data:
+

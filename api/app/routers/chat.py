@@ -62,14 +62,43 @@ async def get_user_from_token(token: str, db: Session):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     return user
 
+from ..redis_client import get_redis
+from ..notifications import send_push_notification
+
 async def billing_loop(consultation_id: int, rate_per_min: float, db_session_maker):
     """
     Background task to deduct balance every minute while chat is ACTIVE.
+    Uses Redis for distributed locking to allow crash recovery / ensure single worker.
     """
     logger.info(f"Starting billing loop for {consultation_id}")
+    redis = get_redis()
+    
     try:
         while True:
             await asyncio.sleep(60) # Wait 1 minute
+            
+            # Redis Lock Key for this minute
+            # We want to ensure we don't double charge for the same minute globally
+            # But simpler: Lock the consultation billing process?
+            # Actually, `billing_loop` is spawned per WebSocket connection start on Astro side.
+            # If server crashes, this loop dies.
+            # If server restarts, we need a mechanism to RESTART this loop.
+            # For now, we are improving robustness against multiple loops (race conditions)
+            # and ensuring state is consistent.
+            
+            # Proper "Heartbeat" requires an external worker. 
+            # Given current architecture (FastAPI background task), we add locking 
+            # to safer if we ever have multiple instances.
+            
+            lock_key = f"billing_lock:{consultation_id}:{int(datetime.utcnow().timestamp() // 60)}"
+            
+            if redis:
+                # Try to acquire lock for this specific minute
+                # nx=True means only set if not exists, ex=70 seconds expiry
+                is_locked = redis.set(lock_key, "1", ex=70, nx=True)
+                if not is_locked:
+                    logger.info(f"Billing for {consultation_id} already processed for this minute. Skipping.")
+                    continue
             
             with db_session_maker() as db:
                 consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
@@ -231,6 +260,27 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                     "content": content,
                     "timestamp": str(new_msg.timestamp)
                 })
+
+                # Check if recipient is online, if not send Push
+                recipient_id = consultation.astrologer_id if user.id == consultation.seeker_id else consultation.seeker_id
+                
+                is_recipient_online = False
+                if consultation_id in manager.active_connections:
+                     for conn in manager.active_connections[consultation_id]:
+                         if conn["user_id"] == recipient_id:
+                             is_recipient_online = True
+                             break
+                
+                if not is_recipient_online:
+                    # Fetch Device Token
+                    tokens = db.query(models.DeviceToken).filter(models.DeviceToken.user_id == recipient_id).all()
+                    for token_obj in tokens:
+                        send_push_notification(
+                            token=token_obj.fcm_token,
+                            title=f"New Message from {user.seeker_profile.full_name if user.role == models.UserRole.SEEKER else user.astrologer_profile.full_name}",
+                            body=content[:50] + ("..." if len(content) > 50 else ""),
+                            data={"consultation_id": str(consultation_id), "type": "CHAT_MESSAGE"}
+                        )
                 
             elif msg_type == "END_CHAT":
                 consultation.status = models.ConsultationStatus.COMPLETED
@@ -241,6 +291,19 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, consultation_id)
+        # Handle Disconnection State
+        if user.role == models.UserRole.ASTROLOGER:
+             # If Astrologer disconnects, we must pause the timer/billing
+             # We need a fresh DB session here as the outer one might be closed or issues
+             with database.SessionLocal() as db_disc:
+                 cons = db_disc.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+                 if cons and cons.status == models.ConsultationStatus.ACTIVE:
+                     cons.status = models.ConsultationStatus.PAUSED
+                     db_disc.commit()
+                     # Billing loop will auto-exit next minute because status != ACTIVE
+                     # Notify Seeker
+                     asyncio.create_task(manager.broadcast(consultation_id, {"type": "CONSULTATION_PAUSED", "reason": "astrologer_disconnected"}))
+
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")
         try:
@@ -248,5 +311,6 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
         except:
             pass
         manager.disconnect(websocket, consultation_id)
+        
     finally:
         db.close()

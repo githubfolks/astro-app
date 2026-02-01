@@ -63,4 +63,15 @@ export const cms = {
     }
 };
 
+export const payouts = {
+    getPending: () => api.get('/admin/payouts/pending'),
+    generate: (data) => api.post('/admin/payouts/generate', null, { params: data }), // generate expects query params too? No, let's check backend.
+    // Backend generate: astrologer_id, amount, ... as arguments. FastAPI treats them as query params unless Pydantic model.
+    // Better to fix Backend to accept Pydantic model for Generate. 
+    // BUT for now, let's match existing backend:
+    // generate_payout(astrologer_id: int, amount: float ...) -> Query Params.
+    markPaid: (id, transactionRef) => api.post(`/admin/payouts/${id}/mark-paid?transaction_reference=${encodeURIComponent(transactionRef)}`)
+};
+
+
 export default api;

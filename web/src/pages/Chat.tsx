@@ -315,7 +315,12 @@ export const Chat: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-4">
-                                {timerActive ? (
+                                {status === 'PAUSED' ? (
+                                    <div className="flex items-center gap-2 text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200 text-sm font-medium animate-pulse">
+                                        <Clock size={16} />
+                                        <span className="font-mono">Paused</span>
+                                    </div>
+                                ) : timerActive ? (
                                     <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-200 text-sm font-medium">
                                         <Clock size={16} />
                                         <span className="font-mono">Active</span>

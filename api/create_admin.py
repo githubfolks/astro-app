@@ -16,6 +16,17 @@ def create_admin():
             user.role = UserRole.ADMIN
             user.is_active = True
         else:
+            # FIX: Sync the ID sequence to avoid UniqueViolation errors
+            # This handles cases where rows were inserted manually or the sequence is out of sync
+            try:
+                print("Syncing database ID sequence...")
+                from sqlalchemy import text
+                db.execute(text("SELECT setval('users_id_seq', (SELECT MAX(id) FROM users));"))
+                db.commit()
+            except Exception as seq_err:
+                print(f"Warning: Could not sync sequence (might not be needed): {seq_err}")
+                db.rollback()
+
             print(f"Creating new admin user {email}...")
             hashed_password = get_password_hash(password)
             user = User(

@@ -9,6 +9,9 @@ import AstrologerForm from './pages/AstrologerForm';
 import AstrologerDetails from './pages/AstrologerDetails';
 import UserDetails from './pages/UserDetails';
 import Dashboard from './pages/Dashboard';
+
+import Payouts from './pages/Payouts';
+
 import AstrologerApprovals from './pages/AstrologerApprovals';
 
 import PostList from './pages/cms/PostList';
@@ -48,6 +51,7 @@ function App() {
             <Route path="/astrologers/add" element={<AstrologerForm />} />
             <Route path="/astrologers/edit/:id" element={<AstrologerForm />} />
             <Route path="/astrologers/view/:id" element={<AstrologerDetails />} />
+            <Route path="/payouts" element={<Payouts />} />
 
             {/* CMS Routes */}
             <Route path="/cms/posts" element={<PostList />} />

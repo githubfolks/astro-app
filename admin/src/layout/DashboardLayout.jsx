@@ -1,7 +1,11 @@
 import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+
+import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign } from 'lucide-react';
+
 import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, Mail, ShieldCheck } from 'lucide-react';
+
 import { Button } from '../components/ui/Button';
 import clsx from 'clsx';
 
@@ -23,8 +27,13 @@ export default function DashboardLayout() {
         { text: 'Approvals', icon: <ShieldCheck size={20} />, path: '/astrologer-approvals' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
         { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
+        { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
         { text: 'Horoscopes', icon: <Moon size={20} />, path: '/cms/horoscopes' },
+
+        { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
+
         { text: 'Inquiries', icon: <Mail size={20} />, path: '/cms/contact-inquiries' },
+
     ];
 
     return (
