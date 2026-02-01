@@ -24,7 +24,7 @@ const PageViewer: React.FC = () => {
             setPage(data);
 
             // Update document metadata for SEO
-            document.title = data.seo_title || data.title || 'AstroApp';
+            document.title = data.seo_title || data.title || 'Aadikarta';
             if (data.seo_description) {
                 let metaDescription = document.querySelector('meta[name="description"]');
                 if (!metaDescription) {

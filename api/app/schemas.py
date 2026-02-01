@@ -81,6 +81,12 @@ class AstrologerProfileBase(BaseModel):
     specialties: Optional[str] = None
     consultation_fee_per_min: Decimal
     availability_hours: Optional[str] = None
+    city: Optional[str] = None
+    id_proof_url: Optional[str] = None
+    astrology_types: Optional[List[str]] = None
+    is_approved: bool = False
+    legal_agreement_accepted: bool = False
+    legal_agreement_accepted_at: Optional[datetime] = None
 
 class AstrologerProfileCreate(AstrologerProfileBase):
     pass
@@ -96,6 +102,12 @@ class AstrologerProfileUPDATE(BaseModel):
     consultation_fee_per_min: Optional[Decimal] = None
     availability_hours: Optional[str] = None
     is_online: Optional[bool] = None
+    city: Optional[str] = None
+    id_proof_url: Optional[str] = None
+    astrology_types: Optional[List[str]] = None
+    is_approved: Optional[bool] = None
+    legal_agreement_accepted: Optional[bool] = None
+    legal_agreement_accepted_at: Optional[datetime] = None
 
 class AstrologerProfile(AstrologerProfileBase):
     user_id: int
@@ -204,4 +216,36 @@ class AdminCreateAstrologer(BaseModel):
     availability_hours: Optional[str] = None
     profile_picture_url: Optional[str] = None
     is_verified: bool = True
+    city: Optional[str] = None
+    id_proof_url: Optional[str] = None
+    astrology_types: Optional[List[str]] = None
+
+class AstrologerOnboardingRequest(BaseModel):
+    # User fields
+    full_name: str
+    email: str
+    phone_number: str
+    password: str
+    # Profile fields
+    astrology_types: List[str]
+    experience_years: int
+    languages: str
+    preferred_working_hours: str
+    city: Optional[str] = None
+    short_bio: str
+    profile_photo_url: str
+    id_proof_url: Optional[str] = None
+    legal_agreement_accepted: bool = True
+
+class ContactInquiryCreate(BaseModel):
+    name: str # Combined first + last
+    email: str
+    message: str
+
+class ContactInquiry(ContactInquiryCreate):
+    id: int
+    status: str
+    created_at: datetime
+    class Config:
+        from_attributes = True
 

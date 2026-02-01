@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search as SearchIcon, Heart, Briefcase, Home, Hash, Scroll, Star, LayoutGrid } from 'lucide-react';
+import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
 import AstrologerCard from './AstrologerCard';
 import type { Astrologer } from '../types';
 import LoginModal from './LoginModal';
@@ -76,40 +76,53 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
             .catch(console.error);
     };
 
-    useEffect(() => {
-        api.astrologers.list(0, 10)
-            .then(data => {
-                if (!Array.isArray(data)) throw new Error("Invalid response format");
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const PAGE_SIZE = limit || 20;
 
-                // Map AstrologerProfile array to Astrologer type
-                const astros = data.map((profile: any) => ({
-                    id: profile.user_id,
-                    full_name: profile.full_name || "Astrologer",
-                    profile_picture_url: profile.profile_picture_url,
-                    specialties: profile.specialties || "Vedic",
-                    languages: profile.languages || "English",
-                    experience_years: profile.experience_years || 5,
-                    consultation_fee_per_min: profile.consultation_fee_per_min || 10,
-                    rating_avg: profile.rating_avg || 5.0,
-                    is_online: profile.is_online || false,
-                    availability_hours: profile.availability_hours || null
-                }));
+    const fetchAstrologers = async (isLoadMore = false) => {
+        try {
+            setLoading(true);
+            const currentSkip = isLoadMore ? page * PAGE_SIZE : 0;
+            // Always sort by rating as per requirements
+            const data = await api.astrologers.list(currentSkip, PAGE_SIZE, 'rating');
+
+            if (!Array.isArray(data)) throw new Error("Invalid response format");
+
+            const astros = data.map((profile: any) => ({
+                id: profile.user_id,
+                full_name: profile.full_name || "Astrologer",
+                profile_picture_url: profile.profile_picture_url,
+                specialties: profile.specialties || "Vedic",
+                languages: profile.languages || "English",
+                experience_years: profile.experience_years || 5,
+                consultation_fee_per_min: profile.consultation_fee_per_min || 10,
+                rating_avg: profile.rating_avg || 5.0,
+                is_online: profile.is_online || false,
+                availability_hours: profile.availability_hours || null
+            }));
+
+            if (data.length < PAGE_SIZE) {
+                setHasMore(false);
+            }
+
+            if (isLoadMore) {
+                setAstrologers(prev => [...prev, ...astros]);
+                setPage(prev => prev + 1);
+            } else {
                 setAstrologers(astros);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to fetch astrologers, using fallback data", err);
-                const mockData: Astrologer[] = [
-                    { id: 101, full_name: "Mystic Luna", specialties: "Tarot, Psychic", languages: "English", experience_years: 8, consultation_fee_per_min: 15, rating_avg: 4.8, is_online: true },
-                    { id: 102, full_name: "Guru Dev", specialties: "Vedic", languages: "Hindi, Sanskrit", experience_years: 15, consultation_fee_per_min: 20, rating_avg: 4.9, is_online: true },
-                    { id: 103, full_name: "Astro Bella", specialties: "Numerology", languages: "French, English", experience_years: 5, consultation_fee_per_min: 12, rating_avg: 4.5, is_online: false },
-                    { id: 104, full_name: "Pandit Ji", specialties: "Vastu", languages: "Hindi", experience_years: 25, consultation_fee_per_min: 25, rating_avg: 5.0, is_online: true },
-                    { id: 105, full_name: "Cosmic Ray", specialties: "Nadi", languages: "Tamil", experience_years: 12, consultation_fee_per_min: 18, rating_avg: 4.7, is_online: false },
-                ];
-                setAstrologers(mockData);
-                setLoading(false);
-            });
-    }, []);
+                setPage(1);
+            }
+        } catch (err) {
+            console.error("Failed to fetch astrologers", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAstrologers();
+    }, [topRankingOnly, limit]); // Refetch if these props change
 
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -117,13 +130,11 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const categories = [
         { name: 'All', icon: <LayoutGrid size={16} /> },
         { name: 'Vedic', icon: <Scroll size={16} /> },
-        { name: 'Tarot', icon: <Star size={16} /> },
-        { name: 'Numerology', icon: <Hash size={16} /> },
-        { name: 'Vastu', icon: <Home size={16} /> },
         { name: 'Love', icon: <Heart size={16} /> },
         { name: 'Career', icon: <Briefcase size={16} /> }
     ];
 
+    // Client-side filtering
     const filteredAstrologers = astrologers.filter(astro => {
         const matchesCategory = selectedCategory === 'All' ||
             (astro.specialties && astro.specialties.includes(selectedCategory));
@@ -133,13 +144,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
         return matchesCategory && matchesSearch;
     });
 
-    // Sort by rating if topRankingOnly is true
-    const sortedAstrologers = topRankingOnly
-        ? [...filteredAstrologers].sort((a, b) => b.rating_avg - a.rating_avg)
-        : filteredAstrologers;
-
-    // Apply limit if provided
-    const displayAstrologers = limit ? sortedAstrologers.slice(0, limit) : sortedAstrologers;
+    const displayAstrologers = filteredAstrologers;
 
     if (loading) return <div className="loading">Loading Astrologers...</div>;
 
@@ -190,6 +195,17 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                         <div className="no-results">No astrologers found matching your criteria.</div>
                     )}
                 </div>
+
+                {!topRankingOnly && hasMore && !loading && (
+                    <div className="load-more-container" style={{ textAlign: 'center', marginTop: '2rem' }}>
+                        <button
+                            className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
+                            onClick={() => fetchAstrologers(true)}
+                        >
+                            Load More
+                        </button>
+                    </div>
+                )}
             </div>
 
             <LoginModal

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # Ensure upload directory exists
 os.makedirs("uploads", exist_ok=True)
 
-app = FastAPI(title="AstroApp API")
+app = FastAPI(title="Aadikarta API")
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
@@ -29,13 +29,15 @@ origins = [
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:5173",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://127.0.0.1:5173",
     "https://astro-app-web.vercel.app",
     "https://astro-app-admin.vercel.app",
     "https://dev.aadikarta.org",
+
     "https://dev-admin.aadikarta.org"
+
+    "https://dev-admin.aadikarta.org",
+    "http://localhost:3002"
+
 ]
 
 app.add_middleware(
@@ -67,4 +69,4 @@ app.include_router(payouts.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to AstroApp API"}
+    return {"message": "Welcome to Aadikarta API"}

@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.astroapp.web"
+    namespace = "com.aadikarta.web"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.astroapp.web"
+        applicationId "com.aadikarta.web"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

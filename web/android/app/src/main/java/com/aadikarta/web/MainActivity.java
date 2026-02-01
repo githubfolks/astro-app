@@ -1,4 +1,4 @@
-package com.astroapp.web;
+package com.aadikarta.web;
 
 import com.getcapacitor.BridgeActivity;
 

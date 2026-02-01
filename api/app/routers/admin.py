@@ -7,7 +7,17 @@ import uuid
 import os
 from datetime import datetime, timedelta
 from .. import models, schemas, database
+from .. import models, schemas, database
 from .auth import get_current_admin, get_password_hash
+import cloudinary
+import cloudinary.uploader
+
+cloudinary.config(
+  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+  api_key = os.getenv('CLOUDINARY_API_KEY'),
+  api_secret = os.getenv('CLOUDINARY_API_SECRET'),
+  secure = True
+)
 
 router = APIRouter(
     prefix="/admin",
@@ -17,18 +27,14 @@ router = APIRouter(
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    # Generate unique filename
-    file_extension = file.filename.split(".")[-1]
-    unique_filename = f"{uuid.uuid4()}.{file_extension}"
-    file_path = f"uploads/{unique_filename}"
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    # Return full URL (assuming localhost:8000 for now, or relative path)
-    # Ideally should use base_url but hardcoding for dev POC is fine or use relative if frontend handles it.
-    # Frontend will prepend API URL if we just return the static path.
-    return {"url": f"/static/{unique_filename}"}
+    try:
+        # Upload to Cloudinary
+        # file.file is a SpooledTemporaryFile which acts like a file object
+        result = cloudinary.uploader.upload(file.file, folder="admin_uploads")
+        return {"url": result.get("secure_url")}
+    except Exception as e:
+        print(f"Cloudinary upload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
 
 @router.get("/dashboard_stats")
 def get_dashboard_stats(db: Session = Depends(database.get_db)):
@@ -400,3 +406,48 @@ def get_user_consultations(user_id: int, db: Session = Depends(database.get_db))
     # For now returning connection as is.
     return consultations
 
+@router.get("/astrologers/pending")
+def list_pending_astrologers(db: Session = Depends(database.get_db)):
+    # Join User and Profile to get pending astrologers
+    results = db.query(models.User, models.AstrologerProfile).join(
+        models.AstrologerProfile, models.User.id == models.AstrologerProfile.user_id
+    ).filter(
+        models.User.role == models.UserRole.ASTROLOGER,
+        models.AstrologerProfile.is_approved == False
+    ).all()
+    
+    pending = []
+    for user, profile in results:
+        data = {
+            "id": user.id,
+            "email": user.email,
+            "phone_number": user.phone_number,
+            "profile": {
+                "full_name": profile.full_name,
+                "short_bio": profile.short_bio,
+                "experience_years": profile.experience_years,
+                "languages": profile.languages,
+                "astrology_types": profile.astrology_types,
+                "profile_picture_url": profile.profile_picture_url,
+                "id_proof_url": profile.id_proof_url,
+                "city": profile.city,
+                "legal_agreement_accepted": profile.legal_agreement_accepted
+            }
+        }
+        pending.append(data)
+    return pending
+
+@router.post("/astrologers/{user_id}/approve")
+def approve_astrologer(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    
+    profile.is_approved = True
+    user.is_active = True # Allow login
+    db.commit()
+    return {"message": "Astrologer approved successfully"}

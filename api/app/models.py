@@ -86,6 +86,12 @@ class AstrologerProfile(Base):
     rating_avg = Column(DECIMAL(3, 2), default=0.0)
     total_consultations = Column(Integer, default=0)
     availability_hours = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    id_proof_url = Column(String, nullable=True)
+    astrology_types = Column(JSON, nullable=True) # List of types
+    is_approved = Column(Boolean, default=False)
+    legal_agreement_accepted = Column(Boolean, default=False)
+    legal_agreement_accepted_at = Column(DateTime(timezone=True), nullable=True)
 
     user = relationship("User", back_populates="astrologer_profile")
 
@@ -159,6 +165,7 @@ class ChatMessage(Base):
 class VerificationTokenType(str, enum.Enum):
     FORGOT_PASSWORD = "FORGOT_PASSWORD"
     EMAIL_VERIFICATION = "EMAIL_VERIFICATION"
+    ONBOARDING_OTP = "ONBOARDING_OTP"
 
 class VerificationToken(Base):
     __tablename__ = "verification_tokens"
@@ -237,6 +244,7 @@ class Horoscope(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+
 class PayoutStatus(str, enum.Enum):
     PENDING = "PENDING"
     PROCESSED = "PROCESSED"
@@ -266,3 +274,21 @@ class DeviceToken(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
     user = relationship("User", backref="device_tokens")
+
+class InquiryStatus(str, enum.Enum):
+    NEW = "NEW"
+    READ = "READ"
+    RESPONDED = "RESPONDED"
+    ARCHIVED = "ARCHIVED"
+
+class ContactInquiry(Base):
+    __tablename__ = "contact_inquiries"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable=False, index=True)
+    message = Column(Text, nullable=False)
+    status = Column(Enum(InquiryStatus), default=InquiryStatus.NEW)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+

@@ -38,7 +38,7 @@ export const Signup: React.FC = () => {
 
             <div className="auth-card">
                 <div className="auth-header">
-                    <h2 className="auth-title">Join AstroApp</h2>
+                    <h2 className="auth-title">Join Aadikarta</h2>
                     <p className="auth-subtitle">Start your spiritual journey today</p>
                 </div>
 

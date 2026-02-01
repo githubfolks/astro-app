@@ -1,0 +1,12 @@
+https://manage.bigrock.in/servlet/LoginServlet?role=customer&currenturl=https://manage.bigrock.in
+
+username: vikram@aavyalabs.com
+password: GeekUser$123
+
+https://bigrock.titan.email/login/
+
+Email: hello@aadikarta.org
+Password: #?znW@KhXx38fHd
+
+Email: support@aadikarta.org
+Password: #?znW@KhXx38fHd

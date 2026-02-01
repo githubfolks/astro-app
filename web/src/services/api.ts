@@ -67,8 +67,14 @@ export const api = {
         }
     },
     astrologers: {
-        list: async (skip = 0, limit = 20) => {
-            const response = await fetch(`${API_URL}/astrologers/?skip=${skip}&limit=${limit}`);
+        list: async (skip = 0, limit = 20, sort_by?: string) => {
+            const params = new URLSearchParams({
+                skip: skip.toString(),
+                limit: limit.toString()
+            });
+            if (sort_by) params.append('sort_by', sort_by);
+
+            const response = await fetch(`${API_URL}/astrologers/?${params.toString()}`);
             return handleResponse(response, 'Failed to fetch astrologers');
         },
         getOne: async (id: number | string) => {
@@ -91,6 +97,32 @@ export const api = {
                 body: JSON.stringify(data)
             });
             return handleResponse(response, 'Failed to update profile');
+        },
+        sendOtp: async (phone_number: string) => {
+            const response = await fetch(`${API_URL}/astrologers/send-otp?phone_number=${phone_number}`, {
+                method: 'POST'
+            });
+            return handleResponse(response, 'Failed to send OTP');
+        },
+        onboarding: async (data: any) => {
+            const response = await fetch(`${API_URL}/astrologers/onboarding`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Onboarding failed');
+        },
+        uploadFile: async (file: File) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            // Reusing admin upload endpoint if possible or generic one.
+            // Let's assume there's a generic one or we used admin one which is public-ish but needs auth?
+            // Actually I'll use a generic upload if I add one. For now using admin upload as a placeholder.
+            const response = await fetch(`${API_URL}/admin/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            return handleResponse(response, 'File upload failed');
         }
     },
 
@@ -203,6 +235,14 @@ export const api = {
 
             const response = await fetch(`${API_URL}/public/horoscopes?${params}`);
             return handleResponse(response, 'Failed to fetch horoscopes');
+        },
+        contact: async (data: { name: string, email: string, message: string }) => {
+            const response = await fetch(`${API_URL}/public/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to submit inquiry');
         }
     },
     payment: {

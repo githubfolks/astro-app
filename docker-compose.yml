@@ -4,9 +4,10 @@ services:
   api:
     build: ./api
     container_name: astro_api
-    # Connect to the host machine's network to access local Postgres
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    depends_on:
+      - db
+    env_file:
+      - ./api/.env
     environment:
       # Use host.docker.internal to access db on host machine
       # Also including the search_path option we added earlier
@@ -16,6 +17,18 @@ services:
       - "8000:8000"
     volumes:
       - ./api/uploads:/app/uploads
+
+  db:
+      image: postgres:15-alpine
+      container_name: astro_db
+      environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: password123
+        POSTGRES_DB: postgres
+      ports:
+        - "5432:5432"
+      volumes:
+        - postgres_data:/var/lib/postgresql/data
 
   web:
     build: 
@@ -40,4 +53,7 @@ services:
     container_name: astro_redis
     ports:
       - "6379:6379"
+
+volumes:
+  postgres_data:
 

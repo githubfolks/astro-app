@@ -111,3 +111,28 @@ class Horoscope(HoroscopeBase):
 
     class Config:
         from_attributes = True
+
+# Contact Inquiry Schemas
+class InquiryStatus(str, Enum):
+    NEW = "NEW"
+    READ = "READ"
+    RESPONDED = "RESPONDED"
+    ARCHIVED = "ARCHIVED"
+
+class ContactInquiryBase(BaseModel):
+    name: str
+    email: str
+    message: str
+
+class ContactInquiry(ContactInquiryBase):
+    id: int
+    status: InquiryStatus
+    created_at: datetime
+    updated_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+class ContactInquiryListResponse(BaseModel):
+    total: int
+    inquiries: List[ContactInquiry]

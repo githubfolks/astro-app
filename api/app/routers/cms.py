@@ -235,3 +235,22 @@ def delete_horoscope(horoscope_id: int, db: Session = Depends(database.get_db)):
     db.delete(db_h)
     db.commit()
     return {"message": "Horoscope deleted"}
+
+# --- Contact Inquiries ---
+
+@router.get("/contact-inquiries", response_model=schemas_cms.ContactInquiryListResponse)
+def list_contact_inquiries(
+    skip: int = 0, 
+    limit: int = 20, 
+    status: Optional[schemas_cms.InquiryStatus] = None,
+    db: Session = Depends(database.get_db)
+):
+    query = db.query(models.ContactInquiry)
+    
+    if status:
+        query = query.filter(models.ContactInquiry.status == status)
+        
+    total = query.count()
+    inquiries = query.order_by(models.ContactInquiry.created_at.desc()).offset(skip).limit(limit).all()
+    
+    return {"total": total, "inquiries": inquiries}

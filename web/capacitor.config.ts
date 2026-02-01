@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.astroapp.web',
-  appName: 'AstroApp',
+  appId: 'com.aadikarta.web',
+  appName: 'Aadikarta',
   webDir: 'dist'
 };
 

@@ -9,7 +9,10 @@ import AstrologerForm from './pages/AstrologerForm';
 import AstrologerDetails from './pages/AstrologerDetails';
 import UserDetails from './pages/UserDetails';
 import Dashboard from './pages/Dashboard';
+
 import Payouts from './pages/Payouts';
+
+import AstrologerApprovals from './pages/AstrologerApprovals';
 
 import PostList from './pages/cms/PostList';
 import PostEditor from './pages/cms/PostEditor';
@@ -17,6 +20,7 @@ import PageList from './pages/cms/PageList';
 import PageEditor from './pages/cms/PageEditor';
 import HoroscopeList from './pages/cms/HoroscopeList';
 import HoroscopeEditor from './pages/cms/HoroscopeEditor';
+import ContactInquiries from './pages/cms/ContactInquiries';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -43,6 +47,7 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/users/view/:id" element={<UserDetails />} />
             <Route path="/astrologers" element={<Astrologers />} />
+            <Route path="/astrologer-approvals" element={<AstrologerApprovals />} />
             <Route path="/astrologers/add" element={<AstrologerForm />} />
             <Route path="/astrologers/edit/:id" element={<AstrologerForm />} />
             <Route path="/astrologers/view/:id" element={<AstrologerDetails />} />
@@ -60,6 +65,8 @@ function App() {
             <Route path="/cms/horoscopes" element={<HoroscopeList />} />
             <Route path="/cms/horoscopes/new" element={<HoroscopeEditor />} />
             <Route path="/cms/horoscopes/edit/:id" element={<HoroscopeEditor />} />
+
+            <Route path="/cms/contact-inquiries" element={<ContactInquiries />} />
           </Route>
         </Routes>
       </AuthProvider>
