@@ -7,6 +7,7 @@ import AstrologerList from '../components/AstrologerList';
 import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import Services from '../components/Services';
 
 const Home: React.FC = () => {
     const structuredData = {

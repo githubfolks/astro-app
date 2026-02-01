@@ -4,7 +4,6 @@ sqlalchemy
 psycopg2-binary
 pydantic
 python-jose[cryptography]
-passlib[bcrypt]
 python-multipart
 python-dotenv
 fastapi-mail==1.5.0
@@ -14,3 +13,4 @@ razorpay
 redis
 firebase-admin
 cloudinary
+bcrypt

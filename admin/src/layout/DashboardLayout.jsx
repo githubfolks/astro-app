@@ -2,9 +2,7 @@ import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign } from 'lucide-react';
-
-import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, Mail, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck } from 'lucide-react';
 
 import { Button } from '../components/ui/Button';
 import clsx from 'clsx';
