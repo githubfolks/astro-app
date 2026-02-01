@@ -75,11 +75,6 @@ const Header: React.FC = () => {
                                 <BookOpen size={18} /> Blog
                             </Link>
                         </li>
-                        <li>
-                            <Link to="/join-as-astrologer" onClick={() => setIsMenuOpen(false)}>
-                                <Users size={18} /> Join as Astrologer
-                            </Link>
-                        </li>
                     </ul>
                     <div className="mobile-actions">
                         {(!user || user.role !== 'ASTROLOGER') && (
