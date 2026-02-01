@@ -21,6 +21,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import RefundPolicy from './pages/RefundPolicy';
 import Disclaimer from './pages/Disclaimer';
 import TermsOfService from './pages/TermsOfService';
+import { JoinAsAstrologer } from './pages/JoinAsAstrologer';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -48,6 +49,7 @@ function App() {
                     <Route path="/refund-policy" element={<RefundPolicy />} />
                     <Route path="/disclaimer" element={<Disclaimer />} />
                     <Route path="/terms-of-service" element={<TermsOfService />} />
+                    <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:slug" element={<BlogPost />} />
                     {/* Dynamic Page Route - Must be last to avoid catching specific routes */}

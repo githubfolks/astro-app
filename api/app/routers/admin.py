@@ -406,3 +406,48 @@ def get_user_consultations(user_id: int, db: Session = Depends(database.get_db))
     # For now returning connection as is.
     return consultations
 
+@router.get("/astrologers/pending")
+def list_pending_astrologers(db: Session = Depends(database.get_db)):
+    # Join User and Profile to get pending astrologers
+    results = db.query(models.User, models.AstrologerProfile).join(
+        models.AstrologerProfile, models.User.id == models.AstrologerProfile.user_id
+    ).filter(
+        models.User.role == models.UserRole.ASTROLOGER,
+        models.AstrologerProfile.is_approved == False
+    ).all()
+    
+    pending = []
+    for user, profile in results:
+        data = {
+            "id": user.id,
+            "email": user.email,
+            "phone_number": user.phone_number,
+            "profile": {
+                "full_name": profile.full_name,
+                "short_bio": profile.short_bio,
+                "experience_years": profile.experience_years,
+                "languages": profile.languages,
+                "astrology_types": profile.astrology_types,
+                "profile_picture_url": profile.profile_picture_url,
+                "id_proof_url": profile.id_proof_url,
+                "city": profile.city,
+                "legal_agreement_accepted": profile.legal_agreement_accepted
+            }
+        }
+        pending.append(data)
+    return pending
+
+@router.post("/astrologers/{user_id}/approve")
+def approve_astrologer(user_id: int, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    
+    profile.is_approved = True
+    user.is_active = True # Allow login
+    db.commit()
+    return {"message": "Astrologer approved successfully"}

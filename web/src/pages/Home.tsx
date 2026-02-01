@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import HowItWorks from '../components/HowItWorks';
@@ -62,6 +63,34 @@ const Home: React.FC = () => {
             </section>
 
             <Testimonials />
+
+            <section className="join-astrologer-section py-20 bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-center">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-3xl mx-auto">
+                        <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
+                            Are You an Expert Astrologer?
+                        </h2>
+                        <p className="text-xl mb-10 opacity-90">
+                            Join India's fastest growing astrology platform. Connect with millions of seekers and share your wisdom with the world.
+                        </p>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                            <Link
+                                to="/join-as-astrologer"
+                                className="bg-white text-indigo-700 hover:bg-indigo-50 px-10 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all hover:-translate-y-1"
+                            >
+                                Join as Astrologer
+                            </Link>
+                            <Link
+                                to="/about-us"
+                                className="bg-transparent border-2 border-white/30 hover:border-white text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all"
+                            >
+                                Learn More
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <Footer />
         </div>
     );

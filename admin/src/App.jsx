@@ -9,6 +9,7 @@ import AstrologerForm from './pages/AstrologerForm';
 import AstrologerDetails from './pages/AstrologerDetails';
 import UserDetails from './pages/UserDetails';
 import Dashboard from './pages/Dashboard';
+import AstrologerApprovals from './pages/AstrologerApprovals';
 
 import PostList from './pages/cms/PostList';
 import PostEditor from './pages/cms/PostEditor';
@@ -43,6 +44,7 @@ function App() {
             <Route path="/users" element={<Users />} />
             <Route path="/users/view/:id" element={<UserDetails />} />
             <Route path="/astrologers" element={<Astrologers />} />
+            <Route path="/astrologer-approvals" element={<AstrologerApprovals />} />
             <Route path="/astrologers/add" element={<AstrologerForm />} />
             <Route path="/astrologers/edit/:id" element={<AstrologerForm />} />
             <Route path="/astrologers/view/:id" element={<AstrologerDetails />} />

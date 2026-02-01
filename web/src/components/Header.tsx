@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Users, BookOpen, Phone, ChevronDown, LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
+import { Menu, X, Home, Users, BookOpen, ChevronDown, LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
 import './Header.css';
 
 import { useAuth } from '../context/AuthContext';
@@ -76,14 +76,17 @@ const Header: React.FC = () => {
                             </Link>
                         </li>
                         <li>
-                            <Link to="/contact-us" onClick={() => setIsMenuOpen(false)}>
-                                <Phone size={18} /> Contact Us
+                            <Link to="/join-as-astrologer" onClick={() => setIsMenuOpen(false)}>
+                                <Users size={18} /> Join as Astrologer
                             </Link>
                         </li>
                     </ul>
                     <div className="mobile-actions">
                         {(!user || user.role !== 'ASTROLOGER') && (
-                            <Link to="/chat-with-astrologers" className="btn btn-primary chat-btn-mobile" onClick={() => setIsMenuOpen(false)}>Chat with Astrologer</Link>
+                            <>
+                                <Link to="/chat-with-astrologers" className="btn btn-primary chat-btn-mobile" onClick={() => setIsMenuOpen(false)}>Chat with Astrologer</Link>
+                                <Link to="/join-as-astrologer" className="btn btn-outline-white chat-btn-mobile" style={{ marginTop: '10px' }} onClick={() => setIsMenuOpen(false)}>Join as Astrologer</Link>
+                            </>
                         )}
                         {/* Mobile user menu */}
                         {user && (
@@ -112,7 +115,10 @@ const Header: React.FC = () => {
 
                 <div className="header-actions">
                     {(!user || user.role !== 'ASTROLOGER') && (
-                        <Link to="/chat-with-astrologers" className="btn btn-primary chat-btn">Chat with Astrologer</Link>
+                        <div className="flex items-center gap-3">
+                            <Link to="/join-as-astrologer" className="hidden lg:flex text-gray-700 hover:text-indigo-600 font-medium text-sm transition-colors">Join as Astrologer</Link>
+                            <Link to="/chat-with-astrologers" className="btn btn-primary chat-btn">Chat with Astrologer</Link>
+                        </div>
                     )}
                     {!user && (
                         <Link to="/login" className="btn btn-outline login-btn">Login</Link>

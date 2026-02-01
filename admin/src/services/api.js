@@ -56,7 +56,11 @@ export const cms = {
     },
     upload: (formData) => api.post('/admin/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    }),
+    astrologers: {
+        listPending: () => api.get('/admin/astrologers/pending'),
+        approve: (id) => api.post(`/admin/astrologers/${id}/approve`)
+    }
 };
 
 export default api;
