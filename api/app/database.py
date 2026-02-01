@@ -17,7 +17,7 @@ load_dotenv(env_file)
 # Use environment variable for Docker/Production, fallback to localhost for local dev
 SQLALCHEMY_DATABASE_URL = os.getenv(
     "SQLALCHEMY_DATABASE_URL", 
-    "postgresql://admin:password123@localhost:5432/postgres?options=-csearch_path%3Dastroapp"
+    "postgresql://admin:password123@localhost:5432/postgres?options=-csearch_path%3Dpublic"
 )
 
 engine = create_engine(

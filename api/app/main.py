@@ -28,16 +28,12 @@ def startup_event():
 origins = [
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://localhost:3002",
     "http://localhost:5173",
     "https://astro-app-web.vercel.app",
     "https://astro-app-admin.vercel.app",
     "https://dev.aadikarta.org",
-
-    "https://dev-admin.aadikarta.org"
-
     "https://dev-admin.aadikarta.org",
-    "http://localhost:3002"
-
 ]
 
 app.add_middleware(
@@ -46,13 +42,27 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    print(f"REQUEST: {request.method} {request.url}")
-    response = await call_next(request)
-    return response
+    origin = request.headers.get("origin")
+    print(f"REQUEST: {request.method} {request.url} ORIGIN: {origin}")
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as e:
+        print(f"ERROR processing request: {e}")
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error", "error": str(e)},
+            headers={
+                "Access-Control-Allow-Origin": origin if origin in origins else origins[0],
+                "Access-Control-Allow-Credentials": "true"
+            }
+        )
 
 app.include_router(auth.router)
 app.include_router(users.router)
