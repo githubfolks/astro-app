@@ -9,7 +9,7 @@ services:
     environment:
       # Use host.docker.internal to access db on host machine
       # Also including the search_path option we added earlier
-      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@db:5432/postgres?options=-csearch_path%3Dpublic,tripura_tourism
+      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@host.docker.internal:5432/postgres?options=-csearch_path%3Dastroapp
       REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
