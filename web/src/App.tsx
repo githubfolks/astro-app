@@ -22,6 +22,7 @@ import RefundPolicy from './pages/RefundPolicy';
 import Disclaimer from './pages/Disclaimer';
 import TermsOfService from './pages/TermsOfService';
 import { JoinAsAstrologer } from './pages/JoinAsAstrologer';
+import KundliGenerator from './pages/KundliGenerator';
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,6 +68,11 @@ function App() {
                     <Route path="/chat/new/:astrologerId" element={
                         <ProtectedRoute>
                             <Chat />
+                        </ProtectedRoute>
+                    } />
+                    <Route path="/kundli" element={
+                        <ProtectedRoute>
+                            <KundliGenerator />
                         </ProtectedRoute>
                     } />
                 </Routes>

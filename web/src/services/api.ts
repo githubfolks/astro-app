@@ -279,5 +279,37 @@ export const api = {
             body: JSON.stringify({ token, platform })
         });
         return handleResponse(response, 'Failed to update device token');
+    },
+
+    kundli: {
+        generate: async (data: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
+            const response = await fetch(`${API_URL}/kundli/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to generate Kundli');
+        },
+        getReport: async (id: number) => {
+            const response = await fetch(`${API_URL}/kundli/${id}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            return handleResponse(response, 'Failed to fetch Kundli report');
+        },
+        getSeekerReports: async (seekerId: number) => {
+            const response = await fetch(`${API_URL}/kundli/seeker/${seekerId}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            return handleResponse(response, 'Failed to fetch seeker Kundli reports');
+        },
+        getHistory: async () => {
+            const response = await fetch(`${API_URL}/kundli/history/all`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            return handleResponse(response, 'Failed to fetch Kundli history');
+        }
     }
 };

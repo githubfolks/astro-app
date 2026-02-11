@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
+import KundliPanel from '../components/KundliPanel';
 import { Send, Clock, User, ArrowLeft } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { api } from '../services/api';
@@ -21,6 +22,10 @@ export const Chat: React.FC = () => {
     const [astrologer, setAstrologer] = useState<Astrologer | null>(null);
     const [seeker, setSeeker] = useState<any | null>(null);
     const [showRatingModal, setShowRatingModal] = useState(false);
+    const [showKundli, setShowKundli] = useState(false);
+    const [kundliData, setKundliData] = useState<any>(null);
+    const [kundliLoading, setKundliLoading] = useState(false);
+    const [kundliError, setKundliError] = useState<string | null>(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -129,6 +134,35 @@ export const Chat: React.FC = () => {
     const handleSkipReview = () => {
         setShowRatingModal(false);
         navigate('/dashboard');
+    };
+
+    const handleViewKundli = async () => {
+        if (!seeker) return;
+
+        // If already loaded, just open the panel
+        if (kundliData) {
+            setShowKundli(true);
+            return;
+        }
+
+        setShowKundli(true);
+        setKundliLoading(true);
+        setKundliError(null);
+
+        try {
+            const data = await api.kundli.generate({
+                seeker_id: seeker.user_id,
+                full_name: seeker.full_name || 'Seeker',
+                date_of_birth: seeker.date_of_birth,
+                time_of_birth: seeker.time_of_birth,
+                place_of_birth: seeker.place_of_birth,
+            });
+            setKundliData(data.chart_data);
+        } catch (err: any) {
+            setKundliError(err.message || 'Failed to generate Kundli. Please try again.');
+        } finally {
+            setKundliLoading(false);
+        }
     };
 
     if (astrologerId && !consultationId) {
@@ -278,6 +312,20 @@ export const Chat: React.FC = () => {
                                                 No additional notes.
                                             </p>
                                         </div>
+
+                                        {/* View Kundli Button */}
+                                        {seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth ? (
+                                            <button
+                                                onClick={handleViewKundli}
+                                                className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white py-3 px-4 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2 active:scale-[0.98]"
+                                            >
+                                                🔮 View Kundli
+                                            </button>
+                                        ) : (
+                                            <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-center">
+                                                <p className="text-gray-400 text-xs">Birth details not available for Kundli generation</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
@@ -397,6 +445,16 @@ export const Chat: React.FC = () => {
                 astrologerName={astrologer?.full_name || 'Astrologer'}
                 onSubmit={handleSubmitReview}
                 onSkip={handleSkipReview}
+            />
+
+            {/* Kundli Panel */}
+            <KundliPanel
+                isOpen={showKundli}
+                onClose={() => setShowKundli(false)}
+                chartData={kundliData}
+                seekerName={seeker?.full_name || 'Seeker'}
+                loading={kundliLoading}
+                error={kundliError}
             />
         </div>
     );

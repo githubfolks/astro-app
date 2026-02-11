@@ -14,3 +14,4 @@ redis
 firebase-admin
 cloudinary
 bcrypt
+httpx

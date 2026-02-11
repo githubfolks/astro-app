@@ -249,3 +249,26 @@ class ContactInquiry(ContactInquiryCreate):
     class Config:
         from_attributes = True
 
+
+# Kundli Schemas
+class KundliGenerateRequest(BaseModel):
+    seeker_id: Optional[int] = None  # If generating from existing seeker profile
+    full_name: Optional[str] = None  # For manual entry
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+
+class KundliReportResponse(BaseModel):
+    id: int
+    seeker_id: Optional[int]
+    full_name: Optional[str]
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+    latitude: Optional[float]
+    longitude: Optional[float]
+    chart_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+

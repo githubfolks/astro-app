@@ -292,3 +292,23 @@ class ContactInquiry(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+
+class KundliReport(Base):
+    __tablename__ = "kundli_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    seeker_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Nullable for manual entry
+    generated_by = Column(Integer, ForeignKey("users.id"), nullable=False)  # Astrologer who generated
+    full_name = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=False)
+    time_of_birth = Column(Time, nullable=False)
+    place_of_birth = Column(String, nullable=False)
+    latitude = Column(DECIMAL(10, 6), nullable=True)
+    longitude = Column(DECIMAL(10, 6), nullable=True)
+    timezone = Column(String, default="Asia/Kolkata")
+    chart_data = Column(JSON, nullable=False)  # Full AstroAPI JSON response
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    seeker = relationship("User", foreign_keys=[seeker_id])
+    astrologer = relationship("User", foreign_keys=[generated_by])
+
