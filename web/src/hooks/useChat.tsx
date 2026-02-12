@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const WS_URL = 'ws://localhost:8000/chat/ws';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_URL = API_URL.replace(/^http/, 'ws') + '/chat/ws';
 
 export interface Message {
     id?: number;
