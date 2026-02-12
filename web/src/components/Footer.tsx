@@ -33,18 +33,17 @@ const Footer: React.FC = () => {
                     {/* Left Column: Brand Info */}
                     <div className="footer-column brand-column">
                         <div className="footer-logo">
-                            <span style={{ fontSize: '24px', marginRight: '8px' }}>✨</span>
-                            Aadikarta
+                            <img src="/assets/logo.png" alt="Aadikarta" className="h-12 w-auto" />
                         </div>
                         <p className="footer-desc">
                             Your trusted companion for astrological guidance.
                             Connecting you with India's best astrologers for a better tomorrow.
                         </p>
                         <div className="social-links">
-                            <a href="#" className="social-link"><Facebook size={20} /></a>
-                            <a href="#" className="social-link"><Twitter size={20} /></a>
-                            <a href="#" className="social-link"><Instagram size={20} /></a>
-                            <a href="#" className="social-link"><Youtube size={20} /></a>
+                            <a href="https://www.facebook.com/profile.php?id=61587999303889" target="_blank" rel="noopener noreferrer" className="social-link"><Facebook size={20} /></a>
+                            <a href="https://x.com/astro_aadikarta" target="_blank" rel="noopener noreferrer" className="social-link"><Twitter size={20} /></a>
+                            <a href="https://www.instagram.com/astro_aadikarta/" target="_blank" rel="noopener noreferrer" className="social-link"><Instagram size={20} /></a>
+                            <a href="https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw" target="_blank" rel="noopener noreferrer" className="social-link"><Youtube size={20} /></a>
                         </div>
                     </div>
 

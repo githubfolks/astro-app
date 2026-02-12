@@ -17,6 +17,11 @@ docker compose down
 docker compose up -d --build
 
 
+# mobile app emulation:
+cd web && npm run mobile:run
+
+
+
 npm run build && npx cap sync
 
 # Create a new migration (after changing models.py):
