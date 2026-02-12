@@ -165,3 +165,12 @@ AadiKarta shall not be liable for any direct or indirect loss arising from use o
 Governing Law
 
 These terms shall be governed by the laws of India.
+
+
+Business Readiness Checklist:
+ Users can register
+ Booking flow works
+ Payment works in live mode
+ Emails configured (SES / Sendgrid)
+ WhatsApp API ready
+

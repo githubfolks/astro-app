@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -24,17 +24,67 @@ import TermsOfService from './pages/TermsOfService';
 import { JoinAsAstrologer } from './pages/JoinAsAstrologer';
 import KundliGenerator from './pages/KundliGenerator';
 
+import { isNative, getPlatform } from './utils/platform';
+import { App as CapApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
+
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
+    if (isLoading) {
+        return (
+            <div className="auth-loading-screen">
+                <div className="spinner"></div>
+            </div>
+        );
+    }
     if (!isAuthenticated) return <Navigate to="/login" />;
     return <React.Fragment>{children}</React.Fragment>;
+};
+
+// Native initialization & back button handling
+const NativeInitializer: React.FC = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+
+        if (!isNative()) return;
+
+        // Add native-app class to body
+        document.body.classList.add('native-app');
+
+        // Configure status bar
+        StatusBar.setStyle({ style: Style.Light }).catch(() => { });
+        if (getPlatform() === 'android') {
+            StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(() => { });
+        }
+
+        // Hide splash screen after app is ready
+        SplashScreen.hide().catch(() => { });
+
+        // Hardware back button handler
+        const backHandler = CapApp.addListener('backButton', ({ canGoBack }) => {
+            if (canGoBack) {
+                navigate(-1);
+            } else {
+                CapApp.exitApp();
+            }
+        });
+
+        return () => {
+            backHandler.then(h => h.remove());
+        };
+    }, [navigate]);
+
+    return null;
 };
 
 function App() {
     return (
         <Router>
             <AuthProvider>
+                <NativeInitializer />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/login" element={<Login />} />

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { storage } from '../utils/storage';
 
 interface User {
     id: number;
@@ -14,41 +15,51 @@ interface AuthContextType {
     login: (token: string, user: User) => void;
     logout: () => void;
     isAuthenticated: boolean;
+    isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(() => {
-        const storedUser = localStorage.getItem('user');
-        return storedUser ? JSON.parse(storedUser) : null;
-    });
-    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [user, setUser] = useState<User | null>(null);
+    const [token, setToken] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
+    // Async initialization from cross-platform storage
     useEffect(() => {
-        // In a real app, validate token with backend on mount
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
+        const loadAuth = async () => {
+            try {
+                const storedToken = await storage.getItem('token');
+                const storedUser = await storage.getItem('user');
+                if (storedToken && storedUser) {
+                    setToken(storedToken);
+                    setUser(JSON.parse(storedUser));
+                }
+            } catch (e) {
+                console.error('Failed to load auth state:', e);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadAuth();
     }, []);
 
-    const login = (newToken: string, newUser: User) => {
+    const login = async (newToken: string, newUser: User) => {
         setToken(newToken);
         setUser(newUser);
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(newUser));
+        await storage.setItem('token', newToken);
+        await storage.setItem('user', JSON.stringify(newUser));
     };
 
-    const logout = () => {
+    const logout = async () => {
         setToken(null);
         setUser(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        await storage.removeItem('token');
+        await storage.removeItem('user');
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -83,3 +83,67 @@ a {
 .card:hover {
   transform: translateY(-5px);
 }
+
+/* ============ Mobile Native App Styles ============ */
+
+/* Safe area padding for devices with notch / home indicator */
+.native-app {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Status bar spacing on native */
+.native-app .site-header {
+  padding-top: var(--safe-area-top);
+}
+
+/* Bottom nav safe area */
+.native-app .mobile-bottom-nav {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+/* Add bottom spacing to page content for fixed bottom nav */
+.native-app .home-page,
+.native-app .page-content,
+.native-app main {
+  padding-bottom: calc(70px + var(--safe-area-bottom, 0px));
+}
+
+/* Always show mobile nav on native (override md:hidden) */
+.native-app .mobile-bottom-nav {
+  display: block !important;
+}
+
+/* Hide scrollbar on native for cleaner look */
+.native-app::-webkit-scrollbar {
+  display: none;
+}
+.native-app {
+  scrollbar-width: none;
+}
+
+/* Loading screen for auth initialization */
+.auth-loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-light);
+}
+
+.auth-loading-screen .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(233, 30, 99, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
