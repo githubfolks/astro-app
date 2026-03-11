@@ -86,7 +86,7 @@ const DailyHoroscope: React.FC = () => {
                 <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-5xl font-bold gradient-text mb-4 drop-shadow-2xl">Daily Horoscope</h1>
+                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Daily Horoscope</h1>
                     </div>
                     <p className="text-xl text-blue-100 font-light max-w-2xl mx-auto mt-8">
                         Align your actions with the cosmic rhythm every single day.

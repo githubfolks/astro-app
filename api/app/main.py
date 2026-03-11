@@ -55,7 +55,11 @@ async def csrf_middleware(request: Request, call_next):
     # EXEMPTIONS for initial auth where session doesn't exist yet
     exempt_paths = ["/login", "/signup", "/forgot-password", "/verify-otp", "/reset-password"]
     
-    if request.method in ["POST", "PUT", "DELETE", "PATCH"] and request.url.path not in exempt_paths:
+    # Also exempt requests with Bearer token (JWT) as they are inherently CSRF-protected
+    auth_header = request.headers.get("Authorization")
+    is_jwt = auth_header and auth_header.startswith("Bearer ")
+
+    if request.method in ["POST", "PUT", "DELETE", "PATCH"] and request.url.path not in exempt_paths and not is_jwt:
         header_token = request.headers.get("X-CSRF-Token")
         if not header_token or header_token != csrf_token:
             from fastapi.responses import JSONResponse
