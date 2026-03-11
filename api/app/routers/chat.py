@@ -69,53 +69,87 @@ async def get_chat_history(
     
     return messages
 
-class ChatMessageCreate(schemas.BaseModel):
-    consultation_id: int
-    content: str
-
 @router.post("/send")
 async def send_message(
-    data: ChatMessageCreate,
+    data: schemas.ChatMessageCreate,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    consultation = db.query(models.Consultation).filter(models.Consultation.id == data.consultation_id).first()
-    if not consultation:
-        raise HTTPException(status_code=404, detail="Consultation not found")
-    
-    if current_user.id != consultation.seeker_id and current_user.id != consultation.astrologer_id:
-        raise HTTPException(status_code=403, detail="Not authorized to participate in this chat")
-    
-    # Save to DB
-    new_msg = models.ChatMessage(
-        consultation_id=data.consultation_id,
-        sender_id=current_user.id,
-        message=data.content
-    )
-    db.add(new_msg)
-    db.commit()
-    db.refresh(new_msg)
-    
-    # Check for Timer Start (First Astrologer Message)
-    if current_user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:
-        consultation.status = models.ConsultationStatus.ACTIVE
-        consultation.start_time = datetime.utcnow()
+    try:
+        consultation = db.query(models.Consultation).filter(models.Consultation.id == data.consultation_id).first()
+        if not consultation:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+        
+        if current_user.id != consultation.seeker_id and current_user.id != consultation.astrologer_id:
+            raise HTTPException(status_code=403, detail="Not authorized to participate in this chat")
+        
+        # Save to DB
+        new_msg = models.ChatMessage(
+            consultation_id=data.consultation_id,
+            sender_id=current_user.id,
+            message=data.content
+        )
+        db.add(new_msg)
         db.commit()
-        # Start Billing Loop
-        asyncio.create_task(billing_loop(consultation.id, float(consultation.rate_per_min), database.SessionLocal))
-        # Broadcast via WS if any
-        await manager.broadcast(consultation.id, {"type": "TIMER_STARTED"})
+        db.refresh(new_msg)
+        
+        # Check for Timer Start (First Astrologer Message)
+        if current_user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:
+            try:
+                consultation.status = models.ConsultationStatus.ACTIVE
+                consultation.start_time = datetime.utcnow()
+                db.commit()
+                # Start Billing Loop
+                asyncio.create_task(billing_loop(consultation.id, float(consultation.rate_per_min), database.SessionLocal))
+                # Broadcast via WS if any
+                await manager.broadcast(consultation.id, {"type": "TIMER_STARTED"})
+            except Exception as e:
+                logger.error(f"Error starting timer: {e}")
 
-    # Broadcast to any active WS connections
-    await manager.broadcast(data.consultation_id, {
-        "type": "NEW_MESSAGE",
-        "id": new_msg.id,
-        "sender_id": current_user.id,
-        "content": data.content,
-        "timestamp": str(new_msg.timestamp)
-    })
-    
-    return {"status": "sent", "message_id": new_msg.id}
+        # Broadcast to any active WS connections
+        await manager.broadcast(data.consultation_id, {
+            "type": "NEW_MESSAGE",
+            "id": new_msg.id,
+            "sender_id": current_user.id,
+            "content": data.content,
+            "timestamp": new_msg.timestamp.isoformat() if new_msg.timestamp else datetime.utcnow().isoformat()
+        })
+        
+        # Send Push Notification if recipient is offline
+        try:
+             recipient_id = consultation.astrologer_id if current_user.id == consultation.seeker_id else consultation.seeker_id
+             is_recipient_online = False
+             if consultation.id in manager.active_connections:
+                  for conn in manager.active_connections[consultation.id]:
+                      if conn["user_id"] == recipient_id:
+                          is_recipient_online = True
+                          break
+             
+             if not is_recipient_online:
+                 tokens = db.query(models.DeviceToken).filter(models.DeviceToken.user_id == recipient_id).all()
+                 sender_name = "User"
+                 if current_user.role == models.UserRole.SEEKER and current_user.seeker_profile:
+                     sender_name = current_user.seeker_profile.full_name or "Seeker"
+                 elif current_user.role == models.UserRole.ASTROLOGER and current_user.astrologer_profile:
+                     sender_name = current_user.astrologer_profile.full_name or "Astrologer"
+                     
+                 for token_obj in tokens:
+                     send_push_notification(
+                         token=token_obj.fcm_token,
+                         title=f"New Message from {sender_name}",
+                         body=data.content[:50] + ("..." if len(data.content) > 50 else ""),
+                         data={"consultation_id": str(consultation.id), "type": "CHAT_MESSAGE"}
+                     )
+        except Exception as push_err:
+             logger.error(f"Push notification error in send_message: {push_err}")
+
+        return {"status": "sent", "message_id": int(new_msg.id)}
+    except Exception as e:
+        import traceback
+        logger.error(f"Error in send_message: {str(e)}\n{traceback.format_exc()}")
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
 async def get_user_from_token(token: str, db: Session):
     try:
@@ -284,7 +318,7 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
 
         await websocket.send_text(json.dumps({
             "type": "STATE_SYNC",
-            "status": consultation.status,
+            "status": consultation.status.value if hasattr(consultation.status, 'value') else consultation.status,
             "timer_active": is_active,
             "balance": wallet_balance,
             "spent": spent

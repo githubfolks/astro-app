@@ -186,6 +186,10 @@ class ChatMessage(BaseModel):
     class Config:
         from_attributes = True
 
+class ChatMessageCreate(BaseModel):
+    consultation_id: int
+    content: str
+
 class AdminUserListItem(BaseModel):
     id: int
     email: Optional[str]
