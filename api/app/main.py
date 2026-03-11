@@ -44,15 +44,6 @@ origins = [
     "https://dev-admin.aadikarta.org",
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[o for o in origins if o],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-    max_age=3600,
-)
-
 @app.middleware("http")
 async def csrf_middleware(request: Request, call_next):
     # Set CSRF cookie if not present
@@ -61,20 +52,24 @@ async def csrf_middleware(request: Request, call_next):
         csrf_token = secrets.token_urlsafe(32)
     
     # State-changing methods require token validation
-    if request.method in ["POST", "PUT", "DELETE", "PATCH"]:
+    # EXEMPTIONS for initial auth where session doesn't exist yet
+    exempt_paths = ["/login", "/signup", "/forgot-password", "/verify-otp", "/reset-password"]
+    
+    if request.method in ["POST", "PUT", "DELETE", "PATCH"] and request.url.path not in exempt_paths:
         header_token = request.headers.get("X-CSRF-Token")
-        # Bypass for certain origins/paths if needed, but for now strict
         if not header_token or header_token != csrf_token:
             from fastapi.responses import JSONResponse
             return JSONResponse(status_code=403, content={"detail": "CSRF token validation failed"})
 
     response = await call_next(request)
+    
+    # Set/Refresh CSRF cookie
     response.set_cookie(
         key="csrf_token",
         value=csrf_token,
-        httponly=False, # Must be accessible by dynamic JS for double-submit
-        samesite="Lax",
-        secure=True if os.getenv("ENVIRONMENT") == "production" else False
+        httponly=False, # Accessible by JS for double-submit
+        samesite="None", # Required for cross-site requests
+        secure=True # Required when samesite="None"
     )
     return response
 
@@ -101,12 +96,18 @@ async def log_requests(request: Request, call_next):
         from fastapi.responses import JSONResponse
         return JSONResponse(
             status_code=500,
-            content={"detail": "Internal Server Error", "error": str(e)},
-            headers={
-                "Access-Control-Allow-Origin": origin if origin in origins else origins[0],
-                "Access-Control-Allow-Credentials": "true"
-            }
+            content={"detail": "Internal Server Error", "error": str(e)}
         )
+
+# CORS Middleware (Add LAST to be Outer-Most for responses)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[o for o in origins if o],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"],
+    max_age=3600,
+)
 
 app.include_router(auth.router)
 app.include_router(users.router)

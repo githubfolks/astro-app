@@ -2,13 +2,29 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/', // Adjust if backend runs on different port
+    withCredentials: true,
 });
+
+const getCsrfToken = () => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; csrf_token=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+};
 
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+        }
+
+        // Add CSRF token for state-changing methods
+        if (['post', 'put', 'delete', 'patch'].includes(config.method.toLowerCase())) {
+            const csrfToken = getCsrfToken();
+            if (csrfToken) {
+                config.headers['X-CSRF-Token'] = csrfToken;
+            }
         }
         return config;
     },

@@ -71,6 +71,29 @@ export const JoinAsAstrologer: React.FC = () => {
     };
 
     const verifyOtp = () => {
+        // Step 1 Validation
+        if (!formData.full_name || !formData.email || !formData.password || !formData.phone_number) {
+            setError('All fields in this step are mandatory');
+            return;
+        }
+
+        // Email regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
+        if (formData.password.length < 8) {
+            setError('Password must be at least 8 characters long');
+            return;
+        }
+
+        if (!otpSent) {
+            setError('Please verify your mobile number first');
+            return;
+        }
+
         // In a real app, call verifyOtp API. Here we just advance if OTP is 123456
         if (otp === '123456' || otp === '') { // Allow empty for demo/sim
             setStep(2);
@@ -80,7 +103,26 @@ export const JoinAsAstrologer: React.FC = () => {
         }
     };
 
+    const handleNextStep2 = () => {
+        // Step 2 Validation
+        if (formData.astrology_types.length === 0) {
+            setError('Please select at least one astrology type');
+            return;
+        }
+        if (!formData.experience_years || !formData.languages || !formData.preferred_working_hours || !formData.short_bio) {
+            setError('All professional details are mandatory');
+            return;
+        }
+        setStep(3);
+        setError('');
+    };
+
     const handleSubmit = async () => {
+        // Step 3 Validation
+        if (!formData.profile_photo_url) {
+            setError('Please upload your profile photo');
+            return;
+        }
         if (!formData.legal_agreement_accepted) {
             setError('Please accept the legal agreement');
             return;
@@ -193,7 +235,7 @@ export const JoinAsAstrologer: React.FC = () => {
                         </div>
                         <div className="btn-row">
                             <button className="back-btn" onClick={() => setStep(1)}>Back</button>
-                            <button className="auth-btn next-btn" onClick={() => setStep(3)}>Next</button>
+                            <button className="auth-btn next-btn" onClick={handleNextStep2}>Next</button>
                         </div>
                     </div>
                 )}

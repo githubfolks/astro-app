@@ -46,7 +46,7 @@ const customFetch = async (url: string, options: RequestInit = {}): Promise<Resp
     }
 
     if (!isNative()) {
-        return fetch(url, { ...options, headers });
+        return fetch(url, { ...options, headers, credentials: 'include' });
     }
 
     try {
@@ -362,25 +362,29 @@ export const api = {
                     'Content-Type': 'application/json',
                     ...(await authHeaders())
                 },
-                body: JSON.stringify(data)
+                body: JSON.stringify(data),
+                credentials: 'include'
             });
             return handleResponse(response, 'Failed to generate Kundli');
         },
         getReport: async (id: number) => {
             const response = await fetch(`${API_URL}/kundli/${id}`, {
-                headers: await authHeaders()
+                headers: await authHeaders(),
+                credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch Kundli report');
         },
         getSeekerReports: async (seekerId: number) => {
             const response = await fetch(`${API_URL}/kundli/seeker/${seekerId}`, {
-                headers: await authHeaders()
+                headers: await authHeaders(),
+                credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch seeker Kundli reports');
         },
         getHistory: async () => {
             const response = await fetch(`${API_URL}/kundli/history/all`, {
-                headers: await authHeaders()
+                headers: await authHeaders(),
+                credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch Kundli history');
         }

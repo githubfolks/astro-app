@@ -25,7 +25,6 @@ export default function DashboardLayout() {
         { text: 'Approvals', icon: <ShieldCheck size={20} />, path: '/astrologer-approvals' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
         { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
-        { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
         { text: 'Horoscopes', icon: <Moon size={20} />, path: '/cms/horoscopes' },
 
         { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
