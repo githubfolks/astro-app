@@ -90,6 +90,11 @@ const AstrologerProfile: React.FC = () => {
             return;
         }
 
+        if (user?.role === 'ASTROLOGER') {
+            alert("As an astrologer, you cannot initiate a chat with another astrologer.");
+            return;
+        }
+
         if (!isProfileComplete(seekerProfile)) {
             setIsProfileModalOpen(true);
             return;

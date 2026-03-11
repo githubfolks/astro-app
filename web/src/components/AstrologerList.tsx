@@ -45,6 +45,11 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
             return;
         }
 
+        if (user?.role === 'ASTROLOGER') {
+            alert("As an astrologer, you cannot initiate a chat with another astrologer.");
+            return;
+        }
+
         // Check if profile is complete
         if (!isProfileComplete(seekerProfile)) {
             setPendingChatAstroId(astroId);

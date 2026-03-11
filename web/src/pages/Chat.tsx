@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import KundliPanel from '../components/KundliPanel';
-import { Send, Clock, User, ArrowLeft } from 'lucide-react';
+import { Send, Clock, User, ArrowLeft, Info, X } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { api } from '../services/api';
 
@@ -26,6 +26,45 @@ export const Chat: React.FC = () => {
     const [kundliData, setKundliData] = useState<any>(null);
     const [kundliLoading, setKundliLoading] = useState(false);
     const [kundliError, setKundliError] = useState<string | null>(null);
+    const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
+    const [showSidebarMobile, setShowSidebarMobile] = useState(false);
+
+    // Track visual viewport for mobile keyboard handling
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.visualViewport) {
+                setViewportHeight(window.visualViewport.height);
+            } else {
+                setViewportHeight(window.innerHeight);
+            }
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', handleResize);
+            window.visualViewport.addEventListener('scroll', handleResize);
+        }
+        window.addEventListener('resize', handleResize);
+
+        // Lock document scroll
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+
+        return () => {
+            if (window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', handleResize);
+                window.visualViewport.removeEventListener('scroll', handleResize);
+            }
+            window.removeEventListener('resize', handleResize);
+
+            // Restore document scroll
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+        };
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -179,23 +218,49 @@ export const Chat: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
-            <Header />
+        <div
+            className="fixed inset-0 flex flex-col overflow-hidden bg-[#FFF9F0]"
+            style={{
+                height: viewportHeight,
+                top: window.visualViewport?.offsetTop || 0
+            }}
+        >
+            <div className="hidden md:block">
+                <Header />
+            </div>
 
-            <main className="flex-1 container mx-auto p-4 md:p-6">
+            <main className="flex-1 container mx-auto p-0 flex flex-col min-h-0">
                 {/* Back Button */}
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="mb-4 flex items-center gap-2 text-gray-600 hover:text-[#E91E63] transition-colors font-medium w-fit"
+                    className="hidden md:flex mb-4 items-center gap-2 text-gray-600 hover:text-[#E91E63] transition-colors font-medium w-fit"
                 >
                     <ArrowLeft size={20} />
                     Back to Dashboard
                 </button>
 
-                <div className="h-[calc(100vh-200px)] min-h-[600px] flex gap-6">
+                <div className="flex-1 flex gap-6 overflow-hidden min-h-0 relative">
 
                     {/* Left Panel: Details (Astrologer OR Seeker) */}
-                    <div className="hidden md:flex flex-col w-1/3 bg-white rounded-2xl shadow-lg overflow-y-auto border border-gray-100 p-6">
+                    <div className={`
+                        ${showSidebarMobile
+                            ? 'flex fixed inset-0 z-50 bg-white p-6 m-4 rounded-2xl shadow-2xl animate-in slide-in-from-left duration-300 overflow-y-auto'
+                            : 'hidden'
+                        } 
+                        md:relative md:flex md:inset-auto md:z-0 md:bg-white md:p-6 md:m-0 md:w-1/3 md:rounded-2xl md:shadow-lg md:overflow-y-auto md:border md:border-gray-100 flex-col
+                    `}>
+                        {/* Mobile Close Button */}
+                        <div className="md:hidden flex justify-between items-center mb-6">
+                            <h2 className="font-bold text-lg text-gray-800">
+                                {user?.role === 'SEEKER' ? 'Astrologer Info' : 'Seeker Details'}
+                            </h2>
+                            <button
+                                onClick={() => setShowSidebarMobile(false)}
+                                className="p-2 text-gray-400 hover:text-red-500 bg-gray-50 rounded-full transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
                         {user?.role === 'SEEKER' ? (
                             // Show ASTROLOGER Profile to Seeker
                             astrologer ? (
@@ -337,6 +402,14 @@ export const Chat: React.FC = () => {
                         )}
                     </div>
 
+                    {/* Mobile Backdrop */}
+                    {showSidebarMobile && (
+                        <div
+                            className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40 animate-in fade-in duration-300"
+                            onClick={() => setShowSidebarMobile(false)}
+                        />
+                    )}
+
                     {/* Right Panel: Chat Interface */}
                     <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
                         {/* Chat Header */}
@@ -385,6 +458,14 @@ export const Chat: React.FC = () => {
                                         <span>Spent: </span> <span className="text-gray-900 font-bold font-mono">₹{billingInfo.spent}</span>
                                     </div>
                                 )}
+
+                                <button
+                                    onClick={() => setShowSidebarMobile(true)}
+                                    className="md:hidden p-2 text-gray-500 hover:text-[#E91E63] bg-gray-50 rounded-full border border-gray-200 transition-colors"
+                                    aria-label="View Profile Info"
+                                >
+                                    <Info size={20} />
+                                </button>
 
                                 <button
                                     onClick={handleEndChat}
@@ -437,7 +518,6 @@ export const Chat: React.FC = () => {
                     </div>
                 </div>
             </main>
-            <Footer />
 
             {/* Rating Modal for Seekers */}
             <RatingModal
