@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
@@ -10,6 +12,17 @@ import SEO from '../components/SEO';
 import Services from '../components/Services';
 
 const Home: React.FC = () => {
+    useEffect(() => {
+        AOS.init({
+            duration: 1000,
+            once: false,
+            mirror: true,
+            offset: 100
+        });
+        // Refresh AOS to ensure it picks up dynamically rendered content
+        AOS.refresh();
+    }, []);
+
     const structuredData = {
         "@context": "https://schema.org",
         "@graph": [
