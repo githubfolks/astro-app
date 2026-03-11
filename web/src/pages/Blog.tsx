@@ -4,9 +4,24 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
 
+import SEO from '../components/SEO';
+
 const Blog: React.FC = () => {
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "Aadikarta Blog",
+        "description": "Discover the ancient wisdom of the stars and how they influence your daily life.",
+        "url": "https://aadikarta.org/blog",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Aadikarta",
+            "logo": "https://aadikarta.org/assets/logo.png"
+        }
+    };
 
     useEffect(() => {
         fetchPosts();
@@ -37,6 +52,11 @@ const Blog: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
+            <SEO
+                title="Blog"
+                description="Expert insights into Vedic astrology, daily horoscopes, and spiritual guidance. Read our latest articles to navigate life's journey."
+                structuredData={structuredData}
+            />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-12">
                 <div className="text-center mb-12">

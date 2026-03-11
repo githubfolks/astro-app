@@ -4,11 +4,33 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
 
+import SEO from '../components/SEO';
+
 const BlogPost: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
     const [post, setPost] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
+
+    const getStructuredData = (p: any) => ({
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": p.title,
+        "image": p.featured_image || "https://aadikarta.org/assets/blog-default.jpg",
+        "datePublished": p.published_at,
+        "author": {
+            "@type": "Organization",
+            "name": "Aadikarta Team"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Aadikarta",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://aadikarta.org/assets/logo.png"
+            }
+        }
+    });
 
     useEffect(() => {
         if (slug) {
@@ -21,7 +43,6 @@ const BlogPost: React.FC = () => {
         try {
             const data = await api.cms.getPostBySlug(postSlug);
             setPost(data);
-            document.title = data.title; // Basic SEO update
         } catch (err) {
             console.error('Failed to fetch post', err);
             setError(true);
@@ -47,7 +68,7 @@ const BlogPost: React.FC = () => {
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <div className="flex-1 container mx-auto px-4 py-12 text-center">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-4">404</h1>
+                    <h2 className="text-4xl font-bold text-gray-800 mb-4">404</h2>
                     <p className="text-gray-600 mb-8">Post not found</p>
                     <Link to="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium">Return to Blog</Link>
                 </div>
@@ -58,6 +79,13 @@ const BlogPost: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
+            <SEO
+                title={post.title}
+                description={post.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}
+                image={post.featured_image}
+                type="article"
+                structuredData={getStructuredData(post)}
+            />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
                 <Link to="/blog" className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-8 transition-colors">

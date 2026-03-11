@@ -18,6 +18,8 @@ import {
     Heart
 } from 'lucide-react';
 
+import SEO from '../components/SEO';
+
 const AstrologerProfile: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
@@ -28,6 +30,32 @@ const AstrologerProfile: React.FC = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [seekerProfile, setSeekerProfile] = useState<any>(null);
+
+    const getStructuredData = (ast: any) => ({
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Person",
+                "@id": `https://aadikarta.org/astrologer/${ast.id}#person`,
+                "name": ast.full_name,
+                "jobTitle": "Astrologer",
+                "description": ast.about_me,
+                "image": ast.profile_picture_url,
+                "knowsAbout": ast.specialties?.split(',').map((s: string) => s.trim()) || []
+            },
+            {
+                "@type": "ProfessionalService",
+                "name": `${ast.full_name} - Vedic Astrologer on Aadikarta`,
+                "image": ast.profile_picture_url,
+                "priceRange": "₹₹",
+                "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": ast.rating_avg || 5,
+                    "reviewCount": ast.total_consultations || 10
+                }
+            }
+        ]
+    });
 
     useEffect(() => {
         // Fetch astrologer details
@@ -120,6 +148,12 @@ const AstrologerProfile: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+            <SEO
+                title={`${astrologer.full_name} | Expert Astrologer`}
+                description={`Consult with ${astrologer.full_name}, a verified expert with ${astrologer.experience_years}+ years of experience in ${specialtiesArray.slice(0, 3).join(', ')}.`}
+                image={astrologer.profile_picture_url}
+                structuredData={getStructuredData(astrologer)}
+            />
             <Header />
             <main className="flex-1">
                 {/* Hero Section */}

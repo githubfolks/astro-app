@@ -12,14 +12,32 @@ import Services from '../components/Services';
 const Home: React.FC = () => {
     const structuredData = {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Aadikarta",
-        "url": "https://aadikarta.org",
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://aadikarta.org/search?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-        }
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "https://aadikarta.org/#website",
+                "url": "https://aadikarta.org",
+                "name": "Aadikarta",
+                "description": "Connect with expert astrologers for personalized readings and spiritual guidance.",
+                "publisher": { "@id": "https://aadikarta.org/#organization" },
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://aadikarta.org/search?q={search_term_string}",
+                    "query-input": "required name=search_term_string"
+                }
+            },
+            {
+                "@type": "Organization",
+                "@id": "https://aadikarta.org/#organization",
+                "name": "Aadikarta",
+                "url": "https://aadikarta.org",
+                "logo": "https://aadikarta.org/assets/logo.png",
+                "sameAs": [
+                    "https://www.facebook.com/aadikarta",
+                    "https://www.instagram.com/aadikarta"
+                ]
+            }
+        ]
     };
 
     return (
@@ -29,6 +47,8 @@ const Home: React.FC = () => {
                 description="Discover your destiny with Aadikarta. Connect with expert astrologers for personalized readings, daily horoscopes, and spiritual guidance."
                 structuredData={structuredData}
             />
+            {/* SEO Heading - Hidden but semantically correct */}
+            <h1 className="sr-only">Aadikarta: Your Trusted Guide to Vedic Astrology and Spiritual Growth</h1>
             <Header />
             <Hero />
             <HowItWorks />

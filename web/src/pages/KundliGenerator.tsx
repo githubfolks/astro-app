@@ -6,6 +6,8 @@ import KundliPanel from '../components/KundliPanel';
 import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search } from 'lucide-react';
 
+import SEO from '../components/SEO';
+
 const KundliGenerator: React.FC = () => {
     const navigate = useNavigate();
 
@@ -23,6 +25,20 @@ const KundliGenerator: React.FC = () => {
     // History
     const [history, setHistory] = useState<any[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Aadikarta Kundli Generator",
+        "applicationCategory": "SpiritualApplication",
+        "operatingSystem": "Web",
+        "description": "Generate accurate Vedic Kundli and birth charts online with Aadikarta's professional tool.",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+        }
+    };
 
     useEffect(() => {
         loadHistory();
@@ -69,6 +85,11 @@ const KundliGenerator: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+            <SEO
+                title="Free Kundli Generator | Birth Chart Online"
+                description="Generate your free Vedic Kundli online. Get detailed birth charts and astrological insights with Aadikarta's accurate Kundli generator."
+                structuredData={structuredData}
+            />
             <Header />
 
             <main className="flex-1 container mx-auto p-4 md:p-6">

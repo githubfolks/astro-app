@@ -3,6 +3,7 @@ import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { Check, User, GraduationCap, FileText, Camera, ShieldCheck } from 'lucide-react';
 import './Auth.css';
+import SEO from '../components/SEO';
 
 export const JoinAsAstrologer: React.FC = () => {
     const [step, setStep] = useState(1);
@@ -97,12 +98,16 @@ export const JoinAsAstrologer: React.FC = () => {
 
     return (
         <div className="auth-container" style={{ minHeight: '100vh', padding: '40px 20px' }}>
+            <SEO
+                title="Join as Astrologer"
+                description="Are you an expert astrologer? Join Aadikarta and connect with seekers worldwide. Start your journey with us today."
+            />
             <div className="decor-circle decor-1"></div>
             <div className="decor-circle decor-2"></div>
 
             <div className="auth-card onboarding-card" style={{ maxWidth: '800px', width: '100%' }}>
                 <div className="auth-header">
-                    <h2 className="auth-title">Join as Astrologer</h2>
+                    <h1 className="auth-title">Join as Astrologer</h1>
                     <p className="auth-subtitle">Become a verified partner at Aadikarta</p>
 
                     <div className="step-indicator">
