@@ -1,45 +1,17 @@
 .hero-section {
     position: relative;
-    padding: 80px 0;
     overflow: hidden;
-    background-color: var(--secondary);
     color: white;
 }
 
 .hero-bg-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at top right, #2a2a2a 0%, #1a1a1a 100%);
-    z-index: 1;
+    display: none;
+    /* Removed in favor of 3D canvas and .spiritual-bg */
 }
 
 .hero-decor {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    z-index: 2;
-    opacity: 0.4;
-}
-
-.decor-orb-1 {
-    width: 300px;
-    height: 300px;
-    background: var(--primary);
-    top: -50px;
-    right: 10%;
-}
-
-.decor-orb-2 {
-    width: 400px;
-    height: 400px;
-    background: #FF5A5F;
-    /* Accent color */
-    bottom: -100px;
-    left: -100px;
-    opacity: 0.2;
+    display: none;
+    /* Replaced with 3D elements */
 }
 
 .hero-content {
@@ -127,22 +99,18 @@
 }
 
 .stat-value {
-    font-size: 24px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
     color: white;
+    margin-bottom: 4px;
 }
 
 .stat-label {
-    font-size: 13px;
-    color: #888;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stat-separator {
-    width: 1px;
-    height: 40px;
-    background-color: rgba(255, 255, 255, 0.1);
+    letter-spacing: 1.5px;
+    font-weight: 600;
 }
 
 .hero-image-container {

@@ -33,7 +33,7 @@ const HowItWorks: React.FC = () => {
     return (
         <section className="how-it-works-section">
             <div className="container">
-                <div className="section-header">
+                <div className="section-header" data-aos="fade-up">
                     <h2 className="section-title">How It Works</h2>
                     <p className="section-description">
                         Get connected with the world's best astrologers in just 4 simple steps.
@@ -42,7 +42,7 @@ const HowItWorks: React.FC = () => {
 
                 <div className="steps-container">
                     {steps.map((step, index) => (
-                        <div key={index} className="step-card">
+                        <div key={index} className="step-card" data-aos="fade-up" data-aos-delay={index * 100}>
                             <div className="step-number">{step.stepNumber}</div>
                             <div className="step-icon-wrapper">
                                 {step.icon}

@@ -151,9 +151,9 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     return (
         <section className="astrologer-section">
             <div className="container">
-                <div className="section-header">
-                    <h2>Chat with Astrologer</h2>
-                    <p>Consult expert astrologers for guidance on life, career, and relationships.</p>
+                <div className="section-header" data-aos="fade-up">
+                    <h2 className="section-title">Chat with Expert Astrologers</h2>
+                    <p className="section-description">Consult hand-picked celestial experts for personalized guidance on life, career, and relationships.</p>
                 </div>
 
                 {showFilters && (
@@ -184,12 +184,13 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
 
                 <div className="astro-grid">
                     {displayAstrologers.length > 0 ? (
-                        displayAstrologers.map(astro => (
-                            <AstrologerCard
-                                key={astro.id}
-                                astro={astro}
-                                onChatClick={handleChatClick}
-                            />
+                        displayAstrologers.map((astro, index) => (
+                            <div key={astro.id} data-aos="fade-up" data-aos-delay={(index % 4) * 100}>
+                                <AstrologerCard
+                                    astro={astro}
+                                    onChatClick={handleChatClick}
+                                />
+                            </div>
                         ))
                     ) : (
                         <div className="no-results">No astrologers found matching your criteria.</div>

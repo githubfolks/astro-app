@@ -55,30 +55,32 @@ const Home: React.FC = () => {
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <Services />
 
-                <section className="promise-section py-20 bg-indigo-50 text-center">
-                    <div className="container mx-auto px-4">
-                        <div className="max-w-2xl mx-auto mb-12">
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4">
-                                Our Promise to You
+                <section className="promise-section py-24 bg-indigo-50/50 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
+                    <div className="container mx-auto px-4 relative z-10">
+                        <div className="max-w-3xl mx-auto mb-16 text-center" data-aos="fade-up">
+                            <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Trust & Quality</span>
+                            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6">
+                                Our Promise <span className="text-indigo-600">to You</span>
                             </h2>
-                            <p className="text-gray-600">We are committed to authenticity, privacy, and satisfaction.</p>
+                            <p className="text-xl text-gray-600 leading-relaxed">We are committed to authenticity, privacy, and your total satisfaction in every spiritual consultation.</p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-                            <div className="bg-white p-8 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
-                                <div className="text-4xl mb-6 bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center">🔒</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3">100% Privacy</h3>
-                                <p className="text-gray-600 leading-relaxed">Your personal details and conversations are kept strictly confidential. We use encryption to protect your data.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                            <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="100">
+                                <div className="text-5xl mb-8 bg-indigo-100/50 w-20 h-20 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-600 group-hover:text-white">🔒</div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">100% Privacy</h3>
+                                <p className="text-gray-600 leading-relaxed text-lg">Your personal details and conversations are kept strictly confidential. We use military-grade encryption to protect your data.</p>
                             </div>
-                            <div className="bg-white p-8 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
-                                <div className="text-4xl mb-6 bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center">✅</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3">Verified Astrologers</h3>
-                                <p className="text-gray-600 leading-relaxed">Every astrologer undergoes a rigorous screening process. We ensure only genuine experts join our platform.</p>
+                            <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="200">
+                                <div className="text-5xl mb-8 bg-purple-100/50 w-20 h-20 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 group-hover:bg-purple-600 group-hover:text-white">✅</div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">Verified Experts</h3>
+                                <p className="text-gray-600 leading-relaxed text-lg">Every astrologer undergoes a rigorous 4-step screening process. We ensure only genuine, compassionate experts join our circle.</p>
                             </div>
-                            <div className="bg-white p-8 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300">
-                                <div className="text-4xl mb-6 bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center">💰</div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3">Money Back Guarantee</h3>
-                                <p className="text-gray-600 leading-relaxed">Not satisfied with your consultation? We offer a hassle-free refund policy. Your satisfaction is our priority.</p>
+                            <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="300">
+                                <div className="text-5xl mb-8 bg-orange-100/50 w-20 h-20 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 group-hover:bg-orange-600 group-hover:text-white">💰</div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-4">Satisfaction Guaranteed</h3>
+                                <p className="text-gray-600 leading-relaxed text-lg">Not satisfied with your consultation? We offer a hassle-free refund policy. Your spiritual peace is our absolute priority.</p>
                             </div>
                         </div>
                     </div>
@@ -86,27 +88,40 @@ const Home: React.FC = () => {
 
                 <Testimonials />
 
-                <section className="join-astrologer-section py-20 bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-center">
-                    <div className="container mx-auto px-4">
-                        <div className="max-w-3xl mx-auto">
-                            <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
-                                Are You an Expert Astrologer?
+                <section className="join-astrologer-section py-32 relative overflow-hidden">
+                    {/* Midnight Celestial Background */}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#1e1b4b,0%,#0f172a_100%)]"></div>
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+
+                    {/* Dynamic Glow Elements */}
+                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+
+                    <div className="container mx-auto px-4 relative z-10 text-center">
+                        <div className="max-w-4xl mx-auto" data-aos="zoom-in">
+                            <h2 className="text-4xl md:text-7xl font-extrabold mb-10 leading-tight text-white">
+                                Are You an <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 drop-shadow-sm">Expert Astrologer?</span>
                             </h2>
-                            <p className="text-xl mb-10 opacity-90">
-                                Join India's fastest growing astrology platform. Connect with millions of seekers and share your wisdom with the world.
+                            <p className="text-xl md:text-2xl mb-14 text-indigo-100/70 font-light leading-relaxed max-w-2xl mx-auto">
+                                Join India's most prestigious spiritual network. Share your celestial wisdom with millions of seekers across the globe.
                             </p>
-                            <div className="flex flex-col md:flex-row items-center justify-center gap-6">
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
                                 <Link
                                     to="/join-as-astrologer"
-                                    className="bg-white text-indigo-700 hover:bg-indigo-50 px-10 py-4 rounded-2xl font-bold text-lg shadow-xl transition-all hover:-translate-y-1"
+                                    className="group relative px-12 py-5 rounded-[2rem] font-bold text-xl transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden"
                                 >
-                                    Join as Astrologer
+                                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600"></div>
+                                    <div className="absolute inset-x-0 bottom-0 h-1 bg-white/20"></div>
+                                    <span className="relative text-indigo-950 flex items-center gap-2">
+                                        Join Our Elite Circle
+                                        <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                                    </span>
                                 </Link>
                                 <Link
                                     to="/about-us"
-                                    className="bg-transparent border-2 border-white/30 hover:border-white text-white px-10 py-4 rounded-2xl font-bold text-lg transition-all"
+                                    className="px-12 py-5 rounded-[2rem] font-bold text-xl text-white border-2 border-white/10 hover:border-amber-400/50 transition-all duration-500 hover:bg-white/5 backdrop-blur-sm"
                                 >
-                                    Learn More
+                                    Explore Benefits
                                 </Link>
                             </div>
                         </div>

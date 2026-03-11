@@ -51,7 +51,7 @@ const Services: React.FC = () => {
     return (
         <section className="services-section">
             <div className="container">
-                <div className="section-header">
+                <div className="section-header" data-aos="fade-up">
                     <h2 className="section-title">Services We Offer</h2>
                     <p className="section-description">
                         Explore a wide range of astrological services tailored to your needs.
@@ -64,6 +64,8 @@ const Services: React.FC = () => {
                             key={index}
                             className="service-card"
                             style={{ '--service-color': service.color } as React.CSSProperties}
+                            data-aos="fade-up"
+                            data-aos-delay={index * 100}
                         >
                             <div className="service-icon-wrapper">
                                 {service.icon}
