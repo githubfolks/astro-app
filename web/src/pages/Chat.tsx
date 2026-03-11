@@ -137,8 +137,17 @@ export const Chat: React.FC = () => {
 
     const { messages, sendMessage, endChat, status, billingInfo, timerActive } = useChat(activeConsultationId || '');
 
+    // Get opponent info (Astrologer if Seeker, Seeker if Astrologer)
+    const opponent = user?.role === 'SEEKER' ? astrologer : (seeker ? {
+        full_name: seeker.full_name || 'Client',
+        profile_picture_url: null, // Seekers don't have profile pics in schema?
+    } : null);
+
     useEffect(() => {
+        // Double scroll to ensure layout has settled
         scrollToBottom();
+        const timer = setTimeout(scrollToBottom, 50);
+        return () => clearTimeout(timer);
     }, [messages]);
 
     const handleSend = (e: React.FormEvent) => {
@@ -417,13 +426,15 @@ export const Chat: React.FC = () => {
                             <div className="flex items-center gap-4">
                                 {/* Mobile only profile summary */}
                                 <div className="md:hidden flex items-center gap-3">
-                                    {astrologer?.profile_picture_url ? (
-                                        <img src={astrologer.profile_picture_url} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
+                                    {(opponent as any)?.profile_picture_url ? (
+                                        <img src={(opponent as any).profile_picture_url} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
                                     ) : (
-                                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center border-2 border-[#FFB700] text-purple-600"><User size={20} /></div>
+                                        <div className={`w-10 h-10 rounded-full ${user?.role === 'SEEKER' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center border-2 border-[#FFB700]`}>
+                                            <User size={20} />
+                                        </div>
                                     )}
                                     <div>
-                                        <h3 className="font-bold text-gray-900 text-sm">{astrologer?.full_name}</h3>
+                                        <h3 className="font-bold text-gray-900 text-sm">{(opponent as any)?.full_name || 'Loading...'}</h3>
                                         <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">● Live</span>
                                     </div>
                                 </div>
@@ -498,7 +509,7 @@ export const Chat: React.FC = () => {
                         </div>
 
                         {/* Input Area */}
-                        <form onSubmit={handleSend} className="bg-white p-4 border-t border-gray-100 flex gap-3">
+                        <form onSubmit={handleSend} className="bg-white p-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
                             <input
                                 type="text"
                                 value={input}

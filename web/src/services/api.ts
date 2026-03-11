@@ -279,6 +279,12 @@ export const api = {
                 body: JSON.stringify({ consultation_id, rating, comment })
             });
             return handleResponse(response, 'Failed to submit review');
+        },
+        getChatHistory: async (consultation_id: number | string) => {
+            const response = await customFetch(`${API_URL}/chat/history/${consultation_id}`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to fetch chat history');
         }
     },
 

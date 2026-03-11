@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const WS_URL = API_URL.replace(/^http/, 'ws') + '/chat/ws';
@@ -19,6 +20,29 @@ export const useChat = (consultationId: string) => {
     const [status, setStatus] = useState<'CONNECTING' | 'ACTIVE' | 'ENDED' | 'PAUSED'>('CONNECTING');
     const [billingInfo, setBillingInfo] = useState({ balance: 0, spent: 0 });
     const [timerActive, setTimerActive] = useState(false);
+
+    // Fetch History
+    useEffect(() => {
+        if (!token || !consultationId) return;
+
+        const fetchHistory = async () => {
+            try {
+                const history = await api.consultations.getChatHistory(consultationId);
+                const formattedHistory: Message[] = history.map((msg: any) => ({
+                    id: msg.id,
+                    sender_id: msg.sender_id,
+                    content: msg.message,
+                    timestamp: msg.timestamp,
+                    type: 'MESSAGE'
+                }));
+                setMessages(formattedHistory);
+            } catch (err) {
+                console.error("Failed to fetch chat history:", err);
+            }
+        };
+
+        fetchHistory();
+    }, [consultationId, token]);
 
     useEffect(() => {
         if (!token || !consultationId) return;

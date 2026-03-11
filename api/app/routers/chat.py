@@ -50,6 +50,25 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+@router.get("/history/{consultation_id}", response_model=list[schemas.ChatMessage])
+async def get_chat_history(
+    consultation_id: int,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    
+    if current_user.id != consultation.seeker_id and current_user.id != consultation.astrologer_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this chat history")
+    
+    messages = db.query(models.ChatMessage).filter(
+        models.ChatMessage.consultation_id == consultation_id
+    ).order_by(models.ChatMessage.timestamp.asc()).all()
+    
+    return messages
+
 async def get_user_from_token(token: str, db: Session):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
