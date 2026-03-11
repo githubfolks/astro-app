@@ -3,9 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --primary: #FFB700;
-  /* Gold/Yellow */
-  --primary-dark: #cc9200;
+  --primary: #D97706; /* Darker Amber-600 for better contrast (7.36:1 vs white) */
+  --primary-dark: #B45309;
   --secondary: #1A1A1A;
   /* Dark Background */
   --text-main: #333333;

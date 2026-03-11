@@ -52,11 +52,11 @@ const Header: React.FC = () => {
         <header className="site-header">
             <div className="container header-content">
                 <div className="logo-area">
-                    <button className="mobile-menu-btn" onClick={toggleMenu}>
+                    <button className="mobile-menu-btn" onClick={toggleMenu} aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
-                    <Link to="/" className="brand-logo">
-                        <img src="/assets/logo.png" alt="Aadikarta" className="h-10 w-auto" />
+                    <Link to="/" className="brand-logo" aria-label="Aadikarta Home">
+                        <img src="/assets/logo.png" alt="Aadikarta" className="h-10 w-auto" width="160" height="40" />
                     </Link>
                 </div>
 

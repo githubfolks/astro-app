@@ -106,6 +106,7 @@ const Blog: React.FC = () => {
                                     <Link
                                         to={`/blog/${post.slug}`}
                                         className="inline-flex items-center text-indigo-600 font-semibold hover:text-indigo-700"
+                                        aria-label={`Read article: ${post.title}`}
                                     >
                                         Read Article
                                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

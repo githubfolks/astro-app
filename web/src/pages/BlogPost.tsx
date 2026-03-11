@@ -68,9 +68,9 @@ const BlogPost: React.FC = () => {
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <div className="flex-1 container mx-auto px-4 py-12 text-center">
-                    <h2 className="text-4xl font-bold text-gray-800 mb-4">404</h2>
-                    <p className="text-gray-600 mb-8">Post not found</p>
-                    <Link to="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium">Return to Blog</Link>
+                    <h1 className="text-4xl font-bold text-gray-800 mb-4">Post Not Found</h1>
+                    <p className="text-gray-600 mb-8">The article you're looking for might have been moved or deleted.</p>
+                    <Link to="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium" aria-label="Return to blog list">Return to Blog</Link>
                 </div>
                 <Footer />
             </div>

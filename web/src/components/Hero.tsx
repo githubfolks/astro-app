@@ -48,6 +48,10 @@ const Hero: React.FC = () => {
                         src="https://images.unsplash.com/photo-1532968961962-8a0cb3a2d4f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
                         alt="Astrology Consultation"
                         className="hero-image"
+                        fetchPriority="high"
+                        loading="eager"
+                        width="800"
+                        height="600"
                     />
                     <div className="floating-card card-1">
                         <span className="icon">🌟</span>

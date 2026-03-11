@@ -29,5 +29,16 @@ export default defineConfig({
                 ]
             }
         })
-    ]
+    ],
+    build: {
+        target: 'esnext',
+        cssCodeSplit: true,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vender: ['react', 'react-dom', 'react-router-dom', 'lucide-react']
+                }
+            }
+        }
+    }
 });

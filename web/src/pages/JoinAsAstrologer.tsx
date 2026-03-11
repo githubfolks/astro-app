@@ -105,7 +105,7 @@ export const JoinAsAstrologer: React.FC = () => {
             <div className="decor-circle decor-1"></div>
             <div className="decor-circle decor-2"></div>
 
-            <div className="auth-card onboarding-card" style={{ maxWidth: '800px', width: '100%' }}>
+            <main className="auth-card onboarding-card" style={{ maxWidth: '800px', width: '100%' }}>
                 <div className="auth-header">
                     <h1 className="auth-title">Join as Astrologer</h1>
                     <p className="auth-subtitle">Become a verified partner at Aadikarta</p>
@@ -249,7 +249,7 @@ export const JoinAsAstrologer: React.FC = () => {
                         <button className="auth-btn" onClick={() => navigate('/')}>Go to Home</button>
                     </div>
                 )}
-            </div>
+            </main>
 
             <style>{`
                 .onboarding-card { padding: 40px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
@@ -286,6 +286,6 @@ export const JoinAsAstrologer: React.FC = () => {
                     .checkbox-grid { grid-template-columns: 1fr 1fr; }
                 }
             `}</style>
-        </div>
+        </div >
     );
 };

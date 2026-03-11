@@ -65,6 +65,9 @@ const AboutUs: React.FC = () => {
                                     src="/assets/about-mission.png"
                                     alt="Our Mission - Guidance and Clarity"
                                     className="w-full h-auto object-cover"
+                                    loading="lazy"
+                                    width="600"
+                                    height="400"
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                                 <div className="absolute bottom-6 left-6 text-white font-medium text-lg">
