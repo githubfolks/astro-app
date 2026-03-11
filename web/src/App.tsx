@@ -6,6 +6,7 @@ import { App as CapApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { MobileNavBar } from './components/MobileNavBar';
+import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
@@ -29,6 +30,14 @@ const Disclaimer = lazy(() => import('./pages/Disclaimer'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
 const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
+
+// Service Pages
+const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
+const LoveAdvice = lazy(() => import('./pages/services/LoveAdvice'));
+const DailyHoroscope = lazy(() => import('./pages/services/DailyHoroscope'));
+const VedicAstrology = lazy(() => import('./pages/services/VedicAstrology'));
+const TarotReading = lazy(() => import('./pages/services/TarotReading'));
+const VastuShastra = lazy(() => import('./pages/services/VastuShastra'));
 
 // Loading component
 const PageLoader = () => (
@@ -92,6 +101,7 @@ function App() {
     return (
         <Router>
             <AuthProvider>
+                <ScrollToTop />
                 <NativeInitializer />
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
@@ -112,6 +122,15 @@ function App() {
                         <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
                         <Route path="/blog" element={<Blog />} />
                         <Route path="/blog/:slug" element={<BlogPost />} />
+
+                        {/* Service Pages */}
+                        <Route path="/services/kundli-matching" element={<KundliMatching />} />
+                        <Route path="/services/love-advice" element={<LoveAdvice />} />
+                        <Route path="/services/daily-horoscope" element={<DailyHoroscope />} />
+                        <Route path="/services/vedic-astrology" element={<VedicAstrology />} />
+                        <Route path="/services/tarot-reading" element={<TarotReading />} />
+                        <Route path="/services/vastu-shastra" element={<VastuShastra />} />
+
                         {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
                         <Route path="/:slug" element={<PageViewer />} />
                         <Route path="/dashboard" element={

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kundli Matching | Aadikarta Astrology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .spiritual-bg {
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
+        }
+
+        .premium-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .premium-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+        }
+
+        .premium-card::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.05) 50%,
+                    rgba(255, 255, 255, 0) 100%);
+            transition: all 0.6s;
+            pointer-events: none;
+        }
+
+        .premium-card:hover::after {
+            top: 100%;
+            left: 100%;
+        }
+
+        .section-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900 leading-relaxed">
+
+    <!-- Hero Section -->
+    <header
+        class="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
+        <canvas id="hero-canvas" class="absolute inset-0 z-0"></canvas>
+        <div class="max-w-4xl mx-auto relative z-10 pointer-events-none">
+            <!-- Title is now rendered in 3D canvas -->
+            <div id="text-placeholder" class="h-24 md:h-32"></div>
+            <p class="text-xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed mt-8">
+                Discover divine compatibility and ensure a harmonious union through the ancient wisdom of Vedic
+                Astrology.
+            </p>
+        </div>
+    </header>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Add FontLoader and TextGeometry for 3D Text -->
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/loaders/FontLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/js/geometries/TextGeometry.js"></script>
+
+    <script>
+        const canvas = document.getElementById('hero-canvas');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, canvas.parentElement.offsetHeight);
+
+        // Lighting for 3D text
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const pointLight = new THREE.PointLight(0xffd700, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 15;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.005,
+            color: '#FFD700',
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending
+        });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Sacred Geometry
+        const octaGeo = new THREE.OctahedronGeometry(4, 0);
+        const octaMat = new THREE.MeshBasicMaterial({
+            color: '#FFB800',
+            wireframe: true,
+            transparent: true,
+            opacity: 0.1
+        });
+        const octaMesh = new THREE.Mesh(octaGeo, octaMat);
+        scene.add(octaMesh);
+
+        // 3D Text Loading
+        let textMesh;
+        const loader = new THREE.FontLoader();
+        // Using a public standard font
+        loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/fonts/helvetiker_bold.typeface.json', function (font) {
+            const textGeo = new THREE.TextGeometry('Kundli Matching', {
+                font: font,
+                size: window.innerWidth < 768 ? 0.4 : 0.6,
+                height: 0.04,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 0.01,
+                bevelSize: 0.02,
+                bevelOffset: 0,
+                bevelSegments: 5
+            });
+
+            textGeo.center();
+
+            const textMat = new THREE.MeshPhongMaterial({
+                color: '#FFD700',
+                emissive: '#4c1d95',
+                specular: '#ffffff',
+                shininess: 100
+            });
+
+            textMesh = new THREE.Mesh(textGeo, textMat);
+            textMesh.position.y = 1; // Align with placeholder
+            scene.add(textMesh);
+        });
+
+        camera.position.z = 5;
+
+        // Interaction
+        let mouseX = 0;
+        let mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) - 0.5;
+            mouseY = (e.clientY / window.innerHeight) - 0.5;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            octaMesh.rotation.y += 0.002;
+            octaMesh.rotation.x += 0.001;
+
+            particlesMesh.rotation.y += 0.001 + (mouseX * 0.05);
+            particlesMesh.rotation.x += (mouseY * 0.05);
+
+            if (textMesh) {
+                textMesh.rotation.y = mouseX * 0.3;
+                textMesh.rotation.x = -mouseY * 0.2;
+                // Subtle floating
+                textMesh.position.y = 1 + Math.sin(Date.now() * 0.002) * 0.1;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / canvas.parentElement.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, canvas.parentElement.offsetHeight);
+            if (textMesh) {
+                // Re-create text geometry on resize to adjust size
+                const currentFont = textMesh.geometry.parameters.font;
+                const newSize = window.innerWidth < 768 ? 0.4 : 0.6;
+                const newTextGeo = new THREE.TextGeometry('Kundli Matching', {
+                    font: currentFont,
+                    size: newSize,
+                    height: 0.04,
+                    curveSegments: 12,
+                    bevelEnabled: true,
+                    bevelThickness: 0.01,
+                    bevelSize: 0.02,
+                    bevelOffset: 0,
+                    bevelSegments: 5
+                });
+                newTextGeo.center();
+                textMesh.geometry.dispose(); // Dispose old geometry
+                textMesh.geometry = newTextGeo; // Assign new geometry
+            }
+        });
+
+        animate();
+    </script>
+
+    <main class="max-w-5xl mx-auto px-6 py-16 space-y-24">
+
+        <!-- What is Kundli Matching -->
+        <section class="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
+            <div class="md:w-1/2" data-aos="fade-right" data-aos-delay="200">
+                <h2 class="text-3xl font-bold text-indigo-900 mb-6 flex items-center gap-3">
+                    <span class="bg-indigo-100 p-2 rounded-lg text-indigo-600 animate-bounce">🕉️</span>
+                    What is Kundli Matching?
+                </h2>
+                <div class="space-y-4 text-slate-600 text-lg">
+                    <p>
+                        Kundli Matching, also known as <span class="font-semibold text-slate-800">Guna Milan</span> or
+                        Horoscope Matching, is the time-tested Vedic practice of comparing the celestial blueprints of
+                        two individuals before they enter the sacred bond of marriage.
+                    </p>
+                    <p>
+                        At its core, it utilizes the <span class="italic">Ashta-koota</span> system, which evaluates 8
+                        different aspects (Kootas) of compatibility, resulting in a total score out of 36 Gunas. This
+                        analysis considers the positions of the Moon and other planets to determine the spiritual and
+                        physical synchronization between the couple.
+                    </p>
+                </div>
+            </div>
+            <div class="md:w-1/2 bg-white p-8 rounded-3xl shadow-xl shadow-indigo-100/50 border border-indigo-50 premium-card"
+                data-aos="fade-left" data-aos-delay="400">
+                <div class="grid grid-cols-2 gap-4">
+                    <div
+                        class="p-4 bg-amber-50 rounded-2xl text-center premium-card hover:bg-amber-100 transition-colors">
+                        <span class="block text-2xl mb-1">🦁</span>
+                        <span class="text-sm font-medium text-amber-900">Varna</span>
+                    </div>
+                    <div
+                        class="p-4 bg-indigo-50 rounded-2xl text-center premium-card hover:bg-indigo-100 transition-colors">
+                        <span class="block text-2xl mb-1">🌊</span>
+                        <span class="text-sm font-medium text-indigo-900">Vashya</span>
+                    </div>
+                    <div
+                        class="p-4 bg-rose-50 rounded-2xl text-center premium-card hover:bg-rose-100 transition-colors">
+                        <span class="block text-2xl mb-1">🌟</span>
+                        <span class="text-sm font-medium text-rose-900">Tara</span>
+                    </div>
+                    <div
+                        class="p-4 bg-emerald-50 rounded-2xl text-center premium-card hover:bg-emerald-100 transition-colors">
+                        <span class="block text-2xl mb-1">🐉</span>
+                        <span class="text-sm font-medium text-emerald-900">Yoni</span>
+                    </div>
+                </div>
+                <div class="mt-4 text-center text-xs text-slate-400 uppercase tracking-widest">The 8 Pillars of
+                    Compatibility</div>
+            </div>
+        </section>
+
+        <!-- Why This is Required for a Couple -->
+        <section class="bg-indigo-900 rounded-[3rem] p-10 md:p-16 text-white overflow-hidden relative"
+            data-aos="zoom-in">
+            <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
+            <div class="relative z-10">
+                <h2 class="text-3xl font-bold mb-10 text-center" data-aos="fade-down">Why is it Required for a Couple?
+                </h2>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10 premium-card hover:bg-white/10 transition-colors"
+                        data-aos="fade-up" data-aos-delay="100">
+                        <div
+                            class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-indigo-900 text-xl font-bold mb-4">
+                            01</div>
+                        <h3 class="text-xl font-semibold mb-3">Health & Longevity</h3>
+                        <p class="text-indigo-100 leading-relaxed font-light">Predictions regarding the physical and
+                            mental well-being of both partners after marriage, ensuring a lasting journey together.</p>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10 premium-card hover:bg-white/10 transition-colors"
+                        data-aos="fade-up" data-aos-delay="200">
+                        <div
+                            class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-indigo-900 text-xl font-bold mb-4">
+                            02</div>
+                        <h3 class="text-xl font-semibold mb-3">Family & Progeny</h3>
+                        <p class="text-indigo-100 leading-relaxed font-light">Assessing the happiness of the household
+                            and the potential for healthy offspring, which are vital for a complete family life.</p>
+                    </div>
+                    <div class="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10 premium-card hover:bg-white/10 transition-colors"
+                        data-aos="fade-up" data-aos-delay="300">
+                        <div
+                            class="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-indigo-900 text-xl font-bold mb-4">
+                            03</div>
+                        <h3 class="text-xl font-semibold mb-3">Mental Accord</h3>
+                        <p class="text-indigo-100 leading-relaxed font-light">Analyzing temperamental compatibility to
+                            prevent future conflicts and foster mutual respect and understanding.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How Aadikarta Can Help -->
+        <section class="text-center py-10" data-aos="fade-up">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-6" data-aos="fade-down">How Aadikarta
+                Astrologers Help You</h2>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto mb-12" data-aos="fade-up">
+                While digital matching gives you a score, only an expert astrologer can interpret the deeper nuances and
+                provide effective mitigation strategies.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-6 text-left">
+                <div class="flex gap-5 p-6 rounded-2xl bg-white shadow-sm border border-slate-100 premium-card"
+                    data-aos="fade-right" data-aos-delay="100">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
+                        A</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Detailed Dosha Analysis</h4>
+                        <p class="text-slate-500 font-light">Comprehensive checking for Manglik Dosha, Bhakoot Dosha,
+                            and Nadi Dosha which can disrupt marital bliss.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5 p-6 rounded-2xl bg-white shadow-sm border border-slate-100 premium-card"
+                    data-aos="fade-left" data-aos-delay="200">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
+                        B</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Remedial Solutions</h4>
+                        <p class="text-slate-500 font-light">Personalized remedies including gemstones, mantras, and
+                            pujas to neutralize negative planetary influences.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5 p-6 rounded-2xl bg-white shadow-sm border border-slate-100 premium-card"
+                    data-aos="fade-right" data-aos-delay="300">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
+                        C</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Face-to-Face Clarity</h4>
+                        <p class="text-slate-500 font-light">Direct interaction with verified Vedic experts to discuss
+                            specific concerns about your future with your partner.</p>
+                    </div>
+                </div>
+                <div class="flex gap-5 p-6 rounded-2xl bg-white shadow-sm border border-slate-100 premium-card"
+                    data-aos="fade-left" data-aos-delay="400">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">
+                        D</div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">Holistic Prediction</h4>
+                        <p class="text-slate-500 font-light">Going beyond simple scores to analyze Navamsha charts and
+                            planetary periods (Dashas) for long-term stability.</p>
+                    </div>
+                </div>
+            </div>
+
+            <button
+                class="mt-16 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg shadow-indigo-200 transition-all hover:scale-105"
+                data-aos="zoom-in" data-aos-delay="500">
+                Consult an Expert Now
+            </button>
+        </section>
+
+    </main>
+
+    <footer class="bg-indigo-50 py-10 text-center border-t border-indigo-100">
+        <p class="text-indigo-400 text-sm font-medium">© 2026 Aadikarta — Vedic Wisdom for Modern Success</p>
+    </footer>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+            easing: 'ease-out-cubic'
+        });
+    </script>
+</body>
+
+</html>
+```

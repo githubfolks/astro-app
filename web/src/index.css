@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --primary: #D97706; /* Darker Amber-600 for better contrast (7.36:1 vs white) */
+  --primary: #D97706;
+  /* Darker Amber-600 for better contrast (7.36:1 vs white) */
   --primary-dark: #B45309;
   --secondary: #1A1A1A;
   /* Dark Background */
@@ -121,6 +122,7 @@ a {
 .native-app::-webkit-scrollbar {
   display: none;
 }
+
 .native-app {
   scrollbar-width: none;
 }
@@ -144,5 +146,49 @@ a {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Premium Marketing Page Styles */
+.gradient-text {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #FFD700;
+  /* Fallback */
+}
+
+.gradient-text-emerald {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #10b981;
+  /* Fallback */
+}
+
+.spiritual-bg {
+  background: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
+}
+
+.vastu-bg {
+  background: radial-gradient(circle at top right, #064e3b 0%, #022c22 100%);
+}
+
+.celestial-bg {
+  background: radial-gradient(circle at top right, #4c1d95 0%, #2e1065 100%);
+}
+
+.premium-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.premium-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
