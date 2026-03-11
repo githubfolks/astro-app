@@ -77,6 +77,8 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
         
         # Check if Mock Order
         if data.razorpay_order_id.startswith("order_mock_"):
+            if os.getenv("ENABLE_MOCK_PAYMENTS") != "true":
+                raise HTTPException(status_code=400, detail="Mock payments are disabled in this environment")
             print(f"Processing Mock Payment: {data.razorpay_order_id}")
             # For mock flow, we default to 100 INR or assumes logic handled handled upstream
             amount_paid_inr = 100.0 # Default test amount

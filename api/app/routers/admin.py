@@ -27,9 +27,20 @@ router = APIRouter(
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
+    # 1. Size Validation (e.g., 5MB limit)
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large (Max 5MB)")
+    await file.seek(0)
+
+    # 2. Type Validation
+    ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"]
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
+
     try:
         # Upload to Cloudinary
-        # file.file is a SpooledTemporaryFile which acts like a file object
         result = cloudinary.uploader.upload(file.file, folder="admin_uploads")
         return {"url": result.get("secure_url")}
     except Exception as e:

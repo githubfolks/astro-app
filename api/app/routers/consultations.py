@@ -87,5 +87,13 @@ def submit_review(review: schemas.ReviewCreate, current_user: models.User = Depe
 @router.get("/{consultation_id}/messages", response_model=List[schemas.ChatMessage])
 def get_chat_history(consultation_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
     # Verify access
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    
+    if current_user.role != models.UserRole.ADMIN:
+        if consultation.seeker_id != current_user.id and consultation.astrologer_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to view this chat history")
+
     msgs = db.query(models.ChatMessage).filter(models.ChatMessage.consultation_id == consultation_id).order_by(models.ChatMessage.timestamp).all()
     return msgs
