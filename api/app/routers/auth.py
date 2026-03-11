@@ -10,6 +10,8 @@ import random
 import string
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from pydantic import EmailStr
+from ..limiter import limiter
+from fastapi import Request
 
 router = APIRouter()
 
@@ -33,8 +35,8 @@ conf = ConnectionConfig(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login") # Also fixed path while here
 
-# Secret key settings (would typically be in env variables)
-SECRET_KEY = "dummy_secret_key_for_demo_purposes"
+# Secret key settings
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change_me_in_production_for_security")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -79,7 +81,8 @@ def get_current_admin(current_user: models.User = Depends(get_current_user)):
     return current_user
 
 @router.post("/signup", response_model=schemas.Token)
-def signup(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+@limiter.limit("5/minute")
+def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     if user.role != models.UserRole.SEEKER:
         raise HTTPException(status_code=400, detail="Only seekers can sign up via this endpoint")
     # Check existing
@@ -128,7 +131,8 @@ def signup(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     return {"access_token": access_token, "token_type": "bearer", "user_id": new_user.id, "role": new_user.role, "full_name": full_name}
 
 @router.post("/login", response_model=schemas.Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter((models.User.email == form_data.username) | (models.User.phone_number == form_data.username)).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
@@ -149,12 +153,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
     return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "role": user.role, "full_name": full_name}
 
+import secrets
+
 def generate_otp(length=6):
-    return ''.join(random.choices(string.digits, k=length))
+    return ''.join(secrets.choice(string.digits) for _ in range(length))
 
 @router.post("/forgot-password")
-async def forgot_password(request: schemas.ForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
-    user = db.query(models.User).filter(models.User.email == request.email).first()
+@limiter.limit("3/minute")
+async def forgot_password(request_data: schemas.ForgotPasswordRequest, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.email == request_data.email).first()
     if not user:
         # Don't reveal if user exists or not, but for now helpful for debugging
         # raise HTTPException(status_code=404, detail="User not found")

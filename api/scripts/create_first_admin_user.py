@@ -14,9 +14,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def create_admin():
     db = SessionLocal()
-    email = "admin@aadikarta.org"
-    phone = "9999999999"
-    password = "adminpassword"
+    email = os.getenv("ADMIN_EMAIL", "admin@aadikarta.org")
+    phone = os.getenv("ADMIN_PHONE", "9999999999")
+    password = os.getenv("ADMIN_PASSWORD")
+    
+    if not password:
+        print("Error: ADMIN_PASSWORD environment variable not set.")
+        return
     
     existing = db.query(models.User).filter(models.User.email == email).first()
     if existing:

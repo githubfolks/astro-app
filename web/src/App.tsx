@@ -1,33 +1,41 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { Login } from './pages/Login';
-import { Signup } from './pages/Signup';
-import { Dashboard } from './pages/Dashboard';
-import { Chat } from './pages/Chat';
-import Home from './pages/Home';
-import AstrologersPage from './pages/AstrologersPage';
-import AstrologerProfile from './pages/AstrologerProfile';
-import AboutUs from './pages/AboutUs';
-import ContactUs from './pages/ContactUs';
-import Blog from './pages/Blog';
-import BlogPost from './pages/BlogPost';
-import PageViewer from './pages/PageViewer';
-import { MobileNavBar } from './components/MobileNavBar';
-import { ForgotPassword } from './pages/ForgotPassword';
-import { VerifyOTP } from './pages/VerifyOTP';
-import { ResetPassword } from './pages/ResetPassword';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import RefundPolicy from './pages/RefundPolicy';
-import Disclaimer from './pages/Disclaimer';
-import TermsOfService from './pages/TermsOfService';
-import { JoinAsAstrologer } from './pages/JoinAsAstrologer';
-import KundliGenerator from './pages/KundliGenerator';
-
 import { isNative, getPlatform } from './utils/platform';
 import { App as CapApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { MobileNavBar } from './components/MobileNavBar';
+
+// Lazy load pages
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
+const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
+const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then(module => ({ default: module.VerifyOTP })));
+const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Chat = lazy(() => import('./pages/Chat').then(module => ({ default: module.Chat })));
+const AstrologersPage = lazy(() => import('./pages/AstrologersPage'));
+const AstrologerProfile = lazy(() => import('./pages/AstrologerProfile'));
+const AboutUs = lazy(() => import('./pages/AboutUs'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const PageViewer = lazy(() => import('./pages/PageViewer'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
+const Disclaimer = lazy(() => import('./pages/Disclaimer'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
+const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
+
+// Loading component
+const PageLoader = () => (
+    <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+    </div>
+);
 
 // Protected Route Wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -85,47 +93,49 @@ function App() {
         <Router>
             <AuthProvider>
                 <NativeInitializer />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/verify-otp" element={<VerifyOTP />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/chat-with-astrologers" element={<AstrologersPage />} />
-                    <Route path="/astrologer/:id" element={<AstrologerProfile />} />
-                    <Route path="/about-us" element={<AboutUs />} />
-                    <Route path="/contact-us" element={<ContactUs />} />
-                    <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                    <Route path="/refund-policy" element={<RefundPolicy />} />
-                    <Route path="/disclaimer" element={<Disclaimer />} />
-                    <Route path="/terms-of-service" element={<TermsOfService />} />
-                    <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/blog/:slug" element={<BlogPost />} />
-                    {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
-                    <Route path="/:slug" element={<PageViewer />} />
-                    <Route path="/dashboard" element={
-                        <ProtectedRoute>
-                            <Dashboard />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/chat/:consultationId" element={
-                        <ProtectedRoute>
-                            <Chat />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/chat/new/:astrologerId" element={
-                        <ProtectedRoute>
-                            <Chat />
-                        </ProtectedRoute>
-                    } />
-                    <Route path="/kundli" element={
-                        <ProtectedRoute>
-                            <KundliGenerator />
-                        </ProtectedRoute>
-                    } />
-                </Routes>
+                <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/verify-otp" element={<VerifyOTP />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/chat-with-astrologers" element={<AstrologersPage />} />
+                        <Route path="/astrologer/:id" element={<AstrologerProfile />} />
+                        <Route path="/about-us" element={<AboutUs />} />
+                        <Route path="/contact-us" element={<ContactUs />} />
+                        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                        <Route path="/refund-policy" element={<RefundPolicy />} />
+                        <Route path="/disclaimer" element={<Disclaimer />} />
+                        <Route path="/terms-of-service" element={<TermsOfService />} />
+                        <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
+                        <Route path="/blog" element={<Blog />} />
+                        <Route path="/blog/:slug" element={<BlogPost />} />
+                        {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
+                        <Route path="/:slug" element={<PageViewer />} />
+                        <Route path="/dashboard" element={
+                            <ProtectedRoute>
+                                <Dashboard />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/chat/:consultationId" element={
+                            <ProtectedRoute>
+                                <Chat />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/chat/new/:astrologerId" element={
+                            <ProtectedRoute>
+                                <Chat />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/kundli" element={
+                            <ProtectedRoute>
+                                <KundliGenerator />
+                            </ProtectedRoute>
+                        } />
+                    </Routes>
+                </Suspense>
                 <MobileNavBar />
             </AuthProvider>
         </Router>

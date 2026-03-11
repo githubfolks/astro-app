@@ -64,7 +64,7 @@ const Services: React.FC = () => {
                             </div>
                             <h3 className="service-title">{service.title}</h3>
                             <p className="service-description">{service.description}</p>
-                            <a href="#" className="service-link">Learn More →</a>
+                            <a href="#" className="service-link" aria-label={`Learn more about ${service.title}`}>Learn More →</a>
                         </div>
                     ))}
                 </div>

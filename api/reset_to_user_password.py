@@ -2,9 +2,14 @@ from app.database import SessionLocal
 from app.models import User
 from app.routers.auth import get_password_hash
 
+import os
 db = SessionLocal()
-email = "admin@test.com"
-password = "adminpassword"
+email = os.getenv("ADMIN_EMAIL", "admin@test.com")
+password = os.getenv("ADMIN_PASSWORD")
+
+if not password:
+    print("Error: ADMIN_PASSWORD environment variable not set.")
+    sys.exit(1)
 
 user = db.query(User).filter(User.email == email).first()
 if user:

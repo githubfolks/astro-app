@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
@@ -74,8 +75,8 @@ const PageViewer: React.FC = () => {
             <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{page.title}</h1>
                 <div
-                    className="prose prose-lg max-w-none text-gray-700"
-                    dangerouslySetInnerHTML={{ __html: page.content }}
+                    className="cms-page-content"
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }}
                 />
             </main>
             <Footer />

@@ -17,6 +17,9 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
                         src={astro.profile_picture_url || `https://ui-avatars.com/api/?name=${astro.full_name}&background=random`}
                         alt={astro.full_name}
                         className="astro-img"
+                        width="80"
+                        height="80"
+                        loading="lazy"
                     />
                     <span className={`status-badge ${astro.is_online ? 'online' : 'offline'}`}>
                         {astro.is_online ? 'Online' : 'Offline'}

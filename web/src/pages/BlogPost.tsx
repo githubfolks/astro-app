@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
@@ -110,8 +111,8 @@ const BlogPost: React.FC = () => {
                     </header>
 
                     <div
-                        className="prose prose-lg prose-indigo mx-auto text-gray-700"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
+                        className="post-content prose prose-indigo max-w-none"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     />
                 </article>
             </main>

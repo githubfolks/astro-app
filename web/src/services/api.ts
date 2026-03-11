@@ -15,24 +15,44 @@ const authHeaders = async (): Promise<Record<string, string>> => {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
+/** Get CSRF token from cookies */
+const getCsrfToken = (): string | null => {
+    const name = "csrf_token=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const ca = decodedCookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return null;
+};
+
 /** Native-aware fetch wrapper to bypass CORS */
 const customFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+    const { method = 'GET', headers: originalHeaders = {}, body } = options;
+
+    // Add CSRF token for state-changing methods
+    const headers = new Headers(originalHeaders);
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())) {
+        const csrfToken = getCsrfToken();
+        if (csrfToken) {
+            headers.set('X-CSRF-Token', csrfToken);
+        }
+    }
+
     if (!isNative()) {
-        return fetch(url, options);
+        return fetch(url, { ...options, headers });
     }
 
     try {
-        const { method = 'GET', headers = {}, body } = options;
-
         // Convert headers to simple object
         const capHeaders: Record<string, string> = {};
-        if (headers instanceof Headers) {
-            headers.forEach((v, k) => capHeaders[k] = v);
-        } else if (Array.isArray(headers)) {
-            headers.forEach(([k, v]) => capHeaders[k] = v);
-        } else {
-            Object.assign(capHeaders, headers);
-        }
+        headers.forEach((v, k) => capHeaders[k] = v);
 
         const response = await CapacitorHttp.request({
             url,

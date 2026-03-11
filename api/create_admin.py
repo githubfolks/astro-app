@@ -6,8 +6,12 @@ import sys
 def create_admin():
     db = SessionLocal()
     try:
-        email = "admin@test.com"
-        password = "adminpassword"
+        import os
+        email = os.getenv("ADMIN_EMAIL", "admin@test.com")
+        password = os.getenv("ADMIN_PASSWORD")
+        if not password:
+            print("Error: ADMIN_PASSWORD environment variable not set.")
+            return
         
         user = db.query(User).filter(User.email == email).first()
         if user:

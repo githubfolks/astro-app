@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional, List
 from datetime import date, time, datetime
 from enum import Enum
@@ -23,11 +23,11 @@ class TransactionType(str, Enum):
 
 # Auth Schemas
 class UserBase(BaseModel):
-    phone_number: Optional[str] = None
-    email: Optional[str] = None
+    phone_number: Optional[str] = Field(None, pattern=r'^\d{10,15}$')
+    email: Optional[EmailStr] = None
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(..., min_length=8)
     role: UserRole
 
 class UserLogin(BaseModel):
@@ -42,7 +42,7 @@ class Token(BaseModel):
     full_name: Optional[str] = None
 
 class ForgotPasswordRequest(BaseModel):
-    email: str
+    email: EmailStr
 
 class VerifyOTPRequest(BaseModel):
     email: str
@@ -238,9 +238,9 @@ class AstrologerOnboardingRequest(BaseModel):
     legal_agreement_accepted: bool = True
 
 class ContactInquiryCreate(BaseModel):
-    name: str # Combined first + last
-    email: str
-    message: str
+    name: str = Field(..., min_length=2, max_length=100)
+    email: EmailStr
+    message: str = Field(..., min_length=10, max_length=1000)
 
 class ContactInquiry(ContactInquiryCreate):
     id: int

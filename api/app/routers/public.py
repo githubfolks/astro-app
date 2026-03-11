@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional
 from .. import models, database, schemas_cms, schemas
+from ..limiter import limiter
+from fastapi import Request
 
 router = APIRouter(
     prefix="/public",
@@ -69,7 +71,9 @@ def get_public_horoscopes(
 # --- Contact ---
 
 @router.post("/contact", response_model=dict)
+@limiter.limit("2/minute")
 def submit_contact_inquiry(
+    request: Request,
     inquiry: schemas.ContactInquiryCreate,
     db: Session = Depends(database.get_db)
 ):
