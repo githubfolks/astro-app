@@ -16,7 +16,7 @@
 .section-title {
     font-size: 42px;
     color: #1e1b4b;
-    font-weight: 800;
+    font-weight: 400;
     margin-bottom: 24px;
     letter-spacing: -0.02em;
 }
@@ -93,7 +93,7 @@
 
 .service-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 400;
     color: #1e1b4b;
     margin-bottom: 16px;
     position: relative;
@@ -112,7 +112,7 @@
 
 .service-link {
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
     text-decoration: none;
     display: inline-flex;
     align-items: center;

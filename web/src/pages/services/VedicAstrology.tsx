@@ -81,14 +81,14 @@ const VedicAstrology: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-amber-50/30 text-slate-900 leading-relaxed min-h-screen font-['Outfit']">
+        <div className="bg-amber-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <Header />
             {/* Hero Section */}
             <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
                 <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-7xl font-bold gradient-text mb-4 drop-shadow-2xl">Vedic Astrology</h1>
+                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Vedic Astrology</h1>
                     </div>
                     <p className="text-xl text-amber-100 font-light max-w-2xl mx-auto mt-8">
                         The science of light that illuminates your soul's journey through time.

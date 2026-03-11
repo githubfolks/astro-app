@@ -89,7 +89,7 @@
 
 .step-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 400;
     color: #1e1b4b;
     margin-bottom: 16px;
     position: relative;
@@ -129,18 +129,59 @@
 
 @media (max-width: 1024px) {
     .how-it-works-section {
-        padding: 60px 0;
+        padding: 80px 0;
     }
 
     .steps-container {
         flex-direction: column;
         align-items: center;
-        gap: 60px;
+        gap: 80px;
         margin-top: 60px;
     }
 
     .step-card {
         width: 100%;
         max-width: 450px;
+        padding: 45px 30px;
+    }
+
+    .step-connector {
+        display: block;
+        position: absolute;
+        top: auto;
+        bottom: -60px;
+        left: 50%;
+        right: auto;
+        width: 2px;
+        height: 60px;
+        background: linear-gradient(180deg, var(--primary), transparent);
+        transform: translateX(-50%);
+        opacity: 0.4;
+    }
+
+    .step-connector::after {
+        content: '↓';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--primary);
+        font-weight: bold;
+        font-size: 20px;
+        animation: pulse-down 2s infinite;
+    }
+}
+
+@keyframes pulse-down {
+
+    0%,
+    100% {
+        transform: translate(-50%, 0);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translate(-50%, 10px);
+        opacity: 1;
     }
 }

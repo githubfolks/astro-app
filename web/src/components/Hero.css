@@ -41,7 +41,7 @@
 .hero-title {
     font-size: 56px;
     line-height: 1.1;
-    font-weight: 800;
+    font-weight: 400;
     margin-bottom: 24px;
     letter-spacing: -1px;
 }
@@ -100,7 +100,7 @@
 
 .stat-value {
     font-size: 32px;
-    font-weight: 800;
+    font-weight: 400;
     color: white;
     margin-bottom: 4px;
 }

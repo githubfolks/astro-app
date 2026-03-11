@@ -60,7 +60,7 @@ const Home: React.FC = () => {
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="max-w-3xl mx-auto mb-16 text-center" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Trust & Quality</span>
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6">
+                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-6">
                                 Our Promise <span className="text-indigo-600">to You</span>
                             </h2>
                             <p className="text-xl text-gray-600 leading-relaxed">We are committed to authenticity, privacy, and your total satisfaction in every spiritual consultation.</p>
@@ -99,7 +99,7 @@ const Home: React.FC = () => {
 
                     <div className="container mx-auto px-4 relative z-10 text-center">
                         <div className="max-w-4xl mx-auto" data-aos="zoom-in">
-                            <h2 className="text-4xl md:text-7xl font-extrabold mb-10 leading-tight text-white">
+                            <h2 className="text-4xl md:text-4xl mb-10 leading-tight text-white">
                                 Are You an <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 drop-shadow-sm">Expert Astrologer?</span>
                             </h2>
                             <p className="text-xl md:text-2xl mb-14 text-indigo-100/70 font-light leading-relaxed max-w-2xl mx-auto">

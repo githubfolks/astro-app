@@ -112,7 +112,7 @@ const KundliMatching: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-slate-50 text-slate-900 leading-relaxed min-h-screen font-['Outfit']">
+        <div className="bg-slate-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <Header />
 
             {/* Hero Section */}
@@ -120,7 +120,7 @@ const KundliMatching: React.FC = () => {
                 <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-7xl font-bold gradient-text mb-4 drop-shadow-2xl">Kundli Matching</h1>
+                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Kundli Matching</h1>
                     </div>
                     <p className="text-xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Discover divine compatibility and ensure a harmonious union through the ancient wisdom of Vedic Astrology.
