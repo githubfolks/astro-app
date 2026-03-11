@@ -285,6 +285,17 @@ export const api = {
                 headers: await authHeaders()
             });
             return handleResponse(response, 'Failed to fetch chat history');
+        },
+        postMessage: async (consultation_id: number | string, content: string) => {
+            const response = await customFetch(`${API_URL}/chat/send`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ consultation_id, content })
+            });
+            return handleResponse(response, 'Failed to send message');
         }
     },
 

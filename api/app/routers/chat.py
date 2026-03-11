@@ -69,6 +69,54 @@ async def get_chat_history(
     
     return messages
 
+class ChatMessageCreate(schemas.BaseModel):
+    consultation_id: int
+    content: str
+
+@router.post("/send")
+async def send_message(
+    data: ChatMessageCreate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == data.consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    
+    if current_user.id != consultation.seeker_id and current_user.id != consultation.astrologer_id:
+        raise HTTPException(status_code=403, detail="Not authorized to participate in this chat")
+    
+    # Save to DB
+    new_msg = models.ChatMessage(
+        consultation_id=data.consultation_id,
+        sender_id=current_user.id,
+        message=data.content
+    )
+    db.add(new_msg)
+    db.commit()
+    db.refresh(new_msg)
+    
+    # Check for Timer Start (First Astrologer Message)
+    if current_user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:
+        consultation.status = models.ConsultationStatus.ACTIVE
+        consultation.start_time = datetime.utcnow()
+        db.commit()
+        # Start Billing Loop
+        asyncio.create_task(billing_loop(consultation.id, float(consultation.rate_per_min), database.SessionLocal))
+        # Broadcast via WS if any
+        await manager.broadcast(consultation.id, {"type": "TIMER_STARTED"})
+
+    # Broadcast to any active WS connections
+    await manager.broadcast(data.consultation_id, {
+        "type": "NEW_MESSAGE",
+        "id": new_msg.id,
+        "sender_id": current_user.id,
+        "content": data.content,
+        "timestamp": str(new_msg.timestamp)
+    })
+    
+    return {"status": "sent", "message_id": new_msg.id}
+
 async def get_user_from_token(token: str, db: Session):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
