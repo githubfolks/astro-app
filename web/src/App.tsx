@@ -33,6 +33,7 @@ const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
 const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ default: module.Classroom })));
 const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
 const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
+const Book = lazy(() => import('./pages/Book'));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -134,6 +135,7 @@ function App() {
                         <Route path="/services/tarot-reading" element={<TarotReading />} />
                         <Route path="/services/vastu-shastra" element={<VastuShastra />} />
                         <Route path="/memory-guru" element={<MemoryGuruAbout />} />
+                        <Route path="/book" element={<Book />} />
 
                         {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
                         <Route path="/:slug" element={<PageViewer />} />

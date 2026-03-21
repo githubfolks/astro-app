@@ -28,7 +28,7 @@ const MemoryGuruAbout: React.FC = () => {
                     <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-6 block" data-aos="fade-down">
                         Biography & Profile
                     </span>
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-10 leading-tight">
+                    <h1 className="text-4xl md:text-5xl text-gray-900 mb-10 leading-tight">
                         Rajesh Chaudhary – <span className="gradient-text">Memory Guru</span>
                     </h1>
 
@@ -213,7 +213,7 @@ const MemoryGuruAbout: React.FC = () => {
                             {/* Audience Testimonials */}
                             <div className="mt-12 bg-indigo-50/50 backdrop-blur-md rounded-[2.5rem] p-10 border border-indigo-100/50 relative overflow-hidden">
                                 <div className="absolute top-0 right-10 text-9xl text-indigo-200/20 font-serif leading-none">"</div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-10 flex items-center gap-3">
+                                <h3 className="text-2xl text-gray-900 mb-10 flex items-center gap-3">
                                     <span className="text-3xl">✨</span> Audience Testimonials
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -4,13 +4,10 @@ import './Hero.css';
 
 const Hero: React.FC = () => {
     return (
-        <section className="hero-section spiritual-bg overflow-hidden relative min-h-screen lg:min-h-[800px] flex items-center">
-
-
-            <div className="container hero-content relative z-10 py-12">
+        <section className="hero-section spiritual-bg overflow-hidden relative min-h-screen lg:min-h-[640px] flex items-center">
+            <div className="container hero-content relative z-10 py-2">
                 <div className="hero-text">
-                    <span className="hero-badge bg-white/10 backdrop-blur-md px-4 py-1 rounded-full text-indigo-200 text-sm font-semibold border border-white/20">✨ India's #1 Astrology Platform</span>
-                    <h1 className="hero-title mt-6">
+                    <h1 className="hero-title mt-2">
                         Unlock Your
                         <span className="gradient-text block mt-2"> Cosmic Destiny</span>
                     </h1>
