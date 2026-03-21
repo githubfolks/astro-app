@@ -14,7 +14,7 @@ export interface Message {
 }
 
 export const useChat = (consultationId: string) => {
-    const { token, user } = useAuth();
+    const { token } = useAuth();
     const ws = useRef<WebSocket | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [status, setStatus] = useState<'CONNECTING' | 'ACTIVE' | 'ENDED' | 'PAUSED'>('CONNECTING');
@@ -113,60 +113,6 @@ export const useChat = (consultationId: string) => {
             ws.current?.close();
         };
     }, [consultationId, token, status === 'ENDED']);
-
-    // Polling Fallback
-    useEffect(() => {
-        if (!token || !consultationId || status === 'ENDED') return;
-        
-        // If WebSocket is active (OPEN), we don't need polling
-        if (ws.current?.readyState === WebSocket.OPEN) return;
-
-        const poll = async () => {
-            try {
-                // Fetch both history (for messages) AND current state (for status/billing)
-                const [history, consultData] = await Promise.all([
-                    api.consultations.getChatHistory(consultationId),
-                    api.consultations.getOne(consultationId)
-                ]);
-
-                if (consultData.status === 'COMPLETED' || consultData.status === 'AUTO_ENDED') {
-                    setStatus('ENDED');
-                } else if (consultData.status === 'PAUSED') {
-                    // Actual backend pause (e.g. astrologer disconnected but we are polling)
-                    setTimerActive(false);
-                } else if (consultData.status === 'ACTIVE') {
-                    setTimerActive(true);
-                }
-
-                setBillingInfo({ 
-                    balance: 0, // We could fetch this separately if needed, but for now we keep 0 or prev
-                    spent: Number(consultData.total_cost || 0) 
-                });
-
-                const formattedHistory: Message[] = history.map((msg: any) => ({
-                    id: msg.id,
-                    sender_id: msg.sender_id,
-                    content: msg.message,
-                    timestamp: msg.timestamp,
-                    type: 'MESSAGE'
-                }));
-                
-                setMessages(prev => {
-                    // Optimized check: only update if message count or content changed
-                    if (prev.length === formattedHistory.length && 
-                        prev[prev.length-1]?.id === formattedHistory[formattedHistory.length-1]?.id) {
-                        return prev;
-                    }
-                    return formattedHistory;
-                });
-            } catch (err) {
-                console.error("Polling error:", err);
-            }
-        };
-
-        const interval = setInterval(poll, 4000);
-        return () => clearInterval(interval);
-    }, [consultationId, token, status, user?.role]);
 
     const sendMessage = async (content: string) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
