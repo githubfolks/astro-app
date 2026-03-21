@@ -405,5 +405,68 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch Kundli history');
         }
+    },
+    edu: {
+        getCourses: async () => {
+            const response = await customFetch(`${API_URL}/edu/courses`);
+            return handleResponse(response, 'Failed to fetch courses');
+        },
+        getSessions: async () => {
+            const response = await customFetch(`${API_URL}/edu/sessions`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch sessions');
+        },
+        createCourse: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/courses`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to create course');
+        },
+        createBatch: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/batches`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to create batch');
+        },
+        scheduleSession: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/sessions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to schedule session');
+        },
+        enroll: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/enroll`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to enroll');
+        },
+        joinSession: async (sessionId: number) => {
+            const response = await customFetch(`${API_URL}/edu/sessions/${sessionId}/join`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to join session');
+        }
     }
 };

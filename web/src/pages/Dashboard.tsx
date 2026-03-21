@@ -11,6 +11,7 @@ import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, Chev
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sessions, setSessions] = useState<any[]>([]);
 
     // Astrologer specific state
 
@@ -33,6 +34,17 @@ export const Dashboard: React.FC = () => {
 
                     setIsOnline(profile.is_online);
                     setAvailabilityText(profile.availability_hours || '');
+
+                    // Load live classes
+                    // Removed from ASTROLOGER as per new requirement
+                } else if (user?.role === 'SEEKER') {
+                    // Load live classes for students
+                    const sessionsData = await api.edu.getSessions();
+                    setSessions(sessionsData);
+                } else if (user?.role === 'TUTOR') {
+                    // Load live classes for tutors
+                    const sessionsData = await api.edu.getSessions();
+                    setSessions(sessionsData);
                 }
             } catch (e) {
                 console.error(e);
@@ -166,6 +178,8 @@ export const Dashboard: React.FC = () => {
                                 )}
                             </div>
 
+                            {/* Live Classes (Moved to Tutoring section or conditional) */}
+
                             {/* Past History Section */}
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-500">History</h3>
@@ -271,6 +285,50 @@ export const Dashboard: React.FC = () => {
             </div>
         );
     }
+
+    if (user?.role === 'TUTOR') {
+        return (
+            <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+                <Header />
+                <main className="flex-1 container mx-auto p-6 md:p-8">
+                    <div className="text-center md:text-left mb-8">
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Tutor Dashboard</h2>
+                        <p className="text-gray-600">Manage your live classes and sessions.</p>
+                    </div>
+
+                    <div className="max-w-4xl">
+                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={20} /></span>
+                            My Live Classes
+                        </h3>
+                        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                            {sessions.length === 0 ? (
+                                <p className="text-gray-500 text-center">No live classes scheduled.</p>
+                            ) : (
+                                <div className="space-y-4">
+                                    {sessions.map((s: any) => (
+                                        <div key={s.id} className="flex justify-between items-center p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                                            <div>
+                                                <h4 className="font-bold text-indigo-900">{s.title}</h4>
+                                                <p className="text-sm text-indigo-700">Role: Moderator (Host)</p>
+                                            </div>
+                                            <button
+                                                onClick={() => navigate(`/classroom/${s.id}`)}
+                                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700"
+                                            >
+                                                Start Room
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
     // Seeker Dashboard
     const [walletBalance, setWalletBalance] = useState<number>(0);
     const [seekerHistory, setSeekerHistory] = useState<any[]>([]);
@@ -354,6 +412,36 @@ export const Dashboard: React.FC = () => {
                                 My Consultations
                                 <span className="text-sm font-normal text-gray-500">({seekerHistory.length})</span>
                             </h3>
+
+                            {/* Live Classes for Student */}
+                            <div className="mb-8">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={18} /></span>
+                                    My Live Classes
+                                </h3>
+                                <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                                    {sessions.length === 0 ? (
+                                        <p className="text-sm text-gray-500">No active classes to join.</p>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {sessions.map((s: any) => (
+                                                <div key={s.id} className="flex justify-between items-center p-3 bg-indigo-50/50 rounded-lg border border-indigo-100">
+                                                    <div>
+                                                        <h4 className="font-semibold text-indigo-900">{s.title}</h4>
+                                                        <p className="text-xs text-indigo-700">Course Class</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => navigate(`/classroom/${s.id}`)}
+                                                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-indigo-700"
+                                                    >
+                                                        Join Class
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
                             {/* Search Box */}
                             {seekerHistory.length > 0 && (

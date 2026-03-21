@@ -2,7 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu
+from . import models_edu # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -126,6 +127,7 @@ app.include_router(public.router)
 app.include_router(payment.router)
 app.include_router(payouts.router)
 app.include_router(kundli.router)
+app.include_router(edu.router)
 
 @app.get("/")
 def read_root():

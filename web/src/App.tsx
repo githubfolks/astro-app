@@ -30,6 +30,7 @@ const Disclaimer = lazy(() => import('./pages/Disclaimer'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
 const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
+const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ default: module.Classroom })));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -151,6 +152,11 @@ function App() {
                         <Route path="/kundli" element={
                             <ProtectedRoute>
                                 <KundliGenerator />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/classroom/:sessionId" element={
+                            <ProtectedRoute>
+                                <Classroom />
                             </ProtectedRoute>
                         } />
                     </Routes>

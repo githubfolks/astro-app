@@ -8,6 +8,7 @@ class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     SEEKER = "SEEKER"
     ASTROLOGER = "ASTROLOGER"
+    TUTOR = "TUTOR"
 
 class GenderType(str, enum.Enum):
     MALE = "MALE"

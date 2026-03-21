@@ -5,7 +5,7 @@ interface User {
     id: number;
     email: string;
     phone_number: string;
-    role: 'SEEKER' | 'ASTROLOGER' | 'ADMIN';
+    role: 'SEEKER' | 'ASTROLOGER' | 'ADMIN' | 'TUTOR';
     full_name?: string;
 }
 
