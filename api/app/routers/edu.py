@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from .. import models, models_edu, schemas_edu, database
-from .auth import get_current_user
+from .auth import get_current_user, get_current_user_optional
 from ..services import miro_service
 from datetime import datetime, timedelta, timezone
 
@@ -24,8 +24,22 @@ def create_course(course: schemas_edu.CourseCreate, db: Session = Depends(databa
     return db_course
 
 @router.get("/courses", response_model=List[schemas_edu.CourseResponse])
-def list_courses(db: Session = Depends(database.get_db)):
-    return db.query(models_edu.Course).all()
+def list_courses(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user_optional)):
+    courses = db.query(models_edu.Course).options(joinedload(models_edu.Course.batches)).all()
+    
+    if current_user:
+        # Get all enrollments for this user
+        enrollments = db.query(models_edu.BatchEnrollment.batch_id).filter(
+            models_edu.BatchEnrollment.user_id == current_user.id
+        ).all()
+        enrolled_batch_ids = {e.batch_id for e in enrollments}
+        
+        for course in courses:
+            # Mark as enrolled if enrolled in ANY batch of this course
+            course_batch_ids = {b.id for b in course.batches}
+            course.is_enrolled = not course_batch_ids.isdisjoint(enrolled_batch_ids)
+            
+    return courses
 
 @router.get("/my/courses", response_model=List[schemas_edu.CourseResponse])
 def my_courses(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -33,7 +47,7 @@ def my_courses(db: Session = Depends(database.get_db), current_user: models.User
         return db.query(models_edu.Course).filter(models_edu.Course.teacher_id == current_user.id).all()
     elif current_user.role == models.UserRole.SEEKER:
         # Enrolled courses
-        return db.query(models_edu.Course).join(models_edu.Batch).join(models_edu.BatchEnrollment).filter(
+        return db.query(models_edu.Course).options(joinedload(models_edu.Course.batches)).join(models_edu.Batch).join(models_edu.BatchEnrollment).filter(
             models_edu.BatchEnrollment.user_id == current_user.id
         ).all()
     return []
@@ -71,6 +85,15 @@ def list_sessions(db: Session = Depends(database.get_db), current_user: models.U
 # Enrollment
 @router.post("/enroll", response_model=schemas_edu.BatchEnrollmentResponse)
 def enroll_student(enrollment: schemas_edu.BatchEnrollmentCreate, db: Session = Depends(database.get_db)):
+    # Check if already enrolled in this batch
+    existing = db.query(models_edu.BatchEnrollment).filter(
+        models_edu.BatchEnrollment.user_id == enrollment.user_id,
+        models_edu.BatchEnrollment.batch_id == enrollment.batch_id
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="You are already enrolled in this batch")
+
     # In a real app, this would be triggered after successful payment
     db_enrollment = models_edu.BatchEnrollment(**enrollment.dict())
     db.add(db_enrollment)

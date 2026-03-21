@@ -16,6 +16,23 @@ class SessionStatus(str, Enum):
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
 
+# Batch Schemas
+class BatchBase(BaseModel):
+    name: str # e.g. "Batch A"
+    max_students: int = 10
+    status: BatchStatus = BatchStatus.UPCOMING
+
+class BatchCreate(BatchBase):
+    course_id: int
+
+class BatchResponse(BatchBase):
+    id: int
+    course_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 # Course Schemas
 class CourseBase(BaseModel):
     title: str
@@ -31,23 +48,8 @@ class CourseResponse(CourseBase):
     teacher_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-
-    class Config:
-        from_attributes = True
-
-# Batch Schemas
-class BatchBase(BaseModel):
-    name: str # e.g. "Batch A"
-    max_students: int = 10
-    status: BatchStatus = BatchStatus.UPCOMING
-
-class BatchCreate(BatchBase):
-    course_id: int
-
-class BatchResponse(BatchBase):
-    id: int
-    course_id: int
-    created_at: datetime
+    batches: List[BatchResponse] = []
+    is_enrolled: Optional[bool] = False
 
     class Config:
         from_attributes = True

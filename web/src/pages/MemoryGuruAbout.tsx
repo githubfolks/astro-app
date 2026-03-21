@@ -204,7 +204,7 @@ const MemoryGuruAbout: React.FC = () => {
                                     <div key={i} className="group relative overflow-hidden rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-64 border border-white">
                                         <img src={item.img} alt={item.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent flex items-end p-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <p className="text-white font-bold text-xl">{item.title}</p>
+                                            <p className="text-white text-xl">{item.title}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -221,14 +221,14 @@ const MemoryGuruAbout: React.FC = () => {
                                         <p className="relative z-10 text-lg">"The memory coding systems Rajesh taught are simply life-changing. I could memorize 50 words in order in just minutes!"</p>
                                         <div className="mt-6 flex items-center gap-4">
                                             <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">B</div>
-                                            <p className="not-italic font-bold text-gray-900">Board Exam Student</p>
+                                            <p className="not-italic text-gray-900">Board Exam Student</p>
                                         </div>
                                     </div>
                                     <div className="bg-white/80 p-8 rounded-3xl shadow-sm italic text-gray-700 relative group hover:shadow-md transition-shadow">
                                         <p className="relative z-10 text-lg">"A high-impact session. The techniques for name-face association are extremely practical for networking and professional growth."</p>
                                         <div className="mt-6 flex items-center gap-4">
                                             <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">C</div>
-                                            <p className="not-italic font-bold text-gray-900">Corporate Professional</p>
+                                            <p className="not-italic text-gray-900">Corporate Professional</p>
                                         </div>
                                     </div>
                                 </div>

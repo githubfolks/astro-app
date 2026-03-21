@@ -1,15 +1,27 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
-import { Book as BookIcon, ArrowRight, Star, Users, Clock } from 'lucide-react';
+import { Book as BookIcon, ArrowRight, Star, Users, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SEO from '../components/SEO';
+import { useAuth } from '../context/AuthContext';
 
 const Book: React.FC = () => {
+    const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
     const [courses, setCourses] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
+    const [materials, setMaterials] = useState<any[]>([]);
+    const [loadingMaterials, setLoadingMaterials] = useState(false);
+    const [enrollmentStatus, setEnrollmentStatus] = useState<{
+        loading: boolean;
+        success: boolean;
+        error: string | null;
+    }>({ loading: false, success: false, error: null });
 
     useEffect(() => {
         AOS.init({
@@ -32,6 +44,53 @@ const Book: React.FC = () => {
         }
     };
 
+    const handleViewDetails = async (course: any) => {
+        setSelectedCourse(course);
+        setEnrollmentStatus({ loading: false, success: false, error: null });
+        setLoadingMaterials(true);
+        setMaterials([]);
+        try {
+            const data = await api.edu.getCourseMaterials(course.id);
+            setMaterials(data);
+        } catch (e) {
+            console.error('Failed to load materials:', e);
+        } finally {
+            setLoadingMaterials(false);
+        }
+    };
+
+    const handleEnroll = async () => {
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: '/book', courseId: selectedCourse.id } });
+            return;
+        }
+
+        if (!selectedCourse.batches || selectedCourse.batches.length === 0) {
+            setEnrollmentStatus({ 
+                loading: false, 
+                success: false, 
+                error: 'No active batches available for this course. Please contact support.' 
+            });
+            return;
+        }
+
+        setEnrollmentStatus({ loading: true, success: false, error: null });
+        try {
+            await api.edu.enroll({ 
+                user_id: user?.id, 
+                batch_id: selectedCourse.batches[0].id 
+            });
+            setEnrollmentStatus({ loading: false, success: true, error: null });
+            loadCourses(); // Refresh courses to get updated is_enrolled status
+        } catch (e: any) {
+            setEnrollmentStatus({
+                loading: false,
+                success: false,
+                error: e.message || 'Enrollment failed. Please try again or contact support.'
+            });
+        }
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <SEO
@@ -50,7 +109,7 @@ const Book: React.FC = () => {
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-12 text-left">
                             <div className="w-full md:w-2/3">
-                                <h1 className="hero-title mt-2 text-white mb-6" data-aos="fade-right" data-aos-delay="100">
+                                <h1 className="hero-title mt-2 font-bold text-4xl text-white mb-6" data-aos="fade-right" data-aos-delay="100">
                                     Our <span className="text-yellow-400">Courses</span>
                                 </h1>
                                 <p className="text-xl text-indigo-100 leading-relaxed" data-aos="fade-right" data-aos-delay="200">
@@ -110,7 +169,7 @@ const Book: React.FC = () => {
                                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Top Rated</span>
                                             </div>
 
-                                            <h3 className="step-title">
+                                            <h3 className="step-title font-bold">
                                                 {course.title}
                                             </h3>
 
@@ -131,7 +190,10 @@ const Book: React.FC = () => {
                                         </div>
 
                                         <div className="p-8 pt-0 mt-auto">
-                                            <button className="w-full bg-indigo-50 text-indigo-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                                            <button
+                                                onClick={() => handleViewDetails(course)}
+                                                className="w-full bg-indigo-50 text-indigo-700 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300"
+                                            >
                                                 View Course Details <ArrowRight size={18} />
                                             </button>
                                         </div>
@@ -142,6 +204,103 @@ const Book: React.FC = () => {
                     </div>
                 </section>
             </main>
+
+            {/* Course Details Modal */}
+            {selectedCourse && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div
+                        className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-300"
+                        data-aos="zoom-in"
+                    >
+                        <button
+                            onClick={() => setSelectedCourse(null)}
+                            className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-900"
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="p-8 md:p-12">
+                            <div className="inline-flex items-center gap-2 text-indigo-600 text-sm uppercase tracking-widest mb-6 px-4 py-2 bg-indigo-50 rounded-xl">
+                                <BookIcon size={16} /> Course Curriculum
+                            </div>
+
+                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-6 leading-tight">
+                                {selectedCourse.title}
+                            </h2>
+
+                            <div className="prose prose-indigo max-w-none text-gray-600 mb-10 text-lg leading-relaxed">
+                                {selectedCourse.description || "Detailed course overview goes here..."}
+                            </div>
+
+                            <div className="space-y-6">
+                                <h4 className="text-gray-900 text-xl flex items-center gap-2">
+                                    <Users className="text-indigo-600" size={24} />
+                                    What's included in this course:
+                                </h4>
+
+                                {loadingMaterials ? (
+                                    <div className="flex items-center gap-3 text-indigo-600 py-6">
+                                        <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
+                                        <span className="font-medium">Fetching materials...</span>
+                                    </div>
+                                ) : materials.length > 0 ? (
+                                    <div className="grid gap-4">
+                                        {materials.map((m: any) => (
+                                            <div key={m.id} className="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-indigo-200 transition-colors">
+                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                    <BookIcon size={20} />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-bold text-gray-900 leading-none mb-1">{m.title}</p>
+                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{m.material_type}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-gray-400">
+                                        No specific materials have been shared publicly for this course yet.
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-12 flex flex-col sm:flex-row gap-4">
+                                {(enrollmentStatus.success || selectedCourse.is_enrolled) ? (
+                                    <div className="flex-1 bg-green-50 text-green-700 py-4 px-6 rounded-xl font-bold text-center flex items-center justify-center gap-2 border border-green-200">
+                                        <CheckCircle size={20} /> Already Enrolled
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={handleEnroll}
+                                        disabled={enrollmentStatus.loading}
+                                        className="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                    >
+                                        {enrollmentStatus.loading ? (
+                                            <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                                        ) : null}
+                                        {enrollmentStatus.loading ? 'Processing...' : 'Enroll in Batch'}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setSelectedCourse(null)}
+                                    className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition-all"
+                                >
+                                    Close Details
+                                </button>
+                            </div>
+
+                            {enrollmentStatus.error && (
+                                <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-100 animate-in slide-in-from-top-2">
+                                    <AlertCircle size={18} />
+                                    <span className="text-sm font-medium">{enrollmentStatus.error}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>
