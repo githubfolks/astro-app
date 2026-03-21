@@ -9,7 +9,7 @@ import AstrologerList from '../components/AstrologerList';
 import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
-import Services from '../components/Services';
+import MemoryGuruBanner from '../components/MemoryGuruBanner';
 
 const Home: React.FC = () => {
     useEffect(() => {
@@ -57,7 +57,7 @@ const Home: React.FC = () => {
         <div className="home-page pb-20 md:pb-0">
             <SEO
                 title="Home"
-                description="Discover your destiny with Aadikarta. Connect with expert astrologers for personalized readings, daily horoscopes, and spiritual guidance."
+                description="Unlock your mental potential with Aadikarta's Memory Guru programs. Connect with Rajesh Chaudhary for memory mastery, concentration techniques, and spiritual guidance."
                 structuredData={structuredData}
             />
             <Header />
@@ -66,7 +66,7 @@ const Home: React.FC = () => {
                 <Hero />
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
-                <Services />
+                <MemoryGuruBanner />
 
                 <section className="promise-section py-24 bg-indigo-50/50 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>

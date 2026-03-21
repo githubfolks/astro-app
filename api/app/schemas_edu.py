@@ -107,3 +107,20 @@ class JoinClassResponse(BaseModel):
     token: str
     session_id: int
     role: str
+
+# Course Material Schemas
+class CourseMaterialBase(BaseModel):
+    title: str
+    url: str
+    material_type: str
+
+class CourseMaterialCreate(CourseMaterialBase):
+    course_id: int
+
+class CourseMaterialResponse(CourseMaterialBase):
+    id: int
+    course_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

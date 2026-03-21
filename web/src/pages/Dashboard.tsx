@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
 import RatingModal from '../components/RatingModal';
-import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<any[]>([]);
@@ -297,10 +297,18 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div className="max-w-4xl">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={20} /></span>
-                            My Live Classes
-                        </h3>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={20} /></span>
+                                My Live Classes
+                            </h3>
+                            <button
+                                onClick={() => navigate('/tutor/courses')}
+                                className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-200 transition-colors"
+                            >
+                                Manage Courses
+                            </button>
+                        </div>
                         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                             {sessions.length === 0 ? (
                                 <p className="text-gray-500 text-center">No live classes scheduled.</p>
@@ -345,6 +353,11 @@ export const Dashboard: React.FC = () => {
     const [seekerProfile, setSeekerProfile] = useState<any>({});
     const [profileSaving, setProfileSaving] = useState(false);
 
+    // Education Data for Seeker
+    const [myCourses, setMyCourses] = useState<any[]>([]);
+    const [courseMaterials, setCourseMaterials] = useState<Record<number, any[]>>({});
+    const [loadingMaterials, setLoadingMaterials] = useState<Record<number, boolean>>({});
+
     useEffect(() => {
         if (user?.role === 'SEEKER') {
             // Load wallet balance
@@ -353,8 +366,29 @@ export const Dashboard: React.FC = () => {
             api.consultations.getHistory().then(data => setSeekerHistory(data)).catch(console.error);
             // Load seeker profile
             api.seekers.getProfile().then(setSeekerProfile).catch(console.error);
+            // Load enrolled courses
+            api.edu.getMyCourses().then(setMyCourses).catch(console.error);
         }
     }, [user]);
+
+    const toggleCourseMaterials = async (courseId: number) => {
+        if (courseMaterials[courseId]) {
+            // Simply toggle visibility in UI (or leave it loaded)
+            const updated = { ...courseMaterials };
+            delete updated[courseId];
+            setCourseMaterials(updated);
+            return;
+        }
+
+        setLoadingMaterials(prev => ({ ...prev, [courseId]: true }));
+        try {
+            const mats = await api.edu.getCourseMaterials(courseId);
+            setCourseMaterials(prev => ({ ...prev, [courseId]: mats }));
+        } catch (e) {
+            console.error(e);
+        }
+        setLoadingMaterials(prev => ({ ...prev, [courseId]: false }));
+    };
 
     const handlePaymentSuccess = async (amount: number) => {
         try {
@@ -439,6 +473,65 @@ export const Dashboard: React.FC = () => {
                                                 </div>
                                             ))}
                                         </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Enrolled Courses & Materials for Student */}
+                            <div className="mb-8">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <span className="bg-indigo-600 text-white p-1 rounded-md"><Book size={18} /></span>
+                                    My Learning Materials
+                                </h3>
+                                <div className="space-y-4">
+                                    {myCourses.length === 0 ? (
+                                        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
+                                            <p className="text-sm text-gray-500">You are not enrolled in any courses.</p>
+                                        </div>
+                                    ) : (
+                                        myCourses.map(course => (
+                                            <div key={course.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                                <div 
+                                                    className="p-4 bg-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
+                                                    onClick={() => toggleCourseMaterials(course.id)}
+                                                >
+                                                    <h4 className="font-bold text-gray-900">{course.title}</h4>
+                                                    <span className="text-sm font-semibold text-indigo-600">
+                                                        {courseMaterials[course.id] ? "Hide Materials" : "View Materials"}
+                                                    </span>
+                                                </div>
+                                                
+                                                {courseMaterials[course.id] && (
+                                                    <div className="p-4 border-t border-gray-100">
+                                                        {loadingMaterials[course.id] ? (
+                                                            <p className="text-sm text-gray-500 text-center">Loading materials...</p>
+                                                        ) : courseMaterials[course.id].length === 0 ? (
+                                                            <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">No materials uploaded yet for this course.</p>
+                                                        ) : (
+                                                            <div className="grid gap-3">
+                                                                {courseMaterials[course.id].map((m: any) => (
+                                                                    <a 
+                                                                        key={m.id} 
+                                                                        href={m.url} 
+                                                                        target="_blank" 
+                                                                        rel="noopener noreferrer"
+                                                                        className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group"
+                                                                    >
+                                                                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                                                            <LinkIcon size={18} />
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="font-medium text-gray-900 group-hover:text-indigo-600">{m.title}</p>
+                                                                            <p className="text-xs font-semibold text-gray-500">{m.material_type}</p>
+                                                                        </div>
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
                                     )}
                                 </div>
                             </div>

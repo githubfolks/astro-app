@@ -31,6 +31,8 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
 const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
 const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ default: module.Classroom })));
+const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
+const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -131,6 +133,7 @@ function App() {
                         <Route path="/services/vedic-astrology" element={<VedicAstrology />} />
                         <Route path="/services/tarot-reading" element={<TarotReading />} />
                         <Route path="/services/vastu-shastra" element={<VastuShastra />} />
+                        <Route path="/memory-guru" element={<MemoryGuruAbout />} />
 
                         {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
                         <Route path="/:slug" element={<PageViewer />} />
@@ -157,6 +160,11 @@ function App() {
                         <Route path="/classroom/:sessionId" element={
                             <ProtectedRoute>
                                 <Classroom />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="/tutor/courses" element={
+                            <ProtectedRoute>
+                                <CourseManager />
                             </ProtectedRoute>
                         } />
                     </Routes>

@@ -411,6 +411,13 @@ export const api = {
             const response = await customFetch(`${API_URL}/edu/courses`);
             return handleResponse(response, 'Failed to fetch courses');
         },
+        getMyCourses: async () => {
+            const response = await customFetch(`${API_URL}/edu/my/courses`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch my courses');
+        },
         getSessions: async () => {
             const response = await customFetch(`${API_URL}/edu/sessions`, {
                 headers: await authHeaders(),
@@ -467,6 +474,33 @@ export const api = {
                 headers: await authHeaders()
             });
             return handleResponse(response, 'Failed to join session');
+        },
+        getCourseMaterials: async (courseId: number) => {
+            const response = await customFetch(`${API_URL}/edu/courses/${courseId}/materials`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch course materials');
+        },
+        addCourseMaterial: async (courseId: number, data: any) => {
+            const response = await customFetch(`${API_URL}/edu/courses/${courseId}/materials`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to add course material');
+        },
+        deleteCourseMaterial: async (materialId: number) => {
+            const response = await customFetch(`${API_URL}/edu/materials/${materialId}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to delete course material');
         }
     }
 };

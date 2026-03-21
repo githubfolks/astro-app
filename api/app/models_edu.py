@@ -30,6 +30,7 @@ class Course(Base):
 
     teacher = relationship("User", foreign_keys=[teacher_id])
     batches = relationship("Batch", back_populates="course", cascade="all, delete-orphan")
+    materials = relationship("CourseMaterial", back_populates="course", cascade="all, delete-orphan")
 
 class Batch(Base):
     __tablename__ = "batches"
@@ -85,3 +86,15 @@ class Attendance(Base):
 
     session = relationship("ClassSession", back_populates="attendance_records")
     user = relationship("User")
+
+class CourseMaterial(Base):
+    __tablename__ = "course_materials"
+
+    id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.id"))
+    title = Column(String, nullable=False)
+    url = Column(String, nullable=False)
+    material_type = Column(String, nullable=False) # e.g. "PDF", "LINK", "VIDEO"
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    course = relationship("Course", back_populates="materials")

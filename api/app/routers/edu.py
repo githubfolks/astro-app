@@ -27,6 +27,17 @@ def create_course(course: schemas_edu.CourseCreate, db: Session = Depends(databa
 def list_courses(db: Session = Depends(database.get_db)):
     return db.query(models_edu.Course).all()
 
+@router.get("/my/courses", response_model=List[schemas_edu.CourseResponse])
+def my_courses(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role == models.UserRole.TUTOR:
+        return db.query(models_edu.Course).filter(models_edu.Course.teacher_id == current_user.id).all()
+    elif current_user.role == models.UserRole.SEEKER:
+        # Enrolled courses
+        return db.query(models_edu.Course).join(models_edu.Batch).join(models_edu.BatchEnrollment).filter(
+            models_edu.BatchEnrollment.user_id == current_user.id
+        ).all()
+    return []
+
 # Batch Management
 @router.post("/batches", response_model=schemas_edu.BatchResponse)
 def create_batch(batch: schemas_edu.BatchCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -170,3 +181,75 @@ async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_
                 db.commit()
 
     return {"status": "ok"}
+
+# --- Course Materials ---
+
+@router.post("/courses/{course_id}/materials", response_model=schemas_edu.CourseMaterialResponse)
+def add_course_material(
+    course_id: int, 
+    material: schemas_edu.CourseMaterialCreate, 
+    db: Session = Depends(database.get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != models.UserRole.TUTOR:
+        raise HTTPException(status_code=403, detail="Only tutors can add materials")
+    
+    course = db.query(models_edu.Course).filter(models_edu.Course.id == course_id, models_edu.Course.teacher_id == current_user.id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found or unauthorized")
+
+    db_material = models_edu.CourseMaterial(
+        course_id=course.id,
+        title=material.title,
+        url=material.url,
+        material_type=material.material_type
+    )
+    db.add(db_material)
+    db.commit()
+    db.refresh(db_material)
+    return db_material
+
+@router.get("/courses/{course_id}/materials", response_model=List[schemas_edu.CourseMaterialResponse])
+def get_course_materials(
+    course_id: int, 
+    db: Session = Depends(database.get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    # Only allow if user is the teacher or an enrolled student
+    course = db.query(models_edu.Course).filter(models_edu.Course.id == course_id).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    if current_user.role == models.UserRole.SEEKER:
+        # Check enrollment across ANY batch in this course
+        enrollment = db.query(models_edu.BatchEnrollment).join(models_edu.Batch).filter(
+            models_edu.BatchEnrollment.user_id == current_user.id,
+            models_edu.Batch.course_id == course_id
+        ).first()
+        if not enrollment:
+            raise HTTPException(status_code=403, detail="Not enrolled in this course")
+    elif current_user.role == models.UserRole.TUTOR and course.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to view these materials")
+
+    return db.query(models_edu.CourseMaterial).filter(models_edu.CourseMaterial.course_id == course_id).all()
+
+@router.delete("/materials/{material_id}")
+def delete_course_material(
+    material_id: int, 
+    db: Session = Depends(database.get_db), 
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != models.UserRole.TUTOR:
+        raise HTTPException(status_code=403, detail="Only tutors can delete materials")
+
+    material = db.query(models_edu.CourseMaterial).filter(models_edu.CourseMaterial.id == material_id).first()
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    course = db.query(models_edu.Course).filter(models_edu.Course.id == material.course_id).first()
+    if course.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this material")
+
+    db.delete(material)
+    db.commit()
+    return {"status": "deleted"}
