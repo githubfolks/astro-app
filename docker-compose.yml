@@ -9,7 +9,7 @@ services:
     environment:
       # Use host.docker.internal to access db on host machine
       # Also including the search_path option we added earlier
-      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@host.docker.internal:5432/postgres?options=-csearch_path%3Dastroapp
+      SQLALCHEMY_DATABASE_URL: postgresql://admin:password123@db:5432/postgres?options=-csearch_path%3Dastroapp
       REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
@@ -32,7 +32,7 @@ services:
     build: 
       context: ./web
       args:
-        VITE_API_URL: http://localhost:8000
+        VITE_API_URL: https://aadikarta.org/api
     container_name: astro_web
     ports:
       - "3002:80"
@@ -41,7 +41,7 @@ services:
     build:
       context: ./admin
       args:
-        VITE_API_URL: http://localhost:8000
+        VITE_API_URL: https://aadikarta.org/api
     container_name: astro_admin
     ports:
       - "3001:80"
