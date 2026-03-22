@@ -69,7 +69,7 @@ const MemoryGuruAbout: React.FC = () => {
                                 Courses <ArrowRight size={20} />
                             </Link>
                             <Link
-                                to="/demo"
+                                to="#"
                                 className="bg-white hover:bg-gray-50 text-indigo-900 border border-gray-200 px-8 py-4 rounded-xl font-bold text-lg transition-transform hover:scale-105 flex items-center justify-center gap-2 shadow-sm"
                             >
                                 <Play size={20} className="text-indigo-600" /> Watch Live Demo
@@ -232,7 +232,7 @@ const MemoryGuruAbout: React.FC = () => {
                                     Courses <ArrowRight size={20} />
                                 </Link>
                                 <Link
-                                    to="/demo"
+                                    to="#"
                                     className="bg-white hover:bg-gray-50 text-indigo-900 border border-gray-200 px-8 py-4 rounded-xl font-bold text-lg transition-transform hover:scale-105 flex items-center justify-center gap-2 shadow-sm"
                                 >
                                     <Play size={20} className="text-indigo-600" /> Watch Live Demo
