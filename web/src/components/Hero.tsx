@@ -18,21 +18,6 @@ const Hero: React.FC = () => {
                         <Link to="/chat-with-astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20">Chat with Astrologer</Link>
                         <Link to="/memory-guru" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105">Memory Guru</Link>
                     </div>
-
-                    <div className="hero-stats mt-16 grid grid-cols-3 gap-8">
-                        <div className="stat-item">
-                            <span className="stat-value text-3xl font-bold text-white block">500+</span>
-                            <span className="stat-label text-indigo-200 text-sm opacity-80 uppercase tracking-wider">Verified Experts</span>
-                        </div>
-                        <div className="stat-item border-l border-white/10 pl-8">
-                            <span className="stat-value text-3xl font-bold text-white block">1M+</span>
-                            <span className="stat-label text-indigo-200 text-sm opacity-80 uppercase tracking-wider">Happy Users</span>
-                        </div>
-                        <div className="stat-item border-l border-white/10 pl-8">
-                            <span className="stat-value text-3xl font-bold text-white block">24/7</span>
-                            <span className="stat-label text-indigo-200 text-sm opacity-80 uppercase tracking-wider">Live Support</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div className="hero-image-container relative">
