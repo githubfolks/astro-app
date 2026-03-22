@@ -74,7 +74,7 @@ const Book: React.FC = () => {
             return;
         }
 
-         setEnrollmentStatus({ loading: true, success: false, error: null });
+        setEnrollmentStatus({ loading: true, success: false, error: null });
         try {
             if (selectedCourse.price > 0) {
                 const confirmed = window.confirm(`This course costs ₹${selectedCourse.price}. The amount will be deducted from your wallet balance. Do you want to proceed?`);
@@ -133,7 +133,7 @@ const Book: React.FC = () => {
                                     <div className="absolute inset-0 bg-yellow-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
                                     <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-8 border-indigo-800/50 shadow-2xl">
                                         <img
-                                            src="/assets/memory_gruru/rajesh-1.jpeg"
+                                            src="/assets/memory_guru/rajesh-1.jpeg"
                                             alt="Rajesh Chaudhary - Memory Guru"
                                             className="w-full h-full object-cover"
                                         />
@@ -242,7 +242,7 @@ const Book: React.FC = () => {
                                 <BookIcon size={16} /> Course Curriculum
                             </div>
 
-                             <h2 className="text-3xl md:text-4xl text-gray-900 mb-4 leading-tight">
+                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-4 leading-tight">
                                 {selectedCourse.title}
                             </h2>
 
