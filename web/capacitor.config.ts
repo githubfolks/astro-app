@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // Allow API calls to production server
-    allowNavigation: ['astro-app-api.vercel.app'],
+    allowNavigation: ['astro-app-api.vercel.app', 'dev.aadikarta.org'],
   },
   plugins: {
     CapacitorHttp: {
