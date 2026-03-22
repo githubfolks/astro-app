@@ -16,6 +16,13 @@ class SessionStatus(str, Enum):
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
 
+class UserSimple(BaseModel):
+    id: int
+    email: str
+
+    class Config:
+        from_attributes = True
+
 # Batch Schemas
 class BatchBase(BaseModel):
     name: str # e.g. "Batch A"
@@ -29,6 +36,8 @@ class BatchResponse(BatchBase):
     id: int
     course_id: int
     created_at: datetime
+    enrollments: List["BatchEnrollmentResponse"] = []
+    sessions: List["ClassSessionResponse"] = []
 
     class Config:
         from_attributes = True
@@ -39,9 +48,17 @@ class CourseBase(BaseModel):
     description: Optional[str] = None
     price: Decimal = 0.0
     thumbnail_url: Optional[str] = None
+    is_active: bool = True
 
 class CourseCreate(CourseBase):
     teacher_id: int
+
+class CourseUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[Decimal] = None
+    thumbnail_url: Optional[str] = None
+    is_active: Optional[bool] = None
 
 class CourseResponse(CourseBase):
     id: int
@@ -61,9 +78,17 @@ class ClassSessionBase(BaseModel):
     scheduled_start: datetime
     scheduled_end: datetime
     status: SessionStatus = SessionStatus.UPCOMING
+    is_active: bool = True
 
 class ClassSessionCreate(ClassSessionBase):
     batch_id: int
+
+class ClassSessionUpdate(BaseModel):
+    title: Optional[str] = None
+    scheduled_start: Optional[datetime] = None
+    scheduled_end: Optional[datetime] = None
+    status: Optional[SessionStatus] = None
+    is_active: Optional[bool] = None
 
 class ClassSessionResponse(ClassSessionBase):
     id: int
@@ -85,6 +110,7 @@ class BatchEnrollmentResponse(BaseModel):
     user_id: int
     batch_id: int
     enrolled_at: datetime
+    user: Optional[UserSimple] = None
 
     class Config:
         from_attributes = True
@@ -123,6 +149,27 @@ class CourseMaterialResponse(CourseMaterialBase):
     id: int
     course_id: int
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# Admin Report Schemas
+class AdminEnrollmentDetail(BaseModel):
+    id: int
+    user_id: int
+    user_email: str
+    course_title: str
+    batch_name: str
+    price: Decimal
+    enrolled_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class AdminEduStatsResponse(BaseModel):
+    total_enrollments: int
+    total_earnings: Decimal
+    enrollments: List[AdminEnrollmentDetail]
 
     class Config:
         from_attributes = True

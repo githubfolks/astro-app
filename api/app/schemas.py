@@ -20,6 +20,8 @@ class TransactionType(str, Enum):
     WITHDRAWAL = "WITHDRAWAL"
     CHAT_DEDUCTION = "CHAT_DEDUCTION"
     CHAT_REFUND = "CHAT_REFUND"
+    PAYMENT_GATEWAY = "PAYMENT_GATEWAY"
+    COURSE_PURCHASE = "COURSE_PURCHASE"
 
 # Auth Schemas
 class UserBase(BaseModel):
@@ -196,7 +198,9 @@ class AdminUserListItem(BaseModel):
     phone_number: Optional[str]
     role: UserRole
     is_verified: bool
+    is_active: bool
     created_at: datetime
+    wallet_balance: Optional[Decimal] = 0.0
     class Config:
         from_attributes = True
 

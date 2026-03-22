@@ -22,6 +22,25 @@ export const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
+    // Helper to format session time
+    const formatSessionTime = (startStr: string, endStr: string) => {
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        const options: Intl.DateTimeFormatOptions = {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        };
+        return `${start.toLocaleDateString(undefined, options)} - ${end.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
+    };
+
+    // Helper to check if session is active (10 min buffer)
+    const isSessionActive = (startStr: string, endStr: string) => {
+        const start = new Date(startStr);
+        const end = new Date(endStr);
+        const now = new Date();
+        const startTimeWithBuffer = new Date(start.getTime() - 10 * 60000); // 10 mins before
+        return now >= startTimeWithBuffer && now <= end;
+    };
+
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -292,7 +311,7 @@ export const Dashboard: React.FC = () => {
                 <Header />
                 <main className="flex-1 container mx-auto p-6 md:p-8">
                     <div className="text-center md:text-left mb-8">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {user?.full_name || 'Tutor'}</h2>
+                        <h2 className="text-3xl text-gray-900 mb-2">Welcome, {user?.full_name || 'Tutor'}</h2>
                         <p className="text-gray-600">Manage your live classes and sessions.</p>
                     </div>
 
@@ -314,20 +333,33 @@ export const Dashboard: React.FC = () => {
                                 <p className="text-gray-500 text-center">No live classes scheduled.</p>
                             ) : (
                                 <div className="space-y-4">
-                                    {sessions.map((s: any) => (
-                                        <div key={s.id} className="flex justify-between items-center p-4 bg-indigo-50 rounded-lg border border-indigo-100">
-                                            <div>
-                                                <h4 className="font-bold text-indigo-900">{s.title}</h4>
-                                                <p className="text-sm text-indigo-700">Role: Moderator (Host)</p>
+                                    {sessions.map((s: any) => {
+                                        const active = isSessionActive(s.scheduled_start, s.scheduled_end);
+                                        const isEnded = new Date(s.scheduled_end) < new Date();
+                                        return (
+                                            <div key={s.id} className="flex justify-between items-center p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                                                <div>
+                                                    <h4 className="font-bold text-indigo-900">{s.title}</h4>
+                                                    <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1">
+                                                        <Clock size={14} /> {formatSessionTime(s.scheduled_start, s.scheduled_end)}
+                                                    </p>
+                                                    {!active && !isEnded && new Date(s.scheduled_start) > new Date() && (
+                                                        <p className="text-[10px] text-amber-600 font-medium mt-1">Room available 10 mins before start</p>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    onClick={() => navigate(`/classroom/${s.id}`)}
+                                                    disabled={!active}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${active
+                                                            ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                                                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                        }`}
+                                                >
+                                                    {isEnded ? 'Session Ended' : 'Start Room'}
+                                                </button>
                                             </div>
-                                            <button
-                                                onClick={() => navigate(`/classroom/${s.id}`)}
-                                                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700"
-                                            >
-                                                Start Room
-                                            </button>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
@@ -458,20 +490,30 @@ export const Dashboard: React.FC = () => {
                                         <p className="text-sm text-gray-500">No active classes to join.</p>
                                     ) : (
                                         <div className="space-y-3">
-                                            {sessions.map((s: any) => (
-                                                <div key={s.id} className="flex justify-between items-center p-3 bg-indigo-50/50 rounded-lg border border-indigo-100">
-                                                    <div>
-                                                        <h4 className="font-semibold text-indigo-900">{s.title}</h4>
-                                                        <p className="text-xs text-indigo-700">Course Class</p>
+                                            {sessions.map((s: any) => {
+                                                const active = isSessionActive(s.scheduled_start, s.scheduled_end);
+                                                const isEnded = new Date(s.scheduled_end) < new Date();
+                                                return (
+                                                    <div key={s.id} className="flex justify-between items-center p-3 bg-indigo-50/50 rounded-lg border border-indigo-100">
+                                                        <div>
+                                                            <h4 className="font-semibold text-indigo-900">{s.title}</h4>
+                                                            <p className="text-[10px] text-indigo-600 flex items-center gap-1 mt-0.5">
+                                                                <Clock size={12} /> {formatSessionTime(s.scheduled_start, s.scheduled_end)}
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => navigate(`/classroom/${s.id}`)}
+                                                            disabled={!active}
+                                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${active
+                                                                    ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                                }`}
+                                                        >
+                                                            {isEnded ? 'Ended' : 'Join Class'}
+                                                        </button>
                                                     </div>
-                                                    <button
-                                                        onClick={() => navigate(`/classroom/${s.id}`)}
-                                                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-indigo-700"
-                                                    >
-                                                        Join Class
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -491,7 +533,7 @@ export const Dashboard: React.FC = () => {
                                     ) : (
                                         myCourses.map(course => (
                                             <div key={course.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                                                <div 
+                                                <div
                                                     className="p-4 bg-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
                                                     onClick={() => toggleCourseMaterials(course.id)}
                                                 >
@@ -500,7 +542,7 @@ export const Dashboard: React.FC = () => {
                                                         {courseMaterials[course.id] ? "Hide Materials" : "View Materials"}
                                                     </span>
                                                 </div>
-                                                
+
                                                 {courseMaterials[course.id] && (
                                                     <div className="p-4 border-t border-gray-100">
                                                         {loadingMaterials[course.id] ? (
@@ -510,10 +552,10 @@ export const Dashboard: React.FC = () => {
                                                         ) : (
                                                             <div className="grid gap-3">
                                                                 {courseMaterials[course.id].map((m: any) => (
-                                                                    <a 
-                                                                        key={m.id} 
-                                                                        href={m.url} 
-                                                                        target="_blank" 
+                                                                    <a
+                                                                        key={m.id}
+                                                                        href={m.url}
+                                                                        target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="flex items-center gap-3 p-3 border border-gray-100 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/30 transition-all group"
                                                                     >

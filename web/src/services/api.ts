@@ -436,6 +436,18 @@ export const api = {
             });
             return handleResponse(response, 'Failed to create course');
         },
+        updateCourse: async (courseId: number, data: any) => {
+            const response = await customFetch(`${API_URL}/edu/courses/${courseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to update course');
+        },
         createBatch: async (data: any) => {
             const response = await customFetch(`${API_URL}/edu/batches`, {
                 method: 'POST',
@@ -457,6 +469,17 @@ export const api = {
                 body: JSON.stringify(data)
             });
             return handleResponse(response, 'Failed to schedule session');
+        },
+        updateSession: async (sessionId: number, data: any) => {
+            const response = await customFetch(`${API_URL}/edu/sessions/${sessionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to update session');
         },
         enroll: async (data: any) => {
             const response = await customFetch(`${API_URL}/edu/enroll`, {

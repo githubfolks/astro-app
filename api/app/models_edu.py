@@ -27,6 +27,7 @@ class Course(Base):
     thumbnail_url = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    is_active = Column(Boolean, default=True)
 
     teacher = relationship("User", foreign_keys=[teacher_id])
     batches = relationship("Batch", back_populates="course", cascade="all, delete-orphan")
@@ -58,6 +59,7 @@ class ClassSession(Base):
     actual_start = Column(DateTime(timezone=True), nullable=True)
     actual_end = Column(DateTime(timezone=True), nullable=True)
     status = Column(Enum(SessionStatus), default=SessionStatus.UPCOMING)
+    is_active = Column(Boolean, default=True)
 
     batch = relationship("Batch", back_populates="sessions")
     attendance_records = relationship("Attendance", back_populates="session", cascade="all, delete-orphan")

@@ -148,6 +148,7 @@ export default function Users() {
                             <TableHead>Email</TableHead>
                             <TableHead>Phone</TableHead>
                             <TableHead>Role</TableHead>
+                            <TableHead>Balance</TableHead>
                             <TableHead>Verified</TableHead>
                             <TableHead>Active</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
@@ -168,6 +169,9 @@ export default function Users() {
                                     )}>
                                         {user.role}
                                     </span>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    ₹{parseFloat(user.wallet_balance || 0).toFixed(2)}
                                 </TableCell>
                                 <TableCell>
                                     {user.is_verified ? (
@@ -196,7 +200,7 @@ export default function Users() {
                         ))}
                         {users.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                                     No users found
                                 </TableCell>
                             </TableRow>

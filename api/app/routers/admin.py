@@ -8,6 +8,7 @@ import os
 from datetime import datetime, timedelta
 from .. import models, schemas, database
 from .. import models, schemas, database
+from .. import models_edu, schemas_edu
 from .auth import get_current_admin, get_password_hash
 import cloudinary
 import cloudinary.uploader
@@ -135,7 +136,12 @@ def list_users(
     is_verified: Optional[str] = None, # 'true', 'false', or None
     db: Session = Depends(database.get_db)
 ):
-    query = db.query(models.User)
+    query = db.query(
+        models.User,
+        models.UserWallet.balance.label("wallet_balance")
+    ).outerjoin(
+        models.UserWallet, models.User.id == models.UserWallet.user_id
+    )
     
     # Default to SEEKER if no role specified
     if role:
@@ -154,9 +160,15 @@ def list_users(
             query = query.filter(models.User.is_verified == False)
 
     total = query.count()
-    users = query.order_by(models.User.id.desc()).offset(skip).limit(limit).all()
+    results = query.order_by(models.User.id.desc()).offset(skip).limit(limit).all()
     
-    return {"total": total, "users": users} 
+    users_with_balance = []
+    for user, balance in results:
+        user_data = schemas.AdminUserListItem.from_orm(user)
+        user_data.wallet_balance = balance or 0.0
+        users_with_balance.append(user_data)
+
+    return {"total": total, "users": users_with_balance}
 
 # Let's define a proper schema for listing users locally here or in schemas.py
 # For speed I'll just return raw dicts by dropping response_model if strict schema not needed immediately, 
@@ -417,6 +429,14 @@ def get_user_consultations(user_id: int, db: Session = Depends(database.get_db))
     # For now returning connection as is.
     return consultations
 
+@router.get("/users/{user_id}/wallet-history", response_model=List[schemas.WalletTransaction])
+def get_user_wallet_history(user_id: int, db: Session = Depends(database.get_db)):
+    # Fetch all wallet transactions for the user
+    transactions = db.query(models.WalletTransaction).filter(
+        models.WalletTransaction.user_id == user_id
+    ).order_by(models.WalletTransaction.created_at.desc()).all()
+    return transactions
+
 @router.get("/astrologers/pending")
 def list_pending_astrologers(db: Session = Depends(database.get_db)):
     # Join User and Profile to get pending astrologers
@@ -462,3 +482,56 @@ def approve_astrologer(user_id: int, db: Session = Depends(database.get_db)):
     user.is_active = True # Allow login
     db.commit()
     return {"message": "Astrologer approved successfully"}
+
+@router.get("/edu/stats", response_model=schemas_edu.AdminEduStatsResponse)
+def get_edu_stats(
+    days: Optional[int] = 30,
+    batch_id: Optional[int] = None,
+    course_id: Optional[int] = None,
+    db: Session = Depends(database.get_db)
+):
+    query = db.query(
+        models_edu.BatchEnrollment,
+        models.User.email,
+        models_edu.Course.title,
+        models_edu.Batch.name,
+        models_edu.Course.price
+    ).join(
+        models.User, models_edu.BatchEnrollment.user_id == models.User.id
+    ).join(
+        models_edu.Batch, models_edu.BatchEnrollment.batch_id == models_edu.Batch.id
+    ).join(
+        models_edu.Course, models_edu.Batch.course_id == models_edu.Course.id
+    )
+
+    if days and days > 0:
+        start_date = datetime.utcnow() - timedelta(days=days)
+        query = query.filter(models_edu.BatchEnrollment.enrolled_at >= start_date)
+
+    if batch_id:
+        query = query.filter(models_edu.BatchEnrollment.batch_id == batch_id)
+    
+    if course_id:
+        query = query.filter(models_edu.Batch.course_id == course_id)
+
+    results = query.order_by(models_edu.BatchEnrollment.enrolled_at.desc()).all()
+
+    enrollments = []
+    total_earnings = 0.0
+    for enrollment, email, course_title, batch_name, price in results:
+        enrollments.append(schemas_edu.AdminEnrollmentDetail(
+            id=enrollment.id,
+            user_id=enrollment.user_id,
+            user_email=email,
+            course_title=course_title,
+            batch_name=batch_name,
+            price=price,
+            enrolled_at=enrollment.enrolled_at
+        ))
+        total_earnings += float(price or 0)
+
+    return schemas_edu.AdminEduStatsResponse(
+        total_enrollments=len(enrollments),
+        total_earnings=total_earnings,
+        enrollments=enrollments
+    )

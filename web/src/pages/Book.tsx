@@ -74,8 +74,16 @@ const Book: React.FC = () => {
             return;
         }
 
-        setEnrollmentStatus({ loading: true, success: false, error: null });
+         setEnrollmentStatus({ loading: true, success: false, error: null });
         try {
+            if (selectedCourse.price > 0) {
+                const confirmed = window.confirm(`This course costs ₹${selectedCourse.price}. The amount will be deducted from your wallet balance. Do you want to proceed?`);
+                if (!confirmed) {
+                    setEnrollmentStatus({ loading: false, success: false, error: null });
+                    return;
+                }
+            }
+
             await api.edu.enroll({
                 user_id: user?.id,
                 batch_id: selectedCourse.batches[0].id
@@ -83,10 +91,14 @@ const Book: React.FC = () => {
             setEnrollmentStatus({ loading: false, success: true, error: null });
             loadCourses(); // Refresh courses to get updated is_enrolled status
         } catch (e: any) {
+            let errorMsg = e.message || 'Enrollment failed. Please try again or contact support.';
+            if (e.status === 402) {
+                errorMsg = "Insufficient wallet balance. Please recharge your wallet to enroll.";
+            }
             setEnrollmentStatus({
                 loading: false,
                 success: false,
-                error: e.message || 'Enrollment failed. Please try again or contact support.'
+                error: errorMsg
             });
         }
     };
@@ -169,9 +181,13 @@ const Book: React.FC = () => {
                                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Top Rated</span>
                                             </div>
 
-                                            <h3 className="step-title font-bold">
+                                            <h3 className="step-title font-bold mb-1">
                                                 {course.title}
                                             </h3>
+                                            <div className="mb-6 flex items-baseline gap-1">
+                                                <span className="text-2xl font-black text-indigo-600">₹{course.price}</span>
+                                                {course.price === 0 && <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded-md">Free</span>}
+                                            </div>
 
                                             <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">
                                                 {course.description || "Unlock the secrets of cosmic wisdom with this comprehensive course guided by our verified experts."}
@@ -226,9 +242,14 @@ const Book: React.FC = () => {
                                 <BookIcon size={16} /> Course Curriculum
                             </div>
 
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-6 leading-tight">
+                             <h2 className="text-3xl md:text-4xl text-gray-900 mb-4 leading-tight">
                                 {selectedCourse.title}
                             </h2>
+
+                            <div className="bg-indigo-50 inline-flex flex-col px-6 py-3 rounded-2xl border border-indigo-100 mb-8">
+                                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-0.5">Course Fee</span>
+                                <span className="text-2xl font-black text-indigo-600">₹{selectedCourse.price}</span>
+                            </div>
 
                             <div className="prose prose-indigo max-w-none text-gray-600 mb-10 text-lg leading-relaxed">
                                 {selectedCourse.description || "Detailed course overview goes here..."}
