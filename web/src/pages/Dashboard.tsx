@@ -292,7 +292,7 @@ export const Dashboard: React.FC = () => {
                 <Header />
                 <main className="flex-1 container mx-auto p-6 md:p-8">
                     <div className="text-center md:text-left mb-8">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Tutor Dashboard</h2>
+                        <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {user?.full_name || 'Tutor'}</h2>
                         <p className="text-gray-600">Manage your live classes and sessions.</p>
                     </div>
 
