@@ -66,19 +66,19 @@ const Book: React.FC = () => {
         }
 
         if (!selectedCourse.batches || selectedCourse.batches.length === 0) {
-            setEnrollmentStatus({ 
-                loading: false, 
-                success: false, 
-                error: 'No active batches available for this course. Please contact support.' 
+            setEnrollmentStatus({
+                loading: false,
+                success: false,
+                error: 'No active batches available for this course. Please contact support.'
             });
             return;
         }
 
         setEnrollmentStatus({ loading: true, success: false, error: null });
         try {
-            await api.edu.enroll({ 
-                user_id: user?.id, 
-                batch_id: selectedCourse.batches[0].id 
+            await api.edu.enroll({
+                user_id: user?.id,
+                batch_id: selectedCourse.batches[0].id
             });
             setEnrollmentStatus({ loading: false, success: true, error: null });
             loadCourses(); // Refresh courses to get updated is_enrolled status
@@ -121,7 +121,7 @@ const Book: React.FC = () => {
                                     <div className="absolute inset-0 bg-yellow-400 rounded-full blur-2xl opacity-20 animate-pulse"></div>
                                     <div className="relative w-64 h-64 md:w-80 md:h-80 rounded-full overflow-hidden border-8 border-indigo-800/50 shadow-2xl">
                                         <img
-                                            src="/assets/rajesh.jpg"
+                                            src="/assets/memory_gruru/rajesh-1.jpeg"
                                             alt="Rajesh Chaudhary - Memory Guru"
                                             className="w-full h-full object-cover"
                                         />

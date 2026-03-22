@@ -77,7 +77,7 @@ const MemoryGuruBanner: React.FC = () => {
                             <div className="absolute inset-0 border-2 border-indigo-200 border-dashed rounded-[3rem] -m-4"></div>
 
                             <img
-                                src="/assets/rajesh.jpg"
+                                src="/assets/memory_guru/rajesh-1.jpeg"
                                 alt="Rajesh Chaudhary - Memory Guru"
                                 className="w-full h-[500px] object-cover rounded-[2.5rem] shadow-2xl relative z-10 filter contrast-110"
                             />

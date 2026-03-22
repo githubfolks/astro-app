@@ -39,7 +39,7 @@ const MemoryGuruAbout: React.FC = () => {
                                 <div className="relative group">
                                     <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-[2.5rem] blur-xl opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                                     <img
-                                        src="/assets/rajesh.jpg"
+                                        src="/assets/memory_guru/rajesh-1.jpeg"
                                         alt="Rajesh Chaudhary - Memory Guru"
                                         className="relative rounded-[2.5rem] shadow-2xl w-full border-8 border-white object-cover aspect-[4/5] transform transition-transform duration-500 hover:scale-[1.02]"
                                     />
@@ -158,35 +158,25 @@ const MemoryGuruAbout: React.FC = () => {
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Watch in Action</span>
                             <h2 className="text-3xl md:text-4xl text-gray-900 mb-10">Workshop & <span className="gradient-text">Stage Videos</span></h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                                <div className="space-y-4 group text-center md:text-left">
-                                    <div className="relative aspect-video bg-gray-900 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transition-transform duration-500 group-hover:-translate-y-2">
-                                        <div className="absolute inset-0 flex items-center justify-center bg-indigo-900/40 group-hover:bg-indigo-900/20 transition-all cursor-pointer z-10">
-                                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
-                                                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-indigo-600 border-b-[12px] border-b-transparent ml-1"></div>
-                                            </div>
+                                {[
+                                    { url: "https://www.youtube.com/embed/NrX2DzcYa3A", title: "Scientific Memory Systems: Live Institutional Demo" },
+                                    { url: "https://www.youtube.com/embed/46r5IVlZ4CU", title: "Memory Mastery: Quick Techniques for Students" },
+                                    { url: "https://www.youtube.com/embed/nyqOo_qwVz4", title: "Brain Potential & Focus: Stage Workshop Highlights" },
+                                    { url: "https://www.youtube.com/embed/X_qNtECJ_d4", title: "Memory Guru in Action: Public Seminar Snippet" }
+                                ].map((video, idx) => (
+                                    <div key={idx} className="space-y-4 group text-center md:text-left">
+                                        <div className="relative aspect-video bg-gray-900 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transition-transform duration-500 hover:-translate-y-2">
+                                            <iframe
+                                                src={video.url}
+                                                title={video.title}
+                                                className="w-full h-full border-0"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowFullScreen
+                                            ></iframe>
                                         </div>
-                                        <img src="https://images.unsplash.com/photo-1540575861501-7ad05823ef23?q=80&w=2670&auto=format&fit=crop" alt="Workshop snippet" className="w-full h-full object-cover opacity-80" />
-                                        <div className="absolute top-6 left-6 bg-red-600 text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 z-20">
-                                            <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span> LIVE SEMINAR
-                                        </div>
+                                        <p className="text-gray-900 font-bold text-lg px-2">{video.title}</p>
                                     </div>
-                                    <p className="text-gray-900 font-bold text-lg px-2">Scientific Memory Systems: Live Institutional Demo</p>
-                                </div>
-
-                                <div className="space-y-4 group text-center md:text-left">
-                                    <div className="relative aspect-video bg-gray-900 rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white transition-transform duration-500 group-hover:-translate-y-2">
-                                        <div className="absolute inset-0 flex items-center justify-center bg-indigo-900/40 group-hover:bg-indigo-900/20 transition-all cursor-pointer z-10">
-                                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
-                                                <div className="w-0 h-0 border-t-[12px] border-t-transparent border-l-[20px] border-l-purple-600 border-b-[12px] border-b-transparent ml-1"></div>
-                                            </div>
-                                        </div>
-                                        <img src="https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=2670&auto=format&fit=crop" alt="Stage appearance" className="w-full h-full object-cover opacity-80" />
-                                        <div className="absolute top-6 left-6 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white px-4 py-1.5 rounded-full text-xs font-bold z-20">
-                                            INSTAGRAM REEL
-                                        </div>
-                                    </div>
-                                    <p className="text-gray-900 font-bold text-lg px-2">Memory Mastery: Quick Techniques for Students</p>
-                                </div>
+                                ))}
                             </div>
                         </div>
 
@@ -196,12 +186,12 @@ const MemoryGuruAbout: React.FC = () => {
                             <h2 className="text-3xl md:text-4xl text-gray-900 mb-10">Event <span className="gradient-text">Gallery</span></h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {[
-                                    { img: 'https://images.unsplash.com/photo-1540575861501-7ad05823ef23?q=80&w=2670&auto=format&fit=crop', title: 'Seminar Photographs' },
-                                    { img: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=2670&auto=format&fit=crop', title: 'Stage Appearances' },
-                                    { img: 'https://images.unsplash.com/photo-1524178232363-1fb28f74b0cd?q=80&w=2670&auto=format&fit=crop', title: 'Institutional Events' },
-                                    { img: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2670&auto=format&fit=crop', title: 'Workshop Highlights' }
+                                    { img: '/assets/memory_guru/mixcollage-1.jpg', title: 'Seminar Photographs' },
+                                    { img: '/assets/memory_guru/mixcollage-2.jpg', title: 'Stage Appearances' },
+                                    { img: '/assets/memory_guru/mixcollage-3.jpg', title: 'Institutional Events' },
+                                    { img: '/assets/memory_guru/mixcollage-4.jpg', title: 'Workshop Highlights' }
                                 ].map((item, i) => (
-                                    <div key={i} className="group relative overflow-hidden rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-64 border border-white">
+                                    <div key={i} className="group relative overflow-hidden rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-128 border border-white">
                                         <img src={item.img} alt={item.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent flex items-end p-8 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <p className="text-white text-xl">{item.title}</p>
