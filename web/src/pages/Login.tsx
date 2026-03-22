@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import './Auth.css';
 
 export const Login: React.FC = () => {
@@ -47,6 +48,9 @@ export const Login: React.FC = () => {
 
     return (
         <div className="auth-container">
+            <Link to="/" className="back-to-home-link">
+                <ArrowLeft size={20} /> Back to Home
+            </Link>
             <div className="decor-circle decor-1"></div>
             <div className="decor-circle decor-2"></div>
 

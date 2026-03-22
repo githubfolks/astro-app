@@ -2,7 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import os
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu
+from . import models_edu # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -38,6 +39,8 @@ origins = [
     "http://localhost:3001",
     "http://localhost:3002",
     "http://localhost:5173",
+    "http://192.168.1.13:5173",
+    "http://127.0.0.1:5173",
     "https://astro-app-web.vercel.app",
     "https://astro-app-admin.vercel.app",
     "https://dev.aadikarta.org",
@@ -85,7 +88,7 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.cloudinary.com"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.cloudinary.com http://localhost:8001 http://192.168.1.13:8001"
     return response
 
 @app.middleware("http")
@@ -126,6 +129,7 @@ app.include_router(public.router)
 app.include_router(payment.router)
 app.include_router(payouts.router)
 app.include_router(kundli.router)
+app.include_router(edu.router)
 
 @app.get("/")
 def read_root():

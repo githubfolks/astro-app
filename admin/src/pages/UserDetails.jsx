@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle } from 'lucide-react';
 import api from '../services/api';
 import { Button } from '../components/ui';
+import clsx from 'clsx';
 
 export default function UserDetails() {
     const { id } = useParams();
@@ -10,6 +11,7 @@ export default function UserDetails() {
 
     const [data, setData] = useState(null);
     const [consultations, setConsultations] = useState([]);
+    const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -19,12 +21,14 @@ export default function UserDetails() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [userRes, consultRes] = await Promise.all([
+            const [userRes, consultRes, transRes] = await Promise.all([
                 api.get(`/admin/users/${id}/details`),
-                api.get(`/admin/users/${id}/consultations`)
+                api.get(`/admin/users/${id}/consultations`),
+                api.get(`/admin/users/${id}/wallet-history`)
             ]);
             setData(userRes.data);
             setConsultations(consultRes.data);
+            setTransactions(transRes.data);
         } catch (error) {
             console.error("Failed to fetch user details", error);
         } finally {
@@ -181,6 +185,53 @@ export default function UserDetails() {
                             </table>
                         </div>
                     </div>
+
+                    {/* Wallet History Section */}
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mt-6">
+                        <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                            <h3 className="font-semibold text-gray-900">Wallet Transaction History</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-gray-50 text-gray-500 font-medium">
+                                    <tr>
+                                        <th className="px-4 py-3">Date</th>
+                                        <th className="px-4 py-3">Type</th>
+                                        <th className="px-4 py-3">Reference/Description</th>
+                                        <th className="px-4 py-3 text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {transactions.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="4" className="px-4 py-8 text-center text-gray-500">No transactions found.</td>
+                                        </tr>
+                                    ) : (
+                                        transactions.map((t) => (
+                                            <tr key={t.id} className="hover:bg-gray-50/50">
+                                                <td className="px-4 py-3 text-gray-600">
+                                                    {new Date(t.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <TransactionBadge type={t.transaction_type} />
+                                                </td>
+                                                <td className="px-4 py-3 text-gray-500">
+                                                    <div className="text-xs font-medium text-gray-700">{t.reference_id || "-"}</div>
+                                                    <div className="text-[10px] text-gray-400 max-w-[250px] truncate" title={t.description}>{t.description}</div>
+                                                </td>
+                                                <td className={clsx(
+                                                    "px-4 py-3 text-right font-medium",
+                                                    parseFloat(t.amount) > 0 ? "text-green-600" : "text-red-600"
+                                                )}>
+                                                    {parseFloat(t.amount) > 0 ? "+" : ""}₹{Math.abs(parseFloat(t.amount)).toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -200,6 +251,24 @@ function StatusBadge({ status }) {
     return (
         <span className={`px-2 py-1 rounded-full text-xs font-medium border ${styles[status] || defaultStyle}`}>
             {status}
+        </span>
+    );
+}
+
+function TransactionBadge({ type }) {
+    const styles = {
+        DEPOSIT: "bg-green-50 text-green-700 border-green-200",
+        PAYMENT_GATEWAY: "bg-green-50 text-green-700 border-green-200",
+        CHAT_REFUND: "bg-green-50 text-green-700 border-green-200",
+        WITHDRAWAL: "bg-red-50 text-red-700 border-red-200",
+        CHAT_DEDUCTION: "bg-red-50 text-red-700 border-red-200",
+        COURSE_PURCHASE: "bg-orange-50 text-orange-700 border-orange-200",
+    };
+    const defaultStyle = "bg-gray-50 text-gray-700 border-gray-200";
+
+    return (
+        <span className={`px-2 py-0.5 rounded text-[10px] font-medium border uppercase ${styles[type] || defaultStyle}`}>
+            {type.replace(/_/g, ' ')}
         </span>
     );
 }

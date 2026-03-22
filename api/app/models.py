@@ -8,6 +8,7 @@ class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
     SEEKER = "SEEKER"
     ASTROLOGER = "ASTROLOGER"
+    TUTOR = "TUTOR"
 
 class GenderType(str, enum.Enum):
     MALE = "MALE"
@@ -37,6 +38,7 @@ class TransactionType(str, enum.Enum):
     CHAT_DEDUCTION = "CHAT_DEDUCTION"
     CHAT_REFUND = "CHAT_REFUND"
     PAYMENT_GATEWAY = "PAYMENT_GATEWAY"
+    COURSE_PURCHASE = "COURSE_PURCHASE"
 
 class User(Base):
     __tablename__ = "users"

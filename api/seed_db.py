@@ -1,8 +1,10 @@
 import random
 from app.database import SessionLocal, engine, Base
 from app.models import User, UserRole, SeekerProfile, AstrologerProfile, UserWallet, GenderType
+from app.models_edu import Course, Batch, ClassSession, BatchEnrollment
 from app.routers.auth import get_password_hash
 from decimal import Decimal
+from datetime import datetime, timedelta
 
 # Ensure tables exist
 Base.metadata.create_all(bind=engine)
@@ -10,6 +12,40 @@ Base.metadata.create_all(bind=engine)
 db = SessionLocal()
 
 def seed():
+    # 0. Create Admin
+    admin_email = "admin@test.com"
+    admin = db.query(User).filter(User.email == admin_email).first()
+    if not admin:
+        print(f"Creating Admin: {admin_email}")
+        admin = User(
+            email=admin_email,
+            phone_number="0000000000",
+            hashed_password=get_password_hash("password"),
+            role=UserRole.ADMIN,
+            is_verified=True
+        )
+        db.add(admin)
+        db.commit()
+    else:
+        print(f"Admin already exists: {admin_email}")
+
+    # 0b. Create Tutor
+    tutor_email = "tutor@test.com"
+    tutor = db.query(User).filter(User.email == tutor_email).first()
+    if not tutor:
+        print(f"Creating Tutor: {tutor_email}")
+        tutor = User(
+            email=tutor_email,
+            phone_number="1111111111",
+            hashed_password=get_password_hash("password"),
+            role=UserRole.TUTOR,
+            is_verified=True
+        )
+        db.add(tutor)
+        db.commit()
+    else:
+        print(f"Tutor already exists: {tutor_email}")
+
     # 1. Create Seeker
     seeker_email = "seeker@test.com"
     seeker = db.query(User).filter(User.email == seeker_email).first()
@@ -137,6 +173,59 @@ def seed():
             db.commit()
         else:
             print(f"Astrologer already exists: {astro_email}")
+
+    # 3. Create Education Data
+    print("Seeding Education Data...")
+    tutor_user = db.query(User).filter(User.role == UserRole.TUTOR).first()
+    seeker_user = db.query(User).filter(User.role == UserRole.SEEKER).first()
+
+    if tutor_user and seeker_user:
+        # Courses
+        edu_courses = [
+            {"title": "Vedic Astrology Foundation", "desc": "Learn the basics of Vedic astrology."},
+            {"title": "Advanced Palmistry", "desc": "Master the art of reading palms."}
+        ]
+        
+        for c_data in edu_courses:
+            course = db.query(Course).filter(Course.title == c_data["title"]).first()
+            if not course:
+                print(f"Creating Course: {c_data['title']}")
+                course = Course(title=c_data["title"], description=c_data["desc"], teacher_id=tutor_user.id)
+                db.add(course)
+                db.commit()
+                db.refresh(course)
+                
+                # Batch
+                batch = Batch(course_id=course.id, name="Batch A - Spring 2026", max_students=10)
+                db.add(batch)
+                db.commit()
+                db.refresh(batch)
+                
+                # Enrollment
+                enrollment = BatchEnrollment(batch_id=batch.id, user_id=seeker_user.id)
+                db.add(enrollment)
+                db.commit()
+                
+                # Sessions (One active now, one upcoming)
+                now = datetime.utcnow()
+                active_session = ClassSession(
+                    batch_id=batch.id,
+                    title=f"{course.title} - Intro Session",
+                    scheduled_start=now - timedelta(minutes=5),
+                    scheduled_end=now + timedelta(hours=1),
+                    miro_room_id=f"room_{course.id}_{batch.id}"
+                )
+                db.add(active_session)
+                
+                upcoming_session = ClassSession(
+                    batch_id=batch.id,
+                    title=f"{course.title} - Q&A Session",
+                    scheduled_start=now + timedelta(days=1),
+                    scheduled_end=now + timedelta(days=1, hours=1),
+                    miro_room_id=f"room_qa_{course.id}_{batch.id}"
+                )
+                db.add(upcoming_session)
+                db.commit()
 
     print("Seeding Complete!")
 

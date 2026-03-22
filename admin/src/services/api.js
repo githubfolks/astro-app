@@ -76,6 +76,9 @@ export const cms = {
     astrologers: {
         listPending: () => api.get('/admin/astrologers/pending'),
         approve: (id) => api.post(`/admin/astrologers/${id}/approve`)
+    },
+    users: {
+        getWalletHistory: (id) => api.get(`/admin/users/${id}/wallet-history`)
     }
 };
 
@@ -87,6 +90,10 @@ export const payouts = {
     // BUT for now, let's match existing backend:
     // generate_payout(astrologer_id: int, amount: float ...) -> Query Params.
     markPaid: (id, transactionRef) => api.post(`/admin/payouts/${id}/mark-paid?transaction_reference=${encodeURIComponent(transactionRef)}`)
+};
+
+export const edu = {
+    getStats: (params) => api.get('/admin/edu/stats', { params })
 };
 
 

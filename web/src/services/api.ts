@@ -405,5 +405,125 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch Kundli history');
         }
+    },
+    edu: {
+        getCourses: async () => {
+            const response = await customFetch(`${API_URL}/edu/courses`);
+            return handleResponse(response, 'Failed to fetch courses');
+        },
+        getMyCourses: async () => {
+            const response = await customFetch(`${API_URL}/edu/my/courses`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch my courses');
+        },
+        getSessions: async () => {
+            const response = await customFetch(`${API_URL}/edu/sessions`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch sessions');
+        },
+        createCourse: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/courses`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to create course');
+        },
+        updateCourse: async (courseId: number, data: any) => {
+            const response = await customFetch(`${API_URL}/edu/courses/${courseId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to update course');
+        },
+        createBatch: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/batches`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to create batch');
+        },
+        scheduleSession: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/sessions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to schedule session');
+        },
+        updateSession: async (sessionId: number, data: any) => {
+            const response = await customFetch(`${API_URL}/edu/sessions/${sessionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to update session');
+        },
+        enroll: async (data: any) => {
+            const response = await customFetch(`${API_URL}/edu/enroll`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to enroll');
+        },
+        joinSession: async (sessionId: number) => {
+            const response = await customFetch(`${API_URL}/edu/sessions/${sessionId}/join`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to join session');
+        },
+        getCourseMaterials: async (courseId: number) => {
+            const response = await customFetch(`${API_URL}/edu/courses/${courseId}/materials`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch course materials');
+        },
+        addCourseMaterial: async (courseId: number, data: any) => {
+            const response = await customFetch(`${API_URL}/edu/courses/${courseId}/materials`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to add course material');
+        },
+        deleteCourseMaterial: async (materialId: number) => {
+            const response = await customFetch(`${API_URL}/edu/materials/${materialId}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to delete course material');
+        }
     }
 };

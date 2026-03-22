@@ -75,6 +75,21 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
+def get_current_user_optional(request: Request, db: Session = Depends(database.get_db)):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    token = auth_header.replace("Bearer ", "")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        return user
+    except JWTError:
+        return None
+
 def get_current_admin(current_user: models.User = Depends(get_current_user)):
     if current_user.role != models.UserRole.ADMIN:
         raise HTTPException(status_code=403, detail="Not authorized")

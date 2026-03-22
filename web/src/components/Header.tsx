@@ -45,7 +45,7 @@ const Header: React.FC = () => {
         if (user.full_name) {
             return user.full_name.split(' ')[0];
         }
-        return user.email?.split('@')[0] || (user.role === 'SEEKER' ? 'User' : 'Astrologer');
+        return user.email?.split('@')[0] || (user.role === 'SEEKER' ? 'User' : user.role === 'TUTOR' ? 'Tutor' : 'Astrologer');
     };
 
     return (
@@ -138,7 +138,9 @@ const Header: React.FC = () => {
                                 <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
                                     <div className="px-4 py-2 border-b border-gray-100">
                                         <p className="text-sm font-semibold text-gray-900">{getDisplayName()}</p>
-                                        <p className="text-xs text-gray-500">{user.role === 'SEEKER' ? 'Seeker' : 'Astrologer'}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {user.role === 'SEEKER' ? 'Seeker' : user.role === 'TUTOR' ? 'Tutor' : 'Astrologer'}
+                                        </p>
                                     </div>
                                     <button
                                         onClick={handleDashboard}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { useNavigate } from 'react-router-dom';
-import { Check, User, GraduationCap, FileText, Camera, ShieldCheck } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Check, User, GraduationCap, FileText, Camera, ShieldCheck, ArrowLeft } from 'lucide-react';
 import './Auth.css';
 import SEO from '../components/SEO';
 
@@ -140,6 +140,9 @@ export const JoinAsAstrologer: React.FC = () => {
 
     return (
         <div className="auth-container" style={{ minHeight: '100vh', padding: '40px 20px' }}>
+            <Link to="/" className="back-to-home-link" style={{ position: 'absolute', top: '20px', left: '20px' }}>
+                <ArrowLeft size={20} /> Back to Home
+            </Link>
             <SEO
                 title="Join as Astrologer"
                 description="Are you an expert astrologer? Join Aadikarta and connect with seekers worldwide. Start your journey with us today."

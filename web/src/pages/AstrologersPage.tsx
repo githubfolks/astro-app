@@ -13,9 +13,6 @@ const AstrologersPage: React.FC = () => {
             />
             <Header />
             <main id="main-content">
-                <div className="container mx-auto px-4 mt-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Expert Astrologers</h1>
-                </div>
                 <div className="page-content" style={{ minHeight: '60vh' }}>
                     <AstrologerList />
                 </div>
