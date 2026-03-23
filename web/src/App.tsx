@@ -7,7 +7,7 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load pages
-const Home = lazy(() => import('./pages/Home'));
+const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 
 
 // Loading component
@@ -63,7 +63,7 @@ function App() {
             <NativeInitializer />
             <Suspense fallback={<PageLoader />}>
                 <Routes>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<ComingSoon />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </Suspense>
