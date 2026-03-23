@@ -1,13 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
 import AstrologerCard from './AstrologerCard';
 import type { Astrologer } from '../types';
-import LoginModal from './LoginModal';
-import ProfileCompletionModal from './ProfileCompletionModal';
-import { useAuth } from '../context/AuthContext';
-import { api } from '../services/api';
 import './AstrologerList.css';
+
+// Static data for the landing page only branch
+const STATIC_ASTROLOGERS: Astrologer[] = [
+    {
+        id: 1,
+        full_name: "Dr. Aarti Sharma",
+        specialties: "Vedic, Numerology",
+        languages: "Hindi, English",
+        experience_years: 15,
+        consultation_fee_per_min: 25,
+        rating_avg: 4.9,
+        is_online: true,
+        profile_picture_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarti"
+    },
+    {
+        id: 2,
+        full_name: "Acharya Vikram",
+        specialties: "Vastu, Palmistry",
+        languages: "Hindi, Sanskrit",
+        experience_years: 20,
+        consultation_fee_per_min: 30,
+        rating_avg: 5.0,
+        is_online: true,
+        profile_picture_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram"
+    },
+    {
+        id: 3,
+        full_name: "Sonia Williams",
+        specialties: "Tarot, Psychic",
+        languages: "English",
+        experience_years: 8,
+        consultation_fee_per_min: 20,
+        rating_avg: 4.7,
+        is_online: true,
+        profile_picture_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sonia"
+    }
+];
 
 interface AstrologerListProps {
     limit?: number;
@@ -15,122 +47,13 @@ interface AstrologerListProps {
     showFilters?: boolean;
 }
 
-const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly = false, showFilters = true }) => {
-    const [astrologers, setAstrologers] = useState<Astrologer[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-    const [pendingChatAstroId, setPendingChatAstroId] = useState<number | null>(null);
-    const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const [seekerProfile, setSeekerProfile] = useState<any>(null);
-    const { isAuthenticated, user } = useAuth();
-    const navigate = useNavigate();
-
-    // Fetch seeker profile when authenticated
-    useEffect(() => {
-        if (isAuthenticated && user?.role === 'SEEKER') {
-            api.seekers.getProfile()
-                .then(setSeekerProfile)
-                .catch(console.error);
-        }
-    }, [isAuthenticated, user]);
-
-    const isProfileComplete = (profile: any) => {
-        return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
-    };
-
-    const handleChatClick = (astroId: number) => {
-        if (!isAuthenticated) {
-            setPendingChatAstroId(astroId);
-            setIsLoginModalOpen(true);
-            return;
-        }
-
-        if (user?.role === 'ASTROLOGER') {
-            alert("As an astrologer, you cannot initiate a chat with another astrologer.");
-            return;
-        }
-
-        // Check if profile is complete
-        if (!isProfileComplete(seekerProfile)) {
-            setPendingChatAstroId(astroId);
-            setIsProfileModalOpen(true);
-            return;
-        }
-
-        navigate(`/chat/new/${astroId}`);
-    };
-
-    const handleProfileComplete = () => {
-        setIsProfileModalOpen(false);
-        if (pendingChatAstroId) {
-            navigate(`/chat/new/${pendingChatAstroId}`);
-        }
-    };
-
-    const handleLoginSuccess = () => {
-        // After login, refetch profile and check if complete
-        api.seekers.getProfile()
-            .then((profile) => {
-                setSeekerProfile(profile);
-                if (!isProfileComplete(profile) && pendingChatAstroId) {
-                    setIsProfileModalOpen(true);
-                } else if (pendingChatAstroId) {
-                    navigate(`/chat/new/${pendingChatAstroId}`);
-                }
-            })
-            .catch(console.error);
-    };
-
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
-    const PAGE_SIZE = limit || 20;
-
-    const fetchAstrologers = async (isLoadMore = false) => {
-        try {
-            setLoading(true);
-            const currentSkip = isLoadMore ? page * PAGE_SIZE : 0;
-            // Always sort by rating as per requirements
-            const data = await api.astrologers.list(currentSkip, PAGE_SIZE, 'rating');
-
-            if (!Array.isArray(data)) throw new Error("Invalid response format");
-
-            const astros = data.map((profile: any) => ({
-                id: profile.user_id,
-                full_name: profile.full_name || "Astrologer",
-                profile_picture_url: profile.profile_picture_url,
-                specialties: profile.specialties || "Vedic",
-                languages: profile.languages || "English",
-                experience_years: profile.experience_years || 5,
-                consultation_fee_per_min: profile.consultation_fee_per_min || 10,
-                rating_avg: profile.rating_avg || 5.0,
-                is_online: profile.is_online || false,
-                availability_hours: profile.availability_hours || null
-            }));
-
-            if (data.length < PAGE_SIZE) {
-                setHasMore(false);
-            }
-
-            if (isLoadMore) {
-                setAstrologers(prev => [...prev, ...astros]);
-                setPage(prev => prev + 1);
-            } else {
-                setAstrologers(astros);
-                setPage(1);
-            }
-        } catch (err) {
-            console.error("Failed to fetch astrologers", err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchAstrologers();
-    }, [topRankingOnly, limit]); // Refetch if these props change
-
+const AstrologerList: React.FC<AstrologerListProps> = ({ limit, showFilters = true }) => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+
+    const handleChatClick = () => {
+        alert("Aadikarta services are launching soon! This preview shows our expert panel.");
+    };
 
     const categories = [
         { name: 'All', icon: <LayoutGrid size={16} /> },
@@ -140,8 +63,8 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     ];
 
     // Client-side filtering
-    const filteredAstrologers = astrologers.filter(astro => {
-        const matchesCategory = selectedCategory === 'All' ||
+    const filteredAstrologers = STATIC_ASTROLOGERS.filter(astro => {
+        const matchesCategory = selectedCategory === 'All' || 
             (astro.specialties && astro.specialties.includes(selectedCategory));
         const matchesSearch = astro.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (astro.languages && astro.languages.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -149,9 +72,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
         return matchesCategory && matchesSearch;
     });
 
-    const displayAstrologers = filteredAstrologers;
-
-    if (loading) return <div className="loading">Loading Astrologers...</div>;
+    const displayAstrologers = limit ? filteredAstrologers.slice(0, limit) : filteredAstrologers;
 
     return (
         <section className="astrologer-section">
@@ -201,31 +122,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                         <div className="no-results">No astrologers found matching your criteria.</div>
                     )}
                 </div>
-
-                {!topRankingOnly && hasMore && !loading && (
-                    <div className="load-more-container" style={{ textAlign: 'center', marginTop: '2rem' }}>
-                        <button
-                            className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
-                            onClick={() => fetchAstrologers(true)}
-                        >
-                            Load More
-                        </button>
-                    </div>
-                )}
             </div>
-
-            <LoginModal
-                isOpen={isLoginModalOpen}
-                onClose={() => setIsLoginModalOpen(false)}
-                onLoginSuccess={handleLoginSuccess}
-            />
-
-            <ProfileCompletionModal
-                isOpen={isProfileModalOpen}
-                onClose={() => setIsProfileModalOpen(false)}
-                onComplete={handleProfileComplete}
-                initialProfile={seekerProfile}
-            />
         </section>
     );
 };
