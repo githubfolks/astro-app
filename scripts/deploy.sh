@@ -40,7 +40,7 @@ echo "Attempting SSL setup for $DOMAIN, $API_DOMAIN, and $ADMIN_DOMAIN..."
 
 # Disable exit-on-error temporarily for Certbot
 set +e
-sudo certbot --nginx -d "$DOMAIN" -d "$API_DOMAIN" -d "$ADMIN_DOMAIN" --non-interactive --agree-tos -m "$EMAIL"
+sudo certbot --nginx -d "$DOMAIN" -d "$API_DOMAIN" -d "$ADMIN_DOMAIN" --non-interactive --expand --agree-tos -m "$EMAIL"
 set -e
 
 echo "--- Deployment Complete! ---"
