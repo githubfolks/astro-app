@@ -13,21 +13,21 @@ const ComingSoon: React.FC = () => {
 
     return (
         <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center text-white bg-[#0f172a]">
-            <SEO 
-                title="Coming Soon | Aadikarta - Ancient Wisdom for Modern Life" 
+            <SEO
+                title="Coming Soon | Aadikarta - Ancient Wisdom for Modern Life"
                 description="We are bringing something sacred and transformative. Aadikarta is coming soon to guide your spiritual journey."
             />
-            
+
             {/* Celestial Background */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,#1e1b4b,0%,#0f172a_100%)]"></div>
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"></div>
-            
+
             {/* Ambient Glows */}
             <div className="absolute top-1/4 -right-20 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse"></div>
             <div className="absolute -bottom-20 -left-20 w-[600px] h-[600px] bg-amber-500/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
             <main className="relative z-10 w-full max-w-6xl mx-auto px-6 py-20 flex flex-col md:flex-row items-center justify-between gap-12">
-                
+
                 {/* Text Content */}
                 <div className="flex-1 text-center md:text-left" data-aos="fade-right">
                     <div>
@@ -40,47 +40,35 @@ const ComingSoon: React.FC = () => {
                         <p className="text-xl md:text-2xl text-indigo-100/70 mb-12 font-light leading-relaxed max-w-xl">
                             Unlock the secrets of Vedic astrology and spiritual mastery. We are crafting a sanctuary for seekers, coming very soon.
                         </p>
-
-                        <div className="flex flex-col sm:flex-row items-center gap-6 justify-center md:justify-start">
-                            <button className="group relative px-10 py-4 rounded-2xl font-bold text-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden">
-                                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600"></div>
-                                <span className="relative text-indigo-950 flex items-center gap-2">
-                                    Notify Me
-                                    <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-                                </span>
-                            </button>
-                            <a href="mailto:info@aadikarta.org" className="px-10 py-4 rounded-2xl font-bold text-lg text-white border border-white/10 hover:border-amber-400/50 transition-all duration-500 hover:bg-white/5 backdrop-blur-sm">
-                                Contact Us
-                            </a>
-                        </div>
                     </div>
                 </div>
 
                 {/* Hero Image */}
-                <div 
+                <div
                     className="flex-1 relative"
                     data-aos="zoom-in"
                     data-aos-delay="200"
                 >
                     <div className="relative z-10">
-                        <img 
-                            src="/assets/hero_astrology.png" 
-                            alt="Ancient Wisdom" 
+                        <img
+                            src="/assets/hero_astrology.png"
+                            alt="Ancient Wisdom"
                             className="w-full h-auto drop-shadow-[0_0_50px_rgba(245,158,11,0.2)] animate-float"
                         />
                     </div>
-                    
+
                     {/* Decorative Elements */}
                     <div className="absolute -inset-4 bg-gradient-to-tr from-amber-500/20 to-transparent blur-3xl -z-10 rounded-full"></div>
                 </div>
             </main>
-            
+
             {/* Scroll Indicator */}
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
                 <div className="w-1 h-12 rounded-full bg-gradient-to-b from-amber-400/50 to-transparent"></div>
             </div>
 
-            <style dangerouslySetInnerHTML={{ __html: `
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @keyframes float {
                     0%, 100% { transform: translateY(0); }
                     50% { transform: translateY(-20px); }
