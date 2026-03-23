@@ -1,51 +1,10 @@
 services:
-  api:
-    build: ./api
-    container_name: astro_api
-    environment:
-      SQLALCHEMY_DATABASE_URL: "postgresql://postgres.tpjjtdtuhdsktudkysmz:Gagbx3lcYMqRbUqQ@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
-      REDIS_URL: redis://redis:6379/0
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./api/uploads:/app/uploads
-
-
   web:
     build: 
       context: ./web
-      args:
-        VITE_API_URL: https://api.aadikarta.org
-    container_name: astro_web
+    container_name: astro_web_prod
     ports:
       - "3002:80"
-
-  admin:
-    build:
-      context: ./admin
-      args:
-        VITE_API_URL: https://api.aadikarta.org
-    container_name: astro_admin
-    ports:
-      - "3001:80"
-
-  redis:
-    image: "redis:alpine"
-    container_name: astro_redis
-    ports:
-      - "6379:6379"
-
-  mirotalk:
-    image: mirotalk/sfu:latest
-    container_name: astro_mirotalk
-    ports:
-      - "3010:3010"
-    environment:
-      - PORT=3010
-      - API_KEY_SECRET=mirotalk_api_secret # matching backend if needed
-      - JWT_SECRET=mirotalk_secret_key_change_me # MUST match MIROTALK_JWT_SECRET in .env
-    # MiroTalk SFU might need host networking or specific STUN/TURN for real WebRTC outside localhost
-    # But for a basic "localhost" docker stack, this should be enough.
 
 
 

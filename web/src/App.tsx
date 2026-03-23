@@ -1,11 +1,9 @@
 import React, { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
 import { isNative, getPlatform } from './utils/platform';
 import { App as CapApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
-import { MobileNavBar } from './components/MobileNavBar';
 import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load pages
@@ -61,17 +59,14 @@ function App() {
 
     return (
         <Router>
-            <AuthProvider>
-                <ScrollToTop />
-                <NativeInitializer />
-                <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                </Suspense>
-                <MobileNavBar />
-            </AuthProvider>
+            <ScrollToTop />
+            <NativeInitializer />
+            <Suspense fallback={<PageLoader />}>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </Suspense>
         </Router>
     );
 }
