@@ -6,11 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "mobile:build": "tsc && vite build --mode mobile",
-    "mobile:sync": "npx cap sync android",
-    "mobile:open": "npx cap open android",
-    "mobile:run": "npm run mobile:build && npm run mobile:sync"
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@types/react": "^19.2.7",
@@ -23,16 +19,6 @@
     "vite": "^7.2.4"
   },
   "dependencies": {
-    "@capacitor/android": "^8.0.0",
-    "@capacitor/app": "^8.0.0",
-    "@capacitor/cli": "^8.0.0",
-    "@capacitor/core": "^8.0.0",
-    "@capacitor/keyboard": "^8.0.0",
-    "@capacitor/network": "^8.0.0",
-    "@capacitor/preferences": "^8.0.0",
-    "@capacitor/push-notifications": "^8.0.0",
-    "@capacitor/splash-screen": "^8.0.0",
-    "@capacitor/status-bar": "^8.0.0",
     "@types/aos": "^3.0.7",
     "@types/dompurify": "^3.0.5",
     "@types/three": "^0.183.1",
