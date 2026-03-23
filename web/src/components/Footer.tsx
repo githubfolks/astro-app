@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, ArrowUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import './Footer.css';
 
 const Footer: React.FC = () => {
@@ -47,18 +46,8 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Right Column: Links & Contact */}
+                    {/* Right Column: Contact Only */}
                     <div className="footer-column info-column">
-                        <div className="info-group">
-                            <h4 className="footer-title">Quick Links</h4>
-                            <ul className="footer-links">
-                                <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
-                                <li><Link to="/chat-with-astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>
-                                <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
-                                <li><Link to="/contact-us" onClick={scrollToTop}>Contact Us</Link></li>
-                            </ul>
-                        </div>
-
                         <div className="info-group">
                             <h4 className="footer-title">Contact Us</h4>
                             <ul className="contact-list">
@@ -77,12 +66,6 @@ const Footer: React.FC = () => {
 
                 <div className="footer-bottom">
                     <p>&copy; 2026 Aadikarta. All rights reserved.</p>
-                    <div className="footer-legal">
-                        <Link to="/privacy-policy" onClick={scrollToTop}>Privacy Policy</Link>
-                        <Link to="/refund-policy" onClick={scrollToTop}>Refund Policy</Link>
-                        <Link to="/disclaimer" onClick={scrollToTop}>Disclaimer</Link>
-                        <Link to="/terms-of-service" onClick={scrollToTop}>Terms of Service</Link>
-                    </div>
                 </div>
             </div>
 
