@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { cms } from '../services/api';
 import { Check, X, Eye, User, FileText, Calendar, Languages, Award } from 'lucide-react';
+import { Avatar } from '../components/ui';
 
 const AstrologerApprovals = () => {
     const [pending, setPending] = useState([]);
@@ -67,7 +68,11 @@ const AstrologerApprovals = () => {
                                     <tr key={astro.id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <img src={astro.profile.profile_picture_url || 'https://via.placeholder.com/40'} alt="" className="w-10 h-10 rounded-full object-cover bg-gray-100" />
+                                                <Avatar 
+                                                    src={astro.profile.profile_picture_url} 
+                                                    className="w-10 h-10" 
+                                                    iconSize={20}
+                                                />
                                                 <div>
                                                     <div className="font-medium text-gray-900">{astro.profile.full_name}</div>
                                                     <div className="text-xs text-gray-500">{astro.email}</div>
@@ -102,7 +107,11 @@ const AstrologerApprovals = () => {
 
                         <div className="space-y-6">
                             <div className="flex gap-4">
-                                <img src={selectedAstro.profile.profile_picture_url || 'https://via.placeholder.com/100'} alt="" className="w-24 h-24 rounded-xl object-cover ring-4 ring-purple-50" />
+                                <Avatar 
+                                    src={selectedAstro.profile.profile_picture_url} 
+                                    className="w-24 h-24 rounded-xl border-none shadow-sm" 
+                                    iconSize={48}
+                                />
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">{selectedAstro.profile.full_name}</h3>
                                     <p className="text-gray-500 text-sm mb-2">{selectedAstro.email} | {selectedAstro.phone_number}</p>

@@ -47,6 +47,9 @@ origins = [
     "http://api.aadikarta.org",
     "https://admin.aadikarta.org",
     "http://admin.aadikarta.org",
+    "http://localhost:4001",
+    "http://localhost:4002",
+    "http://localhost:9000",
 ]
 
 @app.middleware("http")
@@ -90,7 +93,7 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Content-Security-Policy"] = "default-src 'self' https://dev.aadikarta.org http://dev.aadikarta.org https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.cloudinary.com https://dev.aadikarta.org http://dev.aadikarta.org https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org http://localhost:8001 http://192.168.1.13:8001"
+    response.headers["Content-Security-Policy"] = "default-src 'self' https://dev.aadikarta.org http://dev.aadikarta.org https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://dev.aadikarta.org http://dev.aadikarta.org https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org http://localhost:9000 http://localhost:4001 http://localhost:4002 http://localhost:8001 http://192.168.1.13:8001"
     return response
 
 @app.middleware("http")

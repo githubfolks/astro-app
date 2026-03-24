@@ -7,9 +7,10 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Switch } from '../components/ui/Switch';
 import { Card } from '../components/ui/Card';
-import { Trash2, CheckCircle, Eye, RefreshCw } from 'lucide-react';
+import { Trash2, CheckCircle, Eye, RefreshCw, Key } from 'lucide-react';
 import api from '../services/api';
 import clsx from 'clsx';
+import { ResetPasswordModal } from '../components/ResetPasswordModal';
 
 export default function Users() {
     const [users, setUsers] = useState([]);
@@ -25,6 +26,10 @@ export default function Users() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState("SEEKER");
     const [filterVerified, setFilterVerified] = useState("");
+
+    // Modal state for password reset
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [selectedUserForReset, setSelectedUserForReset] = useState(null);
 
     useEffect(() => {
         fetchUsers();
@@ -90,6 +95,11 @@ export default function Users() {
             console.error("Status update failed", error);
             fetchUsers();
         }
+    };
+
+    const handleResetPassword = (user) => {
+        setSelectedUserForReset(user);
+        setIsResetModalOpen(true);
     };
 
     return (
@@ -192,6 +202,9 @@ export default function Users() {
                                     <Button variant="ghost" size="icon" onClick={() => navigate(`/users/view/${user.id}`)}>
                                         <Eye size={18} className="text-blue-600" />
                                     </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => handleResetPassword(user)} title="Reset Password">
+                                        <Key size={18} className="text-amber-600" />
+                                    </Button>
                                     <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id)}>
                                         <Trash2 size={18} className="text-red-600" />
                                     </Button>
@@ -246,6 +259,13 @@ export default function Users() {
                     </div>
                 </div>
             </Card>
+
+            <ResetPasswordModal
+                isOpen={isResetModalOpen}
+                onClose={() => setIsResetModalOpen(false)}
+                userId={selectedUserForReset?.id}
+                userEmail={selectedUserForReset?.email}
+            />
         </div>
     );
 }

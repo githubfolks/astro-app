@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Languages, Award, Clock } from 'lucide-react';
 import type { Astrologer } from '../types';
+import { resolveImageUrl } from '../utils/url';
 import './AstrologerCard.css';
 
 interface Props {
@@ -15,7 +16,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
             <div className="astro-main-row">
                 <Link to={`/astrologer/${astro.id}`} className="astro-image-container">
                     <img
-                        src={astro.profile_picture_url || `https://ui-avatars.com/api/?name=${astro.full_name}&background=random`}
+                        src={resolveImageUrl(astro.profile_picture_url, astro.full_name)}
                         alt={astro.full_name}
                         className="astro-img"
                         width="84"

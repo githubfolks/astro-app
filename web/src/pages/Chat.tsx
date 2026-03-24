@@ -9,6 +9,7 @@ import KundliPanel from '../components/KundliPanel';
 import { Send, Clock, User, ArrowLeft, Info, X } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { api } from '../services/api';
+import { resolveImageUrl } from '../utils/url';
 
 export const Chat: React.FC = () => {
     const { consultationId, astrologerId } = useParams<{ consultationId: string; astrologerId: string }>();
@@ -275,17 +276,11 @@ export const Chat: React.FC = () => {
                             astrologer ? (
                                 <div className="space-y-6">
                                     <div className="flex flex-col items-center text-center">
-                                        {astrologer.profile_picture_url ? (
-                                            <img
-                                                src={astrologer.profile_picture_url}
-                                                alt={astrologer.full_name}
-                                                className="w-32 h-32 rounded-full object-cover border-4 border-[#FFB700] shadow-md mb-4"
-                                            />
-                                        ) : (
-                                            <div className="w-32 h-32 rounded-full bg-purple-100 flex items-center justify-center border-4 border-[#FFB700] shadow-md mb-4 text-purple-600">
-                                                <User size={64} />
-                                            </div>
-                                        )}
+                                        <img
+                                            src={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
+                                            alt={astrologer.full_name}
+                                            className="w-32 h-32 rounded-full object-cover border-4 border-[#FFB700] shadow-md mb-4"
+                                        />
                                         <h2 className="text-2xl font-bold text-gray-900">{astrologer.full_name}</h2>
                                         <p className="text-[#E91E63] font-semibold">{astrologer.specialties}</p>
 
@@ -426,13 +421,7 @@ export const Chat: React.FC = () => {
                             <div className="flex items-center gap-4">
                                 {/* Mobile only profile summary */}
                                 <div className="md:hidden flex items-center gap-3">
-                                    {(opponent as any)?.profile_picture_url ? (
-                                        <img src={(opponent as any).profile_picture_url} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
-                                    ) : (
-                                        <div className={`w-10 h-10 rounded-full ${user?.role === 'SEEKER' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'} flex items-center justify-center border-2 border-[#FFB700]`}>
-                                            <User size={20} />
-                                        </div>
-                                    )}
+                                    <img src={resolveImageUrl((opponent as any).profile_picture_url, (opponent as any).full_name)} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
                                     <div>
                                         <h3 className="font-bold text-gray-900 text-sm">{(opponent as any)?.full_name || 'Loading...'}</h3>
                                         <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">● Live</span>

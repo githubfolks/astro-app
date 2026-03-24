@@ -40,6 +40,18 @@ api.interceptors.response.use(
             localStorage.removeItem('token');
             window.location.href = '/login';
         }
+        
+        // Extract detail from error response if it exists
+        if (error.response && error.response.data && error.response.data.detail) {
+            const detail = error.response.data.detail;
+            if (typeof detail === 'string') {
+                error.message = detail;
+            } else if (Array.isArray(detail)) {
+                // Handle FastAPI validation errors
+                error.message = detail.map(d => `${d.loc.join('.')}: ${d.msg}`).join(', ');
+            }
+        }
+        
         return Promise.reject(error);
     }
 );

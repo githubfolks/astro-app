@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle, Key } from 'lucide-react';
 import api from '../services/api';
-import { Button } from '../components/ui';
+import { Button, Avatar } from '../components/ui';
 import clsx from 'clsx';
+import { ResetPasswordModal } from '../components/ResetPasswordModal';
 
 export default function UserDetails() {
     const { id } = useParams();
@@ -13,6 +14,8 @@ export default function UserDetails() {
     const [consultations, setConsultations] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -36,6 +39,10 @@ export default function UserDetails() {
         }
     };
 
+    const handleResetPassword = () => {
+        setIsResetModalOpen(true);
+    };
+
     if (loading) return <div className="p-8 text-center text-gray-500">Loading details...</div>;
     if (!data) return <div className="p-8 text-center">User not found</div>;
 
@@ -50,13 +57,12 @@ export default function UserDetails() {
                         <ArrowLeft size={20} />
                     </Button>
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center border-2 border-white shadow-sm overflow-hidden">
-                            {profile.profile_picture_url ? (
-                                <img src={profile.profile_picture_url} className="w-full h-full object-cover" alt="Profile" />
-                            ) : (
-                                <User className="text-gray-400" size={32} />
-                            )}
-                        </div>
+                        <Avatar 
+                            src={profile.profile_picture_url} 
+                            className="w-16 h-16 border-2 border-white shadow-sm" 
+                            iconSize={32}
+                            alt="Profile"
+                        />
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                                 {profile.full_name || user.email || "Unknown User"}
@@ -69,6 +75,9 @@ export default function UserDetails() {
                         </div>
                     </div>
                 </div>
+                <Button variant="outlined" onClick={handleResetPassword} className="flex items-center gap-2">
+                    <Key size={18} className="text-amber-600" /> Reset Password
+                </Button>
             </div>
 
             {/* Stats Cards */}
@@ -132,7 +141,7 @@ export default function UserDetails() {
                     </div>
                 </div>
 
-                {/* Right Column: Consultations */}
+                {/* Right Column: consultations and wallet */}
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                         <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
@@ -186,7 +195,7 @@ export default function UserDetails() {
                         </div>
                     </div>
 
-                    {/* Wallet History Section */}
+                    {/* Wallet History Card */}
                     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mt-6">
                         <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                             <h3 className="font-semibold text-gray-900">Wallet Transaction History</h3>
@@ -234,6 +243,13 @@ export default function UserDetails() {
                     </div>
                 </div>
             </div>
+
+            <ResetPasswordModal
+                isOpen={isResetModalOpen}
+                onClose={() => setIsResetModalOpen(false)}
+                userId={id}
+                userEmail={user?.email}
+            />
         </div>
     );
 }

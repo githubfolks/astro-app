@@ -95,22 +95,23 @@ def get_current_admin(current_user: models.User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not authorized")
     return current_user
 
-@router.post("/signup", response_model=schemas.Token)
+@router.post("/signup")
 @limiter.limit("5/minute")
-def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(database.get_db)):
+async def signup(request: Request, user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     if user.role != models.UserRole.SEEKER:
         raise HTTPException(status_code=400, detail="Only seekers can sign up via this endpoint")
     # Check existing
     db_user = db.query(models.User).filter((models.User.email == user.email) | (models.User.phone_number == user.phone_number)).first()
     if db_user:
-        raise HTTPException(status_code=400, detail="Phone or Email either blank or already registered")
+        raise HTTPException(status_code=400, detail="Phone or Email already registered")
     
     hashed_password = get_password_hash(user.password)
     new_user = models.User(
         email=user.email,
         phone_number=user.phone_number,
         hashed_password=hashed_password,
-        role=models.UserRole(user.role.value)
+        role=models.UserRole(user.role.value),
+        is_verified=False
     )
     db.add(new_user)
     db.commit()
@@ -123,27 +124,31 @@ def signup(request: Request, user: schemas.UserCreate, db: Session = Depends(dat
         # Init wallet
         wallet = models.UserWallet(user_id=new_user.id)
         db.add(wallet)
-    elif user.role == models.UserRole.ASTROLOGER:
-        # Require some minimal profile info or set defaults? For now just create empty shell
-        # In real app, might require more info at signup
-        profile = models.AstrologerProfile(user_id=new_user.id, full_name="Astrologer")
-        db.add(profile)
-        # Init wallet for earnings
-        wallet = models.UserWallet(user_id=new_user.id)
-        db.add(wallet)
     
+    # Generate and Send Verification Email
+    otp = generate_otp()
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+    
+    db_token = models.VerificationToken(
+        user_id=new_user.id,
+        token=otp,
+        verification_type=models.VerificationTokenType.EMAIL_VERIFICATION,
+        expires_at=expires_at
+    )
+    db.add(db_token)
     db.commit()
 
-    # Get full name to return
-    full_name = None
-    if user.role == models.UserRole.SEEKER:
-        # We just created it empty, so likely None, but good to be explicit
-        full_name = None
-    elif user.role == models.UserRole.ASTROLOGER:
-        full_name = "Astrologer"
+    message = MessageSchema(
+        subject="Aadikarta - Verify Your Email",
+        recipients=[user.email],
+        body=f"Welcome to Aadikarta! Your verification code is: {otp}. It is valid for 10 minutes.",
+        subtype=MessageType.html
+    )
+    
+    fm = FastMail(conf)
+    background_tasks.add_task(fm.send_message, message)
 
-    access_token = create_access_token(data={"sub": str(new_user.id), "role": new_user.role.value})
-    return {"access_token": access_token, "token_type": "bearer", "user_id": new_user.id, "role": new_user.role, "full_name": full_name}
+    return {"message": "Signup successful. Please check your email for verification code."}
 
 @router.post("/login", response_model=schemas.Token)
 @limiter.limit("10/minute")
@@ -154,6 +159,9 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
     
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
+    
+    if not user.is_verified:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified. Please verify your account.")
     
     access_token = create_access_token(data={"sub": str(user.id), "role": user.role.value})
     
@@ -199,7 +207,7 @@ async def forgot_password(request_data: schemas.ForgotPasswordRequest, backgroun
     # Send Email
     message = MessageSchema(
         subject="Password Reset OTP",
-        recipients=[request.email],
+        recipients=[user.email], # Fixed: was incorrectly using request.email
         body=f"Your OTP for password reset is: {otp}. It is valid for 10 minutes.",
         subtype=MessageType.html
     )
@@ -209,6 +217,64 @@ async def forgot_password(request_data: schemas.ForgotPasswordRequest, backgroun
     background_tasks.add_task(fm.send_message, message)
 
     return {"message": "OTP sent to email"}
+
+@router.post("/verify-email")
+def verify_email(request: schemas.VerifyOTPRequest, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.email == request.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Find valid OTP
+    token = db.query(models.VerificationToken).filter(
+        models.VerificationToken.user_id == user.id,
+        models.VerificationToken.token == request.otp,
+        models.VerificationToken.verification_type == models.VerificationTokenType.EMAIL_VERIFICATION,
+        models.VerificationToken.is_used == False,
+        models.VerificationToken.expires_at > datetime.utcnow()
+    ).order_by(models.VerificationToken.created_at.desc()).first()
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+    
+    # Mark user as verified
+    user.is_verified = True
+    token.is_used = True
+    db.commit()
+
+    return {"message": "Email verified successfully. You can now login."}
+
+@router.post("/resend-verification")
+async def resend_verification(request_data: schemas.ResendVerificationRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.email == request_data.email).first()
+    if not user:
+        return {"message": "If the email is registered, a new verification code has been sent."}
+    
+    if user.is_verified:
+        return {"message": "Email is already verified."}
+
+    otp = generate_otp()
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+    
+    db_token = models.VerificationToken(
+        user_id=user.id,
+        token=otp,
+        verification_type=models.VerificationTokenType.EMAIL_VERIFICATION,
+        expires_at=expires_at
+    )
+    db.add(db_token)
+    db.commit()
+
+    message = MessageSchema(
+        subject="Aadikarta - New Verification Code",
+        recipients=[user.email],
+        body=f"Your new verification code is: {otp}. It is valid for 10 minutes.",
+        subtype=MessageType.html
+    )
+    
+    fm = FastMail(conf)
+    background_tasks.add_task(fm.send_message, message)
+
+    return {"message": "New verification code sent to email."}
 
 @router.post("/verify-otp")
 def verify_otp(request: schemas.VerifyOTPRequest, db: Session = Depends(database.get_db)):

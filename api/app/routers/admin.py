@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from typing import List, Optional
@@ -9,16 +9,8 @@ from datetime import datetime, timedelta
 from .. import models, schemas, database
 from .. import models, schemas, database
 from .. import models_edu, schemas_edu
-from .auth import get_current_admin, get_password_hash
-import cloudinary
-import cloudinary.uploader
-
-cloudinary.config(
-  cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
-  api_key = os.getenv('CLOUDINARY_API_KEY'),
-  api_secret = os.getenv('CLOUDINARY_API_SECRET'),
-  secure = True
-)
+from fastapi_mail import FastMail, MessageSchema, MessageType
+from .auth import get_current_admin, get_password_hash, conf
 
 router = APIRouter(
     prefix="/admin",
@@ -41,12 +33,24 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
 
     try:
-        # Upload to Cloudinary
-        result = cloudinary.uploader.upload(file.file, folder="admin_uploads")
-        return {"url": result.get("secure_url")}
+        # Ensure directory exists
+        UPLOAD_DIR = "uploads/admin_uploads"
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        
+        # Generate unique filename
+        file_ext = os.path.splitext(file.filename)[1]
+        filename = f"{uuid.uuid4().hex}{file_ext}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        
+        # Save file locally
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        # Return static URL relative to mount (/static handles the "uploads" directory)
+        return {"url": f"/static/admin_uploads/{filename}"}
     except Exception as e:
-        print(f"Cloudinary upload failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Image upload failed: {str(e)}")
+        print(f"File upload failed: {e}")
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
 
 @router.get("/dashboard_stats")
 def get_dashboard_stats(db: Session = Depends(database.get_db)):
@@ -535,3 +539,28 @@ def get_edu_stats(
         total_earnings=total_earnings,
         enrollments=enrollments
     )
+
+@router.put("/users/{user_id}/reset-password")
+async def admin_reset_password(user_id: int, request: schemas.AdminPasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+    """
+    Allows an admin to directly reset any user's password and sends a notification email.
+    """
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.hashed_password = get_password_hash(request.new_password)
+    db.commit()
+
+    # Send notification email
+    message = MessageSchema(
+        subject="Aadikarta - Password Reset by Admin",
+        recipients=[user.email],
+        body=f"Your password has been reset by an administrator. Your new password is: {request.new_password}",
+        subtype=MessageType.html
+    )
+    
+    fm = FastMail(conf)
+    background_tasks.add_task(fm.send_message, message)
+
+    return {"message": "Password reset successfully and notification email sent."}

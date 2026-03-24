@@ -71,12 +71,17 @@ def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Sess
 
 @router.get("/", response_model=List[schemas.AstrologerProfile])
 def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Session = Depends(database.get_db)):
-    query = db.query(models.AstrologerProfile)
+    query = db.query(models.AstrologerProfile).join(models.User).filter(
+        models.AstrologerProfile.is_approved == True,
+        models.User.is_active == True,
+        models.User.is_verified == True
+    )
     
     if sort_by == 'rating':
         query = query.order_by(models.AstrologerProfile.rating_avg.desc())
         
     profiles = query.offset(skip).limit(limit).all()
+    print(f"DEBUG: Found {len(profiles)} approved/active/verified astrologers")
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)
@@ -103,7 +108,12 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
 # Admin or specific generic get by ID
 @router.get("/{user_id}", response_model=schemas.AstrologerProfile)
 def get_astrologer_by_id(user_id: int, db: Session = Depends(database.get_db)):
-    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    profile = db.query(models.AstrologerProfile).join(models.User).filter(
+        models.AstrologerProfile.user_id == user_id,
+        models.AstrologerProfile.is_approved == True,
+        models.User.is_active == True,
+        models.User.is_verified == True
+    ).first()
     if not profile:
-        raise HTTPException(status_code=404, detail="Astrologer not found")
+        raise HTTPException(status_code=404, detail="Astrologer not found or not approved")
     return profile

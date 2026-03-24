@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle } from 'lucide-react';
 import api from '../services/api';
-import { Button } from '../components/ui';
+import { Button, Avatar } from '../components/ui';
 
 export default function AstrologerDetails() {
     const { id } = useParams();
@@ -50,9 +50,10 @@ export default function AstrologerDetails() {
                         <ArrowLeft size={20} />
                     </Button>
                     <div className="flex items-center gap-4">
-                        <img
-                            src={profile.profile.profile_picture_url || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm"
+                        <Avatar 
+                            src={profile.profile.profile_picture_url} 
+                            className="w-16 h-16 border-2 border-white shadow-sm" 
+                            iconSize={32}
                             alt="Profile"
                         />
                         <div>

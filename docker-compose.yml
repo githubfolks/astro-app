@@ -3,8 +3,8 @@ services:
     build: ./api
     container_name: astro_api_staging
     environment:
-      SQLALCHEMY_DATABASE_URL: "postgresql://postgres.tpjjtdtuhdsktudkysmz:Gagbx3lcYMqRbUqQ@aws-1-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require"
-      REDIS_URL: redis://redis:6379/0
+      SQLALCHEMY_DATABASE_URL: "${SQLALCHEMY_DATABASE_URL}"
+      REDIS_URL: "${REDIS_URL}"
     ports:
       - "9000:8000"
     volumes:
@@ -15,7 +15,7 @@ services:
     build: 
       context: ./web
       args:
-        VITE_API_URL: https://api.aadikarta.org
+        VITE_API_URL: "${VITE_API_URL}"
     container_name: astro_web_staging
     ports:
       - "4002:80"
@@ -24,7 +24,7 @@ services:
     build:
       context: ./admin
       args:
-        VITE_API_URL: https://api.aadikarta.org
+        VITE_API_URL: "${VITE_API_URL}"
     container_name: astro_admin_staging
     ports:
       - "4001:80"
@@ -43,10 +43,5 @@ services:
     environment:
       - PORT=3010
       - TRUST_PROXY=true
-      - SERVER_SSL_CERT=none
-      - SERVER_SSL_KEY=none
-      - API_KEY_SECRET=mirotalk_api_secret 
-      - JWT_SECRET=mirotalk_secret_key_change_me 
-
-
-
+      - API_KEY_SECRET=${MIROTALK_API_KEY_SECRET}
+      - JWT_SECRET=${MIROTALK_JWT_SECRET}

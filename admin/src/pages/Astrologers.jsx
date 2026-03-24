@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import api from '../services/api';
-import { Button, Switch } from '../components/ui';
+import { Button, Switch, Avatar } from '../components/ui';
 
 export default function Astrologers() {
     const navigate = useNavigate();
@@ -82,10 +82,10 @@ export default function Astrologers() {
                                 />
                             </div>
 
-                            <img
-                                src={item.profile.profile_picture_url || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"}
-                                alt={item.profile.full_name}
-                                className="w-20 h-20 object-cover rounded-full border-4 border-gray-50 shadow-inner mb-3"
+                            <Avatar 
+                                src={item.profile.profile_picture_url} 
+                                className="w-20 h-20 border-4 border-gray-50 shadow-inner mb-3" 
+                                iconSize={40}
                             />
                             <h3 className="text-base font-bold text-gray-900 mb-1 line-clamp-1">{item.profile.full_name}</h3>
                             <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-3 leading-relaxed">{item.profile.short_bio}</p>

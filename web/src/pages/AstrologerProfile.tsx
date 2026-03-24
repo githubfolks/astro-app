@@ -18,6 +18,7 @@ import {
     Heart
 } from 'lucide-react';
 
+import { resolveImageUrl } from '../utils/url';
 import SEO from '../components/SEO';
 
 const AstrologerProfile: React.FC = () => {
@@ -156,7 +157,7 @@ const AstrologerProfile: React.FC = () => {
             <SEO
                 title={`${astrologer.full_name} | Expert Astrologer`}
                 description={`Consult with ${astrologer.full_name}, a verified expert with ${astrologer.experience_years}+ years of experience in ${specialtiesArray.slice(0, 3).join(', ')}.`}
-                image={astrologer.profile_picture_url}
+                image={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
                 structuredData={getStructuredData(astrologer)}
             />
             <Header />
@@ -168,17 +169,11 @@ const AstrologerProfile: React.FC = () => {
                             {/* Profile Image */}
                             <div className="relative">
                                 <div className="w-40 h-40 md:w-52 md:h-52 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl bg-gradient-to-br from-purple-400 to-pink-500">
-                                    {astrologer.profile_picture_url ? (
-                                        <img
-                                            src={astrologer.profile_picture_url}
-                                            alt={astrologer.full_name}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-6xl font-bold text-white">
-                                            {astrologer.full_name?.[0]?.toUpperCase() || 'A'}
-                                        </div>
-                                    )}
+                                    <img
+                                        src={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
+                                        alt={astrologer.full_name}
+                                        className="w-full h-full object-cover"
+                                    />
                                 </div>
                                 {astrologer.is_online ? (
                                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1 shadow-lg">

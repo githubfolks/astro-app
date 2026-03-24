@@ -126,8 +126,34 @@ def update_session(session_id: int, session: schemas_edu.ClassSessionUpdate, db:
 
 @router.get("/sessions", response_model=List[schemas_edu.ClassSessionResponse])
 def list_sessions(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    # For now, we'll just list all upcoming or active sessions.
-    return db.query(models_edu.ClassSession).filter(models_edu.ClassSession.is_active == True).all()
+    """
+    Lists active sessions relevant to the current user.
+    - Admins: All active sessions.
+    - Tutors: Sessions for courses they teach.
+    - Seekers: Sessions for batches they are enrolled in.
+    """
+    if current_user.role == models.UserRole.ADMIN:
+        return db.query(models_edu.ClassSession).filter(models_edu.ClassSession.is_active == True).all()
+        
+    if current_user.role == models.UserRole.TUTOR:
+        return db.query(models_edu.ClassSession)\
+            .join(models_edu.Batch)\
+            .join(models_edu.Course)\
+            .filter(
+                models_edu.Course.teacher_id == current_user.id,
+                models_edu.ClassSession.is_active == True
+            ).all()
+            
+    if current_user.role == models.UserRole.SEEKER:
+        return db.query(models_edu.ClassSession)\
+            .join(models_edu.Batch)\
+            .join(models_edu.BatchEnrollment)\
+            .filter(
+                models_edu.BatchEnrollment.user_id == current_user.id,
+                models_edu.ClassSession.is_active == True
+            ).all()
+            
+    return []
 
 # Enrollment
 @router.post("/enroll", response_model=schemas_edu.BatchEnrollmentResponse)

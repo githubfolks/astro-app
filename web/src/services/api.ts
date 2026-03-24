@@ -82,15 +82,17 @@ const handleResponse = async (response: Response, defaultError: string) => {
             await storage.removeItem('user');
             window.location.href = '/login';
         }
-        const error = await response.json().catch(() => ({}));
-        if (response.status === 422 && Array.isArray(error.detail)) {
-            const messages = error.detail.map((err: any) => {
-                const field = err.loc[err.loc.length - 1];
+        const errorData = await response.json().catch(() => ({}));
+        let errorMessage = errorData.detail || defaultError;
+
+        if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail.map((err: any) => {
+                const field = err.loc ? err.loc[err.loc.length - 1] : 'error';
                 return `${String(field).replace('_', ' ')}: ${err.msg}`;
-            });
-            throw new Error(messages.join(', '));
+            }).join(', ');
         }
-        throw new Error(error.detail || defaultError);
+
+        throw new Error(errorMessage);
     }
     return response.json();
 };

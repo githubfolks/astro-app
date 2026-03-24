@@ -46,6 +46,9 @@ class Token(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
+
 class VerifyOTPRequest(BaseModel):
     email: str
     otp: str
@@ -54,6 +57,9 @@ class VerifyOTPRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str # The reset token received after verifying OTP
     new_password: str
+
+class AdminPasswordResetRequest(BaseModel):
+    new_password: str = Field(..., min_length=8)
 
 # Seeker Profile Schemas
 class SeekerProfileBase(BaseModel):

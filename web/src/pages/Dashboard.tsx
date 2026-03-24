@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
 import RatingModal from '../components/RatingModal';
+import { resolveImageUrl } from '../utils/url';
 import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -158,12 +159,12 @@ export const Dashboard: React.FC = () => {
                                             {history.filter((c: any) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: any) => (
                                                 <div key={c.id} className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md transition-all">
                                                     <div className="flex items-center gap-4 w-full md:w-auto">
-                                                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg overflow-hidden">
-                                                            {c.seeker_profile?.profile_picture_url ? (
-                                                                <img src={c.seeker_profile.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                c.seeker_profile?.full_name?.[0] || c.seeker_id
-                                                            )}
+                                                        <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg overflow-hidden border border-gray-100">
+                                                            <img 
+                                                                src={resolveImageUrl(c.seeker_profile?.profile_picture_url, c.seeker_profile?.full_name || String(c.seeker_id))} 
+                                                                alt="Profile" 
+                                                                className="w-full h-full object-cover" 
+                                                            />
                                                         </div>
                                                         <div>
                                                             <h4 className="font-bold text-gray-900">{c.seeker_profile?.full_name || `User #${c.seeker_id}`}</h4>
@@ -633,8 +634,12 @@ export const Dashboard: React.FC = () => {
                                                 <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all">
                                                     <div className="flex flex-col md:flex-row justify-between gap-4">
                                                         <div className="flex items-start gap-4">
-                                                            <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xl">
-                                                                {c.astrologer_profile?.full_name?.[0] || 'A'}
+                                                            <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xl overflow-hidden border border-gray-100">
+                                                                <img 
+                                                                    src={resolveImageUrl(c.astrologer_profile?.profile_picture_url, c.astrologer_profile?.full_name)} 
+                                                                    alt="Profile" 
+                                                                    className="w-full h-full object-cover" 
+                                                                />
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-bold text-gray-900">{c.astrologer_profile?.full_name || `Astrologer #${c.astrologer_id}`}</h4>
