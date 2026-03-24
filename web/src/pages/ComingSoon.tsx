@@ -43,6 +43,29 @@ const ComingSoon: React.FC = () => {
         { icon: Sparkles, color: "text-purple-400", title: "Satisfaction Guaranteed", desc: "Your spiritual peace is our priority. Hassle-free refund policy for every consultation." }
     ];
 
+    const faqs = [
+        { q: "What is AadiKarta?", a: "AadiKarta is a digital platform designed to connect users with Vedic astrology guidance, spiritual knowledge, astrology consultations, and learning services." },
+        { q: "What services will AadiKarta offer?", a: "AadiKarta will offer astrology consultations, horoscope guidance, kundli-based insights, astrology learning modules, and live expert sessions." },
+        { q: "Is AadiKarta based on Vedic astrology?", a: "Yes, AadiKarta is focused primarily on traditional Vedic astrology principles and Indian spiritual knowledge systems." },
+        { q: "Can I consult astrologers online through AadiKarta?", a: "Yes, users will be able to connect with astrologers online through digital consultation features." },
+        { q: "Will AadiKarta provide horoscope analysis?", a: "Yes, horoscope analysis based on birth details and Vedic astrology principles will be available." },
+        { q: "Can beginners learn astrology on AadiKarta?", a: "Yes, astrology learning programs and guided courses are planned for beginners and advanced learners." },
+        { q: "Will AadiKarta offer live astrology classes?", a: "Yes, live classes and interactive sessions with experts are planned as part of the learning platform." },
+        { q: "Is AadiKarta suitable for spiritual guidance?", a: "Yes, AadiKarta aims to provide spiritual insights, life guidance, and traditional knowledge-based support." },
+        { q: "Will moon sign guidance be available on AadiKarta?", a: "Yes, moon sign based interpretation and personality guidance will be part of the platform." },
+        { q: "Can I access AadiKarta on mobile?", a: "Yes, AadiKarta is being designed for mobile-friendly access." },
+        { q: "Will AadiKarta support Hindi language content?", a: "Yes, Hindi and multilingual content are planned to make the platform accessible to wider audiences." },
+        { q: "Can I book sessions in advance on AadiKarta?", a: "Yes, booking and scheduling features are expected for consultations and classes." },
+        { q: "Will AadiKarta provide personalized astrology reports?", a: "Yes, personalized reports based on birth details may be available." },
+        { q: "Is AadiKarta only for astrology consultations?", a: "No, AadiKarta also aims to include education, spiritual learning, and guided knowledge resources." },
+        { q: "Will there be astrology courses for serious learners?", a: "Yes, structured astrology learning modules are planned for students and enthusiasts." },
+        { q: "Can users interact during live sessions?", a: "Yes, future live sessions may include questions, discussion, and interaction features." },
+        { q: "Is AadiKarta suitable for daily astrology updates?", a: "Yes, daily content such as horoscope insights and astrological guidance may be included." },
+        { q: "Will AadiKarta include traditional Indian knowledge systems?", a: "Yes, the platform is inspired by Indian spiritual and traditional knowledge." },
+        { q: "How can I stay updated about AadiKarta launch?", a: "Users can subscribe or follow official channels for launch announcements." },
+        { q: "When will AadiKarta launch?", a: "AadiKarta is currently in development and will launch soon with new digital astrology services." }
+    ];
+
     const organizationSchema = {
         "@context": "https://schema.org",
         "@type": "Organization",
@@ -56,12 +79,25 @@ const ComingSoon: React.FC = () => {
         ]
     };
 
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": faq.a
+            }
+        }))
+    };
+
     return (
         <div className="min-h-screen relative overflow-x-hidden flex flex-col text-white bg-[#0f172a] font-sans">
             <SEO
                 title="Coming Soon | Aadikarta - Ancient Wisdom for Modern Life"
                 description="We are bringing something sacred and transformative. Aadikarta is coming soon to guide your spiritual journey and unlock your mental potential."
-                structuredData={organizationSchema}
+                structuredData={[organizationSchema, faqSchema]}
             />
 
             {/* Celestial Background */}
@@ -218,6 +254,29 @@ const ComingSoon: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="relative z-10 py-32 px-6 bg-indigo-950/20">
+                <div className="max-w-7xl mx-auto">
+                    <div className="text-center mb-20" data-aos="fade-up">
+                        <h2 className="text-4xl md:text-5xl mb-6">Frequently <span className="text-amber-400">Asked</span></h2>
+                        <p className="text-xl text-indigo-100/60 font-light">Your questions about AadiKarta, answered.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {faqs.map((faq, idx) => (
+                            <div key={idx} className="p-8 rounded-3xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-500" data-aos="fade-up" data-aos-delay={idx * 50}>
+                                <h4 className="text-xl font-medium mb-4 text-amber-400/90">{faq.q}</h4>
+                                <p className="text-indigo-100/60 font-light leading-relaxed text-justify">{faq.a}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-16 text-center" data-aos="fade-up">
+                        <p className="text-indigo-100/40 text-sm italic">More questions? We'll be sharing a full knowledge base at launch.</p>
                     </div>
                 </div>
             </section>
