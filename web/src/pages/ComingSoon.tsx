@@ -102,7 +102,7 @@ const ComingSoon: React.FC = () => {
 
             {/* Celestial Background */}
             <div className="fixed inset-0 bg-[radial-gradient(circle_at_top_right,#1e1b4b,0%,#0f172a_100%)] -z-20"></div>
-            <div className="fixed inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 -z-10"></div>
+            <div className="fixed inset-0 bg-[url('/assets/stardust.png')] opacity-20 -z-10"></div>
 
             {/* Hero Section */}
             <main className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-32 pb-20 flex flex-col items-center justify-center text-center">
@@ -121,7 +121,11 @@ const ComingSoon: React.FC = () => {
                 <div className="relative w-full max-w-4xl mx-auto" data-aos="zoom-in" data-aos-delay="200">
                     <img
                         src="/assets/hero_astrology.png"
-                        alt="Ancient Wisdom"
+                        alt="Ancient Vedic Astrology Guidance"
+                        width={1200}
+                        height={630}
+                        fetchPriority="high"
+                        decoding="async"
                         className="w-full h-auto drop-shadow-[0_0_80px_rgba(245,158,11,0.25)] animate-float"
                     />
                     <div className="absolute -inset-10 bg-gradient-to-tr from-amber-500/20 to-transparent blur-[100px] -z-10 rounded-full"></div>
@@ -221,7 +225,11 @@ const ComingSoon: React.FC = () => {
                                     <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-purple-600/20 rounded-[2.5rem] blur-2xl group-hover:opacity-100 transition duration-1000"></div>
                                     <img
                                         src="/assets/memory_guru/rajesh-1.jpeg"
-                                        alt="Rajesh Chaudhary - Memory Guru"
+                                        alt="Rajesh Chaudhary - Memory Guru India Book of Records Holder"
+                                        width={400}
+                                        height={500}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="relative rounded-[2.5rem] shadow-2xl w-full border-4 border-white/10 object-cover aspect-[4/5] transform transition-all duration-500 hover:scale-[1.02]"
                                     />
                                     <div className="absolute -bottom-4 -right-4 bg-amber-500 text-indigo-950 px-4 py-2 rounded-xl shadow-xl text-xs font-medium tracking-widest uppercase">
@@ -311,7 +319,7 @@ const ComingSoon: React.FC = () => {
             {/* Footer */}
             <footer className="relative z-10 py-20 px-6 border-t border-white/5 text-center">
                 <div className="max-w-7xl mx-auto flex flex-col items-center gap-10">
-                    <img src="/assets/logo.png" alt="AadiKarta Logo" className="h-12 w-auto brightness-200 opacity-80" />
+                    <img src="/assets/logo.png" alt="AadiKarta Logo" width={160} height={48} className="h-12 w-auto brightness-200 opacity-80" />
                     <p className="text-indigo-100/40 text-sm font-light uppercase tracking-[0.3em]">Ancient Wisdom • Modern Guidance</p>
                     <div className="w-16 h-[1px] bg-white/10"></div>
                     <p className="text-indigo-100/30 text-xs">© {new Date().getFullYear()} AadiKarta. All rights reserved.</p>
