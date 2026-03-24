@@ -60,7 +60,7 @@ Configure Nginx to route traffic based on the domain name.
     - Port: `3002` (Web only)
 - **Staging (staging)**: 
     - URL: `staging.aadikarta.org`
-    - API: `api-staging.aadikarta.org`
+    - API: `api.aadikarta.org`
     - Ports: `4002` (Web), `9000` (API)
 server {
     listen 80;
@@ -88,7 +88,7 @@ server {
 # 3. API & Admin for Staging
 server {
     listen 80;
-    server_name api-staging.aadikarta.org;
+    server_name api.aadikarta.org;
 
     location / {
         proxy_pass http://localhost:9000;
