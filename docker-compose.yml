@@ -42,6 +42,9 @@ services:
       - "4010:3010"
     environment:
       - PORT=3010
+      - TRUST_PROXY=true
+      - SERVER_SSL_CERT=none
+      - SERVER_SSL_KEY=none
       - API_KEY_SECRET=mirotalk_api_secret 
       - JWT_SECRET=mirotalk_secret_key_change_me 
 
