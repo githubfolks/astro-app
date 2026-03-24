@@ -13,7 +13,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
     title,
     description,
-    image = '/assets/og-image.jpg',
+    image = 'https://aadikarta.org/assets/og-image.png',
     url = 'https://aadikarta.org',
     type = 'website',
     structuredData
