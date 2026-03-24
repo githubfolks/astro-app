@@ -77,7 +77,7 @@ const ComingSoon: React.FC = () => {
                     <h1 className="text-6xl md:text-8xl mb-10 leading-tight tracking-tight">
                         Bringing <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Ancient Wisdom</span><br />to Modern Life
                     </h1>
-                    <p className="text-xl md:text-3xl text-indigo-100/70 mb-16 font-light leading-relaxed max-w-3xl mx-auto">
+                    <p className="text-xl md:text-3xl text-indigo-100/70 mb-16 font-light leading-relaxed max-w-3xl mx-auto text-justify">
                         Your sanctuary for Vedic astrology, spiritual growth, and absolute mental mastery. We are crafting a bridge to your highest potential.
                     </p>
                 </div>
@@ -96,7 +96,7 @@ const ComingSoon: React.FC = () => {
             <section className="relative z-10 py-32 px-6 bg-white/5 backdrop-blur-md border-y border-white/10">
                 <div className="max-w-5xl mx-auto text-center" data-aos="fade-up">
                     <h2 className="text-4xl md:text-5xl mb-10">What is <span className="text-amber-400">AadiKarta?</span></h2>
-                    <p className="text-xl md:text-2xl text-indigo-100/80 leading-relaxed font-light">
+                    <p className="text-xl md:text-2xl text-indigo-100/80 leading-relaxed font-light text-justify">
                         AadiKarta is a technology-driven spiritual platform that bridges the gap between ancient Vedic traditions and modern life.
                         We connect seekers with India's most prestigious spiritual network of verified expert astrologers and
                         educational visionaries like <span className="text-amber-400 font-medium">Rajesh Chaudhary (Memory Guru)</span>.
@@ -123,7 +123,7 @@ const ComingSoon: React.FC = () => {
                                     {item.icon}
                                 </div>
                                 <h3 className="text-2xl mb-4">{item.title}</h3>
-                                <p className="text-indigo-100/60 leading-relaxed font-light">{item.desc}</p>
+                                <p className="text-indigo-100/60 leading-relaxed font-light text-justify">{item.desc}</p>
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/5 blur-3xl rounded-full translate-x-10 -translate-y-10 group-hover:bg-amber-400/10 transition-colors"></div>
                             </div>
                         ))}
@@ -146,7 +146,7 @@ const ComingSoon: React.FC = () => {
                                     {service.icon}
                                 </div>
                                 <h4 className="text-xl mb-3">{service.title}</h4>
-                                <p className="text-indigo-100/50 font-light text-sm">{service.desc}</p>
+                                <p className="text-indigo-100/50 font-light text-sm text-justify">{service.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -168,7 +168,7 @@ const ComingSoon: React.FC = () => {
                                     <diff.icon size={40} />
                                 </div>
                                 <h4 className="text-2xl mb-4">{diff.title}</h4>
-                                <p className="text-indigo-100/60 font-light leading-relaxed">{diff.desc}</p>
+                                <p className="text-indigo-100/60 font-light leading-relaxed text-justify">{diff.desc}</p>
                             </div>
                         ))}
                     </div>
@@ -198,7 +198,7 @@ const ComingSoon: React.FC = () => {
                                 <span className="text-amber-400 font-medium uppercase tracking-widest text-sm block">Mental Potential Coach</span>
                                 <h2 className="text-4xl md:text-5xl leading-tight">Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 font-medium">Memory Guru</span></h2>
                                 <h3 className="text-2xl text-indigo-100/90 font-light">Rajesh Chaudhary</h3>
-                                <p className="text-lg text-indigo-100/60 leading-relaxed font-light">
+                                <p className="text-lg text-indigo-100/60 leading-relaxed font-light text-justify">
                                     Unlock your hidden mental potential with scientific memory systems and accelerated learning techniques.
                                     Rajesh Chaudhary, popularly known as the Memory Guru, is a recognized motivator and India Book of Records holder
                                     dedicated to transforming how students and professionals learn, retain, and perform.
@@ -238,7 +238,7 @@ const ComingSoon: React.FC = () => {
                                     <div className="mt-1">{feature.icon}</div>
                                     <div>
                                         <h5 className="text-lg mb-1">{feature.title}</h5>
-                                        <p className="text-indigo-100/50 font-light text-sm">{feature.desc}</p>
+                                        <p className="text-indigo-100/50 font-light text-sm text-justify">{feature.desc}</p>
                                     </div>
                                 </li>
                             ))}
