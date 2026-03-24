@@ -15,7 +15,7 @@ services:
     build: 
       context: ./web
       args:
-        VITE_API_URL: https://api-staging.aadikarta.org
+        VITE_API_URL: https://api.aadikarta.org
     container_name: astro_web_staging
     ports:
       - "4002:80"
@@ -24,7 +24,7 @@ services:
     build:
       context: ./admin
       args:
-        VITE_API_URL: https://api-staging.aadikarta.org
+        VITE_API_URL: https://api.aadikarta.org
     container_name: astro_admin_staging
     ports:
       - "4001:80"
