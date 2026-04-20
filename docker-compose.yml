@@ -13,6 +13,9 @@ services:
       - redis
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - global-proxy-network
 
 
 
@@ -24,6 +27,9 @@ services:
     container_name: astro_web_staging
     ports:
       - "4002:80"
+    networks:
+      - default
+      - global-proxy-network
 
   admin:
     build:
@@ -33,6 +39,9 @@ services:
     container_name: astro_admin_staging
     ports:
       - "4001:80"
+    networks:
+      - default
+      - global-proxy-network
 
   redis:
     image: "redis:alpine"
@@ -50,4 +59,11 @@ services:
       - TRUST_PROXY=true
       - API_KEY_SECRET=${MIROTALK_API_KEY_SECRET}
       - JWT_SECRET=${MIROTALK_JWT_SECRET}
+    networks:
+      - default
+      - global-proxy-network
+
+networks:
+  global-proxy-network:
+    external: true
 
