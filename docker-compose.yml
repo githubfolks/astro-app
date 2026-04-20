@@ -11,6 +11,8 @@ services:
       - ./api/uploads:/app/uploads
     depends_on:
       - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 
 
