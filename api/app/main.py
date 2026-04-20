@@ -115,9 +115,10 @@ async def log_requests(request: Request, call_next):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o for o in origins if o],
+    allow_origin_regex=r"https?://.*\.aadikarta\.org", # Allow all subdomains
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"],
+    allow_methods=["*"],
+    allow_headers=["*"],
     max_age=3600,
 )
 
