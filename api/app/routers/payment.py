@@ -1,12 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
-from .. import models, schemas, database
+from .. import models, schemas, database, audit
 from .auth import get_current_user
 import razorpay
 import uuid
 import os
 import hmac
 import hashlib
+import json
 from pydantic import BaseModel
 
 router = APIRouter(
@@ -141,3 +142,70 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
     except Exception as e:
         print(f"Payment Verification Failed: {e}")
         raise HTTPException(status_code=400, detail="Payment verification failed")
+
+
+@router.post("/razorpay-webhook")
+async def razorpay_webhook(request: Request, db: Session = Depends(database.get_db)):
+    """
+    Server-to-server webhook from Razorpay. Handles payment.captured events
+    as a reliable backup to the client-side /verify flow.
+    """
+    raw_body = await request.body()
+    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+
+    # Validate webhook signature when secret is configured
+    if webhook_secret:
+        received_sig = request.headers.get("X-Razorpay-Signature", "")
+        expected_sig = hmac.new(
+            webhook_secret.encode("utf-8"),
+            raw_body,
+            hashlib.sha256
+        ).hexdigest()
+        if not hmac.compare_digest(expected_sig, received_sig):
+            raise HTTPException(status_code=400, detail="Invalid webhook signature")
+
+    try:
+        payload = json.loads(raw_body)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    event = payload.get("event")
+    if event != "payment.captured":
+        return {"status": "ignored", "event": event}
+
+    payment_entity = payload.get("payload", {}).get("payment", {}).get("entity", {})
+    order_id = payment_entity.get("order_id")
+    payment_id = payment_entity.get("id")
+    amount_paise = payment_entity.get("amount", 0)
+    notes = payment_entity.get("notes", {})
+    user_id = notes.get("user_id")
+
+    if not order_id or not user_id:
+        return {"status": "skipped", "reason": "missing order_id or user_id in notes"}
+
+    # Idempotency: skip if already credited
+    existing = db.query(models.WalletTransaction).filter(
+        models.WalletTransaction.reference_id == order_id
+    ).first()
+    if existing:
+        return {"status": "already_processed"}
+
+    amount_inr = amount_paise / 100.0
+    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == int(user_id)).first()
+    if not wallet:
+        wallet = models.UserWallet(user_id=int(user_id), balance=0.0)
+        db.add(wallet)
+
+    wallet.balance += amount_inr
+    txn = models.WalletTransaction(
+        user_id=int(user_id),
+        amount=amount_inr,
+        transaction_type=models.TransactionType.PAYMENT_GATEWAY,
+        description=f"Razorpay webhook: {payment_id}",
+        reference_id=order_id
+    )
+    db.add(txn)
+    audit.log(db, "WALLET_TOPPED_UP_VIA_WEBHOOK", resource_type="user", resource_id=user_id,
+              details={"amount": amount_inr, "order_id": order_id, "payment_id": payment_id})
+    db.commit()
+    return {"status": "ok"}

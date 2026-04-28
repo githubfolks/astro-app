@@ -108,5 +108,10 @@ export const edu = {
     getStats: (params) => api.get('/admin/edu/stats', { params })
 };
 
+export const disputes = {
+    list: (params) => api.get('/disputes/', { params }),
+    resolve: (id, data) => api.put(`/disputes/${id}`, data),
+};
+
 
 export default api;

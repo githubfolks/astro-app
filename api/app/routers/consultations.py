@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List
+import asyncio
 from .. import models, schemas, database
 from .auth import get_current_user
 
@@ -15,9 +16,24 @@ router = APIRouter(
 def request_consultation(request: schemas.ConsultationCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
     if current_user.role != models.UserRole.SEEKER:
         raise HTTPException(status_code=400, detail="Only seekers can request consultations")
-    
-    # Check wallet balance logic would go here
-    
+
+    # Block concurrent active sessions
+    blocking_statuses = [
+        models.ConsultationStatus.REQUESTED,
+        models.ConsultationStatus.ACCEPTED,
+        models.ConsultationStatus.ACTIVE,
+        models.ConsultationStatus.PAUSED,
+    ]
+    existing = db.query(models.Consultation).filter(
+        models.Consultation.seeker_id == current_user.id,
+        models.Consultation.status.in_(blocking_statuses)
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail=f"You already have an active consultation (id={existing.id}). End it before starting a new one."
+        )
+
     # Get astrologer fee
     astro_profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == request.astrologer_id).first()
     if not astro_profile:
@@ -57,6 +73,41 @@ def get_consultation(consultation_id: int, current_user: models.User = Depends(g
         raise HTTPException(status_code=403, detail="Not authorized to view this consultation")
         
     return consultation
+
+@router.post("/{consultation_id}/resume")
+async def resume_consultation(
+    consultation_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    if current_user.id != consultation.seeker_id and current_user.id != consultation.astrologer_id:
+        raise HTTPException(status_code=403, detail="Not authorized to resume this consultation")
+
+    if consultation.status != models.ConsultationStatus.PAUSED:
+        raise HTTPException(status_code=400, detail="Consultation is not paused")
+
+    # Balance must cover at least one minute
+    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
+    if not wallet or float(wallet.balance) < float(consultation.rate_per_min):
+        raise HTTPException(status_code=400, detail="Insufficient balance to resume consultation")
+
+    consultation.status = models.ConsultationStatus.ACTIVE
+    db.commit()
+
+    from .chat import billing_loop, manager
+    asyncio.create_task(billing_loop(consultation_id, float(consultation.rate_per_min), database.SessionLocal))
+
+    await manager.broadcast(consultation_id, {
+        "type": "CONSULTATION_RESUMED",
+        "balance": float(wallet.balance)
+    })
+
+    return {"status": "resumed", "consultation_id": consultation_id}
+
 
 # --- Reviews ---
 

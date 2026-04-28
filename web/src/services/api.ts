@@ -298,6 +298,13 @@ export const api = {
                 body: JSON.stringify({ consultation_id, content })
             });
             return handleResponse(response, 'Failed to send message');
+        },
+        resumeConsultation: async (consultation_id: number | string) => {
+            const response = await customFetch(`${API_URL}/consultations/${consultation_id}/resume`, {
+                method: 'POST',
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to resume consultation');
         }
     },
 

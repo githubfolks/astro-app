@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import os
+import json
+import asyncio
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes
 from . import models_edu # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,7 +26,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
 
 @app.on_event("startup")
-def startup_event():
+async def startup_event():
     print("--- APP STARTUP ---")
     try:
         print("Connecting to database and creating tables...")
@@ -32,7 +34,50 @@ def startup_event():
         print("Tables created successfully.")
     except Exception as e:
         print(f"FAILED to connect to DB or create tables: {e}")
-        # We don't raise here so the app can still start and show 500s on endpoints but not crash entirely
+
+    # Crash recovery: restart billing loops for any ACTIVE consultations
+    await _recover_active_billing_loops()
+
+
+async def _recover_active_billing_loops():
+    from .redis_client import get_redis
+    from .database import SessionLocal
+    from . import models
+    from .routers.chat import billing_loop
+
+    redis = get_redis()
+    if not redis:
+        print("Redis unavailable — skipping crash recovery scan.")
+        return
+
+    try:
+        keys = redis.keys("active_consultation:*")
+        if not keys:
+            print("No active consultations found in Redis — nothing to recover.")
+            return
+
+        print(f"Found {len(keys)} possibly interrupted billing session(s). Verifying DB state...")
+        with SessionLocal() as db:
+            for key in keys:
+                try:
+                    raw = redis.get(key)
+                    if not raw:
+                        continue
+                    data = json.loads(raw)
+                    consultation_id = int(key.split(":")[-1])
+                    rate_per_min = float(data.get("rate_per_min", 0))
+
+                    cons = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+                    if cons and cons.status == models.ConsultationStatus.ACTIVE and rate_per_min > 0:
+                        print(f"Recovering billing loop for consultation {consultation_id}")
+                        asyncio.create_task(billing_loop(consultation_id, rate_per_min, SessionLocal))
+                    else:
+                        # Stale key — clean up
+                        redis.delete(key)
+                except Exception as ex:
+                    print(f"Error recovering key {key}: {ex}")
+    except Exception as e:
+        print(f"Crash recovery scan failed: {e}")
 
 origins = [
     "http://localhost:3000",
@@ -61,7 +106,7 @@ async def csrf_middleware(request: Request, call_next):
     
     # State-changing methods require token validation
     # EXEMPTIONS for initial auth where session doesn't exist yet
-    exempt_paths = ["/login", "/signup", "/forgot-password", "/verify-otp", "/reset-password"]
+    exempt_paths = ["/login", "/signup", "/forgot-password", "/verify-otp", "/reset-password", "/payment/razorpay-webhook"]
     
     # Also exempt requests with Bearer token (JWT) as they are inherently CSRF-protected
     auth_header = request.headers.get("Authorization")
@@ -136,6 +181,8 @@ app.include_router(payment.router)
 app.include_router(payouts.router)
 app.include_router(kundli.router)
 app.include_router(edu.router)
+app.include_router(packages.router)
+app.include_router(disputes.router)
 
 @app.get("/")
 def read_root():

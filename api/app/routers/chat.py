@@ -1,6 +1,6 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from .. import models, schemas, database
+from .. import models, schemas, database, audit
 from .auth import get_current_user, SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 import asyncio
@@ -169,11 +169,19 @@ from ..notifications import send_push_notification
 async def billing_loop(consultation_id: int, rate_per_min: float, db_session_maker):
     """
     Background task to deduct balance every minute while chat is ACTIVE.
-    Uses Redis for distributed locking to allow crash recovery / ensure single worker.
+    Registers session in Redis so startup recovery can restart the loop after a crash.
     """
     logger.info(f"Starting billing loop for {consultation_id}")
     redis = get_redis()
-    
+
+    # Register this session in Redis for crash recovery
+    if redis:
+        redis.set(
+            f"active_consultation:{consultation_id}",
+            json.dumps({"rate_per_min": rate_per_min}),
+            ex=86400  # 24 hour TTL as safety net
+        )
+
     try:
         while True:
             await asyncio.sleep(60) # Wait 1 minute
@@ -206,49 +214,102 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                 
                 # Check if still active
                 if not consultation or consultation.status != models.ConsultationStatus.ACTIVE:
-                    logger.info(f"Billing loop ended for {consultation_id}: Status is {consultation.status}")
+                    logger.info(f"Billing loop ended for {consultation_id}: Status is {consultation.status if consultation else 'NOT_FOUND'}")
+                    if redis:
+                        redis.delete(f"active_consultation:{consultation_id}")
                     break
                 
-                user_wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
-                if not user_wallet:
-                    break
-                
-                # Check Balance
-                cost = rate_per_min
-                if user_wallet.balance < cost:
-                    # End Chat
-                    consultation.status = models.ConsultationStatus.AUTO_ENDED
-                    consultation.end_time = datetime.utcnow()
+                consultation.duration_seconds = (consultation.duration_seconds or 0) + 60
+                is_package_session = consultation.package_id is not None and (consultation.package_seconds_remaining or 0) > 0
+
+                if is_package_session:
+                    # Package billing: deduct 60 seconds from remaining package time
+                    pkg_secs = (consultation.package_seconds_remaining or 0) - 60
+                    if pkg_secs <= 0:
+                        consultation.package_seconds_remaining = 0
+                        consultation.status = models.ConsultationStatus.AUTO_ENDED
+                        consultation.end_time = datetime.utcnow()
+                        audit.log(db, "CHAT_AUTO_ENDED", resource_type="consultation",
+                                  resource_id=consultation_id,
+                                  details={"reason": "package_time_exhausted", "total_cost": float(consultation.total_cost or 0)})
+                        db.commit()
+                        if redis:
+                            redis.delete(f"active_consultation:{consultation_id}")
+                        await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "package_time_exhausted"})
+                        break
+
+                    consultation.package_seconds_remaining = pkg_secs
                     db.commit()
-                    
-                    await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "insufficient_balance"})
-                    break
-                
-                # Deduct
-                user_wallet.balance -= cost
-                consultation.total_cost += cost
-                consultation.duration_seconds += 60
-                
-                # Transaction Record
-                txn = models.WalletTransaction(
-                    user_id=consultation.seeker_id,
-                    amount=-cost,
-                    transaction_type=models.TransactionType.CHAT_DEDUCTION,
-                    reference_id=str(consultation.id),
-                    description=f"Chat Deduction for min {int(consultation.duration_seconds/60)}"
-                )
-                db.add(txn)
-                db.commit()
-                
-                # Notify Balance Update
-                await manager.broadcast(consultation_id, {
-                    "type": "BALANCE_UPDATE", 
-                    "balance": float(user_wallet.balance),
-                    "spent": float(consultation.total_cost)
-                })
+
+                    minutes_remaining = pkg_secs / 60
+                    await manager.broadcast(consultation_id, {
+                        "type": "BALANCE_UPDATE",
+                        "balance": 0,  # Wallet not used
+                        "spent": float(consultation.total_cost or 0),
+                        "minutes_remaining": round(minutes_remaining, 1),
+                        "package_seconds_remaining": pkg_secs
+                    })
+
+                    if minutes_remaining <= 5:
+                        await manager.broadcast(consultation_id, {
+                            "type": "BALANCE_WARNING",
+                            "balance": 0,
+                            "minutes_remaining": round(minutes_remaining, 1),
+                            "source": "package"
+                        })
+                else:
+                    # Wallet billing
+                    user_wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
+                    if not user_wallet:
+                        break
+
+                    cost = rate_per_min
+                    if float(user_wallet.balance) < cost:
+                        consultation.status = models.ConsultationStatus.AUTO_ENDED
+                        consultation.end_time = datetime.utcnow()
+                        audit.log(db, "CHAT_AUTO_ENDED", resource_type="consultation",
+                                  resource_id=consultation_id,
+                                  details={"reason": "insufficient_balance", "total_cost": float(consultation.total_cost or 0)})
+                        db.commit()
+                        if redis:
+                            redis.delete(f"active_consultation:{consultation_id}")
+                        await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "insufficient_balance"})
+                        break
+
+                    user_wallet.balance -= cost
+                    consultation.total_cost = (consultation.total_cost or 0) + cost
+
+                    txn = models.WalletTransaction(
+                        user_id=consultation.seeker_id,
+                        amount=-cost,
+                        transaction_type=models.TransactionType.CHAT_DEDUCTION,
+                        reference_id=str(consultation.id),
+                        description=f"Chat deduction min {int(consultation.duration_seconds / 60)}"
+                    )
+                    db.add(txn)
+                    db.commit()
+
+                    remaining_balance = float(user_wallet.balance)
+                    minutes_remaining = remaining_balance / rate_per_min if rate_per_min > 0 else 0
+                    await manager.broadcast(consultation_id, {
+                        "type": "BALANCE_UPDATE",
+                        "balance": remaining_balance,
+                        "spent": float(consultation.total_cost),
+                        "minutes_remaining": round(minutes_remaining, 1)
+                    })
+
+                    if minutes_remaining <= 5:
+                        await manager.broadcast(consultation_id, {
+                            "type": "BALANCE_WARNING",
+                            "balance": remaining_balance,
+                            "minutes_remaining": round(minutes_remaining, 1),
+                            "source": "wallet"
+                        })
                 
     except Exception as e:
         logger.error(f"Billing loop error: {e}")
+        if redis:
+            redis.delete(f"active_consultation:{consultation_id}")
 
 @router.websocket("/ws/{consultation_id}")
 async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: str = Query(...)):
@@ -309,25 +370,50 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
         is_active = consultation.status == models.ConsultationStatus.ACTIVE
         wallet_balance = 0.0
         spent = 0.0
+        rate = float(consultation.rate_per_min) if consultation.rate_per_min else 0.0
         if consultation.seeker_id:
             u_wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
             if u_wallet: wallet_balance = float(u_wallet.balance)
-        
+
         if consultation.total_cost:
             spent = float(consultation.total_cost)
+
+        minutes_remaining = round(wallet_balance / rate, 1) if rate > 0 else 0
 
         await websocket.send_text(json.dumps({
             "type": "STATE_SYNC",
             "status": consultation.status.value if hasattr(consultation.status, 'value') else consultation.status,
             "timer_active": is_active,
             "balance": wallet_balance,
-            "spent": spent
+            "spent": spent,
+            "minutes_remaining": minutes_remaining
         }))
         
+        # Per-connection rate limiter: max 20 messages per 10 seconds
+        _rate_window_start = datetime.utcnow().timestamp()
+        _rate_count = 0
+        RATE_LIMIT = 20
+        RATE_WINDOW_SECS = 10
+
         while True:
             data = await websocket.receive_text()
             message_data = json.loads(data)
             msg_type = message_data.get("type")
+
+            # Rate limiting (skip PING which is client infrastructure, not user content)
+            if msg_type != "PING":
+                now = datetime.utcnow().timestamp()
+                if now - _rate_window_start >= RATE_WINDOW_SECS:
+                    _rate_window_start = now
+                    _rate_count = 0
+                _rate_count += 1
+                if _rate_count > RATE_LIMIT:
+                    await websocket.send_text(json.dumps({
+                        "type": "ERROR",
+                        "code": "RATE_LIMITED",
+                        "message": f"Too many messages. Max {RATE_LIMIT} per {RATE_WINDOW_SECS}s."
+                    }))
+                    continue
             
             if msg_type == "MESSAGE":
                 content = message_data.get("content")
@@ -383,27 +469,58 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                             data={"consultation_id": str(consultation_id), "type": "CHAT_MESSAGE"}
                         )
                 
+            elif msg_type == "PING":
+                await websocket.send_text(json.dumps({"type": "PONG"}))
+
+            elif msg_type == "RESUME_CHAT":
+                if consultation.status == models.ConsultationStatus.PAUSED:
+                    db.refresh(consultation)
+                    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
+                    if wallet and float(wallet.balance) >= float(consultation.rate_per_min):
+                        consultation.status = models.ConsultationStatus.ACTIVE
+                        db.commit()
+                        asyncio.create_task(billing_loop(consultation_id, float(consultation.rate_per_min), database.SessionLocal))
+                        await manager.broadcast(consultation_id, {
+                            "type": "CONSULTATION_RESUMED",
+                            "balance": float(wallet.balance)
+                        })
+                    else:
+                        await websocket.send_text(json.dumps({
+                            "type": "RESUME_FAILED",
+                            "reason": "insufficient_balance"
+                        }))
+
             elif msg_type == "END_CHAT":
                 consultation.status = models.ConsultationStatus.COMPLETED
                 consultation.end_time = datetime.utcnow()
+                audit.log(db, "CHAT_ENDED_BY_USER", actor_id=user.id,
+                          resource_type="consultation", resource_id=consultation_id,
+                          details={"total_cost": float(consultation.total_cost or 0),
+                                   "duration_seconds": consultation.duration_seconds or 0})
                 db.commit()
                 await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "user_ended"})
                 break
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, consultation_id)
-        # Handle Disconnection State
-        if user.role == models.UserRole.ASTROLOGER:
-             # If Astrologer disconnects, we must pause the timer/billing
-             # We need a fresh DB session here as the outer one might be closed or issues
-             with database.SessionLocal() as db_disc:
-                 cons = db_disc.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
-                 if cons and cons.status == models.ConsultationStatus.ACTIVE:
-                     cons.status = models.ConsultationStatus.PAUSED
-                     db_disc.commit()
-                     # Billing loop will auto-exit next minute because status != ACTIVE
-                     # Notify Seeker
-                     asyncio.create_task(manager.broadcast(consultation_id, {"type": "CONSULTATION_PAUSED", "reason": "astrologer_disconnected"}))
+        # Pause billing whenever either participant disconnects during an ACTIVE session
+        with database.SessionLocal() as db_disc:
+            cons = db_disc.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+            if cons and cons.status == models.ConsultationStatus.ACTIVE:
+                cons.status = models.ConsultationStatus.PAUSED
+                # Populate disconnection_snapshot for crash recovery
+                seeker_wallet = db_disc.query(models.UserWallet).filter(models.UserWallet.user_id == cons.seeker_id).first()
+                cons.disconnection_snapshot = json.dumps({
+                    "paused_at": datetime.utcnow().isoformat(),
+                    "paused_by": user.role.value,
+                    "balance_at_pause": float(seeker_wallet.balance) if seeker_wallet else 0,
+                    "total_cost_at_pause": float(cons.total_cost or 0),
+                    "duration_seconds_at_pause": cons.duration_seconds or 0
+                })
+                db_disc.commit()
+                reason = "astrologer_disconnected" if user.role == models.UserRole.ASTROLOGER else "seeker_disconnected"
+                asyncio.create_task(manager.broadcast(consultation_id, {"type": "CONSULTATION_PAUSED", "reason": reason}))
+                logger.info(f"Consultation {consultation_id} paused due to {reason}")
 
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")

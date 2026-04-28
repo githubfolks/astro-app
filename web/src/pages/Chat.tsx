@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import KundliPanel from '../components/KundliPanel';
-import { Send, Clock, User, ArrowLeft, Info, X } from 'lucide-react';
+import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
@@ -136,7 +136,62 @@ export const Chat: React.FC = () => {
     }, [activeConsultationId, token, user]);
 
 
-    const { messages, sendMessage, endChat, status, billingInfo, timerActive } = useChat(activeConsultationId || '');
+    const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance } = useChat(activeConsultationId || '');
+
+    const [rechargeAmount, setRechargeAmount] = useState('');
+    const [isRecharging, setIsRecharging] = useState(false);
+
+    const handleInChatRecharge = async () => {
+        const amt = Number(rechargeAmount);
+        if (!rechargeAmount || isNaN(amt) || amt <= 0) return;
+        try {
+            setIsRecharging(true);
+            const orderData = await api.payment.createOrder(amt);
+            if (orderData.key_id === 'mock_key' || !orderData.key_id) {
+                const ok = confirm(`[DEV] Simulate ₹${amt} payment?`);
+                if (ok) {
+                    await api.payment.verifyPayment({
+                        razorpay_order_id: orderData.order_id,
+                        razorpay_payment_id: 'pay_mock_' + Date.now(),
+                        razorpay_signature: 'mock_signature'
+                    });
+                    setRechargeAmount('');
+                    resumeChat();
+                }
+                setIsRecharging(false);
+                return;
+            }
+            const options = {
+                key: orderData.key_id,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: 'AadiKarta',
+                description: 'Wallet Recharge',
+                order_id: orderData.order_id,
+                handler: async (response: any) => {
+                    try {
+                        await api.payment.verifyPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+                        setRechargeAmount('');
+                        resumeChat();
+                    } catch {
+                        alert('Payment verification failed. Please try again.');
+                    }
+                },
+                theme: { color: '#E91E63' }
+            };
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on('payment.failed', (r: any) => alert('Payment failed: ' + r.error.description));
+            rzp.open();
+        } catch (e: any) {
+            alert('Failed to initiate payment: ' + (e.message || 'Unknown error'));
+        } finally {
+            setIsRecharging(false);
+        }
+    };
 
     // Get opponent info (Astrologer if Seeker, Seeker if Astrologer)
     const opponent = user?.role === 'SEEKER' ? astrologer : (seeker ? {
@@ -415,7 +470,7 @@ export const Chat: React.FC = () => {
                     )}
 
                     {/* Right Panel: Chat Interface */}
-                    <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+                    <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 relative">
                         {/* Chat Header */}
                         <div className="bg-white p-4 border-b border-gray-100 flex justify-between items-center z-10">
                             <div className="flex items-center gap-4">
@@ -454,8 +509,10 @@ export const Chat: React.FC = () => {
                                 )}
 
                                 {user?.role === 'SEEKER' && (
-                                    <div className="text-sm hidden sm:block text-gray-600">
-                                        <span>Spent: </span> <span className="text-gray-900 font-bold font-mono">₹{billingInfo.spent}</span>
+                                    <div className={`text-sm hidden sm:flex items-center gap-3 ${lowBalance ? 'text-amber-700' : 'text-gray-600'}`}>
+                                        <span>Balance: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>₹{billingInfo.balance.toFixed(2)}</span></span>
+                                        <span className="text-gray-300">|</span>
+                                        <span>Spent: <span className="font-bold font-mono text-gray-900">₹{billingInfo.spent}</span></span>
                                     </div>
                                 )}
 
@@ -475,6 +532,94 @@ export const Chat: React.FC = () => {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Low Balance Warning Banner */}
+                        {user?.role === 'SEEKER' && lowBalance && status !== 'ENDED' && (
+                            <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center gap-2 text-amber-800 text-sm flex-shrink-0">
+                                <AlertTriangle size={15} className="flex-shrink-0 text-amber-500" />
+                                <span>
+                                    Low balance — <span className="font-bold">{billingInfo.minutes_remaining} min remaining</span>.{' '}
+                                    <button
+                                        onClick={() => navigate('/dashboard')}
+                                        className="font-bold underline hover:text-amber-900"
+                                    >
+                                        Add funds
+                                    </button>
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Chat Paused Overlay */}
+                        {status === 'PAUSED' && (
+                            <div className="absolute inset-0 z-20 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6 rounded-2xl">
+                                <div className="text-center">
+                                    <div className="text-4xl mb-3">⏸️</div>
+                                    <h3 className="text-lg font-bold text-gray-800">Chat Paused</h3>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {pauseReason === 'astrologer_disconnected' && 'Astrologer disconnected. Waiting for them to rejoin.'}
+                                        {pauseReason === 'seeker_disconnected' && 'You were disconnected. Ready to resume?'}
+                                        {pauseReason === 'insufficient_balance' && 'Your wallet balance ran out.'}
+                                        {!pauseReason && 'Chat session is currently paused.'}
+                                    </p>
+                                </div>
+
+                                {user?.role === 'SEEKER' && (
+                                    <div className="w-full max-w-xs space-y-3">
+                                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center text-sm text-gray-600">
+                                            Balance: <span className="font-bold text-gray-900">₹{billingInfo.balance.toFixed(2)}</span>
+                                        </div>
+
+                                        {/* Quick recharge amounts */}
+                                        <div className="flex gap-2 justify-center">
+                                            {[50, 100, 200, 500].map(amt => (
+                                                <button
+                                                    key={amt}
+                                                    onClick={() => setRechargeAmount(String(amt))}
+                                                    className={`px-3 py-1 rounded-lg text-sm font-medium border transition-colors ${rechargeAmount === String(amt) ? 'bg-[#E91E63] text-white border-[#E91E63]' : 'bg-white text-gray-700 border-gray-200 hover:border-[#E91E63]'}`}
+                                                >
+                                                    ₹{amt}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="number"
+                                                value={rechargeAmount}
+                                                onChange={e => setRechargeAmount(e.target.value)}
+                                                placeholder="Custom amount"
+                                                min="1"
+                                                className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#E91E63]"
+                                            />
+                                        </div>
+
+                                        <button
+                                            onClick={handleInChatRecharge}
+                                            disabled={isRecharging || !rechargeAmount}
+                                            className="w-full bg-[#E91E63] hover:bg-pink-700 text-white py-2.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isRecharging ? 'Processing...' : 'Add Funds & Resume'}
+                                        </button>
+
+                                        <button
+                                            onClick={resumeChat}
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-colors"
+                                        >
+                                            Resume with current balance
+                                        </button>
+                                    </div>
+                                )}
+
+                                {user?.role === 'ASTROLOGER' && (
+                                    <button
+                                        onClick={resumeChat}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-colors"
+                                    >
+                                        Resume Chat
+                                    </button>
+                                )}
+                            </div>
+                        )}
 
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">

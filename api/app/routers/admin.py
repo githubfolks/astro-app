@@ -564,3 +564,35 @@ async def admin_reset_password(user_id: int, request: schemas.AdminPasswordReset
     background_tasks.add_task(fm.send_message, message)
 
     return {"message": "Password reset successfully and notification email sent."}
+
+
+@router.get("/audit-logs")
+def get_audit_logs(
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    actor_id: Optional[int] = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(database.get_db)
+):
+    q = db.query(models.AuditLog)
+    if action:
+        q = q.filter(models.AuditLog.action.ilike(f"%{action}%"))
+    if resource_type:
+        q = q.filter(models.AuditLog.resource_type == resource_type)
+    if actor_id:
+        q = q.filter(models.AuditLog.actor_id == actor_id)
+    total = q.count()
+    logs = q.order_by(models.AuditLog.created_at.desc()).offset(offset).limit(limit).all()
+    return {"total": total, "logs": [
+        {
+            "id": l.id,
+            "actor_id": l.actor_id,
+            "action": l.action,
+            "resource_type": l.resource_type,
+            "resource_id": l.resource_id,
+            "details": l.details,
+            "created_at": l.created_at.isoformat() if l.created_at else None
+        }
+        for l in logs
+    ]}

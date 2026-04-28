@@ -39,6 +39,7 @@ class TransactionType(str, enum.Enum):
     CHAT_REFUND = "CHAT_REFUND"
     PAYMENT_GATEWAY = "PAYMENT_GATEWAY"
     COURSE_PURCHASE = "COURSE_PURCHASE"
+    PACKAGE_PURCHASE = "PACKAGE_PURCHASE"
 
 class User(Base):
     __tablename__ = "users"
@@ -119,6 +120,17 @@ class WalletTransaction(Base):
 
     user = relationship("User", back_populates="wallet_transactions")
 
+class ChatPackage(Base):
+    __tablename__ = "chat_packages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    duration_minutes = Column(Integer, nullable=False)
+    price = Column(DECIMAL(10, 2), nullable=False)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class Consultation(Base):
     __tablename__ = "consultations"
 
@@ -133,6 +145,9 @@ class Consultation(Base):
     total_cost = Column(DECIMAL(10, 2), default=0.0)
     status = Column(Enum(ConsultationStatus), default=ConsultationStatus.REQUESTED)
     disconnection_snapshot = Column(Text) # JSON string for resume state
+    # Package billing fields (nullable — only set when booked via a fixed-time package)
+    package_id = Column(Integer, ForeignKey("chat_packages.id"), nullable=True)
+    package_seconds_remaining = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     seeker = relationship("User", foreign_keys=[seeker_id])
@@ -140,6 +155,7 @@ class Consultation(Base):
     review = relationship("Review", back_populates="consultation", uselist=False)
     seeker_profile = relationship("SeekerProfile", primaryjoin="foreign(Consultation.seeker_id) == SeekerProfile.user_id", viewonly=True, uselist=False)
     astrologer_profile = relationship("AstrologerProfile", primaryjoin="foreign(Consultation.astrologer_id) == AstrologerProfile.user_id", viewonly=True, uselist=False)
+    package = relationship("ChatPackage", foreign_keys=[package_id])
 
 class Review(Base):
     __tablename__ = "reviews"
@@ -293,6 +309,43 @@ class ContactInquiry(Base):
     status = Column(Enum(InquiryStatus), default=InquiryStatus.NEW)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    actor_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Null for system events
+    action = Column(String, nullable=False, index=True)
+    resource_type = Column(String, nullable=True)  # e.g. "consultation", "dispute", "payout"
+    resource_id = Column(String, nullable=True)
+    details = Column(JSON, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    actor = relationship("User", foreign_keys=[actor_id])
+
+
+class DisputeStatus(str, enum.Enum):
+    OPEN = "OPEN"
+    INVESTIGATING = "INVESTIGATING"
+    RESOLVED = "RESOLVED"
+    REJECTED = "REJECTED"
+
+class Dispute(Base):
+    __tablename__ = "disputes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    consultation_id = Column(Integer, ForeignKey("consultations.id"), nullable=False)
+    raised_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reason = Column(Text, nullable=False)
+    status = Column(Enum(DisputeStatus), default=DisputeStatus.OPEN)
+    admin_notes = Column(Text, nullable=True)
+    resolution_amount = Column(DECIMAL(10, 2), nullable=True)  # Refund amount if applicable
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    resolved_at = Column(DateTime(timezone=True), nullable=True)
+
+    consultation = relationship("Consultation", foreign_keys=[consultation_id])
+    raised_by = relationship("User", foreign_keys=[raised_by_id])
 
 
 class KundliReport(Base):
