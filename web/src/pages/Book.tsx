@@ -9,6 +9,21 @@ import 'aos/dist/aos.css';
 import SEO from '../components/SEO';
 import { useAuth } from '../context/AuthContext';
 
+const bookStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    '@id': 'https://aadikarta.org/book#page',
+    name: 'Astrology & Memory Mastery Courses',
+    url: 'https://aadikarta.org/book',
+    description: 'Online courses in Vedic Astrology, Memory Mastery, and Spiritual Sciences from verified expert instructors on Aadikarta.',
+    publisher: { '@id': 'https://aadikarta.org/#organization' },
+    about: [
+        { '@type': 'Thing', name: 'Vedic Astrology' },
+        { '@type': 'Thing', name: 'Memory Training' },
+        { '@type': 'Thing', name: 'Spiritual Sciences' },
+    ],
+};
+
 const Book: React.FC = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -108,6 +123,7 @@ const Book: React.FC = () => {
             <SEO
                 title="Courses | Aadikarta - Learn Vedic Astrology & Memory Mastery"
                 description="Explore our comprehensive courses in Vedic Astrology, Memory Mastery, and Spiritual Sciences taught by verified experts."
+                structuredData={bookStructuredData}
             />
             <Header />
 

@@ -1,5 +1,5 @@
 import React, { useEffect, Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { isNative, getPlatform } from './utils/platform';
 import { App as CapApp } from '@capacitor/app';
@@ -35,6 +35,9 @@ const CourseManager = lazy(() => import('./pages/CourseManager').then(module => 
 const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
 const Book = lazy(() => import('./pages/Book'));
 const ComingSoon = lazy(() => import('./pages/ComingSoon'));
+const HowItWorks = lazy(() => import('./pages/HowItWorks'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -43,6 +46,12 @@ const DailyHoroscope = lazy(() => import('./pages/services/DailyHoroscope'));
 const VedicAstrology = lazy(() => import('./pages/services/VedicAstrology'));
 const TarotReading = lazy(() => import('./pages/services/TarotReading'));
 const VastuShastra = lazy(() => import('./pages/services/VastuShastra'));
+
+// Redirect /astrologer/:id → /astrologers/:id preserving the param
+const AstrologerRedirect: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    return <Navigate to={`/astrologers/${id}`} replace />;
+};
 
 // Loading component
 const PageLoader = () => (
@@ -118,8 +127,10 @@ function App() {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/verify-otp" element={<VerifyOTP />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
-                        <Route path="/chat-with-astrologers" element={<AstrologersPage />} />
-                        <Route path="/astrologer/:id" element={<AstrologerProfile />} />
+                        <Route path="/astrologers" element={<AstrologersPage />} />
+                        <Route path="/chat-with-astrologers" element={<Navigate to="/astrologers" replace />} />
+                        <Route path="/astrologers/:id" element={<AstrologerProfile />} />
+                        <Route path="/astrologer/:id" element={<AstrologerRedirect />} />
                         <Route path="/about-us" element={<AboutUs />} />
                         <Route path="/contact-us" element={<ContactUs />} />
                         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -127,6 +138,9 @@ function App() {
                         <Route path="/disclaimer" element={<Disclaimer />} />
                         <Route path="/terms-of-service" element={<TermsOfService />} />
                         <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
+                        <Route path="/how-it-works" element={<HowItWorks />} />
+                        <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/horoscope/:sign" element={<HoroscopeSign />} />
                         <Route path="/blog" element={<Blog />} />
                         <Route path="/blog/:slug" element={<BlogPost />} />
 

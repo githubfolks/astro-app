@@ -1,5 +1,33 @@
 User-agent: *
 Allow: /
 
+# Private / auth routes — no crawl budget wasted here
+Disallow: /dashboard
+Disallow: /chat/
+Disallow: /kundli
+Disallow: /classroom/
+Disallow: /tutor/
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /verify-otp
+Disallow: /reset-password
+
+# AI crawlers — allow for AI search visibility (Perplexity, ChatGPT, Claude)
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 # Sitemaps
 Sitemap: https://aadikarta.org/sitemap.xml

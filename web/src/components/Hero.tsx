@@ -15,7 +15,7 @@ const Hero: React.FC = () => {
                         Connect with expert astrologers, get accurate horoscopes, and find guidance for your life's journey. Your future awaits.
                     </p>
                     <div className="hero-actions mt-10 flex flex-wrap gap-4">
-                        <Link to="/chat-with-astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20">Chat with Astrologer</Link>
+                        <Link to="/astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20">Chat with Astrologer</Link>
                         <Link to="/memory-guru" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105">Memory Guru</Link>
                     </div>
                 </div>

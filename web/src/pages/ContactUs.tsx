@@ -5,6 +5,29 @@ import { Mail, Phone, Send } from 'lucide-react';
 import { api } from '../services/api';
 import SEO from '../components/SEO';
 
+const contactStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'ContactPage',
+    '@id': 'https://aadikarta.org/contact-us#page',
+    name: 'Contact Aadikarta',
+    url: 'https://aadikarta.org/contact-us',
+    description: 'Contact Aadikarta support for help with consultations, payments, astrologer queries, or technical issues.',
+    publisher: { '@id': 'https://aadikarta.org/#organization' },
+    mainEntity: {
+        '@type': 'Organization',
+        '@id': 'https://aadikarta.org/#organization',
+        name: 'Aadikarta',
+        email: 'hello@aadikarta.org',
+        contactPoint: {
+            '@type': 'ContactPoint',
+            email: 'hello@aadikarta.org',
+            contactType: 'customer support',
+            availableLanguage: ['English', 'Hindi'],
+            areaServed: 'IN',
+        },
+    },
+};
+
 const ContactUs: React.FC = () => {
     const [formData, setFormData] = useState({
         firstName: '',
@@ -45,8 +68,9 @@ const ContactUs: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <SEO
-                title="Contact Us"
-                description="Get in touch with Aadikarta support. We are here to answer your questions and help you on your spiritual journey."
+                title="Contact Aadikarta | Help, Support & Feedback"
+                description="Get in touch with Aadikarta's support team for help with consultations, payments, astrologer queries, or technical issues. We typically respond within 24 hours."
+                structuredData={contactStructuredData}
             />
             <Header />
 

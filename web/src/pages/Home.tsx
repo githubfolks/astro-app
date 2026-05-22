@@ -11,6 +11,42 @@ import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 
+const homeStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "WebSite",
+            "@id": "https://aadikarta.org/#website",
+            "url": "https://aadikarta.org",
+            "name": "Aadikarta",
+            "description": "India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists. Live chat consultations starting from ₹10/min.",
+            "publisher": { "@id": "https://aadikarta.org/#organization" }
+        },
+        {
+            "@type": "Organization",
+            "@id": "https://aadikarta.org/#organization",
+            "name": "Aadikarta",
+            "url": "https://aadikarta.org",
+            "logo": "https://aadikarta.org/assets/logo.png",
+            "email": "hello@aadikarta.org",
+            "telephone": "+91-86503-54783",
+            "areaServed": "IN",
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+91-86503-54783",
+                "email": "hello@aadikarta.org",
+                "contactType": "customer support",
+                "availableLanguage": ["English", "Hindi"],
+                "areaServed": "IN"
+            },
+            "sameAs": [
+                "https://www.facebook.com/aadikarta",
+                "https://www.instagram.com/aadikarta"
+            ]
+        }
+    ]
+};
+
 const Home: React.FC = () => {
     useEffect(() => {
         AOS.init({
@@ -23,46 +59,15 @@ const Home: React.FC = () => {
         AOS.refresh();
     }, []);
 
-    const structuredData = {
-        "@context": "https://schema.org",
-        "@graph": [
-            {
-                "@type": "WebSite",
-                "@id": "https://aadikarta.org/#website",
-                "url": "https://aadikarta.org",
-                "name": "Aadikarta",
-                "description": "Connect with expert astrologers for personalized readings and spiritual guidance.",
-                "publisher": { "@id": "https://aadikarta.org/#organization" },
-                "potentialAction": {
-                    "@type": "SearchAction",
-                    "target": "https://aadikarta.org/search?q={search_term_string}",
-                    "query-input": "required name=search_term_string"
-                }
-            },
-            {
-                "@type": "Organization",
-                "@id": "https://aadikarta.org/#organization",
-                "name": "Aadikarta",
-                "url": "https://aadikarta.org",
-                "logo": "https://aadikarta.org/assets/logo.png",
-                "sameAs": [
-                    "https://www.facebook.com/aadikarta",
-                    "https://www.instagram.com/aadikarta"
-                ]
-            }
-        ]
-    };
-
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Home"
-                description="Unlock your mental potential with Aadikarta's Memory Guru programs. Connect with Rajesh Chaudhary for memory mastery, concentration techniques, and spiritual guidance."
-                structuredData={structuredData}
+                title="Talk to Expert Astrologers Online | Vedic Astrology, Kundli & Tarot"
+                description="Connect with India's top verified astrologers on Aadikarta. Get live chat consultations on Vedic astrology, kundli matching, tarot reading, love advice, and daily horoscope. Starting from ₹10/min."
+                structuredData={homeStructuredData}
             />
             <Header />
             <main id="main-content">
-                <h1 className="sr-only">Aadikarta: Your Trusted Guide to Vedic Astrology and Spiritual Growth</h1>
                 <Hero />
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />

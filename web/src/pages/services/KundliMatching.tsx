@@ -5,6 +5,31 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
+
+const kundliStructuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'Service',
+            '@id': 'https://aadikarta.org/services/kundli-matching#service',
+            name: 'Kundli Matching for Marriage',
+            provider: { '@id': 'https://aadikarta.org/#organization' },
+            description: 'Expert kundli matching (kundali milan) service for marriage using 36-gun Milan analysis, manglik dosha check, and detailed compatibility report from verified Vedic astrologers.',
+            areaServed: 'IN',
+            offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
+        },
+        {
+            '@type': 'FAQPage',
+            mainEntity: [
+                { '@type': 'Question', name: 'What is kundli matching?', acceptedAnswer: { '@type': 'Answer', text: 'Kundli matching (kundali milan) is a Vedic astrology practice where birth charts of a prospective bride and groom are compared using 36 gunas (qualities) to assess compatibility for marriage.' } },
+                { '@type': 'Question', name: 'How many gunas are required for marriage?', acceptedAnswer: { '@type': 'Answer', text: 'Traditionally, a minimum of 18 out of 36 gunas are required for marriage. A score of 24–32 is considered good, and above 32 is excellent compatibility.' } },
+                { '@type': 'Question', name: 'What is manglik dosha?', acceptedAnswer: { '@type': 'Answer', text: 'Manglik dosha (Mars dosha) occurs when Mars is placed in the 1st, 4th, 7th, 8th, or 12th house of the birth chart. Many astrologers recommend matching Manglik individuals with other Mangliks to neutralize the dosha.' } },
+                { '@type': 'Question', name: 'How much does kundli matching cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Kundli matching consultations on Aadikarta start from ₹10 per minute. A detailed kundali milan session typically takes 20–30 minutes.' } },
+            ],
+        },
+    ],
+};
 
 const KundliMatching: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -113,6 +138,11 @@ const KundliMatching: React.FC = () => {
 
     return (
         <div className="bg-slate-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+            <SEO
+                title="Kundli Matching for Marriage | Horoscope Compatibility Analysis"
+                description="Expert kundli matching (kundali milan) for marriage on Aadikarta. 36-gun Milan analysis, manglik dosha check, compatibility report from verified astrologers. Starting from ₹10/min."
+                structuredData={kundliStructuredData}
+            />
             <Header />
 
             {/* Hero Section */}

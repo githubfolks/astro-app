@@ -5,6 +5,31 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
+
+const horoscopeStructuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'Service',
+            '@id': 'https://aadikarta.org/services/daily-horoscope#service',
+            name: 'Daily Horoscope Consultation',
+            provider: { '@id': 'https://aadikarta.org/#organization' },
+            description: 'Personalized daily horoscope readings from expert astrologers covering love, career, health, and finance predictions for all 12 zodiac signs. Live chat sessions starting from ₹10/min.',
+            areaServed: 'IN',
+            offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
+        },
+        {
+            '@type': 'FAQPage',
+            mainEntity: [
+                { '@type': 'Question', name: 'What is the difference between a sun sign and moon sign horoscope?', acceptedAnswer: { '@type': 'Answer', text: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' } },
+                { '@type': 'Question', name: 'How is a personalized horoscope different from a generic one?', acceptedAnswer: { '@type': 'Answer', text: 'A personalized horoscope is based on your exact birth date, time, and location, giving predictions tailored to your unique planetary positions. Generic sun-sign horoscopes apply to everyone born in the same month.' } },
+                { '@type': 'Question', name: 'Which zodiac sign has the best horoscope today?', acceptedAnswer: { '@type': 'Answer', text: 'Daily planetary transits affect each sign differently. Rather than a "best" sign, each sign has favorable days based on its ruling planet\'s position. An astrologer can identify your power days each week.' } },
+                { '@type': 'Question', name: 'How much does a daily horoscope consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Daily horoscope consultations on Aadikarta start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' } },
+            ],
+        },
+    ],
+};
 
 const DailyHoroscope: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -80,6 +105,11 @@ const DailyHoroscope: React.FC = () => {
 
     return (
         <div className="bg-blue-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+            <SEO
+                title="Daily Horoscope Consultation | Personalized Zodiac Predictions"
+                description="Get personalized daily horoscope readings from expert astrologers on Aadikarta. Love, career, health, and finance predictions for all 12 zodiac signs. Starting from ₹10/min."
+                structuredData={horoscopeStructuredData}
+            />
             <Header />
             {/* Hero Section */}
             <header className="celestial-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">

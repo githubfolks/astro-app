@@ -5,6 +5,31 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
+
+const vastuStructuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'Service',
+            '@id': 'https://aadikarta.org/services/vastu-shastra#service',
+            name: 'Vastu Shastra Consultation Online',
+            provider: { '@id': 'https://aadikarta.org/#organization' },
+            description: 'Expert Vastu Shastra consultation for homes, offices, and plots from certified Vastu consultants. Room-by-room analysis, dosha remedies, and energy balancing to attract prosperity and peace.',
+            areaServed: 'IN',
+            offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
+        },
+        {
+            '@type': 'FAQPage',
+            mainEntity: [
+                { '@type': 'Question', name: 'What is Vastu Shastra?', acceptedAnswer: { '@type': 'Answer', text: 'Vastu Shastra is an ancient Indian science of architecture and spatial arrangement that aligns buildings with natural forces, the five elements (Pancha Bhuta), and cardinal directions to promote well-being and prosperity.' } },
+                { '@type': 'Question', name: 'Can Vastu remedies be done without demolition?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, many Vastu doshas can be corrected without structural changes using remedies like mirrors, crystals, plants, color schemes, furniture placement, and yantras.' } },
+                { '@type': 'Question', name: 'Which direction should the main door face according to Vastu?', acceptedAnswer: { '@type': 'Answer', text: 'North, northeast, or east-facing main doors are generally considered auspicious in Vastu Shastra. South and southwest-facing doors may require specific remedies.' } },
+                { '@type': 'Question', name: 'How much does a Vastu consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Vastu consultations on Aadikarta start from ₹10 per minute. A full home or office Vastu analysis typically takes 30–60 minutes depending on the property size.' } },
+            ],
+        },
+    ],
+};
 
 const VastuShastra: React.FC = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -87,6 +112,11 @@ const VastuShastra: React.FC = () => {
 
     return (
         <div className="bg-emerald-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+            <SEO
+                title="Vastu Shastra Consultation Online | Expert Vastu Advice"
+                description="Get expert Vastu Shastra consultation for home and office from certified consultants on Aadikarta. Room analysis, dosha remedies, energy balancing. Starting from ₹10/min."
+                structuredData={vastuStructuredData}
+            />
             <Header />
             {/* Hero Section */}
             <header className="vastu-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">

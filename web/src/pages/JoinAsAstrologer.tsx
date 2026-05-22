@@ -5,6 +5,29 @@ import { Check, User, GraduationCap, FileText, Camera, ShieldCheck, ArrowLeft } 
 import './Auth.css';
 import SEO from '../components/SEO';
 
+const joinStructuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+        {
+            '@type': 'WebPage',
+            '@id': 'https://aadikarta.org/join-as-astrologer#page',
+            name: 'Become an Astrologer on Aadikarta',
+            url: 'https://aadikarta.org/join-as-astrologer',
+            description: 'Apply to join Aadikarta as a verified astrologer, tarot reader, or numerologist. Set your own rates and earn from live chat consultations.',
+            publisher: { '@id': 'https://aadikarta.org/#organization' },
+        },
+        {
+            '@type': 'FAQPage',
+            mainEntity: [
+                { '@type': 'Question', name: 'Who can join Aadikarta as an astrologer?', acceptedAnswer: { '@type': 'Answer', text: 'Any verified Vedic astrologer, tarot card reader, numerologist, or Vastu consultant with genuine expertise can apply. You will go through a verification process before being listed on the platform.' } },
+                { '@type': 'Question', name: 'How much can I earn as an astrologer on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'You set your own consultation rate (₹10–₹150 per minute). Your earnings depend on the number of consultations you complete and your hourly rate. Top astrologers on the platform earn over ₹1 lakh per month.' } },
+                { '@type': 'Question', name: 'Is there a fee to join Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'No, joining Aadikarta as an astrologer is completely free. Aadikarta takes a platform commission from your earnings only when you complete a paid consultation.' } },
+                { '@type': 'Question', name: 'How long does the verification process take?', acceptedAnswer: { '@type': 'Answer', text: 'The verification process typically takes 2–3 business days after you submit your application, credentials, and ID proof.' } },
+            ],
+        },
+    ],
+};
+
 export const JoinAsAstrologer: React.FC = () => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState<any>({
@@ -144,8 +167,9 @@ export const JoinAsAstrologer: React.FC = () => {
                 <ArrowLeft size={20} /> Back to Home
             </Link>
             <SEO
-                title="Join as Astrologer"
-                description="Are you an expert astrologer? Join Aadikarta and connect with seekers worldwide. Start your journey with us today."
+                title="Become an Astrologer on Aadikarta | Work Online & Earn from Home"
+                description="Are you a Vedic astrologer, tarot reader, or numerologist? Join Aadikarta to connect with thousands of seekers, set your own consultation rates, and earn from live chat sessions. Apply now."
+                structuredData={joinStructuredData}
             />
             <div className="decor-circle decor-1"></div>
             <div className="decor-circle decor-2"></div>

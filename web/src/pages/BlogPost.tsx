@@ -17,15 +17,23 @@ const BlogPost: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         "headline": p.title,
+        "url": `https://aadikarta.org/blog/${p.slug || slug}`,
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `https://aadikarta.org/blog/${p.slug || slug}`
+        },
         "image": p.featured_image || "https://aadikarta.org/assets/blog-default.jpg",
         "datePublished": p.published_at,
+        "dateModified": p.updated_at || p.published_at,
         "author": {
             "@type": "Organization",
-            "name": "Aadikarta Team"
+            "name": "Aadikarta",
+            "@id": "https://aadikarta.org/#organization"
         },
         "publisher": {
             "@type": "Organization",
             "name": "Aadikarta",
+            "@id": "https://aadikarta.org/#organization",
             "logo": {
                 "@type": "ImageObject",
                 "url": "https://aadikarta.org/assets/logo.png"
@@ -82,7 +90,7 @@ const BlogPost: React.FC = () => {
         <div className="flex flex-col min-h-screen">
             <SEO
                 title={post.title}
-                description={post.content.replace(/<[^>]*>?/gm, '').substring(0, 160)}
+                description={(post.excerpt || post.content.replace(/<[^>]*>/gm, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim()).substring(0, 155)}
                 image={post.featured_image}
                 type="article"
                 structuredData={getStructuredData(post)}

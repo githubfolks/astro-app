@@ -601,7 +601,7 @@ export const Dashboard: React.FC = () => {
                                 <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
                                     <p className="text-gray-500 mb-4">No consultations yet.</p>
                                     <button
-                                        onClick={() => navigate('/chat-with-astrologers')}
+                                        onClick={() => navigate('/astrologers')}
                                         className="bg-[#E91E63] text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700"
                                     >
                                         Find an Astrologer
@@ -744,7 +744,7 @@ export const Dashboard: React.FC = () => {
 
                             <div className="mt-6 pt-4 border-t border-gray-100">
                                 <button
-                                    onClick={() => navigate('/chat-with-astrologers')}
+                                    onClick={() => navigate('/astrologers')}
                                     className="w-full bg-[#E91E63] text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition-colors flex items-center justify-center gap-2"
                                 >
                                     <MessageCircle size={18} />

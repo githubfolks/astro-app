@@ -11,7 +11,7 @@ export const MobileNavBar: React.FC = () => {
     // Hide on chat pages (full-screen chat experience)
     if (location.pathname.startsWith('/chat/')) return null;
 
-    const chatPath = '/chat-with-astrologers';
+    const chatPath = '/astrologers';
     const walletPath = '/dashboard';
     const profilePath = '/dashboard';
 

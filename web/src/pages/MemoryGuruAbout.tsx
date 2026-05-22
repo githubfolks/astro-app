@@ -5,6 +5,21 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
+
+const memoryGuruStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': 'https://aadikarta.org/memory-guru#person',
+    name: 'Rajesh Chaudhary',
+    alternateName: 'Memory Guru',
+    description: "India's celebrated memory trainer, India Book of Records holder, and motivational educator known for scientific memory systems and accelerated learning techniques.",
+    url: 'https://aadikarta.org/memory-guru',
+    image: 'https://aadikarta.org/assets/memory_guru/rajesh-1.jpeg',
+    jobTitle: 'Memory Trainer & Motivational Educator',
+    worksFor: { '@id': 'https://aadikarta.org/#organization' },
+    knowsAbout: ['Memory Training', 'Accelerated Learning', 'Concentration Techniques', 'Motivational Education'],
+};
 
 const MemoryGuruAbout: React.FC = () => {
     useEffect(() => {
@@ -19,6 +34,11 @@ const MemoryGuruAbout: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-indigo-50/30 flex flex-col relative overflow-hidden">
+            <SEO
+                title="Rajesh Chaudhary – Memory Guru | Memory Trainer & Motivational Educator"
+                description="Meet Rajesh Chaudhary, India's celebrated Memory Guru and India Book of Records holder. Explore his scientific memory training programs, concentration techniques, and accelerated learning courses."
+                structuredData={memoryGuruStructuredData}
+            />
             <Header />
 
             <main className="flex-grow container mx-auto px-4 py-20 max-w-5xl">

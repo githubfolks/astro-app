@@ -64,6 +64,8 @@ services:
       - global-proxy-network
 
 networks:
+  default:
+    name: astro-app-network
   global-proxy-network:
     external: true
 

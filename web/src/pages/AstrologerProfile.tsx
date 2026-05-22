@@ -22,7 +22,7 @@ import { resolveImageUrl } from '../utils/url';
 import SEO from '../components/SEO';
 
 const AstrologerProfile: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const { id } = useParams<{ id: string }>(); // numeric id until backend supports name-based slugs
     const navigate = useNavigate();
     const { isAuthenticated, user } = useAuth();
 
@@ -37,7 +37,7 @@ const AstrologerProfile: React.FC = () => {
         "@graph": [
             {
                 "@type": "Person",
-                "@id": `https://aadikarta.org/astrologer/${ast.id}#person`,
+                "@id": `https://aadikarta.org/astrologers/${ast.id}#person`,
                 "name": ast.full_name,
                 "jobTitle": "Astrologer",
                 "description": ast.about_me,

@@ -53,7 +53,7 @@ const Footer: React.FC = () => {
                             <h4 className="footer-title">Quick Links</h4>
                             <ul className="footer-links">
                                 <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
-                                <li><Link to="/chat-with-astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>
+                                <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>
                                 <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
                                 <li><Link to="/contact-us" onClick={scrollToTop}>Contact Us</Link></li>
                             </ul>
