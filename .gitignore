@@ -1,2 +1,22 @@
 .DS_Store
-astro-app-debug.apk
+*.apk
+*.aab
+
+# Sensitive / credentials
+domain.txt
+aadikarta-cert.pem
+aadikarta-release.keystore
+*.pem
+*.keystore
+*.p12
+
+# Local databases
+api/sql_app.db
+*.db
+
+# DB backups
+db-backup/
+
+# Generated / build artifacts
+store-graphics/output/
+store-graphics/node_modules/
