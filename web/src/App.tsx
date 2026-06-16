@@ -112,8 +112,6 @@ const NativeInitializer: React.FC = () => {
 };
 
 function App() {
-    const isMainDomain = window.location.hostname === 'aadikarta.org' || window.location.hostname === 'www.aadikarta.org';
-
     return (
         <Router>
             <AuthProvider>
@@ -121,7 +119,7 @@ function App() {
                 <NativeInitializer />
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
-                        <Route path="/" element={isMainDomain ? <ComingSoon /> : <Home />} />
+                        <Route path="/" element={<Home />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
