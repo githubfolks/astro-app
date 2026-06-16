@@ -9,6 +9,31 @@ import { MobileNavBar } from './components/MobileNavBar';
 import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load pages
+const Home = lazy(() => import('./pages/Home'));
+const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
+const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
+const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then(module => ({ default: module.VerifyOTP })));
+const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
+const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Chat = lazy(() => import('./pages/Chat').then(module => ({ default: module.Chat })));
+const AstrologersPage = lazy(() => import('./pages/AstrologersPage'));
+const AstrologerProfile = lazy(() => import('./pages/AstrologerProfile'));
+const AboutUs = lazy(() => import('./pages/AboutUs'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const PageViewer = lazy(() => import('./pages/PageViewer'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
+const Disclaimer = lazy(() => import('./pages/Disclaimer'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
+const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
+const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
+const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ default: module.Classroom })));
+const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
+const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
+const Book = lazy(() => import('./pages/Book'));
 const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Pricing = lazy(() => import('./pages/Pricing'));
@@ -35,7 +60,60 @@ const PageLoader = () => (
     </div>
 );
 
+// Protected Route Wrapper
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isAuthenticated, isLoading } = useAuth();
+    if (isLoading) {
+        return (
+            <div className="auth-loading-screen">
+                <div className="spinner"></div>
+            </div>
+        );
+    }
+    if (!isAuthenticated) return <Navigate to="/login" />;
+    return <React.Fragment>{children}</React.Fragment>;
+};
+
+// Native initialization & back button handling
+const NativeInitializer: React.FC = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+
+        if (!isNative()) return;
+
+        // Add native-app class to body
+        document.body.classList.add('native-app');
+
+        // Configure status bar
+        StatusBar.setStyle({ style: Style.Light }).catch(() => { });
+        if (getPlatform() === 'android') {
+            StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(() => { });
+        }
+
+        // Hide splash screen after app is ready
+        SplashScreen.hide().catch(() => { });
+
+        // Hardware back button handler
+        const backHandler = CapApp.addListener('backButton', ({ canGoBack }) => {
+            if (canGoBack) {
+                navigate(-1);
+            } else {
+                CapApp.exitApp();
+            }
+        });
+
+        return () => {
+            backHandler.then(h => h.remove());
+        };
+    }, [navigate]);
+
+    return null;
+};
+
 function App() {
+    const isMainDomain = window.location.hostname === 'aadikarta.org' || window.location.hostname === 'www.aadikarta.org';
+
     return (
         <Router>
             <AuthProvider>
