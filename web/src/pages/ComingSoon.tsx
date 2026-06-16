@@ -3,7 +3,11 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SEO from '../components/SEO';
 
-const ComingSoon: React.FC = () => {
+interface ComingSoonProps {
+    onEnter?: () => void;
+}
+
+const ComingSoon: React.FC<ComingSoonProps> = ({ onEnter }) => {
     useEffect(() => {
         AOS.init({
             duration: 1000,
@@ -40,6 +44,18 @@ const ComingSoon: React.FC = () => {
                         <p className="text-xl md:text-2xl text-indigo-100/70 mb-12 font-light leading-relaxed max-w-xl">
                             Unlock the secrets of Vedic astrology and spiritual mastery. We are crafting a sanctuary for seekers, coming very soon.
                         </p>
+                        {onEnter && (
+                            <button
+                                onClick={onEnter}
+                                className="group relative px-10 py-4.5 rounded-[2rem] font-bold text-lg transition-all duration-500 hover:scale-105 active:scale-95 overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.25)] cursor-pointer"
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600"></div>
+                                <span className="relative text-indigo-950 flex items-center gap-2">
+                                    Inaugurate & Enter Website
+                                    <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                                </span>
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect, Suspense, lazy, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { isNative, getPlatform } from './utils/platform';
@@ -34,6 +34,7 @@ const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ defau
 const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
 const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
 const Book = lazy(() => import('./pages/Book'));
+const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
@@ -111,6 +112,16 @@ const NativeInitializer: React.FC = () => {
 };
 
 function App() {
+    const isLaunched = import.meta.env.VITE_LAUNCHED === 'true';
+    const [hasEntered, setHasEntered] = useState(
+        () => localStorage.getItem('entered_site') === 'true'
+    );
+
+    const handleEnter = () => {
+        localStorage.setItem('entered_site', 'true');
+        setHasEntered(true);
+    };
+
     return (
         <Router>
             <AuthProvider>
@@ -118,7 +129,16 @@ function App() {
                 <NativeInitializer />
                 <Suspense fallback={<PageLoader />}>
                     <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Route 
+                            path="/" 
+                            element={
+                                (isLaunched || hasEntered) ? (
+                                    <Home />
+                                ) : (
+                                    <ComingSoon onEnter={handleEnter} />
+                                )
+                            } 
+                        />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
