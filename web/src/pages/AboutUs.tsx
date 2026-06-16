@@ -29,8 +29,8 @@ const AboutUs: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="About Aadikarta | India's Trusted Online Astrology Platform"
-                description="Learn about Aadikarta — India's online marketplace for verified Vedic astrologers, tarot readers, and numerologists. Our mission: accessible spiritual guidance for everyone."
+                title="About Us | India's Trusted Online Astrology Platform"
+                description="Aadikarta is India's online marketplace for verified Vedic astrologers, tarot readers & numerologists. Our mission: accessible spiritual guidance for everyone."
                 structuredData={structuredData}
             />
             <Header />

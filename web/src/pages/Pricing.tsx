@@ -81,8 +81,8 @@ const Pricing: React.FC = () => {
     return (
         <div className="bg-white text-slate-900 min-h-screen">
             <SEO
-                title="Astrology Consultation Pricing | Aadikarta"
-                description="Transparent astrology consultation pricing starting from ₹10/min. No subscriptions, no hidden fees. Pay only for minutes you use on Aadikarta."
+                title="Astrology Consultation Pricing"
+                description="Transparent astrology consultation pricing from ₹10/min. No subscriptions, no hidden fees — pay only for the minutes you use."
                 structuredData={structuredData}
             />
             <Header />

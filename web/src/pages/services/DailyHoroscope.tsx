@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-// Three.js example imports removed as they are no longer used for redundant 3D text
+import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
@@ -40,88 +38,20 @@ const horoscopeStructuredData = {
 };
 
 const DailyHoroscope: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: false,
-            mirror: true
-        });
-        if (!canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, 600);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
-
-        // Zodiac Ring (Rotating wireframe)
-        const zodiacRingGeo = new THREE.TorusGeometry(3.5, 0.02, 16, 100);
-        const zodiacRingMat = new THREE.MeshBasicMaterial({ color: '#60a5fa', wireframe: true, transparent: true, opacity: 0.1 });
-        const zodiacRingMesh = new THREE.Mesh(zodiacRingGeo, zodiacRingMat);
-        scene.add(zodiacRingMesh);
-
-        const starGeo = new THREE.BufferGeometry();
-        const starCount = 2000;
-        const starPos = new Float32Array(starCount * 3);
-        for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 15;
-        starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-        const starMat = new THREE.PointsMaterial({ size: 0.005, color: '#ffffff', transparent: true, opacity: 0.8 });
-        const particlesMesh = new THREE.Points(starGeo, starMat);
-        scene.add(particlesMesh);
-
-        camera.position.z = 5;
-
-        // Interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        const onMouseMove = (e: MouseEvent) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        };
-        window.addEventListener('mousemove', onMouseMove);
-
-        let animationFrameId: number;
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-            zodiacRingMesh.rotation.y += 0.002 + (mouseX * 0.05);
-            zodiacRingMesh.rotation.x = (mouseY * 0.2);
-            particlesMesh.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        const onResize = () => {
-            camera.aspect = window.innerWidth / 600;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, 600);
-        };
-        window.addEventListener('resize', onResize);
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', onResize);
-            window.removeEventListener('mousemove', onMouseMove);
-            renderer.dispose();
-            scene.clear();
-        };
+        AOS.init({ duration: 1000, once: false, mirror: true });
     }, []);
 
     return (
         <div className="bg-blue-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <SEO
-                title="Daily Horoscope Consultation | Personalized Zodiac Predictions"
-                description="Get personalized daily horoscope readings from expert astrologers on Aadikarta. Love, career, health, and finance predictions for all 12 zodiac signs. Starting from ₹10/min."
+                title="Daily Horoscope | Personalized Zodiac Predictions"
+                description="Personalized daily horoscope readings from expert astrologers. Love, career, health & finance predictions for all 12 zodiac signs. From ₹10/min."
                 structuredData={horoscopeStructuredData}
             />
             <Header />
             {/* Hero Section */}
             <header className="celestial-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
                         <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Daily Horoscope</h1>

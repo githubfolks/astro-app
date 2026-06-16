@@ -194,7 +194,7 @@ const HoroscopeSign: React.FC = () => {
                 '@type': 'BreadcrumbList',
                 itemListElement: [
                     { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
-                    { '@type': 'ListItem', position: 2, name: 'Horoscope', item: 'https://aadikarta.org/astrologers' },
+                    { '@type': 'ListItem', position: 2, name: 'Horoscope', item: 'https://aadikarta.org/horoscope' },
                     { '@type': 'ListItem', position: 3, name: `${data.name} Horoscope`, item: `https://aadikarta.org/horoscope/${sign}` },
                 ],
             },

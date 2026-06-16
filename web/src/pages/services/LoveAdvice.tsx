@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-// Three.js example imports removed as they are no longer used for redundant 3D text
+import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
@@ -40,108 +38,20 @@ const loveStructuredData = {
 };
 
 const LoveAdvice: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: false,
-            mirror: true
-        });
-        if (!canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, 600);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xfb7185, 1);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 1000;
-        const posArray = new Float32Array(particlesCount * 3);
-        for (let i = 0; i < particlesCount * 3; i++) posArray[i] = (Math.random() - 0.5) * 10;
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMaterial = new THREE.PointsMaterial({ size: 0.008, color: '#fb7185', transparent: true, opacity: 0.6 });
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-
-        const heartGroup = new THREE.Group();
-        const heartShape = new THREE.Shape();
-        heartShape.moveTo(0, 0);
-        heartShape.bezierCurveTo(0, -0.3, -0.6, -0.3, -0.6, 0);
-        heartShape.bezierCurveTo(-0.6, 0.3, 0, 0.6, 0.6, 1);
-        heartShape.bezierCurveTo(1.2, 0.6, 1.8, 0.3, 1.8, 0);
-        heartShape.bezierCurveTo(1.8, -0.3, 1.2, -0.3, 1.2, 0);
-        heartShape.bezierCurveTo(1.2, 0, 0.6, 0, 0, 0);
-
-        const heartGeo = new THREE.ShapeGeometry(heartShape);
-        const heartMat = new THREE.MeshBasicMaterial({ color: '#fb7185', transparent: true, opacity: 0.1 });
-
-        for (let i = 0; i < 50; i++) {
-            const heart = new THREE.Mesh(heartGeo, heartMat);
-            heart.position.set((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 15, (Math.random() - 0.5) * 15);
-            heart.rotation.z = Math.PI;
-            heart.rotation.x = Math.random() * Math.PI;
-            heart.scale.set(0.15, 0.15, 0.15);
-            heartGroup.add(heart);
-        }
-        scene.add(heartGroup);
-
-        camera.position.z = 5; // Interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        const onMouseMove = (e: MouseEvent) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        };
-        window.addEventListener('mousemove', onMouseMove);
-
-        let animationFrameId: number;
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-            particlesMesh.rotation.y += 0.001; // Keep particles animated
-            heartGroup.rotation.y += 0.002 + (mouseX * 0.02);
-            heartGroup.rotation.x += (mouseY * 0.01); // Use mouseY for X-axis rotation
-            heartGroup.children.forEach((heart, i) => {
-                heart.position.y += Math.sin(Date.now() * 0.001 + i) * 0.005;
-            });
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        const onResize = () => {
-            camera.aspect = window.innerWidth / 600;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, 600);
-        };
-        window.addEventListener('resize', onResize);
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', onResize);
-            window.removeEventListener('mousemove', onMouseMove);
-            renderer.dispose();
-            scene.clear();
-        };
-    }, []); // End of useEffect
+        AOS.init({ duration: 1000, once: false, mirror: true });
+    }, []);
 
     return (
         <div className="bg-rose-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <SEO
-                title="Love & Relationship Astrology | Advice from Expert Astrologers"
-                description="Get personalized love and relationship advice from expert astrologers on Aadikarta. Compatibility analysis, marriage timing, relationship predictions. Starting from ₹10/min."
+                title="Love & Relationship Astrology | Expert Advice Online"
+                description="Personalized love & relationship astrology consultations. Compatibility analysis, marriage timing & predictions from expert Vedic astrologers. From ₹10/min."
                 structuredData={loveStructuredData}
             />
             <Header />
             {/* Hero Section */}
             <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
                         <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Love & Relationships</h1>

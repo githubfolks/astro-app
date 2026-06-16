@@ -90,8 +90,8 @@ const HowItWorks: React.FC = () => {
     return (
         <div className="bg-white text-slate-900 min-h-screen">
             <SEO
-                title="How It Works | Aadikarta Astrology Consultation"
-                description="Book a live astrology consultation in 5 simple steps. Browse verified Vedic astrologers, add wallet credits, and chat instantly. Pay per minute — no subscriptions."
+                title="How It Works | Live Astrology Consultation"
+                description="Book a live astrology consultation in 5 simple steps. Browse verified Vedic astrologers, add wallet credits & chat instantly. Pay per minute — no subscriptions."
                 structuredData={structuredData}
             />
             <Header />

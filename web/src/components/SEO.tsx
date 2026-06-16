@@ -28,7 +28,7 @@ const SEO: React.FC<SEOProps> = ({
     modifiedTime,
 }) => {
     const { pathname } = useLocation();
-    const canonical = `${BASE_URL}${pathname === '/' ? '' : pathname}` || BASE_URL;
+    const canonical = `${BASE_URL}${pathname === '/' ? '/' : pathname}`;
     const fullTitle = `${title} | Aadikarta`;
     const resolvedImageAlt = imageAlt || title;
 
@@ -64,7 +64,7 @@ const SEO: React.FC<SEOProps> = ({
 
             {/* Twitter */}
             <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:site" content="@aadikarta" />
+            <meta name="twitter:site" content="@astro_aadikarta" />
             <meta name="twitter:url" content={canonical} />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />

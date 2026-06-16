@@ -66,16 +66,16 @@ const Blog: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <SEO
-                title="Astrology Blog | Vedic Wisdom, Horoscopes & Spiritual Guidance"
-                description="Explore expert articles on Vedic astrology, daily horoscopes, kundli, tarot readings, and spiritual guidance. Learn from India's top astrologers on Aadikarta."
+                title="Astrology Blog | Vedic Wisdom, Horoscopes & Guidance"
+                description="Expert articles on Vedic astrology, horoscopes, kundli, tarot & spiritual guidance from India's top astrologers."
                 structuredData={structuredData}
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-12">
                 <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4 mt-4">Aadikarta Blog</h1>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-4 mt-4">Vedic Astrology Blog</h1>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                        Discover the ancient wisdom of the stars and how they influence your daily life.
+                        Expert guidance on Vedic astrology, horoscopes, kundli matching & spiritual wisdom.
                     </p>
                 </div>
 

@@ -31,6 +31,14 @@
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- Horoscope hub -->
+  <url>
+    <loc>https://aadikarta.org/horoscope</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Horoscope pages (top-of-funnel traffic) -->
   <url>
     <loc>https://aadikarta.org/horoscope/aries</loc>

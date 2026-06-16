@@ -41,8 +41,8 @@ const AstrologersPage: React.FC = () => {
     return (
         <div className="astrologers-page pb-20 md:pb-0">
             <SEO
-                title="Chat with Expert Astrologers Online | Vedic, Tarot & Kundli"
-                description="Browse 500+ verified astrologers on Aadikarta. Chat live for Vedic astrology, kundli matching, tarot, love advice, and career predictions. Starting from ₹10/min."
+                title="Chat with Expert Astrologers Online | Vedic & Tarot"
+                description="Browse 500+ verified astrologers. Live chat for Vedic astrology, kundli matching, tarot & career guidance. Starting from ₹10/min."
                 structuredData={astrologersStructuredData}
             />
             <Header />

@@ -50,33 +50,6 @@ const homeStructuredData = {
                 "availableLanguage": ["English", "Hindi"],
                 "areaServed": "IN"
             },
-            "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "4.8",
-                "reviewCount": "1200",
-                "bestRating": "5",
-                "worstRating": "1"
-            },
-            "review": [
-                {
-                    "@type": "Review",
-                    "author": { "@type": "Person", "name": "Anjali S." },
-                    "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
-                    "reviewBody": "The consultation was spot on! Guru Dev helped me understand my career path clearly."
-                },
-                {
-                    "@type": "Review",
-                    "author": { "@type": "Person", "name": "Rahul K." },
-                    "reviewRating": { "@type": "Rating", "ratingValue": "4", "bestRating": "5" },
-                    "reviewBody": "Very intuitive reading. The UI is easy to use and connecting was seamless."
-                },
-                {
-                    "@type": "Review",
-                    "author": { "@type": "Person", "name": "Priya M." },
-                    "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
-                    "reviewBody": "I love the daily horoscope feature. It's my go-to app for starting the day!"
-                }
-            ],
             "sameAs": [
                 "https://www.facebook.com/aadikarta",
                 "https://www.instagram.com/aadikarta"
@@ -100,8 +73,8 @@ const Home: React.FC = () => {
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Talk to Expert Astrologers Online | Vedic Astrology, Kundli & Tarot"
-                description="Connect with India's top verified astrologers on Aadikarta. Get live chat consultations on Vedic astrology, kundli matching, tarot reading, love advice, and daily horoscope. Starting from ₹10/min."
+                title="Talk to Verified Astrologers Online | Vedic, Kundli & Tarot"
+                description="India's top verified astrologers for live chat. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
                 structuredData={homeStructuredData}
             />
             <Header />

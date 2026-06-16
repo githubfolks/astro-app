@@ -38,6 +38,7 @@ const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
+const HoroscopeListing = lazy(() => import('./pages/horoscope/HoroscopeListing'));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -157,6 +158,7 @@ function App() {
                         <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
                         <Route path="/how-it-works" element={<HowItWorks />} />
                         <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/horoscope" element={<HoroscopeListing />} />
                         <Route path="/horoscope/:sign" element={<HoroscopeSign />} />
                         <Route path="/blog" element={<Blog />} />
                         <Route path="/blog/:slug" element={<BlogPost />} />

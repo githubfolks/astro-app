@@ -8,11 +8,11 @@ const Hero: React.FC = () => {
             <div className="container hero-content relative z-10 py-2">
                 <div className="hero-text">
                     <h1 className="hero-title mt-2">
-                        Unlock Your
-                        <span className="gradient-text block mt-2"> Cosmic Destiny</span>
+                        Talk to Verified
+                        <span className="gradient-text block mt-2">Astrologers Online</span>
                     </h1>
                     <p className="hero-description text-indigo-100 text-xl mt-6 opacity-90 leading-relaxed">
-                        Connect with expert astrologers, get accurate horoscopes, and find guidance for your life's journey. Your future awaits.
+                        Connect with India's top Vedic astrologers for live chat consultations on kundli, tarot, love & career. Guidance starts at ₹10/min.
                     </p>
                     <div className="hero-actions mt-10 flex flex-wrap gap-4">
                         <Link to="/astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20">Chat with Astrologer</Link>

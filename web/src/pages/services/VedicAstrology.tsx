@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-// Three.js example imports removed as they are no longer used for redundant 3D text
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
@@ -40,90 +39,20 @@ const vedicStructuredData = {
 };
 
 const VedicAstrology: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: false,
-            mirror: true
-        });
-        if (!canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, 600);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xf59e0b, 1);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
-        const cubeGeo = new THREE.BoxGeometry(2, 2, 2);
-        const cubeMat = new THREE.MeshBasicMaterial({ color: '#f59e0b', wireframe: true, transparent: true, opacity: 0.15 });
-        const cube = new THREE.Mesh(cubeGeo, cubeMat);
-        scene.add(cube);
-
-        const pGeo = new THREE.BufferGeometry();
-        const pCount = 1000;
-        const pPos = new Float32Array(pCount * 3);
-        for (let i = 0; i < pCount * 3; i++) pPos[i] = (Math.random() - 0.5) * 10;
-        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-        const pMat = new THREE.PointsMaterial({ size: 0.006, color: '#f59e0b', transparent: true, opacity: 0.5 });
-        const particlesMesh = new THREE.Points(pGeo, pMat); // Renamed particles to particlesMesh as per snippet
-        scene.add(particlesMesh);
-
-        camera.position.z = 5;
-
-        // Interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        const onMouseMove = (e: MouseEvent) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        };
-        window.addEventListener('mousemove', onMouseMove);
-
-        let animationFrameId: number;
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-            cube.rotation.y += 0.002 + (mouseX * 0.01);
-            cube.rotation.x += 0.001 + (mouseY * 0.01);
-            particlesMesh.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        const onResize = () => {
-            camera.aspect = window.innerWidth / 600;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, 600);
-        };
-        window.addEventListener('resize', onResize);
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', onResize);
-            window.removeEventListener('mousemove', onMouseMove);
-            renderer.dispose();
-            scene.clear();
-        };
+        AOS.init({ duration: 1000, once: false, mirror: true });
     }, []);
 
     return (
         <div className="bg-amber-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <SEO
-                title="Vedic Astrology Consultation Online | Expert Jyotish Readings"
-                description="Get authentic Vedic astrology (Jyotish) consultations from India's top experts on Aadikarta. Natal chart analysis, planetary transits, dasha predictions. Starting from ₹10/min."
+                title="Vedic Astrology (Jyotish) Consultations Online"
+                description="Authentic Vedic astrology consultations from India's top Jyotish experts. Natal chart analysis, planetary transits, dasha predictions. Starting from ₹10/min."
                 structuredData={vedicStructuredData}
             />
             <Header />
             {/* Hero Section */}
             <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
                         <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Vedic Astrology</h1>
@@ -194,9 +123,13 @@ const VedicAstrology: React.FC = () => {
                             <p className="mt-4 text-slate-500">Personalized suggestions for gemstones and mantras to balance planetary energy.</p>
                         </div>
                     </div>
-                    <button className="mt-16 bg-amber-700 hover:bg-amber-800 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl shadow-amber-200 transition-all hover:scale-110 active:scale-95" data-aos="zoom-in">
+                    <Link
+                        to="/astrologers"
+                        className="mt-16 inline-block bg-amber-700 hover:bg-amber-800 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl shadow-amber-200 transition-all hover:scale-110 active:scale-95"
+                        data-aos="zoom-in"
+                    >
                         Book a Reading Now
-                    </button>
+                    </Link>
                 </section>
             </main>
             <Footer />

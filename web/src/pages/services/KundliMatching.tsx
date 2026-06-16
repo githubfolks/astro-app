@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-// Three.js example imports removed as they are no longer used for redundant 3D text
+import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
@@ -40,122 +38,21 @@ const kundliStructuredData = {
 };
 
 const KundliMatching: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: false,
-            mirror: true
-        });
-
-        if (!canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, 600);
-
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0xffd700, 1);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
-        // Particles
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 2000;
-        const posArray = new Float32Array(particlesCount * 3);
-        for (let i = 0; i < particlesCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 15;
-        }
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.005,
-            color: '#FFD700',
-            transparent: true,
-            opacity: 0.4,
-            blending: THREE.AdditiveBlending
-        });
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-
-        // Sacred Geometry
-        const octaGeo = new THREE.OctahedronGeometry(4, 0);
-        const octaMat = new THREE.MeshBasicMaterial({
-            color: '#FFB800',
-            wireframe: true,
-            transparent: true,
-            opacity: 0.1
-        });
-        const octaMesh = new THREE.Mesh(octaGeo, octaMat);
-        scene.add(octaMesh);
-
-        // Sacramento Heart (Simplified Wireframe)
-        const heartShape = new THREE.Shape();
-        heartShape.moveTo(0, 0);
-        heartShape.bezierCurveTo(0, -0.3, -0.6, -0.3, -0.6, 0);
-        heartShape.bezierCurveTo(-0.6, 0.3, 0, 0.6, 0.6, 1);
-        heartShape.bezierCurveTo(1.2, 0.6, 1.8, 0.3, 1.8, 0);
-        heartShape.bezierCurveTo(1.8, -0.3, 1.2, -0.3, 1.2, 0);
-        heartShape.bezierCurveTo(1.2, 0, 0.6, 0, 0, 0);
-
-        const heartGeo = new THREE.IcosahedronGeometry(2, 2);
-        const heartMat = new THREE.MeshBasicMaterial({ color: '#FFD700', wireframe: true, transparent: true, opacity: 0.1 });
-        const heartMesh = new THREE.Mesh(heartGeo, heartMat);
-        scene.add(heartMesh);
-
-        camera.position.z = 5;
-
-        // Interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        const onMouseMove = (e: MouseEvent) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        };
-        window.addEventListener('mousemove', onMouseMove);
-
-        let animationFrameId: number;
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-            heartMesh.rotation.y += 0.005 + (mouseX * 0.05);
-            heartMesh.rotation.x += 0.005 + (mouseY * 0.05);
-            particlesMesh.rotation.y += 0.001;
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        const onResize = () => {
-            camera.aspect = window.innerWidth / 600;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, 600);
-        };
-        window.addEventListener('resize', onResize);
-
-        return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('resize', onResize);
-            cancelAnimationFrame(animationFrameId);
-            renderer.dispose();
-            scene.clear();
-        };
+        AOS.init({ duration: 1000, once: false, mirror: true });
     }, []);
 
     return (
         <div className="bg-slate-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <SEO
-                title="Kundli Matching for Marriage | Horoscope Compatibility Analysis"
-                description="Expert kundli matching (kundali milan) for marriage on Aadikarta. 36-gun Milan analysis, manglik dosha check, compatibility report from verified astrologers. Starting from ₹10/min."
+                title="Kundli Matching for Marriage | Kundali Milan Online"
+                description="Expert kundali milan (kundli matching) for marriage — 36-gun analysis, manglik dosha check & compatibility report from verified Vedic astrologers. From ₹10/min."
                 structuredData={kundliStructuredData}
             />
             <Header />
 
             {/* Hero Section */}
             <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
                         <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Kundli Matching</h1>

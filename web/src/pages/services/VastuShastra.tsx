@@ -1,6 +1,4 @@
-import React, { useEffect, useRef } from 'react';
-import * as THREE from 'three';
-// Three.js example imports removed as they are no longer used for redundant 3D text
+import React, { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
@@ -40,95 +38,20 @@ const vastuStructuredData = {
 };
 
 const VastuShastra: React.FC = () => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: false,
-            mirror: true
-        });
-        if (!canvasRef.current) return;
-
-        const canvas = canvasRef.current;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 600, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, 600);
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-        const pointLight = new THREE.PointLight(0x10b981, 1.5);
-        pointLight.position.set(5, 5, 5);
-        scene.add(pointLight);
-
-        // Holographic Blueprint Grid
-        const gridGroup = new THREE.Group();
-        const gridHelper = new THREE.GridHelper(30, 30, '#059669', '#064e3b');
-        gridHelper.position.y = -3;
-        gridHelper.rotation.x = Math.PI / 8;
-        gridGroup.add(gridHelper);
-
-        const lineMat = new THREE.LineBasicMaterial({ color: '#10b981', transparent: true, opacity: 0.1 });
-        for (let i = 0; i < 10; i++) {
-            const points = [];
-            points.push(new THREE.Vector3(-15, -3 + (i * 0.5), -15));
-            points.push(new THREE.Vector3(15, -3 + (i * 0.5), -15));
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const line = new THREE.Line(geometry, lineMat);
-            line.position.z = -15 + (i * 3.5);
-            gridGroup.add(line);
-        }
-        scene.add(gridGroup);
-
-        camera.position.z = 6;
-        camera.position.y = 1;
-
-        // Interaction
-        let mouseX = 0;
-        let mouseY = 0;
-        const onMouseMove = (e: MouseEvent) => {
-            mouseX = (e.clientX / window.innerWidth) - 0.5;
-            mouseY = (e.clientY / window.innerHeight) - 0.5;
-        };
-        window.addEventListener('mousemove', onMouseMove);
-
-        let animationFrameId: number;
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-            gridGroup.rotation.y += 0.001 + (mouseX * 0.01);
-            gridGroup.rotation.x = (mouseY * 0.05);
-            renderer.render(scene, camera);
-        };
-        animate();
-
-        const onResize = () => {
-            camera.aspect = window.innerWidth / 600;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, 600);
-        };
-        window.addEventListener('resize', onResize);
-
-        return () => {
-            cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', onResize);
-            window.removeEventListener('mousemove', onMouseMove);
-            renderer.dispose();
-            scene.clear();
-        };
+        AOS.init({ duration: 1000, once: false, mirror: true });
     }, []);
 
     return (
         <div className="bg-emerald-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
             <SEO
                 title="Vastu Shastra Consultation Online | Expert Vastu Advice"
-                description="Get expert Vastu Shastra consultation for home and office from certified consultants on Aadikarta. Room analysis, dosha remedies, energy balancing. Starting from ₹10/min."
+                description="Expert Vastu Shastra consultation for home & office from certified consultants. Room analysis, dosha remedies & energy balancing. From ₹10/min."
                 structuredData={vastuStructuredData}
             />
             <Header />
             {/* Hero Section */}
             <header className="vastu-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <canvas ref={canvasRef} className="absolute inset-0 z-0" />
                 <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
                     <div className="flex flex-col items-center justify-center">
                         <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Vastu Shastra</h1>

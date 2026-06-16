@@ -47,14 +47,46 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Right Column: Links & Contact */}
+                    {/* Services Column */}
                     <div className="footer-column info-column">
                         <div className="info-group">
-                            <h4 className="footer-title">Quick Links</h4>
+                            <h4 className="footer-title">Services</h4>
+                            <ul className="footer-links">
+                                <li><Link to="/services/vedic-astrology" onClick={scrollToTop}>Vedic Astrology</Link></li>
+                                <li><Link to="/services/kundli-matching" onClick={scrollToTop}>Kundli Matching</Link></li>
+                                <li><Link to="/services/tarot-reading" onClick={scrollToTop}>Tarot Reading</Link></li>
+                                <li><Link to="/services/love-advice" onClick={scrollToTop}>Love Advice</Link></li>
+                                <li><Link to="/services/daily-horoscope" onClick={scrollToTop}>Daily Horoscope</Link></li>
+                                <li><Link to="/services/vastu-shastra" onClick={scrollToTop}>Vastu Shastra</Link></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Horoscopes Column */}
+                    <div className="footer-column info-column">
+                        <div className="info-group">
+                            <h4 className="footer-title">Horoscopes</h4>
+                            <ul className="footer-links">
+                                <li><Link to="/horoscope/aries" onClick={scrollToTop}>Aries ♈</Link></li>
+                                <li><Link to="/horoscope/taurus" onClick={scrollToTop}>Taurus ♉</Link></li>
+                                <li><Link to="/horoscope/gemini" onClick={scrollToTop}>Gemini ♊</Link></li>
+                                <li><Link to="/horoscope/cancer" onClick={scrollToTop}>Cancer ♋</Link></li>
+                                <li><Link to="/horoscope/leo" onClick={scrollToTop}>Leo ♌</Link></li>
+                                <li><Link to="/horoscope" onClick={scrollToTop}>All Signs →</Link></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Quick Links & Contact */}
+                    <div className="footer-column info-column">
+                        <div className="info-group">
+                            <h4 className="footer-title">Company</h4>
                             <ul className="footer-links">
                                 <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
                                 <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>
                                 <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
+                                <li><Link to="/how-it-works" onClick={scrollToTop}>How It Works</Link></li>
+                                <li><Link to="/join-as-astrologer" onClick={scrollToTop}>Join as Astrologer</Link></li>
                                 <li><Link to="/contact-us" onClick={scrollToTop}>Contact Us</Link></li>
                             </ul>
                         </div>
