@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -14,7 +14,7 @@ import { ResetPasswordModal } from '../components/ResetPasswordModal';
 
 export default function Users() {
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [, setLoading] = useState(false);
     const navigate = useNavigate();
 
     // Pagination state
@@ -31,20 +31,7 @@ export default function Users() {
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [selectedUserForReset, setSelectedUserForReset] = useState(null);
 
-    useEffect(() => {
-        fetchUsers();
-    }, [page, rowsPerPage, filterRole, filterVerified]);
-
-    // Debounce search
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setPage(0);
-            fetchUsers();
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         setLoading(true);
         try {
             const params = {
@@ -64,7 +51,20 @@ export default function Users() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, rowsPerPage, searchQuery, filterRole, filterVerified]);
+
+    useEffect(() => {
+        fetchUsers();
+    }, [fetchUsers]);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(0);
+            fetchUsers();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery, fetchUsers]);
 
     const handleDelete = async (userId) => {
         if (window.confirm("Are you sure you want to delete this user?")) {

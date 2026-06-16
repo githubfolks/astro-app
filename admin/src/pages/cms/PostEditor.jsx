@@ -17,24 +17,24 @@ export default function PostEditor() {
     });
 
     useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                const response = await cms.posts.get(id);
+                setFormData({
+                    title: response.data.title,
+                    content: response.data.content,
+                    featured_image: response.data.featured_image || '',
+                    status: response.data.status,
+                });
+            } catch (error) {
+                console.error('Failed to fetch post', error);
+            }
+        };
+
         if (isEdit) {
             fetchPost();
         }
-    }, [id]);
-
-    const fetchPost = async () => {
-        try {
-            const response = await cms.posts.get(id);
-            setFormData({
-                title: response.data.title,
-                content: response.data.content,
-                featured_image: response.data.featured_image || '',
-                status: response.data.status,
-            });
-        } catch (error) {
-            console.error('Failed to fetch post', error);
-        }
-    };
+    }, [id, isEdit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

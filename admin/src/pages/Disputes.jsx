@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { disputes } from '../services/api';
 import { AlertCircle, CheckCircle, XCircle, Search, ChevronDown } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -19,7 +19,7 @@ export default function Disputes() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
 
-    const fetchDisputes = async () => {
+    const fetchDisputes = useCallback(async () => {
         try {
             setLoading(true);
             const res = await disputes.list(filterStatus ? { status: filterStatus } : {});
@@ -29,9 +29,9 @@ export default function Disputes() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filterStatus]);
 
-    useEffect(() => { fetchDisputes(); }, [filterStatus]);
+    useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
 
     const openModal = (item) => {
         setSelected(item);

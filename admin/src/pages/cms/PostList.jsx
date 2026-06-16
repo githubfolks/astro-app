@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -16,11 +16,7 @@ export default function PostList() {
     const limit = 20;
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchPosts();
-    }, [page]);
-
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         try {
             const response = await cms.posts.list({ skip: (page - 1) * limit, limit });
             setPosts(response.data.posts);
@@ -28,7 +24,11 @@ export default function PostList() {
         } catch (error) {
             console.error('Failed to fetch posts', error);
         }
-    };
+    }, [page]);
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this post?')) {

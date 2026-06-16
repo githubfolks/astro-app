@@ -10,24 +10,24 @@ export default function ContactInquiries() {
     const limit = 20;
     const [total, setTotal] = useState(0);
 
-    const fetchInquiries = async () => {
-        try {
-            setLoading(true);
-            const response = await cms.inquiries.list({
-                skip: (page - 1) * limit,
-                limit
-            });
-            setInquiries(response.data.inquiries);
-            setTotal(response.data.total);
-            setLoading(false);
-        } catch (err) {
-            console.error(err);
-            setError('Failed to fetch inquiries');
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
+        const fetchInquiries = async () => {
+            try {
+                setLoading(true);
+                const response = await cms.inquiries.list({
+                    skip: (page - 1) * limit,
+                    limit
+                });
+                setInquiries(response.data.inquiries);
+                setTotal(response.data.total);
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch inquiries');
+                setLoading(false);
+            }
+        };
+
         fetchInquiries();
     }, [page]);
 

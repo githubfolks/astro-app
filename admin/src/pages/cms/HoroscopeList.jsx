@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -21,11 +21,7 @@ export default function HoroscopeList() {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchHoroscopes();
-    }, [sign, period, date]);
-
-    const fetchHoroscopes = async () => {
+    const fetchHoroscopes = useCallback(async () => {
         try {
             const params = { period, date };
             if (sign) params.sign = sign;
@@ -35,7 +31,11 @@ export default function HoroscopeList() {
         } catch (error) {
             console.error('Failed to fetch horoscopes', error);
         }
-    };
+    }, [sign, period, date]);
+
+    useEffect(() => {
+        fetchHoroscopes();
+    }, [fetchHoroscopes]);
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this horoscope?')) {

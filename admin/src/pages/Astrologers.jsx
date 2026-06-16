@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2 } from 'lucide-react';
 import api from '../services/api';
@@ -8,18 +8,18 @@ export default function Astrologers() {
     const navigate = useNavigate();
     const [astrologers, setAstrologers] = useState([]);
 
-    useEffect(() => {
-        fetchAstrologers();
-    }, []);
-
-    const fetchAstrologers = async () => {
+    const fetchAstrologers = useCallback(async () => {
         try {
             const response = await api.get('/admin/astrologers_full');
             setAstrologers(response.data.astrologers);
         } catch (error) {
             console.error("Failed to fetch astrologers", error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchAstrologers();
+    }, [fetchAstrologers]);
 
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure? This will delete the account and profile.")) {

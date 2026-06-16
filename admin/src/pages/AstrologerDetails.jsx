@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle } from 'lucide-react';
 import api from '../services/api';
@@ -13,11 +13,7 @@ export default function AstrologerDetails() {
     const [earnings, setEarnings] = useState({ total_earned: 0, monthly_earnings: [] });
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchData();
-    }, [id]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             const [profileRes, consultRes, earningsRes] = await Promise.all([
@@ -36,7 +32,11 @@ export default function AstrologerDetails() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
 
     if (loading) return <div className="p-8 text-center text-gray-500">Loading details...</div>;
     if (!profile) return <div className="p-8 text-center">Astrologer not found</div>;

@@ -33,18 +33,18 @@ export default function HoroscopeEditor() {
     };
 
     useEffect(() => {
+        const fetchHoroscope = async () => {
+            try {
+                // Placeholder for fetching horoscope logic
+            } catch (error) {
+                console.error('Failed to fetch horoscope', error);
+            }
+        };
+
         if (isEdit) {
             fetchHoroscope();
         }
-    }, [id]);
-
-    const fetchHoroscope = async () => {
-        try {
-            // Placeholder for fetching horoscope logic
-        } catch (error) {
-            console.error('Failed to fetch horoscope', error);
-        }
-    };
+    }, [id, isEdit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

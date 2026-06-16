@@ -18,25 +18,25 @@ export default function PageEditor() {
     });
 
     useEffect(() => {
+        const fetchPage = async () => {
+            try {
+                const response = await cms.pages.get(id);
+                setFormData({
+                    title: response.data.title,
+                    slug: response.data.slug,
+                    content: response.data.content,
+                    seo_title: response.data.seo_title || '',
+                    seo_description: response.data.seo_description || '',
+                });
+            } catch (error) {
+                console.error('Failed to fetch page', error);
+            }
+        };
+
         if (isEdit) {
             fetchPage();
         }
-    }, [id]);
-
-    const fetchPage = async () => {
-        try {
-            const response = await cms.pages.get(id);
-            setFormData({
-                title: response.data.title,
-                slug: response.data.slug,
-                content: response.data.content,
-                seo_title: response.data.seo_title || '',
-                seo_description: response.data.seo_description || '',
-            });
-        } catch (error) {
-            console.error('Failed to fetch page', error);
-        }
-    };
+    }, [id, isEdit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

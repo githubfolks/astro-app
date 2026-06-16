@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -15,11 +15,7 @@ export default function PageList() {
     const limit = 20;
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchPages();
-    }, [page]);
-
-    const fetchPages = async () => {
+    const fetchPages = useCallback(async () => {
         try {
             const response = await cms.pages.list({ skip: (page - 1) * limit, limit });
             setPages(response.data.pages);
@@ -27,7 +23,11 @@ export default function PageList() {
         } catch (error) {
             console.error('Failed to fetch pages', error);
         }
-    };
+    }, [page]);
+
+    useEffect(() => {
+        fetchPages();
+    }, [fetchPages]);
 
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this page?')) {

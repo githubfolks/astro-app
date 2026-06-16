@@ -18,6 +18,7 @@ const AstrologerApprovals = () => {
             const response = await cms.astrologers.listPending();
             setPending(response.data);
         } catch (err) {
+            console.error(err);
             setError('Failed to fetch pending applications');
         } finally {
             setLoading(false);
@@ -34,6 +35,7 @@ const AstrologerApprovals = () => {
             setPending(pending.filter(p => p.id !== id));
             setSelectedAstro(null);
         } catch (err) {
+            console.error(err);
             alert('Approval failed');
         }
     };
@@ -46,6 +48,7 @@ const AstrologerApprovals = () => {
             setPending(pending.filter(p => p.id !== id));
             setSelectedAstro(null);
         } catch (err) {
+            console.error(err);
             alert('Rejection failed');
         }
     };

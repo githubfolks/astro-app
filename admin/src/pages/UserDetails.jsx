@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle, Key } from 'lucide-react';
 import api from '../services/api';
@@ -21,11 +21,7 @@ export default function UserDetails() {
     const [walletDesc, setWalletDesc] = useState('Admin adjustment');
     const [walletLoading, setWalletLoading] = useState(false);
 
-    useEffect(() => {
-        fetchData();
-    }, [id]);
-
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             const [userRes, consultRes, transRes] = await Promise.all([
@@ -41,7 +37,12 @@ export default function UserDetails() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
 
     const handleResetPassword = () => {
         setIsResetModalOpen(true);

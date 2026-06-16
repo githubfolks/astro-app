@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useId } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { Code } from 'lucide-react';
@@ -52,9 +52,10 @@ const CustomToolbar = ({ id, onToggleSource }) => (
 
 export const RichTextEditor = ({ value, onChange, placeholder, style, className }) => {
     const [showSource, setShowSource] = useState(false);
+    const uniqueId = useId();
 
     // Generate a stable unique ID for the toolbar
-    const toolbarId = useMemo(() => `toolbar-${Math.random().toString(36).substr(2, 9)}`, []);
+    const toolbarId = useMemo(() => `toolbar-${uniqueId.replace(/:/g, '')}`, [uniqueId]);
 
     const modules = useMemo(() => ({
         toolbar: {

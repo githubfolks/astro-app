@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
@@ -19,7 +19,7 @@ export default function EduReports() {
     const [days, setDays] = useState(30);
     const navigate = useNavigate();
 
-    const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
         setLoading(true);
         try {
             const response = await edu.getStats({ days });
@@ -29,11 +29,11 @@ export default function EduReports() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [days]);
 
     useEffect(() => {
         fetchStats();
-    }, [days]);
+    }, [fetchStats]);
 
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-IN', {

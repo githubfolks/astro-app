@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
 import api from '../services/api';
@@ -29,13 +29,7 @@ export default function AstrologerForm() {
         is_verified: true
     });
 
-    useEffect(() => {
-        if (isEditMode) {
-            fetchAstrologer();
-        }
-    }, [id]);
-
-    const fetchAstrologer = async () => {
+    const fetchAstrologer = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.get('/admin/astrologers_full');
@@ -67,7 +61,14 @@ export default function AstrologerForm() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [id, navigate]);
+
+    useEffect(() => {
+        if (isEditMode) {
+            fetchAstrologer();
+        }
+    }, [isEditMode, fetchAstrologer]);
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
