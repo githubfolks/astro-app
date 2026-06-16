@@ -37,7 +37,7 @@ const AstrologerProfile: React.FC = () => {
         "@graph": [
             {
                 "@type": "Person",
-                "@id": `https://aadikarta.org/astrologers/${ast.id}#person`,
+                "@id": `https://aadikarta.org/astrologers/${ast.slug || ast.user_id}#person`,
                 "name": ast.full_name,
                 "jobTitle": "Astrologer",
                 "description": ast.about_me,
@@ -59,12 +59,15 @@ const AstrologerProfile: React.FC = () => {
     });
 
     useEffect(() => {
-        // Fetch astrologer details
         if (id) {
             api.astrologers.getOne(id)
                 .then(data => {
                     setAstrologer(data);
                     setLoading(false);
+                    // Redirect numeric-ID URLs to the canonical slug URL
+                    if (data.slug && /^\d+$/.test(id)) {
+                        navigate(`/astrologers/${data.slug}`, { replace: true });
+                    }
                 })
                 .catch(err => {
                     console.error('Failed to fetch astrologer', err);

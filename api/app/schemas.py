@@ -117,6 +117,7 @@ class AstrologerProfileUPDATE(BaseModel):
 
 class AstrologerProfile(AstrologerProfileBase):
     user_id: int
+    slug: Optional[str] = None
     is_online: bool
     rating_avg: Decimal
     total_consultations: int

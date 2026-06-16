@@ -1,5 +1,6 @@
 export interface Astrologer {
     id: number;
+    slug?: string;
     full_name: string;
     profile_picture_url?: string;
     specialties: string;

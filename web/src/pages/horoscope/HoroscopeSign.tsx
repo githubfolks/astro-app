@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import { api } from '../../services/api';
 
 interface SignData {
     name: string;
@@ -145,9 +146,32 @@ const SIGNS: Record<string, SignData> = {
     },
 };
 
+interface DailyPrediction {
+    overview?: string;
+    love?: string;
+    career?: string;
+    health?: string;
+    [key: string]: string | undefined;
+}
+
 const HoroscopeSign: React.FC = () => {
     const { sign } = useParams<{ sign: string }>();
     const data = sign ? SIGNS[sign.toLowerCase()] : undefined;
+
+    const [prediction, setPrediction] = useState<DailyPrediction | null>(null);
+    const [predLoading, setPredLoading] = useState(true);
+
+    useEffect(() => {
+        if (!sign || !data) return;
+        const today = new Date().toISOString().slice(0, 10);
+        api.cms.getHoroscopes(sign.toUpperCase(), 'DAILY', today)
+            .then((results: any[]) => {
+                const entry = Array.isArray(results) ? results[0] : null;
+                setPrediction(entry?.content ?? null);
+            })
+            .catch(() => setPrediction(null))
+            .finally(() => setPredLoading(false));
+    }, [sign]);
 
     if (!data) return <Navigate to="/astrologers" replace />;
 
@@ -231,6 +255,60 @@ const HoroscopeSign: React.FC = () => {
                             Get Your {data.name} Reading
                         </Link>
                     </div>
+                </section>
+
+                {/* Today's Daily Prediction */}
+                <section className="max-w-4xl mx-auto px-6 py-12">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                        {data.name} Horoscope Today
+                        <span className="ml-3 text-sm font-normal text-slate-400">
+                            {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </span>
+                    </h2>
+
+                    {predLoading ? (
+                        <div className="animate-pulse space-y-3 mt-6">
+                            <div className="h-4 bg-slate-100 rounded w-full" />
+                            <div className="h-4 bg-slate-100 rounded w-5/6" />
+                            <div className="h-4 bg-slate-100 rounded w-4/6" />
+                        </div>
+                    ) : prediction?.overview ? (
+                        <div className="mt-4 space-y-6">
+                            <p className="text-slate-600 text-lg leading-relaxed">{prediction.overview}</p>
+                            {(prediction.love || prediction.career || prediction.health) && (
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    {prediction.love && (
+                                        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-5">
+                                            <div className="text-xs font-bold uppercase tracking-widest text-rose-400 mb-2">Love</div>
+                                            <p className="text-slate-600 text-sm leading-relaxed">{prediction.love}</p>
+                                        </div>
+                                    )}
+                                    {prediction.career && (
+                                        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+                                            <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Career</div>
+                                            <p className="text-slate-600 text-sm leading-relaxed">{prediction.career}</p>
+                                        </div>
+                                    )}
+                                    {prediction.health && (
+                                        <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
+                                            <div className="text-xs font-bold uppercase tracking-widest text-green-400 mb-2">Health</div>
+                                            <p className="text-slate-600 text-sm leading-relaxed">{prediction.health}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4">
+                            <div className="text-4xl">{data.symbol}</div>
+                            <div>
+                                <p className="text-slate-600">Today's personalised prediction for {data.name} is available from our expert Vedic astrologers.</p>
+                                <Link to="/astrologers" className="inline-block mt-3 text-indigo-600 font-semibold hover:underline">
+                                    Chat with an astrologer now →
+                                </Link>
+                            </div>
+                        </div>
+                    )}
                 </section>
 
                 {/* Sign Overview */}

@@ -96,6 +96,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
 
             const astros = data.map((profile: any) => ({
                 id: profile.user_id,
+                slug: profile.slug || null,
                 full_name: profile.full_name || "Astrologer",
                 profile_picture_url: profile.profile_picture_url,
                 specialties: profile.specialties || "Vedic",

@@ -14,7 +14,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
     return (
         <div className="card astro-card">
             <div className="astro-main-row">
-                <Link to={`/astrologers/${astro.id}`} className="astro-image-container">
+                <Link to={`/astrologers/${astro.slug || astro.id}`} className="astro-image-container">
                     <img
                         src={resolveImageUrl(astro.profile_picture_url, astro.full_name)}
                         alt={astro.full_name}
@@ -30,7 +30,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
 
                 <div className="astro-info">
                     <p className="astro-spec">{astro.specialties}</p>
-                    <Link to={`/astrologers/${astro.id}`} style={{ textDecoration: 'none' }}>
+                    <Link to={`/astrologers/${astro.slug || astro.id}`} style={{ textDecoration: 'none' }}>
                         <h3 className="astro-name">{astro.full_name}</h3>
                     </Link>
                     <div className="astro-lang">
@@ -61,7 +61,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
 
                 <div className="action-buttons">
                     <Link
-                        to={`/astrologers/${astro.id}`}
+                        to={`/astrologers/${astro.slug || astro.id}`}
                         className="view-profile-link"
                     >
                         Profile

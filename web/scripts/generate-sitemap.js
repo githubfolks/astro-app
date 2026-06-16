@@ -28,6 +28,7 @@ const STATIC_URLS = [
     { loc: '/how-it-works',              changefreq: 'monthly', priority: '0.8' },
     { loc: '/pricing',                   changefreq: 'monthly', priority: '0.8' },
     { loc: '/blog',                      changefreq: 'daily',   priority: '0.8' },
+    { loc: '/horoscope',                 changefreq: 'monthly', priority: '0.8' },
     { loc: '/horoscope/aries',           changefreq: 'monthly', priority: '0.8' },
     { loc: '/horoscope/taurus',          changefreq: 'monthly', priority: '0.8' },
     { loc: '/horoscope/gemini',          changefreq: 'monthly', priority: '0.8' },

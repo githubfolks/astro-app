@@ -91,6 +91,7 @@ class AstrologerProfile(Base):
     availability_hours = Column(String, nullable=True)
     city = Column(String, nullable=True)
     id_proof_url = Column(String, nullable=True)
+    slug = Column(String, unique=True, index=True, nullable=True)
     astrology_types = Column(JSON, nullable=True) # List of types
     is_approved = Column(Boolean, default=False)
     legal_agreement_accepted = Column(Boolean, default=False)
