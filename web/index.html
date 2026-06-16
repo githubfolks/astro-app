@@ -3,10 +3,66 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/pwa-192x192.png" />
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/assets/logo.png" />
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+
+  <!-- Primary SEO — fallback shown before JS runs (Googlebot sees this) -->
+  <title>Aadikarta — Talk to Expert Astrologers Online | Vedic Astrology, Tarot & More</title>
+  <meta name="description" content="Connect with India's top verified astrologers on Aadikarta. Get live chat consultations on Vedic astrology, kundli matching, tarot reading, love advice, and daily horoscope. Starting from ₹10/min." />
+  <link rel="canonical" href="https://aadikarta.org/" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Aadikarta" />
+  <meta property="og:url" content="https://aadikarta.org/" />
+  <meta property="og:title" content="Aadikarta — Talk to Expert Astrologers Online" />
+  <meta property="og:description" content="Connect with India's top verified astrologers. Live chat consultations on Vedic astrology, tarot, kundli matching & more. Starting from ₹10/min." />
+  <meta property="og:image" content="https://aadikarta.org/assets/og-image.jpg" />
+  <meta property="og:locale" content="en_IN" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Aadikarta — Talk to Expert Astrologers Online" />
+  <meta name="twitter:description" content="India's top verified astrologers. Live consultations starting from ₹10/min." />
+  <meta name="twitter:image" content="https://aadikarta.org/assets/og-image.jpg" />
+
+  <!-- Structured Data: Organisation + WebSite (static, always present) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://aadikarta.org/#organization",
+        "name": "Aadikarta",
+        "url": "https://aadikarta.org",
+        "logo": "https://aadikarta.org/assets/logo.png",
+        "description": "India's online astrology marketplace connecting seekers with verified Vedic astrologers, tarot readers, and numerologists.",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "hello@aadikarta.org",
+          "contactType": "customer support"
+        },
+        "sameAs": []
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://aadikarta.org/#website",
+        "url": "https://aadikarta.org",
+        "name": "Aadikarta",
+        "publisher": { "@id": "https://aadikarta.org/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://aadikarta.org/astrologers?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
@@ -15,8 +71,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="preload" href="/assets/logo.png" as="image">
-  <link rel="preload" href="/assets/hero_astrology.png" as="image" fetchpriority="high">
-  <title>Aadikarta</title>
 </head>
 
 <body>

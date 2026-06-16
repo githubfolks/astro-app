@@ -1,10 +1,71 @@
 services:
+  api:
+    build: ./api
+    container_name: astro_api_staging
+    environment:
+      SQLALCHEMY_DATABASE_URL: "${SQLALCHEMY_DATABASE_URL}"
+      REDIS_URL: "${REDIS_URL}"
+    ports:
+      - "9000:8000"
+    volumes:
+      - ./api/uploads:/app/uploads
+    depends_on:
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - global-proxy-network
+
+
+
   web:
     build: 
       context: ./web
-    container_name: astro_web_prod
+      args:
+        VITE_API_URL: "${VITE_API_URL}"
+    container_name: astro_web_staging
     ports:
-      - "3002:80"
+      - "4002:80"
+    networks:
+      - default
+      - global-proxy-network
 
+  admin:
+    build:
+      context: ./admin
+      args:
+        VITE_API_URL: "${VITE_API_URL}"
+    container_name: astro_admin_staging
+    ports:
+      - "4001:80"
+    networks:
+      - default
+      - global-proxy-network
 
+  redis:
+    image: "redis:alpine"
+    container_name: astro_redis_staging
+    ports:
+      - "6380:6379"
+
+  mirotalk:
+    image: mirotalk/sfu:latest
+    container_name: astro_mirotalk_staging
+    ports:
+      - "4010:3010"
+    environment:
+      - PORT=3010
+      - TRUST_PROXY=true
+      - API_KEY_SECRET=${MIROTALK_API_KEY_SECRET}
+      - JWT_SECRET=${MIROTALK_JWT_SECRET}
+    networks:
+      - default
+      - global-proxy-network
+
+networks:
+  default:
+    name: astro-app-network
+  global-proxy-network:
+    external: true
 
