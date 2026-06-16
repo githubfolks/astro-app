@@ -43,7 +43,7 @@ Change the host ports to avoid conflicts:
 - **Web**: `4002:80` (or similar)
 - **Admin**: `4001:80`
 - **Redis**: `7379:6379`
-- **Mirotalk**: `4010:3010`
+- **Mirotalk**: `4020:3010`
 
 > [!TIP]
 > Also, ensure you use different `container_name` values in each file (e.g., `astro_api_prod` vs `astro_api_staging`) to avoid name collisions.

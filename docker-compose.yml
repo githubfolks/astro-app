@@ -53,7 +53,7 @@ services:
     image: mirotalk/sfu:latest
     container_name: astro_mirotalk
     ports:
-      - "4010:3010"
+      - "4020:3010"
     environment:
       - PORT=3010
       - TRUST_PROXY=true
