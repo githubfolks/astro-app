@@ -2,9 +2,12 @@ services:
   api:
     build: ./api
     container_name: astro_api
+    env_file:
+      - .env
     environment:
       SQLALCHEMY_DATABASE_URL: "${SQLALCHEMY_DATABASE_URL}"
       REDIS_URL: "${REDIS_URL}"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
     ports:
       - "9000:8000"
     volumes:
