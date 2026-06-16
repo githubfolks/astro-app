@@ -28,6 +28,14 @@ const kundliStructuredData = {
                 { '@type': 'Question', name: 'How much does kundli matching cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Kundli matching consultations on Aadikarta start from ₹10 per minute. A detailed kundali milan session typically takes 20–30 minutes.' } },
             ],
         },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://aadikarta.org/astrologers' },
+                { '@type': 'ListItem', position: 3, name: 'Kundli Matching', item: 'https://aadikarta.org/services/kundli-matching' },
+            ],
+        },
     ],
 };
 

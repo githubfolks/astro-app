@@ -31,6 +31,17 @@ const homeStructuredData = {
             "email": "hello@aadikarta.org",
             "telephone": "+91-86503-54783",
             "areaServed": "IN",
+            "knowsAbout": [
+                "Vedic Astrology",
+                "Jyotish",
+                "Tarot Reading",
+                "Kundli Matching",
+                "Numerology",
+                "Vastu Shastra",
+                "Daily Horoscope",
+                "Love Compatibility",
+                "Spiritual Guidance"
+            ],
             "contactPoint": {
                 "@type": "ContactPoint",
                 "telephone": "+91-86503-54783",
@@ -39,6 +50,33 @@ const homeStructuredData = {
                 "availableLanguage": ["English", "Hindi"],
                 "areaServed": "IN"
             },
+            "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "reviewCount": "1200",
+                "bestRating": "5",
+                "worstRating": "1"
+            },
+            "review": [
+                {
+                    "@type": "Review",
+                    "author": { "@type": "Person", "name": "Anjali S." },
+                    "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+                    "reviewBody": "The consultation was spot on! Guru Dev helped me understand my career path clearly."
+                },
+                {
+                    "@type": "Review",
+                    "author": { "@type": "Person", "name": "Rahul K." },
+                    "reviewRating": { "@type": "Rating", "ratingValue": "4", "bestRating": "5" },
+                    "reviewBody": "Very intuitive reading. The UI is easy to use and connecting was seamless."
+                },
+                {
+                    "@type": "Review",
+                    "author": { "@type": "Person", "name": "Priya M." },
+                    "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+                    "reviewBody": "I love the daily horoscope feature. It's my go-to app for starting the day!"
+                }
+            ],
             "sameAs": [
                 "https://www.facebook.com/aadikarta",
                 "https://www.instagram.com/aadikarta"

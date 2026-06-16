@@ -28,6 +28,14 @@ const loveStructuredData = {
                 { '@type': 'Question', name: 'How much does a love astrology consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Love astrology consultations on Aadikarta start from ₹10 per minute. Most relationship readings take 15–30 minutes.' } },
             ],
         },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://aadikarta.org/astrologers' },
+                { '@type': 'ListItem', position: 3, name: 'Love Advice', item: 'https://aadikarta.org/services/love-advice' },
+            ],
+        },
     ],
 };
 

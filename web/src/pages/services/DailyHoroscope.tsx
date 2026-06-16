@@ -28,6 +28,14 @@ const horoscopeStructuredData = {
                 { '@type': 'Question', name: 'How much does a daily horoscope consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Daily horoscope consultations on Aadikarta start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' } },
             ],
         },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://aadikarta.org/astrologers' },
+                { '@type': 'ListItem', position: 3, name: 'Daily Horoscope', item: 'https://aadikarta.org/services/daily-horoscope' },
+            ],
+        },
     ],
 };
 

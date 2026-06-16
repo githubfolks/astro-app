@@ -36,7 +36,7 @@ export default defineConfig({
         rollupOptions: {
             output: {
                 manualChunks: {
-                    vender: ['react', 'react-dom', 'react-router-dom', 'lucide-react']
+                    vendor: ['react', 'react-dom', 'react-router-dom', 'lucide-react']
                 }
             }
         }

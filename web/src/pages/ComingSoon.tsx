@@ -20,6 +20,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ onEnter }) => {
             <SEO
                 title="Coming Soon | Aadikarta - Ancient Wisdom for Modern Life"
                 description="We are bringing something sacred and transformative. Aadikarta is coming soon to guide your spiritual journey."
+                noindex={true}
             />
 
             {/* Celestial Background */}

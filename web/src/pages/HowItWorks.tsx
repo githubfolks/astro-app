@@ -64,6 +64,18 @@ const structuredData = {
             },
         },
         {
+            '@type': 'HowTo',
+            name: 'How to Consult an Astrologer Online on Aadikarta',
+            description: 'Book a live Vedic astrology, tarot, or kundli consultation in 5 simple steps. No appointments needed — pay only per minute.',
+            totalTime: 'PT5M',
+            step: steps.map((s, i) => ({
+                '@type': 'HowToStep',
+                position: i + 1,
+                name: s.title,
+                text: s.desc,
+            })),
+        },
+        {
             '@type': 'FAQPage',
             mainEntity: faqs.map(({ q, a }) => ({
                 '@type': 'Question',

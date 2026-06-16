@@ -8,22 +8,29 @@ interface SEOProps {
     title: string;
     description: string;
     image?: string;
+    imageAlt?: string;
     type?: string;
     structuredData?: object;
     noindex?: boolean;
+    publishedTime?: string;
+    modifiedTime?: string;
 }
 
 const SEO: React.FC<SEOProps> = ({
     title,
     description,
     image = `${BASE_URL}/assets/og-image.jpg`,
+    imageAlt,
     type = 'website',
     structuredData,
     noindex = false,
+    publishedTime,
+    modifiedTime,
 }) => {
     const { pathname } = useLocation();
     const canonical = `${BASE_URL}${pathname === '/' ? '' : pathname}` || BASE_URL;
     const fullTitle = `${title} | Aadikarta`;
+    const resolvedImageAlt = imageAlt || title;
 
     return (
         <Helmet>
@@ -38,17 +45,31 @@ const SEO: React.FC<SEOProps> = ({
             <meta property="og:title" content={fullTitle} />
             <meta property="og:description" content={description} />
             <meta property="og:image" content={image} />
+            <meta property="og:image:alt" content={resolvedImageAlt} />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
             <meta property="og:locale" content="en_IN" />
             <meta property="og:site_name" content="Aadikarta" />
 
+            {/* Article-specific Open Graph */}
+            {type === 'article' && publishedTime && (
+                <meta property="article:published_time" content={publishedTime} />
+            )}
+            {type === 'article' && modifiedTime && (
+                <meta property="article:modified_time" content={modifiedTime} />
+            )}
+            {type === 'article' && (
+                <meta property="article:author" content="https://aadikarta.org/about-us" />
+            )}
+
             {/* Twitter */}
             <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:site" content="@aadikarta" />
             <meta name="twitter:url" content={canonical} />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />
             <meta name="twitter:image" content={image} />
+            <meta name="twitter:image:alt" content={resolvedImageAlt} />
 
             {/* JSON-LD structured data */}
             {structuredData && (

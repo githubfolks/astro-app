@@ -12,15 +12,28 @@ const Blog: React.FC = () => {
 
     const structuredData = {
         "@context": "https://schema.org",
-        "@type": "Blog",
-        "name": "Aadikarta Blog",
-        "description": "Discover the ancient wisdom of the stars and how they influence your daily life.",
-        "url": "https://aadikarta.org/blog",
-        "publisher": {
-            "@type": "Organization",
-            "name": "Aadikarta",
-            "logo": "https://aadikarta.org/assets/logo.png"
-        }
+        "@graph": [
+            {
+                "@type": "Blog",
+                "@id": "https://aadikarta.org/blog#blog",
+                "name": "Aadikarta Blog",
+                "description": "Discover the ancient wisdom of the stars and how they influence your daily life.",
+                "url": "https://aadikarta.org/blog",
+                "publisher": {
+                    "@type": "Organization",
+                    "@id": "https://aadikarta.org/#organization",
+                    "name": "Aadikarta",
+                    "logo": "https://aadikarta.org/assets/logo.png"
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aadikarta.org" },
+                    { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://aadikarta.org/blog" },
+                ]
+            }
+        ]
     };
 
     useEffect(() => {

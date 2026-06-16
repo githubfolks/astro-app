@@ -28,6 +28,14 @@ const vastuStructuredData = {
                 { '@type': 'Question', name: 'How much does a Vastu consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Vastu consultations on Aadikarta start from ₹10 per minute. A full home or office Vastu analysis typically takes 30–60 minutes depending on the property size.' } },
             ],
         },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://aadikarta.org/astrologers' },
+                { '@type': 'ListItem', position: 3, name: 'Vastu Shastra', item: 'https://aadikarta.org/services/vastu-shastra' },
+            ],
+        },
     ],
 };
 

@@ -28,6 +28,14 @@ const vedicStructuredData = {
                 { '@type': 'Question', name: 'How much does a Vedic astrology consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Vedic astrology consultations on Aadikarta start from ₹10 per minute, with expert astrologers available at ₹31–60/min and master-level Jyotish scholars at ₹61–150/min.' } },
             ],
         },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://aadikarta.org/astrologers' },
+                { '@type': 'ListItem', position: 3, name: 'Vedic Astrology', item: 'https://aadikarta.org/services/vedic-astrology' },
+            ],
+        },
     ],
 };
 

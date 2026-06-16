@@ -15,30 +15,41 @@ const BlogPost: React.FC = () => {
 
     const getStructuredData = (p: any) => ({
         "@context": "https://schema.org",
-        "@type": "BlogPosting",
-        "headline": p.title,
-        "url": `https://aadikarta.org/blog/${p.slug || slug}`,
-        "mainEntityOfPage": {
-            "@type": "WebPage",
-            "@id": `https://aadikarta.org/blog/${p.slug || slug}`
-        },
-        "image": p.featured_image || "https://aadikarta.org/assets/blog-default.jpg",
-        "datePublished": p.published_at,
-        "dateModified": p.updated_at || p.published_at,
-        "author": {
-            "@type": "Organization",
-            "name": "Aadikarta",
-            "@id": "https://aadikarta.org/#organization"
-        },
-        "publisher": {
-            "@type": "Organization",
-            "name": "Aadikarta",
-            "@id": "https://aadikarta.org/#organization",
-            "logo": {
-                "@type": "ImageObject",
-                "url": "https://aadikarta.org/assets/logo.png"
+        "@graph": [
+            {
+                "@type": "BlogPosting",
+                "@id": `https://aadikarta.org/blog/${p.slug || slug}#article`,
+                "headline": p.title,
+                "url": `https://aadikarta.org/blog/${p.slug || slug}`,
+                "mainEntityOfPage": {
+                    "@type": "WebPage",
+                    "@id": `https://aadikarta.org/blog/${p.slug || slug}`
+                },
+                "image": p.featured_image || "https://aadikarta.org/assets/blog-default.jpg",
+                "datePublished": p.published_at,
+                "dateModified": p.updated_at || p.published_at,
+                "author": p.author_name
+                    ? { "@type": "Person", "name": p.author_name }
+                    : { "@type": "Organization", "name": "Aadikarta", "@id": "https://aadikarta.org/#organization" },
+                "publisher": {
+                    "@type": "Organization",
+                    "name": "Aadikarta",
+                    "@id": "https://aadikarta.org/#organization",
+                    "logo": {
+                        "@type": "ImageObject",
+                        "url": "https://aadikarta.org/assets/logo.png"
+                    }
+                }
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://aadikarta.org" },
+                    { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://aadikarta.org/blog" },
+                    { "@type": "ListItem", "position": 3, "name": p.title, "item": `https://aadikarta.org/blog/${p.slug || slug}` },
+                ]
             }
-        }
+        ]
     });
 
     useEffect(() => {
@@ -92,7 +103,10 @@ const BlogPost: React.FC = () => {
                 title={post.title}
                 description={(post.excerpt || post.content.replace(/<[^>]*>/gm, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim()).substring(0, 155)}
                 image={post.featured_image}
+                imageAlt={post.title}
                 type="article"
+                publishedTime={post.published_at}
+                modifiedTime={post.updated_at || post.published_at}
                 structuredData={getStructuredData(post)}
             />
             <Header />

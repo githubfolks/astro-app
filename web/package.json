@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "node scripts/generate-sitemap.js ; tsc && vite build",
+    "sitemap": "node scripts/generate-sitemap.js",
     "preview": "vite preview",
     "mobile:build": "tsc && vite build --mode mobile",
     "mobile:sync": "npx cap sync android",

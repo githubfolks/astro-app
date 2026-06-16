@@ -28,6 +28,14 @@ const tarotStructuredData = {
                 { '@type': 'Question', name: 'How much does a tarot reading cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Tarot readings on Aadikarta start from ₹10 per minute. A standard 3-card reading session takes about 10–15 minutes; a full Celtic Cross spread typically runs 30–45 minutes.' } },
             ],
         },
+        {
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                { '@type': 'ListItem', position: 2, name: 'Services', item: 'https://aadikarta.org/astrologers' },
+                { '@type': 'ListItem', position: 3, name: 'Tarot Reading', item: 'https://aadikarta.org/services/tarot-reading' },
+            ],
+        },
     ],
 };
 
