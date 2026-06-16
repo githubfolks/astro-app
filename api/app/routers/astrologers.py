@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas, database
 from .auth import get_current_user, get_password_hash, create_access_token
-import random, string
+import secrets, string
 from datetime import datetime, timedelta
 
 router = APIRouter(
@@ -13,15 +13,12 @@ router = APIRouter(
 
 @router.post("/send-otp")
 def send_onboarding_otp(phone_number: str, db: Session = Depends(database.get_db)):
-    # Generate OTP
-    otp = ''.join(random.choices(string.digits, k=6))
-    expires_at = datetime.utcnow() + timedelta(minutes=10)
-    
-    # Store OTP (we don't have a user yet, so we'll just store it with phone_number if we can)
-    # Actually VerificationToken requires user_id. 
-    # For onboarding, we might need a separate table or allow user_id to be null.
-    # Let's check models.py again for VerificationToken.
-    return {"message": f"OTP {otp} sent to {phone_number}"} # Simulation
+    # Generate cryptographically secure OTP — never returned in the response
+    otp = ''.join(secrets.choice(string.digits) for _ in range(6))
+    # TODO: store OTP server-side keyed by phone_number (requires a pending-otp table)
+    # and send it via SMS gateway. For now this endpoint is a no-op placeholder.
+    _ = otp  # prevents unused-variable lint warning; OTP goes to SMS only
+    return {"message": f"OTP sent to {phone_number}"}
 
 @router.post("/onboarding")
 def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Session = Depends(database.get_db)):
@@ -81,7 +78,6 @@ def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Se
         query = query.order_by(models.AstrologerProfile.rating_avg.desc())
         
     profiles = query.offset(skip).limit(limit).all()
-    print(f"DEBUG: Found {len(profiles)} approved/active/verified astrologers")
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)

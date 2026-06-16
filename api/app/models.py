@@ -273,10 +273,11 @@ class Payout(Base):
     id = Column(Integer, primary_key=True, index=True)
     astrologer_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(DECIMAL(10, 2), nullable=False)
+    tds_deducted = Column(DECIMAL(10, 2), default=0.0, nullable=True)
     status = Column(Enum(PayoutStatus), default=PayoutStatus.PENDING)
     period_start = Column(DateTime(timezone=True))
     period_end = Column(DateTime(timezone=True))
-    transaction_reference = Column(String, nullable=True) # Bank ref ID
+    transaction_reference = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     processed_at = Column(DateTime(timezone=True), nullable=True)
 

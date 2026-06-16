@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from .. import models, database, audit
-from ..routers.auth import get_current_user
+from ..routers.auth import get_current_user, conf
 from typing import List, Optional
 from datetime import datetime, timedelta
 import decimal
+from fastapi_mail import FastMail, MessageSchema, MessageType
 
 router = APIRouter(
     prefix="/admin/payouts",
@@ -102,6 +103,7 @@ def generate_payout(
     payout = models.Payout(
         astrologer_id=astrologer_id,
         amount=decimal.Decimal(amount),
+        tds_deducted=decimal.Decimal(tds_deducted),
         status=models.PayoutStatus.PENDING,
         period_start=period_start or datetime.utcnow(),
         period_end=period_end or datetime.utcnow()
@@ -115,10 +117,11 @@ def generate_payout(
     return payout
 
 @router.post("/{payout_id}/mark-paid")
-def mark_payout_paid(
-    payout_id: int, 
-    transaction_reference: str, 
-    db: Session = Depends(database.get_db), 
+async def mark_payout_paid(
+    payout_id: int,
+    transaction_reference: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_admin)
 ):
     """
@@ -127,13 +130,34 @@ def mark_payout_paid(
     payout = db.query(models.Payout).filter(models.Payout.id == payout_id).first()
     if not payout:
         raise HTTPException(status_code=404, detail="Payout not found")
-        
+
+    # Capture values before commit (avoids post-commit lazy-load issues)
+    astrologer_email = payout.astrologer.email if payout.astrologer else None
+    payout_amount = float(payout.amount)
+    tds_amount = float(payout.tds_deducted or 0)
+
     payout.status = models.PayoutStatus.PROCESSED
     payout.transaction_reference = transaction_reference
     payout.processed_at = datetime.utcnow()
 
     audit.log(db, "PAYOUT_MARKED_PAID", actor_id=current_user.id,
               resource_type="payout", resource_id=payout_id,
-              details={"astrologer_id": payout.astrologer_id, "amount": float(payout.amount), "ref": transaction_reference})
+              details={"astrologer_id": payout.astrologer_id, "amount": payout_amount, "ref": transaction_reference})
     db.commit()
+
+    if astrologer_email:
+        message = MessageSchema(
+            subject="Aadikarta - Payout Processed",
+            recipients=[astrologer_email],
+            body=(
+                f"Your payout of ₹{payout_amount:,.2f} has been processed.<br><br>"
+                f"Transaction Reference: <strong>{transaction_reference}</strong><br>"
+                f"TDS Deducted: ₹{tds_amount:,.2f}<br><br>"
+                f"Please allow 1-3 business days for the amount to reflect in your account."
+            ),
+            subtype=MessageType.html
+        )
+        fm = FastMail(conf)
+        background_tasks.add_task(fm.send_message, message)
+
     return payout

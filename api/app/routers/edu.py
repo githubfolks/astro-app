@@ -5,6 +5,8 @@ from .. import models, models_edu, schemas_edu, database
 from .auth import get_current_user, get_current_user_optional
 from ..services import miro_service
 from datetime import datetime, timedelta, timezone
+import os
+import hmac
 
 router = APIRouter(
     prefix="/edu",
@@ -279,6 +281,13 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
 # Webhooks for MiroTalk (Attendance Capture)
 @router.post("/webhooks/mirotalk")
 async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_db)):
+    webhook_secret = os.getenv("MIROTALK_WEBHOOK_SECRET")
+    if not webhook_secret:
+        raise RuntimeError("MIROTALK_WEBHOOK_SECRET is not configured.")
+    provided = request.headers.get("X-MiroTalk-Secret", "")
+    if not hmac.compare_digest(provided, webhook_secret):
+        raise HTTPException(status_code=401, detail="Invalid webhook secret")
+
     data = await request.json()
     event = data.get("event")
     # MiroTalk SFU events: participantJoined, participantLeft

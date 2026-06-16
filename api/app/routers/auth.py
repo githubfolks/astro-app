@@ -35,8 +35,10 @@ conf = ConnectionConfig(
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login") # Also fixed path while here
 
-# Secret key settings
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change_me_in_production_for_security")
+# Secret key settings — must be set in the environment; no insecure fallback
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("JWT_SECRET_KEY environment variable is not set. Refusing to start.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

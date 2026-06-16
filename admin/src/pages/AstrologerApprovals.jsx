@@ -25,13 +25,28 @@ const AstrologerApprovals = () => {
     };
 
     const handleApprove = async (id) => {
-        if (!window.confirm('Are you sure you want to approve this astrologer?')) return;
+        const feeStr = prompt('Set consultation fee per minute (₹):', '10');
+        if (feeStr === null) return;
+        const fee = parseFloat(feeStr);
+        if (isNaN(fee) || fee < 0) { alert('Invalid fee amount'); return; }
         try {
-            await cms.astrologers.approve(id);
+            await cms.astrologers.approve(id, { consultation_fee_per_min: fee });
             setPending(pending.filter(p => p.id !== id));
             setSelectedAstro(null);
         } catch (err) {
             alert('Approval failed');
+        }
+    };
+
+    const handleReject = async (id) => {
+        const reason = prompt('Enter rejection reason (shown to applicant):');
+        if (reason === null) return;
+        try {
+            await cms.astrologers.reject(id, { reason: reason || 'Your application did not meet our current requirements.' });
+            setPending(pending.filter(p => p.id !== id));
+            setSelectedAstro(null);
+        } catch (err) {
+            alert('Rejection failed');
         }
     };
 
@@ -172,7 +187,10 @@ const AstrologerApprovals = () => {
                                 >
                                     <Check size={18} /> Approve Astrologer
                                 </button>
-                                <button className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                                <button
+                                    onClick={() => handleReject(selectedAstro.id)}
+                                    className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                >
                                     Reject
                                 </button>
                             </div>

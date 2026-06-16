@@ -158,7 +158,7 @@ def seed():
             
             # Profile
             db.add(AstrologerProfile(
-                user_id=astro.id, 
+                user_id=astro.id,
                 full_name=data["name"],
                 specialties=data["specialties"],
                 languages=data["languages"],
@@ -166,7 +166,8 @@ def seed():
                 consultation_fee_per_min=Decimal(data["fee"]),
                 about_me=data["about"],
                 is_online=random.choice([True, False]),
-                rating_avg=Decimal(data["rating"])
+                rating_avg=Decimal(data["rating"]),
+                is_approved=True
             ))
             # Wallet
             db.add(UserWallet(user_id=astro.id, balance=Decimal("0.00")))

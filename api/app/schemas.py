@@ -113,9 +113,7 @@ class AstrologerProfileUPDATE(BaseModel):
     city: Optional[str] = None
     id_proof_url: Optional[str] = None
     astrology_types: Optional[List[str]] = None
-    is_approved: Optional[bool] = None
-    legal_agreement_accepted: Optional[bool] = None
-    legal_agreement_accepted_at: Optional[datetime] = None
+    # is_approved, legal_agreement_accepted, legal_agreement_accepted_at are admin-only — never expose here
 
 class AstrologerProfile(AstrologerProfileBase):
     user_id: int
@@ -227,6 +225,7 @@ class AdminCreateAstrologer(BaseModel):
     languages: str
     specialties: str
     consultation_fee_per_min: Decimal
+    commission_percentage: Optional[Decimal] = Decimal("70.0")
     availability_hours: Optional[str] = None
     profile_picture_url: Optional[str] = None
     is_verified: bool = True

@@ -23,6 +23,7 @@ export default function AstrologerForm() {
         languages: '',
         specialties: '',
         consultation_fee_per_min: 0,
+        commission_percentage: 70,
         availability_hours: '',
         profile_picture_url: '',
         is_verified: true
@@ -52,6 +53,7 @@ export default function AstrologerForm() {
                     languages: found.profile.languages || '',
                     specialties: found.profile.specialties || '',
                     consultation_fee_per_min: found.profile.consultation_fee_per_min || 0,
+                    commission_percentage: found.profile.commission_percentage ?? 70,
                     availability_hours: found.profile.availability_hours || '',
                     profile_picture_url: found.profile.profile_picture_url || '',
                     is_verified: found.is_verified
@@ -250,6 +252,11 @@ export default function AstrologerForm() {
                                 label="Consultation Fee (₹/min)" name="consultation_fee_per_min" type="number"
                                 value={formData.consultation_fee_per_min} onChange={handleChange}
                                 error={errors.consultation_fee_per_min}
+                            />
+                            <Input
+                                label="Commission % (Astrologer's share)" name="commission_percentage" type="number"
+                                value={formData.commission_percentage} onChange={handleChange}
+                                placeholder="e.g. 70"
                             />
                             <Input
                                 label="Languages" name="languages"

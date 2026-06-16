@@ -15,10 +15,24 @@ export const Dashboard: React.FC = () => {
     const [sessions, setSessions] = useState<any[]>([]);
 
     // Astrologer specific state
-
     const [isOnline, setIsOnline] = useState(false);
     const [availabilityText, setAvailabilityText] = useState('');
     const [updatingProfile, setUpdatingProfile] = useState(false);
+
+    // Seeker specific state
+    const [walletBalance, setWalletBalance] = useState<number>(0);
+    const [seekerHistory, setSeekerHistory] = useState<any[]>([]);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [ratingConsultation, setRatingConsultation] = useState<any>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+    const [seekerProfile, setSeekerProfile] = useState<any>({});
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [myCourses, setMyCourses] = useState<any[]>([]);
+    const [courseMaterials, setCourseMaterials] = useState<Record<number, any[]>>({});
+    const [loadingMaterials, setLoadingMaterials] = useState<Record<number, boolean>>({});
 
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -73,6 +87,15 @@ export const Dashboard: React.FC = () => {
             }
         };
         loadData();
+    }, [user]);
+
+    useEffect(() => {
+        if (user?.role === 'SEEKER') {
+            api.wallet.getBalance().then(w => setWalletBalance(Number(w.balance))).catch(console.error);
+            api.consultations.getHistory().then(data => setSeekerHistory(data)).catch(console.error);
+            api.seekers.getProfile().then(setSeekerProfile).catch(console.error);
+            api.edu.getMyCourses().then(setMyCourses).catch(console.error);
+        }
     }, [user]);
 
 
@@ -258,8 +281,40 @@ export const Dashboard: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Sidebar - Availability Settings */}
-                        <div className="lg:col-span-1">
+                        {/* Sidebar - Earnings + Availability Settings */}
+                        <div className="lg:col-span-1 space-y-6">
+                            {/* Earnings Summary Card */}
+                            {(() => {
+                                const completed = history.filter((c: any) => ['COMPLETED', 'AUTO_ENDED'].includes(c.status));
+                                const total = completed.reduce((sum: number, c: any) => sum + (Number(c.total_cost) || 0), 0);
+                                const thisMonth = new Date().toISOString().slice(0, 7);
+                                const monthly = completed
+                                    .filter((c: any) => c.created_at?.slice(0, 7) === thisMonth)
+                                    .reduce((sum: number, c: any) => sum + (Number(c.total_cost) || 0), 0);
+                                return (
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <Wallet size={20} className="text-[#E91E63]" />
+                                            Earnings
+                                        </h3>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Total Earned</span>
+                                                <span className="font-bold text-gray-900">₹{total.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">This Month</span>
+                                                <span className="font-bold text-green-600">₹{monthly.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-500">Completed Sessions</span>
+                                                <span className="font-bold text-gray-900">{completed.length}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
                                 <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <Clock size={20} className="text-[#E91E63]" />
@@ -371,38 +426,6 @@ export const Dashboard: React.FC = () => {
         );
     }
     // Seeker Dashboard
-    const [walletBalance, setWalletBalance] = useState<number>(0);
-    const [seekerHistory, setSeekerHistory] = useState<any[]>([]);
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [showRatingModal, setShowRatingModal] = useState(false);
-    const [ratingConsultation, setRatingConsultation] = useState<any>(null);
-
-    // Search and Pagination for Seeker
-    const [searchQuery, setSearchQuery] = useState('');
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
-
-    // Seeker Profile
-    const [seekerProfile, setSeekerProfile] = useState<any>({});
-    const [profileSaving, setProfileSaving] = useState(false);
-
-    // Education Data for Seeker
-    const [myCourses, setMyCourses] = useState<any[]>([]);
-    const [courseMaterials, setCourseMaterials] = useState<Record<number, any[]>>({});
-    const [loadingMaterials, setLoadingMaterials] = useState<Record<number, boolean>>({});
-
-    useEffect(() => {
-        if (user?.role === 'SEEKER') {
-            // Load wallet balance
-            api.wallet.getBalance().then(w => setWalletBalance(Number(w.balance))).catch(console.error);
-            // Load consultation history
-            api.consultations.getHistory().then(data => setSeekerHistory(data)).catch(console.error);
-            // Load seeker profile
-            api.seekers.getProfile().then(setSeekerProfile).catch(console.error);
-            // Load enrolled courses
-            api.edu.getMyCourses().then(setMyCourses).catch(console.error);
-        }
-    }, [user]);
 
     const toggleCourseMaterials = async (courseId: number) => {
         if (courseMaterials[courseId]) {

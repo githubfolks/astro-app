@@ -87,10 +87,13 @@ export const cms = {
     }),
     astrologers: {
         listPending: () => api.get('/admin/astrologers/pending'),
-        approve: (id) => api.post(`/admin/astrologers/${id}/approve`)
+        approve: (id, data) => api.post(`/admin/astrologers/${id}/approve`, data),
+        reject: (id, data) => api.post(`/admin/astrologers/${id}/reject`, data),
+        updateCommission: (id, data) => api.patch(`/admin/astrologers/${id}/commission`, data),
     },
     users: {
-        getWalletHistory: (id) => api.get(`/admin/users/${id}/wallet-history`)
+        getWalletHistory: (id) => api.get(`/admin/users/${id}/wallet-history`),
+        adjustWallet: (id, data) => api.post(`/admin/users/${id}/wallet/credit`, data),
     }
 };
 

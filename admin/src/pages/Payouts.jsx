@@ -23,21 +23,16 @@ export default function Payouts() {
         fetchPayouts();
     }, []);
 
-    const handleMarkPaid = async (astroId, amount) => {
+    const handleMarkPaid = async (stat) => {
         const ref = prompt("Enter Bank Transaction Reference ID:");
         if (!ref) return;
-
-        // In this simplified flow, "Generating" and "Marking Paid" might be separate or combined.
-        // The API `markPaid` takes a Payout ID.
-        // But the `getPending` returns aggregated stats, not individual Payout IDs.
-        // So first we need to GENERATE a Payout record, then Mark it as Paid?
-        // Or the UI should allow generating a payout for the pending amount.
 
         try {
             // 1. Generate Payout Record
             const genRes = await payouts.generate({
-                astrologer_id: astroId,
-                amount: amount
+                astrologer_id: stat.astrologer_id,
+                amount: stat.pending_amount,
+                tds_deducted: stat.tds_deduction ?? 0
             });
             const payoutId = genRes.data.id;
 
@@ -77,8 +72,12 @@ export default function Payouts() {
                                     <span className="font-mono font-medium">₹{stat.total_revenue.toFixed(2)}</span>
                                 </div>
                                 <div>
-                                    <span className="block text-gray-400 text-xs uppercase font-semibold">Total Earnings</span>
-                                    <span className="font-mono font-medium text-blue-600">₹{stat.total_earnings.toFixed(2)}</span>
+                                    <span className="block text-gray-400 text-xs uppercase font-semibold">Gross Earnings</span>
+                                    <span className="font-mono font-medium text-blue-600">₹{stat.gross_earnings.toFixed(2)}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-gray-400 text-xs uppercase font-semibold">TDS (10%)</span>
+                                    <span className="font-mono font-medium text-orange-600">₹{stat.tds_deduction.toFixed(2)}</span>
                                 </div>
                                 <div>
                                     <span className="block text-gray-400 text-xs uppercase font-semibold">Paid So Far</span>
@@ -91,7 +90,7 @@ export default function Payouts() {
                                 <div className="text-2xl font-bold text-indigo-600 mb-2">₹{stat.pending_amount.toFixed(2)}</div>
                                 <Button
                                     size="sm"
-                                    onClick={() => handleMarkPaid(stat.astrologer_id, stat.pending_amount)}
+                                    onClick={() => handleMarkPaid(stat)}
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                     <CheckCircle size={16} className="mr-2" />

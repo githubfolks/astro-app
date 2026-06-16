@@ -32,18 +32,9 @@ export default function Astrologers() {
         }
     };
 
-    const handleToggleStatus = async (item, e) => {
-        e.stopPropagation(); // Prevent card click
+    const handleToggleStatus = async (item, newStatus) => {
+        setAstrologers(astrologers.map(a => a.id === item.id ? { ...a, is_active: newStatus } : a));
         try {
-            const newStatus = !item.is_active; // Assuming backend returns is_active in astrologers_full. Currently it might not wrapper it right.
-            // Check admin.py list_astrologers_full: it returns "id", "email", ... "is_verified". Need to verify if "is_active" is returned. It's likely missing from that specific endpoint response dict.
-            // I should update list_astrologers_full in admin.py first? No, I can assume it's there? Wait, I didn't add it to the manual dict in lines 163-180 of admin.py.
-            // I must update admin.py first to include is_active in response, otherwise frontend thinks it's undefined.
-            // But I am writing frontend now. I'll add the switch assuming the property exists, and then fix backend.
-
-            // Optimistic update
-            setAstrologers(astrologers.map(a => a.id === item.id ? { ...a, is_active: newStatus } : a));
-
             await api.put(`/admin/users/${item.id}/status`, { is_active: newStatus });
         } catch (error) {
             console.error("Status toggle failed", error);
@@ -75,10 +66,7 @@ export default function Astrologers() {
                                 {/* Status Toggle */}
                                 <Switch
                                     checked={item.is_active !== false}
-                                    onCheckedChange={(checked) => handleToggleStatus(item, { stopPropagation: () => { } })}
-                                // Hack: handleToggleStatus expects an event with stopPropagation. 
-                                // But custom switch onCheckedChange just gives boolean.
-                                // Let's fix handler instead.
+                                    onCheckedChange={(checked) => handleToggleStatus(item, checked)}
                                 />
                             </div>
 

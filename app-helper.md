@@ -2,16 +2,11 @@ https://astro-app-web.vercel.app/
 
 https://astro-app-admin.vercel.app/
 
-Seeker:
-Email: seeker@test.com
-Password: password
+Admin: admin@test.com
+Tutor: tutor@test.com
+Seeker: seeker@test.com
 
-Astrologer:
-Email: astro@test.com
-Password: password
-
-Email: admin@test.com
-Password: adminpassword
+all passwords: password
 
 docker compose down
 docker compose up -d --build

@@ -16,6 +16,10 @@ export default function UserDetails() {
     const [loading, setLoading] = useState(true);
 
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [walletModal, setWalletModal] = useState(false);
+    const [walletAmount, setWalletAmount] = useState('');
+    const [walletDesc, setWalletDesc] = useState('Admin adjustment');
+    const [walletLoading, setWalletLoading] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -41,6 +45,23 @@ export default function UserDetails() {
 
     const handleResetPassword = () => {
         setIsResetModalOpen(true);
+    };
+
+    const handleWalletAdjust = async () => {
+        const amount = parseFloat(walletAmount);
+        if (isNaN(amount) || amount === 0) { alert('Enter a valid non-zero amount'); return; }
+        setWalletLoading(true);
+        try {
+            await api.post(`/admin/users/${id}/wallet/credit`, { amount, description: walletDesc });
+            alert('Wallet adjusted successfully!');
+            setWalletModal(false);
+            setWalletAmount('');
+            fetchData();
+        } catch (err) {
+            alert(err.message || 'Failed to adjust wallet');
+        } finally {
+            setWalletLoading(false);
+        }
     };
 
     if (loading) return <div className="p-8 text-center text-gray-500">Loading details...</div>;
@@ -83,11 +104,14 @@ export default function UserDetails() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                            <Wallet size={20} />
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                                <Wallet size={20} />
+                            </div>
+                            <h3 className="text-sm font-medium text-gray-500">Wallet Balance</h3>
                         </div>
-                        <h3 className="text-sm font-medium text-gray-500">Wallet Balance</h3>
+                        <button onClick={() => setWalletModal(true)} className="text-xs text-purple-600 hover:underline font-medium">Adjust</button>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">₹{parseFloat(wallet_balance).toFixed(2)}</p>
                 </div>
@@ -176,7 +200,7 @@ export default function UserDetails() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-600">
-                                                    #{c.astrologer_id}
+                                                    {c.astrologer_name}
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-600">
                                                     {Math.floor(c.duration_seconds / 60)}m {c.duration_seconds % 60}s
@@ -250,6 +274,49 @@ export default function UserDetails() {
                 userId={id}
                 userEmail={user?.email}
             />
+
+            {walletModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-4">
+                        <h2 className="text-lg font-bold text-gray-900">Adjust Wallet Balance</h2>
+                        <p className="text-sm text-gray-500">Use a positive number to credit, negative to debit.</p>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Amount (₹)</label>
+                            <input
+                                type="number"
+                                value={walletAmount}
+                                onChange={e => setWalletAmount(e.target.value)}
+                                placeholder="e.g. 100 or -50"
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+                            <input
+                                type="text"
+                                value={walletDesc}
+                                onChange={e => setWalletDesc(e.target.value)}
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                            />
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <button
+                                onClick={handleWalletAdjust}
+                                disabled={walletLoading}
+                                className="flex-1 bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:opacity-60"
+                            >
+                                {walletLoading ? 'Processing...' : 'Apply'}
+                            </button>
+                            <button
+                                onClick={() => { setWalletModal(false); setWalletAmount(''); }}
+                                className="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

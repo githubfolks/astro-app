@@ -151,18 +151,18 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
     as a reliable backup to the client-side /verify flow.
     """
     raw_body = await request.body()
-    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET")
+    if not webhook_secret:
+        raise RuntimeError("RAZORPAY_WEBHOOK_SECRET is not configured.")
 
-    # Validate webhook signature when secret is configured
-    if webhook_secret:
-        received_sig = request.headers.get("X-Razorpay-Signature", "")
-        expected_sig = hmac.new(
-            webhook_secret.encode("utf-8"),
-            raw_body,
-            hashlib.sha256
-        ).hexdigest()
-        if not hmac.compare_digest(expected_sig, received_sig):
-            raise HTTPException(status_code=400, detail="Invalid webhook signature")
+    received_sig = request.headers.get("X-Razorpay-Signature", "")
+    expected_sig = hmac.new(
+        webhook_secret.encode("utf-8"),
+        raw_body,
+        hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(expected_sig, received_sig):
+        raise HTTPException(status_code=400, detail="Invalid webhook signature")
 
     try:
         payload = json.loads(raw_body)

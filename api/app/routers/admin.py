@@ -7,8 +7,8 @@ import uuid
 import os
 from datetime import datetime, timedelta
 from .. import models, schemas, database
-from .. import models, schemas, database
 from .. import models_edu, schemas_edu
+from decimal import Decimal
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from .auth import get_current_admin, get_password_hash, conf
 
@@ -57,7 +57,9 @@ def get_dashboard_stats(db: Session = Depends(database.get_db)):
     # 1. Summary Counts
     total_users = db.query(models.User).count()
     total_seekers = db.query(models.User).filter(models.User.role == models.UserRole.SEEKER).count()
-    total_astrologers = db.query(models.User).filter(models.User.role == models.UserRole.ASTROLOGER).count()
+    total_astrologers = db.query(models.AstrologerProfile).filter(
+        models.AstrologerProfile.is_approved == True
+    ).join(models.User).filter(models.User.is_active == True).count()
     
     # 2. Financials
     total_consultations = db.query(models.Consultation).count()
@@ -123,7 +125,7 @@ def get_dashboard_stats(db: Session = Depends(database.get_db)):
         "summary": {
             "total_users": total_users,
             "total_seekers": total_seekers,
-            "total_active_astrologers": total_astrologers, # TODO: Filter by is_active if needed
+            "total_active_astrologers": total_astrologers,
             "total_revenue": total_revenue,
             "total_consultations": total_consultations
         },
@@ -194,10 +196,21 @@ def verify_user(user_id: int, db: Session = Depends(database.get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     user.is_verified = True
     db.commit()
+    return {"message": "User verified"}
+
 from pydantic import BaseModel
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
+
+class ApproveAstrologerRequest(BaseModel):
+    consultation_fee_per_min: Optional[float] = None
+
+class RejectAstrologerRequest(BaseModel):
+    reason: str = "Your application did not meet our current requirements."
+
+class CommissionUpdateRequest(BaseModel):
+    commission_percentage: float
 
 @router.put("/users/{user_id}/status")
 def update_user_status(user_id: int, status_update: UserStatusUpdate, db: Session = Depends(database.get_db)):
@@ -250,7 +263,7 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
     db.commit()
     db.refresh(new_user)
     
-    # Create Profile
+    # Create Profile (admin-created astrologers are pre-approved)
     new_profile = models.AstrologerProfile(
         user_id=new_user.id,
         full_name=astrologer.full_name,
@@ -262,11 +275,18 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
         consultation_fee_per_min=astrologer.consultation_fee_per_min,
         availability_hours=astrologer.availability_hours,
         profile_picture_url=astrologer.profile_picture_url,
-        is_online=False
+        is_online=False,
+        is_approved=True,
+        commission_percentage=astrologer.commission_percentage
     )
     db.add(new_profile)
+
+    # Create wallet so balance lookups don't fail
+    wallet = models.UserWallet(user_id=new_user.id)
+    db.add(wallet)
+
     db.commit()
-    
+
     return {"access_token": "created_by_admin", "token_type": "bearer", "user_id": new_user.id, "role": new_user.role}
 
 @router.get("/astrologers_full")
@@ -292,7 +312,9 @@ def list_astrologers_full(skip: int = 0, limit: int = 100, db: Session = Depends
                 "specialties": profile.specialties,
                 "consultation_fee_per_min": profile.consultation_fee_per_min,
                 "availability_hours": profile.availability_hours,
-                "rating_avg": profile.rating_avg
+                "rating_avg": profile.rating_avg,
+                "commission_percentage": float(profile.commission_percentage),
+                "is_approved": profile.is_approved
             }
         }
         astrologers.append(data)
@@ -327,19 +349,35 @@ def update_astrologer_full(user_id: int, data: schemas.AdminCreateAstrologer, db
     profile.languages = data.languages
     profile.specialties = data.specialties
     profile.consultation_fee_per_min = data.consultation_fee_per_min
+    profile.commission_percentage = data.commission_percentage
     profile.availability_hours = data.availability_hours
     profile.profile_picture_url = data.profile_picture_url
-    
+
     db.commit()
     return {"message": "Astrologer updated successfully"}
 
 @router.get("/astrologers/{user_id}/consultations")
 def get_astrologer_consultations(user_id: int, db: Session = Depends(database.get_db)):
-    # Fetch consultations for this astrologer
-    # Eager load seeker info if possible, but for now we just return the raw consultation objects
-    # schemas.Consultation model dumps seeker_profile if available
-    consultations = db.query(models.Consultation).filter(models.Consultation.astrologer_id == user_id).order_by(models.Consultation.created_at.desc()).all()
-    return consultations
+    rows = (
+        db.query(models.Consultation, models.SeekerProfile.full_name)
+        .outerjoin(models.SeekerProfile, models.Consultation.seeker_id == models.SeekerProfile.user_id)
+        .filter(models.Consultation.astrologer_id == user_id)
+        .order_by(models.Consultation.created_at.desc())
+        .all()
+    )
+    result = []
+    for c, seeker_name in rows:
+        result.append({
+            "id": c.id,
+            "consultation_type": c.consultation_type,
+            "seeker_id": c.seeker_id,
+            "seeker_name": seeker_name or f"User #{c.seeker_id}",
+            "status": c.status,
+            "duration_seconds": c.duration_seconds or 0,
+            "total_cost": float(c.total_cost or 0),
+            "created_at": c.created_at,
+        })
+    return result
 
 @router.get("/astrologers/{user_id}/earnings")
 def get_astrologer_earnings(user_id: int, db: Session = Depends(database.get_db)):
@@ -366,7 +404,8 @@ def get_astrologer_earnings(user_id: int, db: Session = Depends(database.get_db)
     # Convert map to list sorted by date
     monthly_list = [{"month": k, "amount": v} for k, v in monthly_map.items()]
     monthly_list.sort(key=lambda x: x["month"])
-    
+    return {"total_earned": round(total_earned, 2), "monthly_earnings": monthly_list}
+
 @router.get("/users/{user_id}/details")
 def get_user_details(user_id: int, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -403,9 +442,16 @@ def get_user_details(user_id: int, db: Session = Depends(database.get_db)):
     wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user_id).first()
     balance = wallet.balance if wallet else 0.0
     
-    # Get Total Consultancy Stats
-    total_consultations = db.query(models.Consultation).filter(models.Consultation.seeker_id == user_id).count()
-    total_spent = db.query(func.sum(models.Consultation.total_cost)).filter(models.Consultation.seeker_id == user_id).scalar() or 0.0
+    # Get Total Consultancy Stats (completed sessions only)
+    completed_statuses = [models.ConsultationStatus.COMPLETED, models.ConsultationStatus.AUTO_ENDED]
+    total_consultations = db.query(models.Consultation).filter(
+        models.Consultation.seeker_id == user_id,
+        models.Consultation.status.in_(completed_statuses)
+    ).count()
+    total_spent = db.query(func.sum(models.Consultation.total_cost)).filter(
+        models.Consultation.seeker_id == user_id,
+        models.Consultation.status.in_(completed_statuses)
+    ).scalar() or 0.0
     
     return {
         "user": {
@@ -426,12 +472,26 @@ def get_user_details(user_id: int, db: Session = Depends(database.get_db)):
 
 @router.get("/users/{user_id}/consultations")
 def get_user_consultations(user_id: int, db: Session = Depends(database.get_db)):
-    # Fetch consultations where user is seeker
-    # Eager load astrologer profile to show name
-    consultations = db.query(models.Consultation).filter(models.Consultation.seeker_id == user_id).order_by(models.Consultation.created_at.desc()).all()
-    # Since we return schema models, we might need to maximize what we return. 
-    # For now returning connection as is.
-    return consultations
+    rows = (
+        db.query(models.Consultation, models.AstrologerProfile.full_name)
+        .outerjoin(models.AstrologerProfile, models.Consultation.astrologer_id == models.AstrologerProfile.user_id)
+        .filter(models.Consultation.seeker_id == user_id)
+        .order_by(models.Consultation.created_at.desc())
+        .all()
+    )
+    result = []
+    for c, astrologer_name in rows:
+        result.append({
+            "id": c.id,
+            "consultation_type": c.consultation_type,
+            "astrologer_id": c.astrologer_id,
+            "astrologer_name": astrologer_name or f"Astrologer #{c.astrologer_id}",
+            "status": c.status,
+            "duration_seconds": c.duration_seconds or 0,
+            "total_cost": float(c.total_cost or 0),
+            "created_at": c.created_at,
+        })
+    return result
 
 @router.get("/users/{user_id}/wallet-history", response_model=List[schemas.WalletTransaction])
 def get_user_wallet_history(user_id: int, db: Session = Depends(database.get_db)):
@@ -440,6 +500,37 @@ def get_user_wallet_history(user_id: int, db: Session = Depends(database.get_db)
         models.WalletTransaction.user_id == user_id
     ).order_by(models.WalletTransaction.created_at.desc()).all()
     return transactions
+
+class WalletAdjustmentRequest(BaseModel):
+    amount: float
+    description: str = "Admin adjustment"
+
+@router.post("/users/{user_id}/wallet/credit")
+def admin_wallet_credit(user_id: int, body: WalletAdjustmentRequest, db: Session = Depends(database.get_db)):
+    """Manually credit or debit a user's wallet. Positive amount = credit, negative = debit."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user_id).first()
+    if not wallet:
+        wallet = models.UserWallet(user_id=user_id, balance=Decimal("0.00"))
+        db.add(wallet)
+
+    new_balance = float(wallet.balance) + body.amount
+    if new_balance < 0:
+        raise HTTPException(status_code=400, detail="Adjustment would result in negative balance")
+
+    wallet.balance = Decimal(str(new_balance))
+    tx = models.WalletTransaction(
+        user_id=user_id,
+        amount=Decimal(str(body.amount)),
+        transaction_type=models.TransactionType.DEPOSIT if body.amount > 0 else models.TransactionType.WITHDRAWAL,
+        description=body.description,
+    )
+    db.add(tx)
+    db.commit()
+    return {"new_balance": new_balance, "message": "Wallet adjusted successfully"}
 
 @router.get("/astrologers/pending")
 def list_pending_astrologers(db: Session = Depends(database.get_db)):
@@ -473,19 +564,73 @@ def list_pending_astrologers(db: Session = Depends(database.get_db)):
     return pending
 
 @router.post("/astrologers/{user_id}/approve")
-def approve_astrologer(user_id: int, db: Session = Depends(database.get_db)):
+async def approve_astrologer(user_id: int, request: ApproveAstrologerRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
-    
+
     profile.is_approved = True
-    user.is_active = True # Allow login
+    user.is_active = True
+    if request.consultation_fee_per_min is not None:
+        profile.consultation_fee_per_min = Decimal(str(request.consultation_fee_per_min))
+    astrologer_email = user.email
     db.commit()
+
+    if astrologer_email:
+        frontend_url = os.getenv("FRONTEND_URL", "https://aadikarta.org")
+        message = MessageSchema(
+            subject="Aadikarta - Your Application Has Been Approved!",
+            recipients=[astrologer_email],
+            body=(
+                f"Congratulations! Your astrologer application on Aadikarta has been approved.<br><br>"
+                f"You can now log in and start accepting consultations at "
+                f"<a href='{frontend_url}/login'>{frontend_url}/login</a>.<br><br>"
+                f"Welcome to the Aadikarta family!"
+            ),
+            subtype=MessageType.html
+        )
+        fm = FastMail(conf)
+        background_tasks.add_task(fm.send_message, message)
+
     return {"message": "Astrologer approved successfully"}
+
+
+@router.post("/astrologers/{user_id}/reject")
+async def reject_astrologer(user_id: int, request: RejectAstrologerRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    profile.is_approved = False
+    user.is_active = False
+    astrologer_email = user.email
+    db.commit()
+
+    if astrologer_email:
+        message = MessageSchema(
+            subject="Aadikarta - Application Status Update",
+            recipients=[astrologer_email],
+            body=(
+                f"Thank you for your interest in joining Aadikarta as an astrologer.<br><br>"
+                f"After reviewing your application, we are unable to approve it at this time.<br><br>"
+                f"<strong>Reason:</strong> {request.reason}<br><br>"
+                f"If you believe this is an error or would like to reapply, please contact support."
+            ),
+            subtype=MessageType.html
+        )
+        fm = FastMail(conf)
+        background_tasks.add_task(fm.send_message, message)
+
+    return {"message": "Astrologer application rejected"}
+
 
 @router.get("/edu/stats", response_model=schemas_edu.AdminEduStatsResponse)
 def get_edu_stats(
@@ -552,11 +697,17 @@ async def admin_reset_password(user_id: int, request: schemas.AdminPasswordReset
     user.hashed_password = get_password_hash(request.new_password)
     db.commit()
 
-    # Send notification email
+    # Send notification email — never include the password in the email body
+    frontend_url = os.getenv("FRONTEND_URL", "https://aadikarta.org")
     message = MessageSchema(
-        subject="Aadikarta - Password Reset by Admin",
+        subject="Aadikarta - Your Password Has Been Reset",
         recipients=[user.email],
-        body=f"Your password has been reset by an administrator. Your new password is: {request.new_password}",
+        body=(
+            f"An administrator has reset your Aadikarta account password.<br><br>"
+            f"Please log in at <a href='{frontend_url}/login'>{frontend_url}/login</a> "
+            f"using your new credentials.<br><br>"
+            f"If you did not request this change, please contact support immediately."
+        ),
         subtype=MessageType.html
     )
     
@@ -596,3 +747,15 @@ def get_audit_logs(
         }
         for l in logs
     ]}
+
+
+@router.patch("/astrologers/{user_id}/commission")
+def update_astrologer_commission(user_id: int, request: CommissionUpdateRequest, db: Session = Depends(database.get_db)):
+    if not (0 < request.commission_percentage <= 100):
+        raise HTTPException(status_code=400, detail="Commission must be between 0 and 100")
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Astrologer profile not found")
+    profile.commission_percentage = Decimal(str(request.commission_percentage))
+    db.commit()
+    return {"message": "Commission updated", "commission_percentage": float(profile.commission_percentage)}

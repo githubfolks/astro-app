@@ -188,10 +188,10 @@ export default function AstrologerDetails() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-600">
-                                                    #{c.seeker_id}
+                                                    {c.seeker_name}
                                                 </td>
                                                 <td className="px-4 py-3 text-gray-600">
-                                                    {Math.floor(c.duration_seconds / 60)}m {c.duration_seconds % 60}s
+                                                    {Math.floor((c.duration_seconds || 0) / 60)}m {(c.duration_seconds || 0) % 60}s
                                                 </td>
                                                 <td className="px-4 py-3 font-medium text-gray-900">
                                                     ₹{c.total_cost}

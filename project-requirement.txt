@@ -1,8 +1,4 @@
-Design a COMPLETE, production-ready application for an
-ASTROLOGY CHAT APPLICATION similar to InstaAstro.
-
-The system must strictly enforce CHAT TIMEFRAME BASED ON PAYMENT
-(plans / packages / wallet balance).
+Aadikarta Astro Platform
 
 ---------------------------------------
 CORE REQUIREMENTS
@@ -114,3 +110,107 @@ Assume this will be used by:
 
 The final output must be IMPLEMENTATION-READY.
 Use admin, api and web folder for admin, api and web application respectively.
+
+
+Acquisition (get new users)
+Free first-minute trial — Every major competitor does this. One free minute per new user per astrologer converts fence-sitters. Easy to implement via a wallet credit on first consultation.
+
+Referral program — User invites a friend → both get ₹50 credits. Low cost, viral loop. You already have the wallet system.
+
+Promo / coupon codes — Let you run marketing campaigns. One admin endpoint + one redemption field in the wallet top-up flow.
+
+Retention (keep existing users)
+Scheduled appointments — Right now users can only talk to whoever is online. Letting them book a slot with a specific astrologer for tomorrow 6pm dramatically increases return visits. Needs a bookings table + calendar UI.
+
+Personalized daily horoscope — You have a generic daily horoscope page. Sending a push notification with a personalized one (based on their birth details from SeekerProfile) gives users a daily reason to open the app.
+
+Consultation follow-up reminders — "It's been 30 days since your last session with Priya — how are things going?" Automated, costs nothing.
+
+Trust & Discovery
+Wait time indicator — "Priya is online — 2 people ahead of you." Reduces drop-off when someone is busy. Already possible with your WebSocket/chat infrastructure.
+
+Specialist tags + filtering — "Marriage", "Career", "Health", "Child", "Business". Seekers know what they want. You have specialties but no filtering UI on the astrologers list page.
+
+Monetization
+Subscription plans — ₹299/month = 10% discount on all sessions + 1 free Kundli report/month. Gives predictable MRR and locks users in. Maps to a subscriptions table.
+
+Report products — Paid PDF reports (Full Kundli ₹199, Compatibility ₹149, Career Path ₹99). These are async — no live astrologer needed, high margin.
+
+Gift credits — "Gift ₹500 astrology session to a friend." Gifting unlocks a new acquisition channel (the gift recipient).
+
+Community & Content
+Ask a free question — User types a question, any available astrologer can answer publicly. Builds SEO content, demonstrates astrologer quality, creates a reason to browse.
+
+Live group sessions / webinars — One astrologer, many attendees, flat ₹49 entry fee. You already have MiroTalk wired in. Very low additional dev cost.
+
+=====================
+AIL/ML
+=====================
+Personalization & Matching
+Smart Astrologer Matching
+Instead of users browsing, an ML model ranks astrologers for each seeker based on: specialty match to their stated concern, past rating patterns, language preference, consultation success rate. Similar to how Uber matches drivers. You already have all this data in your DB.
+
+Concern Classification
+When a seeker types their first message ("my marriage is struggling" / "job loss"), an NLP classifier auto-tags the consultation topic. Feeds into matching, reporting, and trending insights for admin.
+
+AI-Assisted Consultations
+Kundli Auto-Analysis
+User enters birth date/time/place → system generates a structured Jyotish interpretation (lagna, moon sign, dashas, current planetary period) using rule-based + LLM synthesis. Astrologer gets this as a pre-consultation brief. Saves them 5–10 minutes per session. You already store date_of_birth, time_of_birth, place_of_birth in SeekerProfile.
+
+AI Chatbot for Off-Hours
+When no astrologer is online, an LLM-powered bot handles basic queries ("What does Mercury retrograde mean for Scorpio?") and upsells to a booked appointment. Keeps users on platform instead of going to Google.
+
+Consultation Summary Generator
+After a chat session ends, GPT-4 summarizes the key advice given, action items, and follow-up date. Delivered to the seeker as a PDF. High perceived value, costs ~$0.02 per session.
+
+Prediction & Retention
+Churn Prediction
+Model trained on: days since last visit, wallet balance, consultation frequency, rating given. Flags users likely to churn → triggers a personalized push notification or promo. Your consultation history + wallet data is sufficient to train this.
+
+Next Consultation Propensity
+"Users who had a career consultation often return in 3 weeks." Predict when a specific user is likely to consult again and send a nudge just before that window.
+
+Dynamic Horoscope Personalization
+Your current horoscope is one-size-fits-all by sun sign. With birth data, generate daily/weekly personalized forecasts using planetary transit rules + LLM for natural language. This is the highest-volume content feature possible.
+
+Quality & Trust
+Review Sentiment Analysis
+NLP on text reviews to extract themes ("rushed", "accurate", "calming"). Surface these as structured tags on astrologer profiles — more trustworthy than a raw star rating.
+
+Fraud / Anomaly Detection
+Flag suspicious patterns: astrologer who ends sessions in 30 seconds, wallet self-transfers, fake review rings. Rule-based + isolation forest on transaction + consultation data.
+
+Admin Intelligence
+Revenue Forecasting
+Time-series model (Prophet or ARIMA) on daily transaction data to forecast next month's GMV. One chart on the admin dashboard, useful for planning payout budgets.
+
+Astrologer Performance Scoring
+Composite score: rating avg + completion rate + repeat seeker rate + response time. Surfaces underperformers for coaching and top performers for featuring.
+
+================more features=========
+Prediction Outcome Tracking
+Satisfaction Guarantee
+Platform Certification Badges
+Family Kundli Vault
+Muhurta (Auspicious Timing) as a Standalone Service
+Transit Alerts
+Panchang (Daily Hindu Calendar)
+Couples / Family Session
+Anonymous Mode
+Voice Note Consultations
+Astrologer-Authored Blog + Short Videos
+Daily Audio Horoscope by a Real Astrologer
+Community Q&A
+Astrologer Loyalty Streaks
+Prediction Journal
+
+================Tutor bugs===========
+1	Bug	High	CourseManager.tsx — session title never sent
+2	Bug	High	edu.py — any tutor joins any room as moderator
+3	Bug	High	edu.py — batch/session ownership not enforced
+4	Bug	Medium	edu.py — tutor name hardcoded
+5	Bug	Medium	edu.py — admin-created courses have no teacher
+6	Missing	High	Admin panel — no tutor management at all
+7	Missing	Medium	Tutor dashboard — no earnings/enrollment stats
+8	Missing	Low	Attendance data collected but never surfaced
+9	Minor	Low	CourseManager.tsx — loadBatches over-fetches
