@@ -1,48 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import vitePrerender from 'vite-plugin-prerender';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const PUBLIC_ROUTES = [
-    '/',
-    '/astrologers',
-    '/about-us',
-    '/contact-us',
-    '/blog',
-    '/how-it-works',
-    '/pricing',
-    '/join-as-astrologer',
-    '/memory-guru',
-    '/horoscope',
-    '/horoscope/aries',
-    '/horoscope/taurus',
-    '/horoscope/gemini',
-    '/horoscope/cancer',
-    '/horoscope/leo',
-    '/horoscope/virgo',
-    '/horoscope/libra',
-    '/horoscope/scorpio',
-    '/horoscope/sagittarius',
-    '/horoscope/capricorn',
-    '/horoscope/aquarius',
-    '/horoscope/pisces',
-    '/services/vedic-astrology',
-    '/services/kundli-matching',
-    '/services/tarot-reading',
-    '/services/love-advice',
-    '/services/daily-horoscope',
-    '/services/vastu-shastra',
-    '/privacy-policy',
-    '/terms-of-service',
-    '/refund-policy',
-    '/disclaimer',
-];
-
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
     plugins: [
         react(),
         VitePWA({
@@ -69,18 +29,6 @@ export default defineConfig(({ mode }) => ({
                 ]
             }
         }),
-        // Pre-render public pages at build time so search engines get real HTML.
-        // Skipped for mobile builds since Capacitor serves the SPA directly.
-        ...(mode !== 'mobile' ? [
-            vitePrerender({
-                staticDir: path.join(__dirname, 'dist'),
-                routes: PUBLIC_ROUTES,
-                renderer: new vitePrerender.PuppeteerRenderer({
-                    renderAfterTime: 2000,
-                    headless: true,
-                }),
-            }),
-        ] : []),
     ],
     build: {
         target: 'esnext',
@@ -93,4 +41,4 @@ export default defineConfig(({ mode }) => ({
             }
         }
     }
-}));
+});
