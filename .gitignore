@@ -20,3 +20,4 @@ db-backup/
 # Generated / build artifacts
 store-graphics/output/
 store-graphics/node_modules/
+.DS_Store
