@@ -34,7 +34,6 @@ const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ defau
 const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
 const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
 const Book = lazy(() => import('./pages/Book'));
-const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
