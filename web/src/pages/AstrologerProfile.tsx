@@ -1,3 +1,4 @@
+import type { AstrologerProfile, SeekerProfile } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -26,13 +27,13 @@ const AstrologerProfile: React.FC = () => {
     const navigate = useNavigate();
     const { isAuthenticated, user } = useAuth();
 
-    const [astrologer, setAstrologer] = useState<any>(null);
+    const [astrologer, setAstrologer] = useState<AstrologerProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const [seekerProfile, setSeekerProfile] = useState<any>(null);
+    const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
 
-    const getStructuredData = (ast: any) => ({
+    const getStructuredData = (ast: AstrologerProfile) => ({
         "@context": "https://schema.org",
         "@graph": [
             {
@@ -84,7 +85,7 @@ const AstrologerProfile: React.FC = () => {
         }
     }, [isAuthenticated, user]);
 
-    const isProfileComplete = (profile: any) => {
+    const isProfileComplete = (profile: SeekerProfile | null) => {
         return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
     };
 

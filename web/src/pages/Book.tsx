@@ -1,3 +1,5 @@
+import type { Course, CourseMaterial } from '../types';
+import { getErrorMessage, getErrorStatus } from '../utils/errors';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -27,10 +29,10 @@ const bookStructuredData = {
 const Book: React.FC = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
-    const [courses, setCourses] = useState<any[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
-    const [materials, setMaterials] = useState<any[]>([]);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+    const [materials, setMaterials] = useState<CourseMaterial[]>([]);
     const [loadingMaterials, setLoadingMaterials] = useState(false);
     const [enrollmentStatus, setEnrollmentStatus] = useState<{
         loading: boolean;
@@ -59,7 +61,7 @@ const Book: React.FC = () => {
         }
     };
 
-    const handleViewDetails = async (course: any) => {
+    const handleViewDetails = async (course: Course) => {
         setSelectedCourse(course);
         setEnrollmentStatus({ loading: false, success: false, error: null });
         setLoadingMaterials(true);
@@ -75,6 +77,7 @@ const Book: React.FC = () => {
     };
 
     const handleEnroll = async () => {
+        if (!selectedCourse) return;
         if (!isAuthenticated) {
             navigate('/login', { state: { from: '/book', courseId: selectedCourse.id } });
             return;
@@ -91,7 +94,7 @@ const Book: React.FC = () => {
 
         setEnrollmentStatus({ loading: true, success: false, error: null });
         try {
-            if (selectedCourse.price > 0) {
+            if ((selectedCourse.price ?? 0) > 0) {
                 const confirmed = window.confirm(`This course costs ₹${selectedCourse.price}. The amount will be deducted from your wallet balance. Do you want to proceed?`);
                 if (!confirmed) {
                     setEnrollmentStatus({ loading: false, success: false, error: null });
@@ -105,9 +108,9 @@ const Book: React.FC = () => {
             });
             setEnrollmentStatus({ loading: false, success: true, error: null });
             loadCourses(); // Refresh courses to get updated is_enrolled status
-        } catch (e: any) {
-            let errorMsg = e.message || 'Enrollment failed. Please try again or contact support.';
-            if (e.status === 402) {
+        } catch (e) {
+            let errorMsg = getErrorMessage(e) || 'Enrollment failed. Please try again or contact support.';
+            if (getErrorStatus(e) === 402) {
                 errorMsg = "Insufficient wallet balance. Please recharge your wallet to enroll.";
             }
             setEnrollmentStatus({
@@ -284,7 +287,7 @@ const Book: React.FC = () => {
                                     </div>
                                 ) : materials.length > 0 ? (
                                     <div className="grid gap-4">
-                                        {materials.map((m: any) => (
+                                        {materials.map((m: CourseMaterial) => (
                                             <div key={m.id} className="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-indigo-200 transition-colors">
                                                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                                     <BookIcon size={20} />

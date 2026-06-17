@@ -1,3 +1,5 @@
+import type { ChartData, KundliReport } from '../types';
+import { getErrorMessage } from '../utils/errors';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -19,11 +21,11 @@ const KundliGenerator: React.FC = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [chartData, setChartData] = useState<any>(null);
+    const [chartData, setChartData] = useState<ChartData | null>(null);
     const [showPanel, setShowPanel] = useState(false);
 
     // History
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<KundliReport[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
 
     const structuredData = {
@@ -71,15 +73,15 @@ const KundliGenerator: React.FC = () => {
             setChartData(result.chart_data);
             setShowPanel(true);
             loadHistory(); // Refresh history
-        } catch (err: any) {
-            setError(err.message || 'Failed to generate Kundli');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to generate Kundli');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleViewHistoryReport = async (report: any) => {
-        setChartData(report.chart_data);
+    const handleViewHistoryReport = async (report: KundliReport) => {
+        setChartData(report.chart_data ?? null);
         setShowPanel(true);
     };
 
@@ -205,7 +207,7 @@ const KundliGenerator: React.FC = () => {
                                 </div>
                             ) : (
                                 <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                                    {history.map((report: any) => (
+                                    {history.map((report: KundliReport) => (
                                         <button
                                             key={report.id}
                                             onClick={() => handleViewHistoryReport(report)}
@@ -215,10 +217,10 @@ const KundliGenerator: React.FC = () => {
                                                 {report.full_name || 'Unknown'}
                                             </div>
                                             <div className="text-xs text-gray-500 mt-1">
-                                                {new Date(report.date_of_birth).toLocaleDateString()} • {report.place_of_birth}
+                                                {new Date(report.date_of_birth || "").toLocaleDateString()} • {report.place_of_birth}
                                             </div>
                                             <div className="text-[10px] text-gray-400 mt-0.5">
-                                                Generated {new Date(report.created_at).toLocaleString()}
+                                                Generated {new Date(report.created_at || "").toLocaleString()}
                                             </div>
                                         </button>
                                     ))}

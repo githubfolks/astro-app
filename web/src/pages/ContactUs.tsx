@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -59,8 +60,8 @@ const ContactUs: React.FC = () => {
             });
             setStatus({ type: 'success', message: 'Thank you for your message! We will get back to you soon.' });
             setFormData({ firstName: '', lastName: '', email: '', message: '' });
-        } catch (error: any) {
-            setStatus({ type: 'error', message: error.message || 'Something went wrong. Please try again.' });
+        } catch (error) {
+            setStatus({ type: 'error', message: getErrorMessage(error) || 'Something went wrong. Please try again.' });
         } finally {
             setLoading(false);
         }

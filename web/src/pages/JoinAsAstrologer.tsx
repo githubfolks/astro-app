@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
@@ -28,9 +29,27 @@ const joinStructuredData = {
     ],
 };
 
+interface AstrologerForm {
+    full_name: string;
+    email: string;
+    phone_number: string;
+    password: string;
+    astrology_types: string[];
+    experience_years: string;
+    languages: string;
+    preferred_working_hours: string;
+    city: string;
+    short_bio: string;
+    profile_photo_url: string;
+    id_proof_url: string;
+    legal_agreement_accepted: boolean;
+    // Allows dynamic field updates (e.g. file-upload result) by key.
+    [key: string]: string | string[] | boolean;
+}
+
 export const JoinAsAstrologer: React.FC = () => {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState<any>({
+    const [formData, setFormData] = useState<AstrologerForm>({
         full_name: '',
         email: '',
         phone_number: '',
@@ -67,7 +86,7 @@ export const JoinAsAstrologer: React.FC = () => {
         try {
             const result = await api.astrologers.uploadFile(file);
             setFormData({ ...formData, [field]: result.url });
-        } catch (err: any) {
+        } catch {
             setError('File upload failed');
         } finally {
             setIsLoading(false);
@@ -125,8 +144,8 @@ export const JoinAsAstrologer: React.FC = () => {
         try {
             await api.astrologers.onboarding(formData);
             setStep(4); // Success step
-        } catch (err: any) {
-            setError(err.message || 'Onboarding failed');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Onboarding failed');
         } finally {
             setIsLoading(false);
         }

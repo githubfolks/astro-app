@@ -1,3 +1,5 @@
+import { getErrorMessage } from '../utils/errors';
+import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -10,9 +12,9 @@ import { resolveImageUrl } from '../utils/url';
 import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<Consultation[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sessions, setSessions] = useState<any[]>([]);
+    const [sessions, setSessions] = useState<EduSession[]>([]);
 
     // Astrologer specific state
     const [isOnline, setIsOnline] = useState(false);
@@ -21,17 +23,17 @@ export const Dashboard: React.FC = () => {
 
     // Seeker specific state
     const [walletBalance, setWalletBalance] = useState<number>(0);
-    const [seekerHistory, setSeekerHistory] = useState<any[]>([]);
+    const [seekerHistory, setSeekerHistory] = useState<Consultation[]>([]);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
-    const [ratingConsultation, setRatingConsultation] = useState<any>(null);
+    const [ratingConsultation, setRatingConsultation] = useState<Consultation | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
-    const [seekerProfile, setSeekerProfile] = useState<any>({});
+    const [seekerProfile, setSeekerProfile] = useState<SeekerProfile>({});
     const [profileSaving, setProfileSaving] = useState(false);
-    const [myCourses, setMyCourses] = useState<any[]>([]);
-    const [courseMaterials, setCourseMaterials] = useState<Record<number, any[]>>({});
+    const [myCourses, setMyCourses] = useState<Course[]>([]);
+    const [courseMaterials, setCourseMaterials] = useState<Record<number, CourseMaterial[]>>({});
     const [loadingMaterials, setLoadingMaterials] = useState<Record<number, boolean>>({});
 
     const navigate = useNavigate();
@@ -164,7 +166,7 @@ export const Dashboard: React.FC = () => {
                                     <span className="bg-[#E91E63] text-white p-1 rounded-md"><MessageCircle size={20} /></span>
                                     Requests Queue
                                     <span className="ml-2 text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                                        {history.filter((c: any) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length}
+                                        {history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length}
                                     </span>
                                 </h3>
 
@@ -172,14 +174,14 @@ export const Dashboard: React.FC = () => {
                                     <div className="flex justify-center p-10">
                                         <div className="animate-spin h-8 w-8 border-4 border-[#E91E63] rounded-full border-t-transparent"></div>
                                     </div>
-                                ) : history.filter((c: any) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 ? (
+                                ) : history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 ? (
                                     <div className="bg-white rounded-xl p-8 text-center border border-gray-100 shadow-sm">
                                         <p className="text-gray-500">No active requests in queue.</p>
                                     </div>
                                 ) : (
                                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-0 overflow-hidden">
                                         <div className="grid gap-4 p-4">
-                                            {history.filter((c: any) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: any) => (
+                                            {history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: Consultation) => (
                                                 <div key={c.id} className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md transition-all">
                                                     <div className="flex items-center gap-4 w-full md:w-auto">
                                                         <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-lg overflow-hidden border border-gray-100">
@@ -239,7 +241,7 @@ export const Dashboard: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
-                                                {history.filter((c: any) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: any) => (
+                                                {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: Consultation) => (
                                                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="p-4 text-sm text-gray-500">
                                                             {new Date(c.created_at).toLocaleDateString()}
@@ -267,7 +269,7 @@ export const Dashboard: React.FC = () => {
                                                         </td>
                                                     </tr>
                                                 ))}
-                                                {history.filter((c: any) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 && (
+                                                {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 && (
                                                     <tr>
                                                         <td colSpan={5} className="p-8 text-center text-gray-400">
                                                             <p>No past consultations.</p>
@@ -285,12 +287,12 @@ export const Dashboard: React.FC = () => {
                         <div className="lg:col-span-1 space-y-6">
                             {/* Earnings Summary Card */}
                             {(() => {
-                                const completed = history.filter((c: any) => ['COMPLETED', 'AUTO_ENDED'].includes(c.status));
-                                const total = completed.reduce((sum: number, c: any) => sum + (Number(c.total_cost) || 0), 0);
+                                const completed = history.filter((c: Consultation) => ['COMPLETED', 'AUTO_ENDED'].includes(c.status));
+                                const total = completed.reduce((sum: number, c: Consultation) => sum + (Number(c.total_cost) || 0), 0);
                                 const thisMonth = new Date().toISOString().slice(0, 7);
                                 const monthly = completed
-                                    .filter((c: any) => c.created_at?.slice(0, 7) === thisMonth)
-                                    .reduce((sum: number, c: any) => sum + (Number(c.total_cost) || 0), 0);
+                                    .filter((c: Consultation) => c.created_at?.slice(0, 7) === thisMonth)
+                                    .reduce((sum: number, c: Consultation) => sum + (Number(c.total_cost) || 0), 0);
                                 return (
                                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                         <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -389,7 +391,7 @@ export const Dashboard: React.FC = () => {
                                 <p className="text-gray-500 text-center">No live classes scheduled.</p>
                             ) : (
                                 <div className="space-y-4">
-                                    {sessions.map((s: any) => {
+                                    {sessions.map((s: EduSession) => {
                                         const active = isSessionActive(s.scheduled_start, s.scheduled_end);
                                         const isEnded = new Date(s.scheduled_end) < new Date();
                                         return (
@@ -457,7 +459,7 @@ export const Dashboard: React.FC = () => {
         setShowPaymentModal(false);
     };
 
-    const openRating = (consultation: any) => {
+    const openRating = (consultation: Consultation) => {
         setRatingConsultation(consultation);
         setShowRatingModal(true);
     };
@@ -481,9 +483,9 @@ export const Dashboard: React.FC = () => {
         try {
             await api.seekers.updateProfile(seekerProfile);
             alert('Profile updated successfully!');
-        } catch (e: any) {
+        } catch (e) {
             console.error(e);
-            alert(e.message || 'Failed to save profile');
+            alert(getErrorMessage(e) || 'Failed to save profile');
         }
         setProfileSaving(false);
     };
@@ -514,7 +516,7 @@ export const Dashboard: React.FC = () => {
                                         <p className="text-sm text-gray-500">No active classes to join.</p>
                                     ) : (
                                         <div className="space-y-3">
-                                            {sessions.map((s: any) => {
+                                            {sessions.map((s: EduSession) => {
                                                 const active = isSessionActive(s.scheduled_start, s.scheduled_end);
                                                 const isEnded = new Date(s.scheduled_end) < new Date();
                                                 return (
@@ -575,7 +577,7 @@ export const Dashboard: React.FC = () => {
                                                             <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">No materials uploaded yet for this course.</p>
                                                         ) : (
                                                             <div className="grid gap-3">
-                                                                {courseMaterials[course.id].map((m: any) => (
+                                                                {courseMaterials[course.id].map((m: CourseMaterial) => (
                                                                     <a
                                                                         key={m.id}
                                                                         href={m.url}
@@ -632,7 +634,7 @@ export const Dashboard: React.FC = () => {
                                 </div>
                             ) : (() => {
                                 // Filter by search
-                                const filtered = seekerHistory.filter((c: any) => {
+                                const filtered = seekerHistory.filter((c: Consultation) => {
                                     const name = c.astrologer_profile?.full_name?.toLowerCase() || '';
                                     return name.includes(searchQuery.toLowerCase());
                                 });
@@ -653,7 +655,7 @@ export const Dashboard: React.FC = () => {
                                 return (
                                     <>
                                         <div className="grid gap-4">
-                                            {paginatedData.map((c: any) => (
+                                            {paginatedData.map((c: Consultation) => (
                                                 <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all">
                                                     <div className="flex flex-col md:flex-row justify-between gap-4">
                                                         <div className="flex items-start gap-4">

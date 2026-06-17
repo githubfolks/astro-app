@@ -1,3 +1,4 @@
+import type { ChartDivision } from '../types';
 import React from 'react';
 
 /**
@@ -24,7 +25,7 @@ interface Planet {
 }
 
 interface KundliChartProps {
-    chartData: any; // Chart data from AstroAPI (d1, d9, etc.)
+    chartData?: ChartDivision; // A single chart division (D1, D9, etc.)
     title?: string;
     size?: number;
 }
@@ -74,7 +75,7 @@ const HOUSE_POSITIONS: Record<number, [number, number]> = {
     9: [3, 0], 8: [3, 1], 7: [3, 2], 6: [3, 3],
 };
 
-function extractPlanetsFromChart(chart: any): Planet[] {
+function extractPlanetsFromChart(chart: ChartDivision): Planet[] {
     if (!chart) return [];
 
     const planets: Planet[] = [];
@@ -96,7 +97,7 @@ function extractPlanetsFromChart(chart: any): Planet[] {
     return planets;
 }
 
-function getRashiForHouse(chart: any, house: number): number | null {
+function getRashiForHouse(chart: ChartDivision, house: number): number | null {
     if (!chart) return null;
     const houseData = chart[house.toString()];
     if (houseData && houseData.rashi !== undefined) {

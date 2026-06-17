@@ -1,3 +1,4 @@
+import type { BlogPost } from '../types';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -7,7 +8,7 @@ import { api } from '../services/api';
 import SEO from '../components/SEO';
 
 const Blog: React.FC = () => {
-    const [posts, setPosts] = useState<any[]>([]);
+    const [posts, setPosts] = useState<BlogPost[]>([]);
     const [loading, setLoading] = useState(true);
 
     const structuredData = {

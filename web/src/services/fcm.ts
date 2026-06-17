@@ -1,8 +1,8 @@
 import { api } from './api';
 import { isNative, getPlatform } from '../utils/platform';
 
-// Native push notifications
-let PushNotifications: any = null;
+// Native push notifications (lazily imported to avoid loading the plugin on web)
+let PushNotifications: typeof import('@capacitor/push-notifications').PushNotifications | null = null;
 
 const loadNativePush = async () => {
     if (isNative() && !PushNotifications) {
@@ -18,26 +18,27 @@ export const fcmService = {
             try {
                 await loadNativePush();
                 if (!PushNotifications) return null;
+                const push = PushNotifications;
 
-                const permResult = await PushNotifications.requestPermissions();
+                const permResult = await push.requestPermissions();
                 if (permResult.receive !== 'granted') {
                     console.log('Push notification permission denied');
                     return null;
                 }
 
                 // Register for push notifications
-                await PushNotifications.register();
+                await push.register();
 
                 // Listen for registration token
                 return new Promise<string | null>((resolve) => {
-                    PushNotifications.addListener('registration', async (token: { value: string }) => {
+                    push.addListener('registration', async (token: { value: string }) => {
                         console.log('Push registration token:', token.value);
                         const platform = getPlatform(); // 'android' or 'ios'
                         await api.updateDeviceToken(token.value, platform);
                         resolve(token.value);
                     });
 
-                    PushNotifications.addListener('registrationError', (error: any) => {
+                    push.addListener('registrationError', (error) => {
                         console.error('Push registration error:', error);
                         resolve(null);
                     });

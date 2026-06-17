@@ -1,3 +1,4 @@
+import type { ChatHistoryItem } from '../types';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -153,7 +154,7 @@ export const useChat = (consultationId: string) => {
     // Fetch History
     useEffect(() => {
         if (!token || !consultationId) return;
-        api.consultations.getChatHistory(consultationId).then((history: any[]) => {
+        api.consultations.getChatHistory(consultationId).then((history: ChatHistoryItem[]) => {
             setMessages(history.map(msg => ({
                 id: msg.id,
                 sender_id: msg.sender_id,

@@ -165,7 +165,7 @@ const HoroscopeSign: React.FC = () => {
         if (!sign || !data) return;
         const today = new Date().toISOString().slice(0, 10);
         api.cms.getHoroscopes(sign.toUpperCase(), 'DAILY', today)
-            .then((results: any[]) => {
+            .then((results: Array<{ content?: DailyPrediction }>) => {
                 const entry = Array.isArray(results) ? results[0] : null;
                 setPrediction(entry?.content ?? null);
             })

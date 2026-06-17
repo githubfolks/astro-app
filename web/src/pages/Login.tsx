@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -28,7 +29,7 @@ export const Login: React.FC = () => {
             // Pass normalized role to AuthContext
             login(data.access_token, {
                 id: data.user_id,
-                role: role as any,
+                role: role as 'SEEKER' | 'ASTROLOGER' | 'ADMIN' | 'TUTOR',
                 email: '',
                 phone_number: '',
                 full_name: data.full_name
@@ -39,8 +40,8 @@ export const Login: React.FC = () => {
             } else {
                 navigate('/');
             }
-        } catch (err: any) {
-            setError(err.message || 'Login failed');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Login failed');
         } finally {
             setIsLoading(false);
         }

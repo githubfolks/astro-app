@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -25,8 +26,8 @@ export const Signup: React.FC = () => {
             const data = await api.auth.signup(formData);
             login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '' });
             navigate('/');
-        } catch (err: any) {
-            setError(err.message || 'Signup failed');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Signup failed');
         } finally {
             setIsLoading(false);
         }

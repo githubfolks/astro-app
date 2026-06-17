@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -28,8 +29,8 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
             login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '' });
             onLoginSuccess();
             onClose();
-        } catch (err: any) {
-            setError(err.message || 'Login failed');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Login failed');
         } finally {
             setIsLoading(false);
         }

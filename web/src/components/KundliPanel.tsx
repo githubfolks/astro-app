@@ -1,3 +1,4 @@
+import type { ChartData, PlanetDetail } from '../types';
 import React, { useState } from 'react';
 import { X, Loader2, Star, AlertCircle } from 'lucide-react';
 import KundliChart, { RASHI_NAMES_FULL, PLANET_SHORT, PLANET_COLORS } from './KundliChart';
@@ -5,7 +6,7 @@ import KundliChart, { RASHI_NAMES_FULL, PLANET_SHORT, PLANET_COLORS } from './Ku
 interface KundliPanelProps {
     isOpen: boolean;
     onClose: () => void;
-    chartData: any; // Full AstroAPI response
+    chartData?: ChartData | null; // Full AstroAPI response
     seekerName?: string;
     loading?: boolean;
     error?: string | null;
@@ -162,7 +163,7 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {Object.entries(planets).map(([name, data]: [string, any]) => {
+                                                {Object.entries(planets).map(([name, data]: [string, PlanetDetail]) => {
                                                     const color = PLANET_COLORS[name] || '#333';
                                                     const short = PLANET_SHORT[name] || name;
                                                     return (

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -23,8 +24,8 @@ export const VerifyOTP: React.FC = () => {
             const data = await api.auth.verifyOtp(email, otp);
             // Navigate to reset-password with token
             navigate('/reset-password', { state: { token: data.reset_token } });
-        } catch (err: any) {
-            setError(err.message || 'Verification failed');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Verification failed');
         } finally {
             setIsLoading(false);
         }

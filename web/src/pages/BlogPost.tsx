@@ -1,3 +1,4 @@
+import type { BlogPost } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
@@ -9,11 +10,11 @@ import SEO from '../components/SEO';
 
 const BlogPost: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const [post, setPost] = useState<any | null>(null);
+    const [post, setPost] = useState<BlogPost | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
-    const getStructuredData = (p: any) => ({
+    const getStructuredData = (p: BlogPost) => ({
         "@context": "https://schema.org",
         "@graph": [
             {

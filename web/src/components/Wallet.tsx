@@ -1,12 +1,8 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { Wallet as WalletIcon, PlusCircle } from 'lucide-react';
-
-declare global {
-    interface Window {
-        Razorpay: any;
-    }
-}
+import type { RazorpayResponse, RazorpayError } from '../types';
 
 export const Wallet: React.FC = () => {
     const [balance, setBalance] = useState<number>(0);
@@ -66,7 +62,7 @@ export const Wallet: React.FC = () => {
                 name: "AstroApp",
                 description: "Wallet Recharge",
                 order_id: orderData.order_id,
-                handler: async function (response: any) {
+                handler: async function (response: RazorpayResponse) {
                     try {
                         await api.payment.verifyPayment({
                             razorpay_order_id: response.razorpay_order_id,
@@ -92,14 +88,14 @@ export const Wallet: React.FC = () => {
             };
 
             const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response: any) {
+            rzp.on("payment.failed", function (response: RazorpayError) {
                 alert("Payment Failed: " + response.error.description);
             });
             rzp.open();
 
-        } catch (e: any) {
+        } catch (e) {
             console.error(e);
-            alert('Failed to initiate payment: ' + (e.message || "Unknown error"));
+            alert('Failed to initiate payment: ' + (getErrorMessage(e) || "Unknown error"));
         } finally {
             setIsRecharging(false);
         }

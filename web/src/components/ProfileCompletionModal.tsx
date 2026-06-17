@@ -1,3 +1,5 @@
+import type { SeekerProfile } from '../types';
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
@@ -6,7 +8,7 @@ interface ProfileCompletionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onComplete: () => void;
-    initialProfile: any;
+    initialProfile: SeekerProfile | null;
 }
 
 const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
@@ -39,9 +41,9 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
         try {
             await api.seekers.updateProfile(profile);
             onComplete();
-        } catch (e: any) {
+        } catch (e) {
             console.error(e);
-            setError(e.message || 'Failed to save profile. Please try again.');
+            setError(getErrorMessage(e) || 'Failed to save profile. Please try again.');
         }
         setSaving(false);
     };

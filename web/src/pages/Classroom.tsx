@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
@@ -17,9 +18,9 @@ export const Classroom: React.FC = () => {
                 setLoading(true);
                 const data = await api.edu.joinSession(parseInt(sessionId));
                 setRoomUrl(data.room_url);
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to join classroom:", err);
-                setError(err.message || "Failed to join the classroom. Please ensure you are enrolled and the class has started.");
+                setError(getErrorMessage(err) || "Failed to join the classroom. Please ensure you are enrolled and the class has started.");
             } finally {
                 setLoading(false);
             }

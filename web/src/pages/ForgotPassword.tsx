@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,8 +19,8 @@ export const ForgotPassword: React.FC = () => {
             await api.auth.forgotPassword(email);
             // Navigate to verify-otp with email in state
             navigate('/verify-otp', { state: { email } });
-        } catch (err: any) {
-            setError(err.message || 'Failed to send OTP');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to send OTP');
         } finally {
             setIsLoading(false);
         }

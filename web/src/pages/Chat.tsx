@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat } from '../hooks/useChat';
@@ -7,7 +8,7 @@ import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import KundliPanel from '../components/KundliPanel';
 import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle } from 'lucide-react';
-import type { Astrologer } from '../types';
+import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
 
@@ -21,10 +22,10 @@ export const Chat: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [activeConsultationId, setActiveConsultationId] = useState<string | undefined>(consultationId);
     const [astrologer, setAstrologer] = useState<Astrologer | null>(null);
-    const [seeker, setSeeker] = useState<any | null>(null);
+    const [seeker, setSeeker] = useState<SeekerProfile | null>(null);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showKundli, setShowKundli] = useState(false);
-    const [kundliData, setKundliData] = useState<any>(null);
+    const [kundliData, setKundliData] = useState<ChartData | null>(null);
     const [kundliLoading, setKundliLoading] = useState(false);
     const [kundliError, setKundliError] = useState<string | null>(null);
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
@@ -81,9 +82,9 @@ export const Chat: React.FC = () => {
                         consultation_type: 'CHAT'
                     });
                     navigate(`/chat/${data.id}`, { replace: true });
-                } catch (error: any) {
+                } catch (error) {
                     console.error("Error creating consultation:", error);
-                    alert(error.message || "Failed to start chat session. Please try again.");
+                    alert(getErrorMessage(error) || "Failed to start chat session. Please try again.");
                     navigate('/dashboard');
                 }
             };
@@ -127,7 +128,7 @@ export const Chat: React.FC = () => {
                     setSeeker(seekerData);
                 }
 
-            } catch (err: any) {
+            } catch (err) {
                 console.error("Failed to load profile data", err);
             }
         };
@@ -168,7 +169,7 @@ export const Chat: React.FC = () => {
                 name: 'AadiKarta',
                 description: 'Wallet Recharge',
                 order_id: orderData.order_id,
-                handler: async (response: any) => {
+                handler: async (response: RazorpayResponse) => {
                     try {
                         await api.payment.verifyPayment({
                             razorpay_order_id: response.razorpay_order_id,
@@ -183,11 +184,11 @@ export const Chat: React.FC = () => {
                 },
                 theme: { color: '#E91E63' }
             };
-            const rzp = new (window as any).Razorpay(options);
-            rzp.on('payment.failed', (r: any) => alert('Payment failed: ' + r.error.description));
+            const rzp = new window.Razorpay(options);
+            rzp.on("payment.failed", (r: RazorpayError) => alert("Payment failed: " + r.error.description));
             rzp.open();
-        } catch (e: any) {
-            alert('Failed to initiate payment: ' + (e.message || 'Unknown error'));
+        } catch (e) {
+            alert('Failed to initiate payment: ' + (getErrorMessage(e) || 'Unknown error'));
         } finally {
             setIsRecharging(false);
         }
@@ -257,13 +258,13 @@ export const Chat: React.FC = () => {
             const data = await api.kundli.generate({
                 seeker_id: seeker.user_id,
                 full_name: seeker.full_name || 'Seeker',
-                date_of_birth: seeker.date_of_birth,
-                time_of_birth: seeker.time_of_birth,
-                place_of_birth: seeker.place_of_birth,
+                date_of_birth: seeker.date_of_birth || '',
+                time_of_birth: seeker.time_of_birth || '',
+                place_of_birth: seeker.place_of_birth || '',
             });
             setKundliData(data.chart_data);
-        } catch (err: any) {
-            setKundliError(err.message || 'Failed to generate Kundli. Please try again.');
+        } catch (err) {
+            setKundliError(getErrorMessage(err) || 'Failed to generate Kundli. Please try again.');
         } finally {
             setKundliLoading(false);
         }
@@ -476,9 +477,9 @@ export const Chat: React.FC = () => {
                             <div className="flex items-center gap-4">
                                 {/* Mobile only profile summary */}
                                 <div className="md:hidden flex items-center gap-3">
-                                    <img src={resolveImageUrl((opponent as any)?.profile_picture_url, (opponent as any)?.full_name)} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
+                                    <img src={resolveImageUrl(opponent?.profile_picture_url, opponent?.full_name)} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
                                     <div>
-                                        <h3 className="font-bold text-gray-900 text-sm">{(opponent as any)?.full_name || 'Loading...'}</h3>
+                                        <h3 className="font-bold text-gray-900 text-sm">{opponent?.full_name || 'Loading...'}</h3>
                                         <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">● Live</span>
                                     </div>
                                 </div>

@@ -1,3 +1,4 @@
+import type { CmsPage } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
@@ -7,7 +8,7 @@ import { api } from '../services/api';
 
 const PageViewer: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
-    const [page, setPage] = useState<any | null>(null);
+    const [page, setPage] = useState<CmsPage | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 

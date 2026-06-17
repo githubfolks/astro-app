@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
 import AstrologerCard from './AstrologerCard';
-import type { Astrologer } from '../types';
+import type { Astrologer, AstrologerListItem, SeekerProfile } from '../types';
 import LoginModal from './LoginModal';
 import ProfileCompletionModal from './ProfileCompletionModal';
 import { useAuth } from '../context/AuthContext';
@@ -21,7 +21,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [pendingChatAstroId, setPendingChatAstroId] = useState<number | null>(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const [seekerProfile, setSeekerProfile] = useState<any>(null);
+    const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
     const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
 
@@ -34,7 +34,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
         }
     }, [isAuthenticated, user]);
 
-    const isProfileComplete = (profile: any) => {
+    const isProfileComplete = (profile: SeekerProfile | null) => {
         return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
     };
 
@@ -94,7 +94,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
 
             if (!Array.isArray(data)) throw new Error("Invalid response format");
 
-            const astros = data.map((profile: any) => ({
+            const astros = data.map((profile: AstrologerListItem) => ({
                 id: profile.user_id,
                 slug: profile.slug || null,
                 full_name: profile.full_name || "Astrologer",

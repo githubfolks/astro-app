@@ -1,3 +1,4 @@
+import type { Course, CourseMaterial, Batch, EduSession, Enrollment } from '../types';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -9,9 +10,9 @@ import { Book, Link as LinkIcon, Plus, Trash2, ArrowLeft, Users, Calendar, Edit2
 export const CourseManager: React.FC = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [courses, setCourses] = useState<any[]>([]);
-    const [selectedCourse, setSelectedCourse] = useState<any | null>(null);
-    const [materials, setMaterials] = useState<any[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+    const [materials, setMaterials] = useState<CourseMaterial[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Form States
@@ -19,7 +20,7 @@ export const CourseManager: React.FC = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [courseForm, setCourseForm] = useState({ title: '', description: '', price: 0, is_active: true });
 
-    const [batches, setBatches] = useState<any[]>([]);
+    const [batches, setBatches] = useState<Batch[]>([]);
     const [showBatchForm, setShowBatchForm] = useState(false);
     const [batchForm, setBatchForm] = useState({ name: '', max_students: 10 });
 
@@ -58,7 +59,7 @@ export const CourseManager: React.FC = () => {
         }
     };
 
-    const handleSelectCourse = (course: any) => {
+    const handleSelectCourse = (course: Course) => {
         setSelectedCourse(course);
         loadMaterials(course.id);
         setBatches(course.batches || []);
@@ -73,7 +74,7 @@ export const CourseManager: React.FC = () => {
     const loadBatches = async (courseId: number) => {
         try {
             const data = await api.edu.getMyCourses();
-            const course = data.find((c: any) => c.id === courseId);
+            const course = data.find((c: Course) => c.id === courseId);
             if (course) {
                 setBatches(course.batches || []);
             }
@@ -98,7 +99,7 @@ export const CourseManager: React.FC = () => {
             // Re-select course to refresh details if editing
             if (isEditing && selectedCourse) {
                 const updatedCourses = await api.edu.getCourses();
-                const updated = updatedCourses.find((c: any) => c.id === selectedCourse.id);
+                const updated = updatedCourses.find((c: Course) => c.id === selectedCourse.id);
                 if (updated) setSelectedCourse(updated);
             }
         } catch (e) {
@@ -110,10 +111,10 @@ export const CourseManager: React.FC = () => {
     const handleEditCourse = () => {
         if (!selectedCourse) return;
         setCourseForm({
-            title: selectedCourse.title,
-            description: selectedCourse.description,
-            price: selectedCourse.price,
-            is_active: selectedCourse.is_active
+            title: selectedCourse.title || '',
+            description: selectedCourse.description || '',
+            price: selectedCourse.price ?? 0,
+            is_active: selectedCourse.is_active ?? true
         });
         setIsEditing(true);
         setShowCourseForm(true);
@@ -133,16 +134,16 @@ export const CourseManager: React.FC = () => {
         }
     };
 
-    const handleEditSession = (session: any, batchId: number) => {
+    const handleEditSession = (session: EduSession, batchId: number) => {
         // Convert ISO to datetime-local format (YYYY-MM-DDTHH:MM)
         const start = new Date(session.scheduled_start).toISOString().slice(0, 16);
         const end = new Date(session.scheduled_end).toISOString().slice(0, 16);
         
         setSessionForm({
-            title: session.title,
+            title: session.title || '',
             scheduled_start: start,
             scheduled_end: end,
-            is_active: session.is_active
+            is_active: session.is_active ?? true
         });
         setEditingSessionId(session.id);
         setShowSessionForm(batchId);
@@ -169,7 +170,7 @@ export const CourseManager: React.FC = () => {
                 });
             }
             
-            await loadBatches(selectedCourse?.id);
+            if (selectedCourse) await loadBatches(selectedCourse.id);
             setShowSessionForm(null);
             setEditingSessionId(null);
             setSessionForm({ title: '', scheduled_start: '', scheduled_end: '', is_active: true });
@@ -387,7 +388,7 @@ export const CourseManager: React.FC = () => {
                                                             <Users size={14} /> {b.max_students} Max
                                                         </div>
                                                         <div className="flex items-center gap-1">
-                                                            <Calendar size={14} /> Created {new Date(b.created_at).toLocaleDateString()}
+                                                            <Calendar size={14} /> Created {new Date(b.created_at || "").toLocaleDateString()}
                                                         </div>
                                                     </div>
 
@@ -397,9 +398,9 @@ export const CourseManager: React.FC = () => {
                                                             <p className="text-[10px] text-gray-400 italic">No students yet.</p>
                                                         ) : (
                                                             <div className="flex flex-wrap gap-1 mb-3">
-                                                                {b.enrollments.map((e: any) => (
+                                                                {b.enrollments.map((e: Enrollment) => (
                                                                     <div key={e.id} title={e.user?.email} className="bg-white text-indigo-700 px-2 py-1 rounded-md text-[10px] font-semibold border border-indigo-100 shadow-sm">
-                                                                        {e.user?.email.split('@')[0]}
+                                                                        {e.user?.email?.split("@")[0]}
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -448,7 +449,7 @@ export const CourseManager: React.FC = () => {
                                                             )}
 
                                                             <div className="space-y-2">
-                                                                {(b.sessions || []).map((s: any) => (
+                                                                {(b.sessions || []).map((s: EduSession) => (
                                                                     <div key={s.id} className="flex justify-between items-center p-2 border border-gray-100 rounded-lg bg-white group">
                                                                         <div>
                                                                             <div className="flex items-center gap-2">

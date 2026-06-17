@@ -74,7 +74,6 @@ function homeScreen(w, h) {
   const isLandscape = w > h;
   const heroSize = isLandscape ? 200 : isLargeTablet ? 340 : (isTablet ? 260 : 180);
   const pad = isLargeTablet ? '0 64px' : isTablet ? '0 48px' : '0 18px';
-  const fs = (phone, tablet, large) => `${isLargeTablet ? large : isTablet ? tablet : phone}px`;
 
   const services = [
     {icon:'🔮',label:'Vedic\nAstrology'},
@@ -523,7 +522,6 @@ function kundliScreen(w, h) {
 // ─── WALLET SCREEN ────────────────────────────────────────────────────────────
 function walletScreen(w, h) {
   const isTablet = w >= 900;
-  const isLandscape = w > h;
   const pad = isTablet ? '0 40px' : '0 16px';
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8">

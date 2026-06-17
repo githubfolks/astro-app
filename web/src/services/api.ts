@@ -4,6 +4,16 @@ import { CapacitorHttp } from '@capacitor/core';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+/** FastAPI request-validation error item (from response.detail array) */
+interface ValidationError {
+    loc?: (string | number)[];
+    msg: string;
+    type?: string;
+}
+
+/** Generic JSON-serializable request payload (any plain object). */
+type JsonBody = object;
+
 /** Get auth token from cross-platform storage */
 const getAuthToken = async (): Promise<string | null> => {
     return storage.getItem('token');
@@ -66,7 +76,7 @@ const customFetch = async (url: string, options: RequestInit = {}): Promise<Resp
             typeof response.data === 'object' ? JSON.stringify(response.data) : response.data,
             {
                 status: response.status,
-                headers: response.headers as any,
+                headers: response.headers as HeadersInit,
             }
         );
     } catch (error) {
@@ -86,7 +96,7 @@ const handleResponse = async (response: Response, defaultError: string) => {
         let errorMessage = errorData.detail || defaultError;
 
         if (Array.isArray(errorData.detail)) {
-            errorMessage = errorData.detail.map((err: any) => {
+            errorMessage = (errorData.detail as ValidationError[]).map((err) => {
                 const field = err.loc ? err.loc[err.loc.length - 1] : 'error';
                 return `${String(field).replace('_', ' ')}: ${err.msg}`;
             }).join(', ');
@@ -111,7 +121,7 @@ export const api = {
             return handleResponse(response, 'Login failed');
         },
 
-        signup: async (data: any) => {
+        signup: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -165,7 +175,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch profile');
         },
-        updateProfile: async (data: any) => {
+        updateProfile: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/astrologers/profile`, {
                 method: 'PUT',
                 headers: {
@@ -176,7 +186,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to update profile');
         },
-        onboarding: async (data: any) => {
+        onboarding: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/astrologers/onboarding`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -208,7 +218,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch seeker profile');
         },
-        updateProfile: async (data: any) => {
+        updateProfile: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/seekers/profile`, {
                 method: 'PUT',
                 headers: {
@@ -428,7 +438,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch sessions');
         },
-        createCourse: async (data: any) => {
+        createCourse: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/courses`, {
                 method: 'POST',
                 headers: {
@@ -439,7 +449,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to create course');
         },
-        updateCourse: async (courseId: number, data: any) => {
+        updateCourse: async (courseId: number, data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/courses/${courseId}`, {
                 method: 'PUT',
                 headers: {
@@ -451,7 +461,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to update course');
         },
-        createBatch: async (data: any) => {
+        createBatch: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/batches`, {
                 method: 'POST',
                 headers: {
@@ -462,7 +472,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to create batch');
         },
-        scheduleSession: async (data: any) => {
+        scheduleSession: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/sessions`, {
                 method: 'POST',
                 headers: {
@@ -473,7 +483,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to schedule session');
         },
-        updateSession: async (sessionId: number, data: any) => {
+        updateSession: async (sessionId: number, data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/sessions/${sessionId}`, {
                 method: 'PUT',
                 headers: {
@@ -484,7 +494,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to update session');
         },
-        enroll: async (data: any) => {
+        enroll: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/enroll`, {
                 method: 'POST',
                 headers: {
@@ -508,7 +518,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch course materials');
         },
-        addCourseMaterial: async (courseId: number, data: any) => {
+        addCourseMaterial: async (courseId: number, data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/courses/${courseId}/materials`, {
                 method: 'POST',
                 headers: {

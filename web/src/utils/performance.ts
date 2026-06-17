@@ -15,7 +15,7 @@ export const perf = {
                 if (entries.length > 0) {
                     console.debug(`[Perf] ${name}: ${entries[0].duration.toFixed(2)}ms`);
                 }
-            } catch (e) {
+            } catch {
                 // Mark might not exist yet
             }
         }

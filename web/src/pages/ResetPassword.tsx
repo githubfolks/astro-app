@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -27,8 +28,8 @@ export const ResetPassword: React.FC = () => {
         try {
             await api.auth.resetPassword(token, newPassword);
             navigate('/login');
-        } catch (err: any) {
-            setError(err.message || 'Failed to reset password');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to reset password');
         } finally {
             setIsLoading(false);
         }
