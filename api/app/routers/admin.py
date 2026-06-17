@@ -185,6 +185,24 @@ def delete_user(user_id: int, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Nullify nullable FK references to preserve historical records
+    db.query(models.Consultation).filter(models.Consultation.astrologer_id == user_id).update({"astrologer_id": None})
+    db.query(models.Consultation).filter(models.Consultation.seeker_id == user_id).update({"seeker_id": None})
+    db.query(models.Review).filter(models.Review.astrologer_id == user_id).update({"astrologer_id": None})
+    db.query(models.Review).filter(models.Review.seeker_id == user_id).update({"seeker_id": None})
+    db.query(models.ChatMessage).filter(models.ChatMessage.sender_id == user_id).update({"sender_id": None})
+    db.query(models.Post).filter(models.Post.author_id == user_id).update({"author_id": None})
+    db.query(models.Payout).filter(models.Payout.astrologer_id == user_id).update({"astrologer_id": None})
+    db.query(models.AuditLog).filter(models.AuditLog.actor_id == user_id).update({"actor_id": None})
+    db.query(models.KundliReport).filter(models.KundliReport.seeker_id == user_id).update({"seeker_id": None})
+
+    # Delete records with non-nullable FK references
+    db.query(models.KundliReport).filter(models.KundliReport.generated_by == user_id).delete()
+    db.query(models.Dispute).filter(models.Dispute.raised_by_id == user_id).delete()
+    db.query(models.VerificationToken).filter(models.VerificationToken.user_id == user_id).delete()
+    db.query(models.DeviceToken).filter(models.DeviceToken.user_id == user_id).delete()
+
     db.delete(user)
     db.commit()
     return {"message": "User deleted"}
