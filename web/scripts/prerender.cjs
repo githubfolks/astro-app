@@ -18,7 +18,6 @@ const PuppeteerRenderer = require('@prerenderer/renderer-puppeteer');
 const DIST = path.resolve(__dirname, '../dist');
 
 const ROUTES = [
-    '/',
     '/astrologers',
     '/about-us',
     '/contact-us',
