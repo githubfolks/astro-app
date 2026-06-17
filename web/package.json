@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-sitemap.js ; tsc && vite build && node scripts/prerender.cjs",
+    "build": "node scripts/generate-sitemap.js ; tsc && vite build && (node scripts/prerender.cjs || echo '[prerender] Skipped due to error — deploy continues')",
     "sitemap": "node scripts/generate-sitemap.js",
     "preview": "vite preview",
     "mobile:build": "tsc && vite build --mode mobile",

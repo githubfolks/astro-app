@@ -58,6 +58,14 @@ async function main() {
         renderer: new PuppeteerRenderer({
             renderAfterTime: 2000,
             headless: true,
+            // Required for Docker containers: /dev/shm is too small for Chrome by default
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+            ],
+            navigationOptions: { timeout: 60000 },
         }),
     });
 
