@@ -8,27 +8,14 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import os
 import random
 import string
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from pydantic import EmailStr
 from ..limiter import limiter
+from ..services import email_service
 from fastapi import Request
 
 router = APIRouter()
 
 import bcrypt
-
-# Email Configuration
-conf = ConnectionConfig(
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "user"),
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "password"),
-    MAIL_FROM = os.getenv("MAIL_FROM", "admin@example.com"),
-    MAIL_PORT = int(os.getenv("MAIL_PORT", 587)),
-    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS = True,
-    MAIL_SSL_TLS = False,
-    USE_CREDENTIALS = True,
-    VALIDATE_CERTS = False 
-)
 
 # pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -140,15 +127,8 @@ async def signup(request: Request, user: schemas.UserCreate, background_tasks: B
     db.add(db_token)
     db.commit()
 
-    message = MessageSchema(
-        subject="Aadikarta - Verify Your Email",
-        recipients=[user.email],
-        body=f"Welcome to Aadikarta! Your verification code is: {otp}. It is valid for 10 minutes.",
-        subtype=MessageType.html
-    )
-    
-    fm = FastMail(conf)
-    background_tasks.add_task(fm.send_message, message)
+    subject, html = email_service.build_verification_email(otp)
+    email_service.send_email(background_tasks, [user.email], subject, html)
 
     return {"message": "Signup successful. Please check your email for verification code."}
 
@@ -207,21 +187,13 @@ async def forgot_password(request_data: schemas.ForgotPasswordRequest, backgroun
     db.commit()
 
     # Send Email
-    message = MessageSchema(
-        subject="Password Reset OTP",
-        recipients=[user.email], # Fixed: was incorrectly using request.email
-        body=f"Your OTP for password reset is: {otp}. It is valid for 10 minutes.",
-        subtype=MessageType.html
-    )
-    
-    fm = FastMail(conf)
-    # Using background task to avoid blocking
-    background_tasks.add_task(fm.send_message, message)
+    subject, html = email_service.build_password_reset_email(otp)
+    email_service.send_email(background_tasks, [user.email], subject, html)
 
     return {"message": "OTP sent to email"}
 
 @router.post("/verify-email")
-def verify_email(request: schemas.VerifyOTPRequest, db: Session = Depends(database.get_db)):
+def verify_email(request: schemas.VerifyOTPRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.email == request.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -242,6 +214,11 @@ def verify_email(request: schemas.VerifyOTPRequest, db: Session = Depends(databa
     user.is_verified = True
     token.is_used = True
     db.commit()
+
+    # Send welcome / onboarding email now that the account is active
+    name = user.seeker_profile.full_name if user.seeker_profile else None
+    subject, html = email_service.build_welcome_email(name)
+    email_service.send_email(background_tasks, [user.email], subject, html)
 
     return {"message": "Email verified successfully. You can now login."}
 
@@ -266,15 +243,8 @@ async def resend_verification(request_data: schemas.ResendVerificationRequest, b
     db.add(db_token)
     db.commit()
 
-    message = MessageSchema(
-        subject="Aadikarta - New Verification Code",
-        recipients=[user.email],
-        body=f"Your new verification code is: {otp}. It is valid for 10 minutes.",
-        subtype=MessageType.html
-    )
-    
-    fm = FastMail(conf)
-    background_tasks.add_task(fm.send_message, message)
+    subject, html = email_service.build_verification_email(otp)
+    email_service.send_email(background_tasks, [user.email], subject, html)
 
     return {"message": "New verification code sent to email."}
 

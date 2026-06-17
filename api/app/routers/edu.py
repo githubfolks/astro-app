@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
 from typing import List
 from .. import models, models_edu, schemas_edu, database
 from .auth import get_current_user, get_current_user_optional
-from ..services import miro_service
+from ..services import miro_service, email_service
 from datetime import datetime, timedelta, timezone
 import os
 import hmac
@@ -87,15 +87,52 @@ def my_courses(db: Session = Depends(database.get_db), current_user: models.User
 
 # Batch Management
 @router.post("/batches", response_model=schemas_edu.BatchResponse)
-def create_batch(batch: schemas_edu.BatchCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+def create_batch(batch: schemas_edu.BatchCreate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.role not in [models.UserRole.ADMIN, models.UserRole.TUTOR]:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
+
     db_batch = models_edu.Batch(**batch.dict())
     db.add(db_batch)
     db.commit()
     db.refresh(db_batch)
+
+    _notify_batch_created(background_tasks, db, db_batch, current_user)
     return db_batch
+
+
+def _notify_batch_created(background_tasks: BackgroundTasks, db: Session, batch: models_edu.Batch, creator: models.User):
+    """Email enrolled students and admins about a newly created batch.
+
+    Batches are created empty, so the student notification is usually a no-op
+    at creation time; it covers the case where enrollments already exist.
+    """
+    course = db.query(models_edu.Course).filter(models_edu.Course.id == batch.course_id).first()
+    course_title = course.title if course else "your course"
+
+    # Resolve the creator's display name (tutor or admin)
+    tutor_name = None
+    if creator.role == models.UserRole.ASTROLOGER and creator.astrologer_profile:
+        tutor_name = creator.astrologer_profile.full_name
+    elif creator.seeker_profile:
+        tutor_name = creator.seeker_profile.full_name
+    tutor_name = tutor_name or creator.email
+
+    # Notify enrolled students
+    for enrollment in batch.enrollments:
+        student = enrollment.user
+        if not student or not student.email:
+            continue
+        student_name = student.seeker_profile.full_name if student.seeker_profile else None
+        subject, html = email_service.build_batch_created_student_email(student_name, batch.name, course_title)
+        email_service.send_email(background_tasks, [student.email], subject, html)
+
+    # Notify admins
+    admin_emails = [
+        u.email for u in db.query(models.User).filter(models.User.role == models.UserRole.ADMIN).all() if u.email
+    ]
+    if admin_emails:
+        subject, html = email_service.build_batch_created_admin_email(tutor_name, batch.name, course_title)
+        email_service.send_email(background_tasks, admin_emails, subject, html)
 
 # Session Scheduling
 @router.post("/sessions", response_model=schemas_edu.ClassSessionResponse)
