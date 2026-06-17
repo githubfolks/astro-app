@@ -51,7 +51,7 @@ export default function AstrologerDetails() {
                     </Button>
                     <div className="flex items-center gap-4">
                         <Avatar 
-                            src={profile.profile.profile_picture_url} 
+                            src={profile.profile?.profile_picture_url}
                             className="w-16 h-16 border-2 border-white shadow-sm" 
                             iconSize={32}
                             alt="Profile"

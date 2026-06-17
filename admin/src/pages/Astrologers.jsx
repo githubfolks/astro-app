@@ -70,32 +70,32 @@ export default function Astrologers() {
                                 />
                             </div>
 
-                            <Avatar 
-                                src={item.profile.profile_picture_url} 
-                                className="w-20 h-20 border-4 border-gray-50 shadow-inner mb-3" 
+                            <Avatar
+                                src={item.profile?.profile_picture_url}
+                                className="w-20 h-20 border-4 border-gray-50 shadow-inner mb-3"
                                 iconSize={40}
                             />
-                            <h3 className="text-base font-bold text-gray-900 mb-1 line-clamp-1">{item.profile.full_name}</h3>
-                            <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-3 leading-relaxed">{item.profile.short_bio}</p>
+                            <h3 className="text-base font-bold text-gray-900 mb-1 line-clamp-1">{item.profile?.full_name}</h3>
+                            <p className="text-xs text-gray-500 line-clamp-2 h-8 mb-3 leading-relaxed">{item.profile?.short_bio}</p>
 
                             <div className="flex gap-2 mb-3">
                                 <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-medium rounded-full border border-blue-100">
-                                    {item.profile.experience_years}y Exp
+                                    {item.profile?.experience_years}y Exp
                                 </span>
                                 <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[10px] font-medium rounded-full border border-emerald-100">
-                                    ₹{item.profile.consultation_fee_per_min}/m
+                                    ₹{item.profile?.consultation_fee_per_min}/m
                                 </span>
                             </div>
 
                             <p className="text-[10px] text-gray-400 font-medium tracking-wide uppercase line-clamp-1">
-                                {item.profile.specialties}
+                                {item.profile?.specialties}
                             </p>
                         </div>
 
                         <div className="bg-gray-50/50 p-2 flex justify-between items-center gap-2">
                             <Button
-                                variant="secondary"
-                                className="flex-1 bg-white text-xs h-8 gap-1.5 shadow-sm border-gray-200"
+                                variant="outlined"
+                                className="flex-1 text-xs h-8 gap-1.5 shadow-sm"
                                 onClick={() => navigate(`/astrologers/edit/${item.id}`)}
                             >
                                 <Edit2 size={12} /> Edit

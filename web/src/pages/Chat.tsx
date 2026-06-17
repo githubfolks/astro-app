@@ -476,7 +476,7 @@ export const Chat: React.FC = () => {
                             <div className="flex items-center gap-4">
                                 {/* Mobile only profile summary */}
                                 <div className="md:hidden flex items-center gap-3">
-                                    <img src={resolveImageUrl((opponent as any).profile_picture_url, (opponent as any).full_name)} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
+                                    <img src={resolveImageUrl((opponent as any)?.profile_picture_url, (opponent as any)?.full_name)} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
                                     <div>
                                         <h3 className="font-bold text-gray-900 text-sm">{(opponent as any)?.full_name || 'Loading...'}</h3>
                                         <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">● Live</span>
