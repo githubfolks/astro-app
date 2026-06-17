@@ -1,8 +1,21 @@
+# OS / editor
 .DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Mobile build artifacts
 *.apk
 *.aab
 
 # Sensitive / credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
 domain.txt
 aadikarta-cert.pem
 aadikarta-release.keystore
@@ -17,8 +30,15 @@ api/sql_app.db
 # DB backups
 db-backup/
 
-# Generated / build artifacts
+# Runtime uploads
+api/uploads/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Deploy / build artifacts
+.vercel
 store-graphics/output/
 store-graphics/node_modules/
-.DS_Store
-.DS_Store
