@@ -313,52 +313,38 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
 
 @router.websocket("/ws/{consultation_id}")
 async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: str = Query(...)):
-    # Debug Logging Setup
-    # Debug Logging Setup
-    def log_debug(msg):
-        print(f"WS_DEBUG: {msg}") # Force print to console
-        with open("ws_debug.log", "a") as f:
-            f.write(f"{datetime.utcnow()} - {msg}\n")
-
-    log_debug(f"NEW CONNECTION: ConsID={consultation_id} TokenPrefix={token[:10]}...")
+    logger.info(f"New WS connection attempt: consultation_id={consultation_id}")
 
     # Create a new session for this connection scope
     db = database.SessionLocal()
-    
+
     try:
         user = await get_user_from_token(token, db)
-        
+
         if not user:
-            log_debug("REJECT: Invalid Token or User not found")
+            logger.warning(f"WS reject (consultation {consultation_id}): invalid token or user not found")
             await websocket.close(code=4003)
             return
-
-        log_debug(f"USER: ID={user.id} Role={user.role}")
 
         consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
         if not consultation:
-            log_debug("REJECT: Consultation not found")
+            logger.warning(f"WS reject: consultation {consultation_id} not found")
             await websocket.close(code=4004)
             return
-            
+
         # Verify participant
         if user.id != consultation.seeker_id and user.id != consultation.astrologer_id:
-            log_debug(f"REJECT: User not participant. Seeker={consultation.seeker_id} Astro={consultation.astrologer_id}")
+            logger.warning(f"WS reject: user {user.id} not a participant of consultation {consultation_id}")
             await websocket.close(code=4003)
             return
 
-        log_debug("ACCEPTING CONNECTION")
         await manager.connect(websocket, consultation_id, user)
-        log_debug("CONNECTED")
+        logger.info(f"WS connected: user={user.id} role={user.role} consultation={consultation_id}")
     except Exception as e:
-        log_debug(f"EXCEPTION during handshake: {e}")
+        logger.error(f"WS exception during handshake (consultation {consultation_id}): {e}")
         await websocket.close(code=4000)
         return
 
-    
-    with open("ws_debug.log", "a") as f:
-        f.write(f"CONNECTED: User={user.id}\n")
-    
     try:
         # Auto-accept if astrologer joins
         if user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.REQUESTED:
@@ -426,7 +412,11 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                 )
                 db.add(new_msg)
                 db.commit()
-                
+
+                # Re-read latest status; billing_loop runs on a separate session and
+                # may have changed status (PAUSED/AUTO_ENDED) since this socket connected.
+                db.refresh(consultation)
+
                 # Check for Timer Start (First Astrologer Message)
                 if user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:
                     consultation.status = models.ConsultationStatus.ACTIVE
@@ -473,8 +463,8 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                 await websocket.send_text(json.dumps({"type": "PONG"}))
 
             elif msg_type == "RESUME_CHAT":
+                db.refresh(consultation)
                 if consultation.status == models.ConsultationStatus.PAUSED:
-                    db.refresh(consultation)
                     wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
                     if wallet and float(wallet.balance) >= float(consultation.rate_per_min):
                         consultation.status = models.ConsultationStatus.ACTIVE
@@ -491,6 +481,11 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                         }))
 
             elif msg_type == "END_CHAT":
+                db.refresh(consultation)
+                # Don't overwrite a terminal status already set by billing_loop
+                if consultation.status in (models.ConsultationStatus.COMPLETED, models.ConsultationStatus.AUTO_ENDED):
+                    await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "already_ended"})
+                    break
                 consultation.status = models.ConsultationStatus.COMPLETED
                 consultation.end_time = datetime.utcnow()
                 audit.log(db, "CHAT_ENDED_BY_USER", actor_id=user.id,

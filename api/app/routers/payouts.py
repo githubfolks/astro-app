@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from .. import models, database, audit
-from ..routers.auth import get_current_user, conf
+from ..routers.auth import get_current_user
+from ..services.email_service import conf
 from typing import List, Optional
 from datetime import datetime, timedelta
 import decimal

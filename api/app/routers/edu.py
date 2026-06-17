@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload
-from typing import List
+from typing import List, Optional
+from jose import JWTError
 from .. import models, models_edu, schemas_edu, database
 from .auth import get_current_user, get_current_user_optional
 from ..services import miro_service, email_service
@@ -279,12 +280,17 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
         if not enrollment:
             raise HTTPException(status_code=403, detail="You are not enrolled in this batch")
         role = "participant"
-    else:
-        # Check if user is the teacher of the course
-        if current_user.role == models.UserRole.TUTOR:
-            # For now, simplistic check or check against teacher_id if we add it to courses/sessions
-            pass
+    elif current_user.role == models.UserRole.TUTOR:
+        # A tutor may only moderate sessions for a course they actually teach.
+        batch = db.query(models_edu.Batch).filter(models_edu.Batch.id == session.batch_id).first()
+        course = db.query(models_edu.Course).filter(models_edu.Course.id == batch.course_id).first() if batch else None
+        if not course or course.teacher_id != current_user.id:
+            raise HTTPException(status_code=403, detail="You are not the teacher of this course")
         role = "moderator"
+    elif current_user.role == models.UserRole.ADMIN:
+        role = "moderator"
+    else:
+        raise HTTPException(status_code=403, detail="Not authorized to join this session")
 
     # Get full name
     full_name = "User"
@@ -316,49 +322,76 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
     }
 
 # Webhooks for MiroTalk (Attendance Capture)
+#
+# mirotalk/sfu posts { "event": "join"|"exit"|"disconnect", "data": { room_id, peer_info } }
+# with no auth header. If MIROTALK_WEBHOOK_SECRET is set, we expect it to be supplied
+# via an X-MiroTalk-Secret header injected by a reverse proxy in front of the SFU;
+# otherwise the endpoint is open (rely on network isolation).
+def _peer_user_id(peer_info: dict) -> Optional[int]:
+    """Recover our DB user id from the peer's JWT (carried in peer_info.peer_token)."""
+    token = (peer_info or {}).get("peer_token")
+    if not token:
+        return None
+    try:
+        username = miro_service.decode_miro_token(token).get("username")
+        return int(username)
+    except (ValueError, TypeError, KeyError, JWTError):
+        return None
+
+
 @router.post("/webhooks/mirotalk")
 async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_db)):
     webhook_secret = os.getenv("MIROTALK_WEBHOOK_SECRET")
-    if not webhook_secret:
-        raise RuntimeError("MIROTALK_WEBHOOK_SECRET is not configured.")
-    provided = request.headers.get("X-MiroTalk-Secret", "")
-    if not hmac.compare_digest(provided, webhook_secret):
-        raise HTTPException(status_code=401, detail="Invalid webhook secret")
+    if webhook_secret:
+        provided = request.headers.get("X-MiroTalk-Secret", "")
+        if not hmac.compare_digest(provided, webhook_secret):
+            raise HTTPException(status_code=401, detail="Invalid webhook secret")
 
-    data = await request.json()
-    event = data.get("event")
-    # MiroTalk SFU events: participantJoined, participantLeft
-    if event == "participantJoined":
-        room_id = data.get("room")
-        user_id = data.get("userId") # Passed in JWT sub
-        session = db.query(models_edu.ClassSession).filter(models_edu.ClassSession.miro_room_id == room_id).first()
-        if session and user_id:
-            # Create attendance record
-            attendance = models_edu.Attendance(
+    body = await request.json()
+    event = body.get("event")
+    data = body.get("data", {}) or {}
+    room_id = data.get("room_id")
+    peer_info = data.get("peer_info", {}) or {}
+
+    if not room_id:
+        return {"status": "ignored"}
+
+    session = db.query(models_edu.ClassSession).filter(
+        models_edu.ClassSession.miro_room_id == room_id
+    ).first()
+    if not session:
+        return {"status": "ignored"}
+
+    user_id = _peer_user_id(peer_info)
+    if not user_id:
+        return {"status": "ignored"}
+
+    if event == "join":
+        # Avoid duplicate open records on reconnect/refresh.
+        existing = db.query(models_edu.Attendance).filter(
+            models_edu.Attendance.session_id == session.id,
+            models_edu.Attendance.user_id == user_id,
+            models_edu.Attendance.left_at == None
+        ).first()
+        if not existing:
+            db.add(models_edu.Attendance(
                 session_id=session.id,
-                user_id=int(user_id),
+                user_id=user_id,
                 joined_at=datetime.utcnow()
-            )
-            db.add(attendance)
+            ))
             db.commit()
-    
-    elif event == "participantLeft":
-        room_id = data.get("room")
-        user_id = data.get("userId")
-        session = db.query(models_edu.ClassSession).filter(models_edu.ClassSession.miro_room_id == room_id).first()
-        if session and user_id:
-            # Find the active attendance record and close it
-            attendance = db.query(models_edu.Attendance).filter(
-                models_edu.Attendance.session_id == session.id,
-                models_edu.Attendance.user_id == int(user_id),
-                models_edu.Attendance.left_at == None
-            ).order_by(models_edu.Attendance.joined_at.desc()).first()
-            
-            if attendance:
-                attendance.left_at = datetime.utcnow()
-                delta = attendance.left_at - attendance.joined_at
-                attendance.duration_minutes = int(delta.total_seconds() / 60)
-                db.commit()
+
+    elif event in ("exit", "disconnect"):
+        attendance = db.query(models_edu.Attendance).filter(
+            models_edu.Attendance.session_id == session.id,
+            models_edu.Attendance.user_id == user_id,
+            models_edu.Attendance.left_at == None
+        ).order_by(models_edu.Attendance.joined_at.desc()).first()
+        if attendance:
+            attendance.left_at = datetime.utcnow()
+            delta = attendance.left_at - attendance.joined_at
+            attendance.duration_minutes = int(delta.total_seconds() / 60)
+            db.commit()
 
     return {"status": "ok"}
 

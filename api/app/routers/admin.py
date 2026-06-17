@@ -10,7 +10,8 @@ from .. import models, schemas, database
 from .. import models_edu, schemas_edu
 from decimal import Decimal
 from fastapi_mail import FastMail, MessageSchema, MessageType
-from .auth import get_current_admin, get_password_hash, conf
+from .auth import get_current_admin, get_password_hash
+from ..services.email_service import conf
 
 router = APIRouter(
     prefix="/admin",
