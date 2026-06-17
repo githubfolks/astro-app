@@ -12,7 +12,7 @@ import re
 import unicodedata
 
 revision: str = 'f3a8c1d2e9b4'
-down_revision: Union[str, Sequence[str], None] = 'eba4cfe36c0b'
+down_revision: Union[str, Sequence[str], None] = '8ae426bf6ed5'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
