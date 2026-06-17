@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas, database
 from .auth import get_current_user, get_password_hash, create_access_token
-import secrets, string, re, unicodedata
+import re, unicodedata
 from datetime import datetime, timedelta
 
 router = APIRouter(
@@ -27,15 +27,6 @@ def generate_astrologer_slug(full_name: str, user_id: int, db: Session) -> str:
     return f"{base}-{user_id}"
 
 
-@router.post("/send-otp")
-def send_onboarding_otp(phone_number: str, db: Session = Depends(database.get_db)):
-    # Generate cryptographically secure OTP — never returned in the response
-    otp = ''.join(secrets.choice(string.digits) for _ in range(6))
-    # TODO: store OTP server-side keyed by phone_number (requires a pending-otp table)
-    # and send it via SMS gateway. For now this endpoint is a no-op placeholder.
-    _ = otp  # prevents unused-variable lint warning; OTP goes to SMS only
-    return {"message": f"OTP sent to {phone_number}"}
-
 @router.post("/onboarding")
 def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Session = Depends(database.get_db)):
     # 1. Check if user already exists
@@ -50,7 +41,7 @@ def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Sess
         phone_number=request.phone_number,
         hashed_password=hashed_password,
         role=models.UserRole.ASTROLOGER,
-        is_verified=True, # Mobile OTP verified on frontend before this call
+        is_verified=True, # Email is the verification/identity channel; admin approval gates activation
         is_active=False # Inactive until admin approved
     )
     db.add(new_user)

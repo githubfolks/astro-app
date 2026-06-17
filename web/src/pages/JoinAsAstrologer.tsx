@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { Check, User, GraduationCap, FileText, Camera, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { User, GraduationCap, FileText, Camera, ShieldCheck, ArrowLeft } from 'lucide-react';
 import './Auth.css';
 import SEO from '../components/SEO';
 
@@ -45,8 +45,6 @@ export const JoinAsAstrologer: React.FC = () => {
         id_proof_url: '',
         legal_agreement_accepted: false
     });
-    const [otp, setOtp] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -76,24 +74,7 @@ export const JoinAsAstrologer: React.FC = () => {
         }
     };
 
-    const sendOtp = async () => {
-        if (!formData.phone_number) {
-            setError('Please enter mobile number first');
-            return;
-        }
-        setIsLoading(true);
-        try {
-            await api.astrologers.sendOtp(formData.phone_number);
-            setOtpSent(true);
-            setError('');
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const verifyOtp = () => {
+    const handleNextStep1 = () => {
         // Step 1 Validation
         if (!formData.full_name || !formData.email || !formData.password || !formData.phone_number) {
             setError('All fields in this step are mandatory');
@@ -112,18 +93,8 @@ export const JoinAsAstrologer: React.FC = () => {
             return;
         }
 
-        if (!otpSent) {
-            setError('Please verify your mobile number first');
-            return;
-        }
-
-        // In a real app, call verifyOtp API. Here we just advance if OTP is 123456
-        if (otp === '123456' || otp === '') { // Allow empty for demo/sim
-            setStep(2);
-            setError('');
-        } else {
-            setError('Invalid OTP');
-        }
+        setStep(2);
+        setError('');
     };
 
     const handleNextStep2 = () => {
@@ -192,7 +163,7 @@ export const JoinAsAstrologer: React.FC = () => {
 
                 {step === 1 && (
                     <div className="onboarding-step">
-                        <h3 className="step-title"><User size={20} /> Identity Verification</h3>
+                        <h3 className="step-title"><User size={20} /> Account Details</h3>
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Full Name</label>
@@ -208,19 +179,10 @@ export const JoinAsAstrologer: React.FC = () => {
                             </div>
                             <div className="form-group">
                                 <label>Mobile Number</label>
-                                <div className="input-with-button">
-                                    <input type="text" placeholder="+91 00000 00000" value={formData.phone_number} onChange={e => setFormData({ ...formData, phone_number: e.target.value })} disabled={otpSent} />
-                                    {!otpSent ? <button onClick={sendOtp} disabled={isLoading}>Send OTP</button> : <span className="verified-badge"><Check size={16} /> Sent</span>}
-                                </div>
+                                <input type="text" placeholder="+91 00000 00000" value={formData.phone_number} onChange={e => setFormData({ ...formData, phone_number: e.target.value })} />
                             </div>
-                            {otpSent && (
-                                <div className="form-group full-width">
-                                    <label>Enter OTP</label>
-                                    <input type="text" placeholder="6-digit OTP" value={otp} onChange={e => setOtp(e.target.value)} />
-                                </div>
-                            )}
                         </div>
-                        <button className="auth-btn next-btn" onClick={verifyOtp} disabled={isLoading}>{otpSent ? 'Verify & Next' : 'Next'}</button>
+                        <button className="auth-btn next-btn" onClick={handleNextStep1} disabled={isLoading}>Next</button>
                     </div>
                 )}
 

@@ -184,7 +184,6 @@ class ChatMessage(Base):
 class VerificationTokenType(str, enum.Enum):
     FORGOT_PASSWORD = "FORGOT_PASSWORD"
     EMAIL_VERIFICATION = "EMAIL_VERIFICATION"
-    ONBOARDING_OTP = "ONBOARDING_OTP"
 
 class VerificationToken(Base):
     __tablename__ = "verification_tokens"

@@ -176,12 +176,6 @@ export const api = {
             });
             return handleResponse(response, 'Failed to update profile');
         },
-        sendOtp: async (phone_number: string) => {
-            const response = await customFetch(`${API_URL}/astrologers/send-otp?phone_number=${phone_number}`, {
-                method: 'POST'
-            });
-            return handleResponse(response, 'Failed to send OTP');
-        },
         onboarding: async (data: any) => {
             const response = await customFetch(`${API_URL}/astrologers/onboarding`, {
                 method: 'POST',

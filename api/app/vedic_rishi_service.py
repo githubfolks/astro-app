@@ -7,7 +7,7 @@ import os
 from typing import Optional, Tuple
 
 ASTROAPI_BASE_URL = os.getenv("ASTROAPI_BASE_URL", "https://astroapi.dev/api")
-ASTROAPI_TOKEN = os.getenv("ASTROAPI_TOKEN", "bced04486591a67742c3041ea1a6819e5a9b6d8d")
+ASTROAPI_TOKEN = os.getenv("ASTROAPI_TOKEN")
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 
