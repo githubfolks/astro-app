@@ -101,9 +101,41 @@ server {
 
 Ensure that the `.env` files in each directory point to the correct services and databases. Specifically, the `VITE_API_URL` should point to the correct API endpoint for that environment.
 
+> [!WARNING]
+> **VITE_API_URL is baked in at build time!**
+> Because Vite compiles environment variables into static JS files during the Docker image build phase, you **cannot** just change the `.env` file and restart the containers. You must rebuild the images.
+>
+> If you see a CORS error in the browser console like:
+> `Access to fetch at 'http://localhost:9000/...' from origin 'https://aadikarta.org' has been blocked by CORS policy: Permission was denied for this request to access the loopback address space.`
+>
+> It means the VPS container was built using the local default `VITE_API_URL=http://localhost:9000`.
+
+### How to Fix CORS / Loopback Error on VPS:
+
+1. **Edit the VPS `.env` file** in the corresponding directory (`/var/www/aadikarta/production` or `/var/www/aadikarta/staging`):
+   ```bash
+   nano .env
+   ```
+   Update the variable to the correct public HTTPS API endpoint:
+   ```env
+   VITE_API_URL=https://api.aadikarta.org
+   ```
+
+2. **Rebuild the frontend service with `--no-cache`** to force Vite to compile with the new variable:
+   ```bash
+   # For production / main landing page
+   docker-compose build --no-cache web
+   docker-compose up -d --force-recreate web
+   
+   # For staging (if staging has both web and admin)
+   docker-compose build --no-cache web admin
+   docker-compose up -d --force-recreate
+   ```
+
 ## 6. Deployment Workflow
 
 1.  **Develop** on the `staging` branch (local or remote).
 2.  **Pull** to the staging directory on VPS: `cd /var/www/aadikarta/staging && git pull origin staging && docker-compose up -d --build`.
 3.  **Merge** `staging` into `main` when ready for production.
 4.  **Pull** to the production directory on VPS: `cd /var/www/aadikarta/production && git pull origin main && docker-compose up -d --build`.
+

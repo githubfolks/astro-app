@@ -1,210 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Core pages -->
   <url>
     <loc>https://aadikarta.org/</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/astrologers</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/how-it-works</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/pricing</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/blog</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-  <!-- Horoscope hub -->
   <url>
     <loc>https://aadikarta.org/horoscope</loc>
-    <lastmod>2026-06-17</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Horoscope pages (top-of-funnel traffic) -->
   <url>
     <loc>https://aadikarta.org/horoscope/aries</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/taurus</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/gemini</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/cancer</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/leo</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/virgo</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/libra</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/scorpio</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/sagittarius</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/capricorn</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/aquarius</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/horoscope/pisces</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Service pages -->
   <url>
     <loc>https://aadikarta.org/services/vedic-astrology</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/services/kundli-matching</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/services/love-advice</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/services/daily-horoscope</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/services/tarot-reading</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/services/vastu-shastra</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-
-  <!-- Info pages -->
   <url>
     <loc>https://aadikarta.org/about-us</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/contact-us</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/join-as-astrologer</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/memory-guru</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/book</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-
-  <!-- Legal pages -->
   <url>
     <loc>https://aadikarta.org/privacy-policy</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/terms-of-service</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/refund-policy</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://aadikarta.org/disclaimer</loc>
-    <lastmod>2026-05-22</lastmod>
+    <lastmod>2026-06-18</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
