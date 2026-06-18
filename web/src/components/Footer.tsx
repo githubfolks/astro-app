@@ -48,7 +48,7 @@ const Footer: React.FC = () => {
                     </div>
 
                     {/* Services Column */}
-                    <div className="footer-column info-column">
+                    <div className="footer-column">
                         <div className="info-group">
                             <h4 className="footer-title">Services</h4>
                             <ul className="footer-links">
@@ -62,23 +62,8 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Horoscopes Column */}
-                    <div className="footer-column info-column">
-                        <div className="info-group">
-                            <h4 className="footer-title">Horoscopes</h4>
-                            <ul className="footer-links">
-                                <li><Link to="/horoscope/aries" onClick={scrollToTop}>Aries ♈</Link></li>
-                                <li><Link to="/horoscope/taurus" onClick={scrollToTop}>Taurus ♉</Link></li>
-                                <li><Link to="/horoscope/gemini" onClick={scrollToTop}>Gemini ♊</Link></li>
-                                <li><Link to="/horoscope/cancer" onClick={scrollToTop}>Cancer ♋</Link></li>
-                                <li><Link to="/horoscope/leo" onClick={scrollToTop}>Leo ♌</Link></li>
-                                <li><Link to="/horoscope" onClick={scrollToTop}>All Signs →</Link></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    {/* Right Column: Quick Links & Contact */}
-                    <div className="footer-column info-column">
+                    {/* Company Column */}
+                    <div className="footer-column">
                         <div className="info-group">
                             <h4 className="footer-title">Company</h4>
                             <ul className="footer-links">
@@ -90,7 +75,10 @@ const Footer: React.FC = () => {
                                 <li><Link to="/contact-us" onClick={scrollToTop}>Contact Us</Link></li>
                             </ul>
                         </div>
+                    </div>
 
+                    {/* Contact Us Column */}
+                    <div className="footer-column">
                         <div className="info-group">
                             <h4 className="footer-title">Contact Us</h4>
                             <ul className="contact-list">

@@ -1,0 +1,30 @@
+REFUND POLICY
+
+Last Updated: June 18, 2026
+
+Aadikarta is committed to a transparent, fair, and automated billing process. Because our platform operates a real-time, server-side wallet deduction engine, we have established clear rules for refunds.
+
+1. UNDERSTANDING OUR CHAT BILLING ENGINE
+- First-Message Timer Rule: When you request a chat session, your wallet is NOT billed immediately. The billing timer starts ONLY when the astrologer sends the first message in the chat room. If an astrologer accepts your chat but never replies, no balance is deducted.
+- Automatic Termination: Chat sessions automatically end the moment your wallet balance reaches zero or your purchased time package (e.g., 5, 15, or 30-minute packages) is exhausted.
+
+2. ELIGIBILITY FOR REFUND
+Seekers are eligible for refunds or pro-rated wallet credits under the following conditions:
+- Astrologer No-Response: If you initiate a chat and the astrologer accepts but does not send a single message within the session window, the consultation is cancelled and no credits are deducted.
+- Technical Failures: In the event of a platform-side WebSocket crash, server disconnection, or verified system error during a chat, you will be refunded the credits for the affected minutes.
+- Pro-Rated Disconnects: If a chat is terminated early due to verified astrologer disconnection or network failure on the astrologer's side, you will only be charged for the exact seconds elapsed; the remaining balance is preserved in your wallet.
+- Duplicate Recharges: If you are billed twice for a single wallet top-up due to a payment gateway lag, the duplicate amount will be refunded to your original payment source.
+
+3. NON-REFUNDABLE SITUATIONS
+Refunds will not be issued in the following cases:
+- Completed Consultations: Once a session has been successfully delivered and completed, the minutes billed cannot be refunded.
+- Dissatisfaction with Readings: Astrology is a guidance system based on traditional practices and personal interpretations. We do not refund sessions based on disagreements with predictions, advice, or planetary remedies.
+- Inaccurate Birth Data: We are not responsible for incorrect predictions or reports generated due to inaccurate birth dates, times, or locations provided in your Seeker Profile.
+- Delayed Connection: Slight delays in an astrologer accepting a session request do not qualify for a refund if the consultation was eventually completed.
+- Paid PDF Reports: Digital report products (including Full Kundli, Compatibility Reports, and Career Path Reports) are generated instantly or asynchronously. Because these are digital downloads, they are strictly non-refundable once generated or delivered to your account dashboard.
+- Subscription Plans: Subscription fees (e.g., ₹299/month) are billed on a recurring basis. Active subscriptions are non-refundable for the current billing cycle, but you can cancel the renewal at any time.
+- Promotional / Referral Credits: Any credits earned through marketing campaigns, coupon codes, first-minute free trials, or referral programs (e.g., ₹50 referral bonus) are non-withdrawable, have no cash value, and cannot be refunded or exchanged for cash.
+
+4. REFUND TIMELINES AND PROCEDURE
+- Claims: Any dispute or refund claim must be raised within 48 hours of the consultation by emailing support@aadikarta.org with your transaction details and chat ID.
+- Processing: Verified refund requests for payment gateway failures are processed within 7–10 working days and credited to the original payment source. Seeker wallet adjustments are credited immediately upon approval by the admin team.

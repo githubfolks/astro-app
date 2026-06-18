@@ -2,7 +2,9 @@ https://astro-app-web.vercel.app/
 
 https://astro-app-admin.vercel.app/
 
-Admin: admin@test.com
+Email: admin@aadikarta.org
+Password: admin123
+
 Tutor: tutor@test.com
 Seeker: seeker@test.com
 

@@ -8,18 +8,15 @@
 
 .footer-content {
     display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    /* 2 Columns: Brand & Info */
-    gap: 60px;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+    /* 4 Columns: Brand, Services, Company, Contact */
+    gap: 40px;
     margin-bottom: 60px;
 }
 
-/* Right column layout containing both Quick Links and Contact */
-.info-column {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    /* Split right column into Links & Contact */
-    gap: 40px;
+.footer-column {
+    display: flex;
+    flex-direction: column;
 }
 
 .footer-logo {
@@ -162,13 +159,8 @@
 
 @media (max-width: 900px) {
     .footer-content {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
-
-    .info-column {
         grid-template-columns: 1fr 1fr;
-        gap: 30px;
+        gap: 40px;
     }
 }
 
@@ -184,13 +176,8 @@
         margin-bottom: 40px;
     }
 
-    .info-column {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
-
     .brand-column,
-    .info-column {
+    .footer-column {
         text-align: center;
     }
 

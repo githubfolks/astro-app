@@ -10,6 +10,7 @@ import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
+import HoroscopeSection from '../components/HoroscopeSection';
 
 const homeStructuredData = {
     "@context": "https://schema.org",
@@ -83,6 +84,7 @@ const Home: React.FC = () => {
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <MemoryGuruBanner />
+                <HoroscopeSection />
 
                 <section className="promise-section py-24 bg-indigo-50/50 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
