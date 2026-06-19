@@ -16,7 +16,8 @@ import {
     Calendar,
     Users,
     ChevronRight,
-    Heart
+    Heart,
+    Bell
 } from 'lucide-react';
 
 import { resolveImageUrl } from '../utils/url';
@@ -32,6 +33,7 @@ const AstrologerProfile: React.FC = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
+    const [notified, setNotified] = useState(false);
 
     const getStructuredData = (ast: AstrologerProfile) => ({
         "@context": "https://schema.org",
@@ -108,6 +110,16 @@ const AstrologerProfile: React.FC = () => {
         navigate(`/chat/new/${id}`);
     };
 
+    const handleNotify = async () => {
+        if (!id) return;
+        try {
+            await api.astrologers.notifyWhenOnline(id);
+            setNotified(true);
+        } catch {
+            alert('Please log in as a seeker to get availability alerts.');
+        }
+    };
+
     const handleProfileComplete = () => {
         setIsProfileModalOpen(false);
         navigate(`/chat/new/${id}`);
@@ -155,6 +167,7 @@ const AstrologerProfile: React.FC = () => {
 
     const specialtiesArray = astrologer.specialties?.split(',').map((s: string) => s.trim()) || [];
     const languagesArray = astrologer.languages?.split(',').map((l: string) => l.trim()) || [];
+    const status = astrologer.availability_status || (astrologer.is_online ? 'ONLINE' : 'OFFLINE');
 
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
@@ -179,10 +192,15 @@ const AstrologerProfile: React.FC = () => {
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
-                                {astrologer.is_online ? (
+                                {status === 'ONLINE' ? (
                                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1 shadow-lg">
                                         <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                                         Online
+                                    </div>
+                                ) : status === 'BUSY' ? (
+                                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-xs font-bold px-4 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                                        <span className="w-2 h-2 bg-white rounded-full"></span>
+                                        Busy
                                     </div>
                                 ) : (
                                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gray-500 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg">
@@ -246,13 +264,30 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <button
-                                    onClick={handleStartChat}
-                                    className="w-full bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg"
-                                >
-                                    <MessageCircle size={20} />
-                                    Start Chat Now
-                                </button>
+                                {status === 'OFFLINE' ? (
+                                    <button
+                                        onClick={handleNotify}
+                                        disabled={notified}
+                                        className="w-full bg-white/15 border border-white/30 text-white font-bold py-4 rounded-xl hover:bg-white/25 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-default"
+                                    >
+                                        <Bell size={20} />
+                                        {notified ? "We'll notify you when online" : 'Notify me when online'}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleStartChat}
+                                        className="w-full bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white font-bold py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        <MessageCircle size={20} />
+                                        {status === 'BUSY' ? 'Start Chat (Join Queue)' : 'Start Chat Now'}
+                                    </button>
+                                )}
+
+                                {status === 'BUSY' && (
+                                    <div className="mt-3 text-center text-xs text-amber-200">
+                                        Astrologer is in another consultation — you'll be queued and notified when it's your turn.
+                                    </div>
+                                )}
 
                                 {astrologer.availability_hours && (
                                     <div className="mt-4 text-center text-sm text-gray-300">
@@ -367,15 +402,30 @@ const AstrologerProfile: React.FC = () => {
                             {/* CTA Card */}
                             <div className="bg-gradient-to-br from-[#E91E63] to-[#FF5722] rounded-2xl p-6 text-white">
                                 <h3 className="font-bold text-lg mb-2">Ready to get insights?</h3>
-                                <p className="text-white/80 text-sm mb-4">Start your consultation now and get personalized guidance.</p>
-                                <button
-                                    onClick={handleStartChat}
-                                    className="w-full bg-white text-[#E91E63] font-bold py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
-                                >
-                                    <MessageCircle size={18} />
-                                    Chat Now
-                                    <ChevronRight size={18} />
-                                </button>
+                                <p className="text-white/80 text-sm mb-4">
+                                    {status === 'OFFLINE'
+                                        ? "This astrologer is offline. Get notified the moment they're back online."
+                                        : 'Start your consultation now and get personalized guidance.'}
+                                </p>
+                                {status === 'OFFLINE' ? (
+                                    <button
+                                        onClick={handleNotify}
+                                        disabled={notified}
+                                        className="w-full bg-white text-[#E91E63] font-bold py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-default"
+                                    >
+                                        <Bell size={18} />
+                                        {notified ? "We'll notify you" : 'Notify me when online'}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleStartChat}
+                                        className="w-full bg-white text-[#E91E63] font-bold py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <MessageCircle size={18} />
+                                        {status === 'BUSY' ? 'Join Queue' : 'Chat Now'}
+                                        <ChevronRight size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
