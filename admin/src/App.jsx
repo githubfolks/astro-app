@@ -23,6 +23,8 @@ import HoroscopeEditor from './pages/cms/HoroscopeEditor';
 import ContactInquiries from './pages/cms/ContactInquiries';
 import EduReports from './pages/EduReports';
 import Disputes from './pages/Disputes';
+import Settings from './pages/Settings';
+import ModerationFlags from './pages/ModerationFlags';
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -72,6 +74,8 @@ function App() {
 
             <Route path="/edu-reports" element={<EduReports />} />
             <Route path="/disputes" element={<Disputes />} />
+            <Route path="/moderation" element={<ModerationFlags />} />
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
       </AuthProvider>

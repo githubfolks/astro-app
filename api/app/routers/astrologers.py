@@ -27,6 +27,39 @@ def generate_astrologer_slug(full_name: str, user_id: int, db: Session) -> str:
     return f"{base}-{user_id}"
 
 
+_BUSY_STATUSES = [
+    models.ConsultationStatus.ACCEPTED,
+    models.ConsultationStatus.ACTIVE,
+    models.ConsultationStatus.PAUSED,
+]
+
+
+def _decorate_availability(db: Session, profile: models.AstrologerProfile):
+    """Attach computed availability_status + queue_length to a profile instance
+    so they serialize through schemas.AstrologerProfile."""
+    from .realtime import is_present
+
+    # Identity protection: seekers see the public stage name, never the legal name.
+    if profile.display_name:
+        profile.full_name = profile.display_name
+
+    profile.queue_length = db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == profile.user_id,
+        models.Consultation.status == models.ConsultationStatus.REQUESTED,
+    ).count()
+
+    if not profile.is_online or not is_present(profile.user_id):
+        profile.availability_status = "OFFLINE"
+    elif db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == profile.user_id,
+        models.Consultation.status.in_(_BUSY_STATUSES),
+    ).first() is not None:
+        profile.availability_status = "BUSY"
+    else:
+        profile.availability_status = "ONLINE"
+    return profile
+
+
 @router.post("/onboarding")
 def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Session = Depends(database.get_db)):
     # 1. Check if user already exists
@@ -87,6 +120,8 @@ def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Se
         query = query.order_by(models.AstrologerProfile.rating_avg.desc())
 
     profiles = query.offset(skip).limit(limit).all()
+    for p in profiles:
+        _decorate_availability(db, p)
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)
@@ -103,12 +138,69 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
 
     db_profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == current_user.id).first()
 
+    was_online = bool(db_profile.is_online)
+
     for key, value in profile_update.dict(exclude_unset=True).items():
         setattr(db_profile, key, value)
 
     db.commit()
     db.refresh(db_profile)
+
+    # If the astrologer just came online, alert seekers who asked to be notified.
+    if not was_online and db_profile.is_online:
+        _notify_waiting_seekers(db, current_user.id)
+
     return db_profile
+
+
+def _notify_waiting_seekers(db: Session, astrologer_id: int):
+    from ..notifications import send_push_notification
+    from .realtime import notify_user
+
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == astrologer_id).first()
+    astro_name = (profile.display_name or profile.full_name) if profile else "An astrologer"
+
+    subs = db.query(models.AvailabilityNotification).filter(
+        models.AvailabilityNotification.astrologer_id == astrologer_id,
+        models.AvailabilityNotification.notified == False,  # noqa: E712
+    ).all()
+    for sub in subs:
+        notify_user(sub.seeker_id, {"type": "ASTRO_ONLINE", "astrologer_id": astrologer_id})
+        try:
+            for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == sub.seeker_id).all():
+                send_push_notification(
+                    token=tok.fcm_token,
+                    title=f"{astro_name} is online",
+                    body=f"{astro_name} is now available to chat.",
+                    data={"astrologer_id": str(astrologer_id), "type": "ASTRO_ONLINE"},
+                )
+        except Exception as e:
+            print(f"notify waiting seeker push failed: {e}")
+        sub.notified = True
+    db.commit()
+
+
+@router.post("/{astrologer_id}/notify-when-online")
+def notify_when_online(astrologer_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    """Seeker subscribes to be alerted when an offline astrologer comes online."""
+    if current_user.role != models.UserRole.SEEKER:
+        raise HTTPException(status_code=400, detail="Only seekers can subscribe to availability alerts")
+
+    astro = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == astrologer_id).first()
+    if not astro:
+        raise HTTPException(status_code=404, detail="Astrologer not found")
+
+    existing = db.query(models.AvailabilityNotification).filter(
+        models.AvailabilityNotification.seeker_id == current_user.id,
+        models.AvailabilityNotification.astrologer_id == astrologer_id,
+        models.AvailabilityNotification.notified == False,  # noqa: E712
+    ).first()
+    if existing:
+        return {"status": "already_subscribed"}
+
+    db.add(models.AvailabilityNotification(seeker_id=current_user.id, astrologer_id=astrologer_id))
+    db.commit()
+    return {"status": "subscribed"}
 
 @router.get("/{identifier}", response_model=schemas.AstrologerProfile)
 def get_astrologer_by_identifier(identifier: str, db: Session = Depends(database.get_db)):
@@ -124,4 +216,5 @@ def get_astrologer_by_identifier(identifier: str, db: Session = Depends(database
         profile = base_query.filter(models.AstrologerProfile.slug == identifier).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Astrologer not found or not approved")
+    _decorate_availability(db, profile)
     return profile

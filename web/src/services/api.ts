@@ -169,6 +169,13 @@ export const api = {
             const response = await customFetch(`${API_URL}/astrologers/${id}`);
             return handleResponse(response, 'Failed to fetch astrologer details');
         },
+        notifyWhenOnline: async (astrologerId: number | string) => {
+            const response = await customFetch(`${API_URL}/astrologers/${astrologerId}/notify-when-online`, {
+                method: 'POST',
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to subscribe to availability alerts');
+        },
         getProfile: async () => {
             const response = await customFetch(`${API_URL}/astrologers/profile`, {
                 headers: await authHeaders()
@@ -274,6 +281,12 @@ export const api = {
                 headers: await authHeaders()
             });
             return handleResponse(response, 'Failed to fetch history');
+        },
+        queuePosition: async (consultationId: number | string) => {
+            const response = await customFetch(`${API_URL}/consultations/${consultationId}/queue-position`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to fetch queue position');
         },
         submitReview: async (consultation_id: number, rating: number, comment?: string) => {
             const response = await customFetch(`${API_URL}/consultations/review`, {

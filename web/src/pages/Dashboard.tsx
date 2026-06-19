@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useRealtime } from '../hooks/useRealtime';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
@@ -101,6 +102,20 @@ export const Dashboard: React.FC = () => {
     }, [user]);
 
 
+
+    // Live updates: refresh the requests queue instantly when a seeker knocks
+    // or a slot frees up — no manual refresh needed (Q3).
+    useRealtime((event) => {
+        if (user?.role !== 'ASTROLOGER') return;
+        if (['NEW_REQUEST', 'QUEUE_UPDATE'].includes(event.type)) {
+            api.consultations.getHistory().then(setHistory).catch(console.error);
+        }
+    });
+
+    // One chat at a time: is the astrologer already in a live session? (Q4)
+    const hasActiveSession = history.some((c: Consultation) =>
+        ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)
+    );
 
     const toggleOnlineStatus = async () => {
         try {
@@ -209,12 +224,23 @@ export const Dashboard: React.FC = () => {
                                                             }`}>
                                                             {c.status}
                                                         </span>
-                                                        <button
-                                                            onClick={() => navigate(`/chat/${c.id}`)}
-                                                            className="bg-[#E91E63] hover:bg-pink-700 text-white font-semibold text-sm px-6 py-2 rounded-lg transition-all shadow-md active:scale-95"
-                                                        >
-                                                            Open Chat
-                                                        </button>
+                                                        {(() => {
+                                                            const isThisActive = ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status);
+                                                            // Block opening a queued (REQUESTED) chat while another is live.
+                                                            const blocked = !isThisActive && hasActiveSession;
+                                                            return (
+                                                                <button
+                                                                    onClick={() => navigate(`/chat/${c.id}`)}
+                                                                    disabled={blocked}
+                                                                    title={blocked ? 'Finish your current chat first' : ''}
+                                                                    className={`font-semibold text-sm px-6 py-2 rounded-lg transition-all shadow-md active:scale-95 ${blocked
+                                                                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                                        : 'bg-[#E91E63] hover:bg-pink-700 text-white'}`}
+                                                                >
+                                                                    {isThisActive ? 'Open Chat' : blocked ? 'Waiting' : 'Open Chat'}
+                                                                </button>
+                                                            );
+                                                        })()}
                                                     </div>
                                                 </div>
                                             ))}

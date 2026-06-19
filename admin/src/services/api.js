@@ -116,5 +116,15 @@ export const disputes = {
     resolve: (id, data) => api.put(`/disputes/${id}`, data),
 };
 
+export const settings = {
+    get: () => api.get('/admin/settings'),
+    update: (data) => api.put('/admin/settings', data),
+};
+
+export const moderation = {
+    list: (params) => api.get('/admin/moderation-flags', { params }),
+    resolve: (id, status = 'REVIEWED') => api.post(`/admin/moderation-flags/${id}/resolve`, null, { params: { status } }),
+};
+
 
 export default api;

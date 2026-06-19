@@ -41,11 +41,14 @@ def update_my_profile(profile_update: schemas.SeekerProfileCreate, current_user:
 
 @router.get("/{user_id}/profile", response_model=schemas.SeekerProfile)
 def get_user_profile(user_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
-    # In a real app, strict privacy controls would be here.
-    # For now, we allow fetching profile if authenticated, useful for Astrologer viewing Seeker.
     profile = db.query(models.SeekerProfile).filter(models.SeekerProfile.user_id == user_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+    # Identity protection: an astrologer viewing a seeker sees only a masked name
+    # (birth details stay — they are needed for the reading).
+    if current_user.role == models.UserRole.ASTROLOGER and current_user.id != user_id:
+        from ..services.identity import mask_name
+        profile.full_name = mask_name(profile.full_name)
     return profile
 
 class DeviceTokenSchema(BaseModel):

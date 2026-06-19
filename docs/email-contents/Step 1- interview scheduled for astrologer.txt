@@ -1,0 +1,22 @@
+Dear ##name##,
+
+We are pleased to inform you that your interview with ##companyName## has been scheduled as per the details below:
+
+Date:	 ##date##
+Time:	 ##time##
+Interviewer:	 ##interviewer##
+Meeting Link:	 ##meetingLink##
+Please make sure to join the meeting 5 minutes before the interview time using the above link.
+
+About ##companyName##:
+##companyName## is one of India’s fastest-growing astrology platforms, trusted by millions of users. We connect skilled astrologers and tarot readers with people seeking guidance in love, career, health, and life decisions.
+
+We’re excited to explore how you can be part of this growing family.
+
+If you have any questions, feel free to reach out to our team by replying to this email.
+
+Looking forward to seeing you in the interview!
+
+Warm regards,
+Team ##companyName##
+www.##website##.com

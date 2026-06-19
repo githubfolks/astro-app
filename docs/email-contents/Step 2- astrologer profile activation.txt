@@ -1,0 +1,15 @@
+Dear ##name##,
+
+We’re happy to inform you that your documents have been successfully verified, and your profile is now ACTIVE on ##companyName##! 🎉
+
+As part of your initial training, our advisors will call you in the next 1–2 days to guide you through the next steps. You're now ready to connect with users seeking your astrological guidance.
+
+We’re excited to have you onboard and look forward to seeing your journey and success on our platform.
+
+If you have any questions or need assistance, please feel free to reach out to your account manager.
+
+Best of luck on your journey!
+
+Warm regards,
+Team ##companyName##
+www.##website##.com

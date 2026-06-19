@@ -101,6 +101,7 @@ class AstrologerProfileCreate(AstrologerProfileBase):
 
 class AstrologerProfileUPDATE(BaseModel):
     full_name: Optional[str] = None
+    display_name: Optional[str] = None
     profile_picture_url: Optional[str] = None
     short_bio: Optional[str] = None
     about_me: Optional[str] = None
@@ -118,9 +119,13 @@ class AstrologerProfileUPDATE(BaseModel):
 class AstrologerProfile(AstrologerProfileBase):
     user_id: int
     slug: Optional[str] = None
+    display_name: Optional[str] = None
     is_online: bool
     rating_avg: Decimal
     total_consultations: int
+    # Computed at response time (not DB columns):
+    availability_status: Optional[str] = None  # ONLINE | BUSY | OFFLINE
+    queue_length: Optional[int] = None         # seekers currently waiting (REQUESTED)
     class Config:
         from_attributes = True
 

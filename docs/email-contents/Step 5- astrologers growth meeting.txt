@@ -1,0 +1,10 @@
+Hello ##name##,
+
+Kindly join the meeting scheduled for ##day## ##date## at ##time## ##timezone##.
+
+In this meeting, we will discuss Astrologer Performance Growth & Training on how to effectively use the application.
+
+Please join using the ##meetingLink##
+
+Regards,
+##companyName##

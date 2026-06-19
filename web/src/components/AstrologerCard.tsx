@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Languages, Award, Clock } from 'lucide-react';
+import { Star, Languages, Award, Clock, Bell } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { resolveImageUrl } from '../utils/url';
+import { api } from '../services/api';
 import './AstrologerCard.css';
 
 interface Props {
@@ -11,6 +12,21 @@ interface Props {
 }
 
 const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
+    const status = astro.availability_status || (astro.is_online ? 'ONLINE' : 'OFFLINE');
+    const [notified, setNotified] = useState(false);
+
+    const handleNotify = async () => {
+        try {
+            await api.astrologers.notifyWhenOnline(astro.id);
+            setNotified(true);
+        } catch {
+            alert('Please log in as a seeker to get availability alerts.');
+        }
+    };
+
+    const badgeClass = status === 'ONLINE' ? 'online' : status === 'BUSY' ? 'busy' : 'offline';
+    const badgeText = status === 'ONLINE' ? 'Online' : status === 'BUSY' ? 'Busy' : 'Offline';
+
     return (
         <div className="card astro-card">
             <div className="astro-main-row">
@@ -23,8 +39,8 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
                         height="84"
                         loading="lazy"
                     />
-                    <span className={`status-badge ${astro.is_online ? 'online' : 'offline'}`}>
-                        {astro.is_online ? 'Online' : 'Offline'}
+                    <span className={`status-badge ${badgeClass}`}>
+                        {badgeText}
                     </span>
                 </Link>
 
@@ -66,17 +82,27 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
                     >
                         Profile
                     </Link>
-                    {astro.is_online ? (
+                    {status === 'ONLINE' ? (
                         <button
                             className="chat-now-btn"
                             onClick={() => onChatClick(astro.id)}
                         >
                             Chat
                         </button>
+                    ) : status === 'BUSY' ? (
+                        <button
+                            className="chat-now-btn"
+                            onClick={() => onChatClick(astro.id)}
+                            title={`${astro.queue_length || 0} waiting`}
+                        >
+                            Join Queue{astro.queue_length ? ` (${astro.queue_length})` : ''}
+                        </button>
+                    ) : notified ? (
+                        <span className="offline-badge">We'll notify you</span>
                     ) : (
-                        <span className="offline-badge">
-                            Offline
-                        </span>
+                        <button className="notify-btn" onClick={handleNotify}>
+                            <Bell size={14} /> Notify me
+                        </button>
                     )}
                 </div>
             </div>

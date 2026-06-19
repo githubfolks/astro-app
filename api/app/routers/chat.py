@@ -50,6 +50,139 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+
+def persist_and_moderate(db: Session, consultation: "models.Consultation", sender_id: int, content: str):
+    """Save a chat message, run rule-based moderation, and raise alerts on violations.
+
+    Returns (new_msg, broadcast_content) where broadcast_content has any contact
+    info masked so it is never delivered to the other participant.
+    """
+    from ..services import moderation
+    from ..services.settings_service import get_setting
+    from ..services.whatsapp_service import send_whatsapp
+    from .realtime import notify_user
+
+    violations, masked = moderation.scan(content or "")
+    flagged = bool(violations)
+
+    new_msg = models.ChatMessage(
+        consultation_id=consultation.id,
+        sender_id=sender_id,
+        message=content,
+        is_flagged=flagged,
+        flag_reason=",".join(violations) if violations else None,
+    )
+    db.add(new_msg)
+    db.commit()
+    db.refresh(new_msg)
+
+    if not flagged:
+        return new_msg, content
+
+    reason = ",".join(violations)
+    try:
+        db.add(models.ModerationFlag(
+            consultation_id=consultation.id,
+            message_id=new_msg.id,
+            flagged_user_id=sender_id,
+            reason=reason,
+            snippet=content,
+        ))
+        audit.log(db, "CHAT_MODERATION_FLAG", actor_id=sender_id,
+                  resource_type="consultation", resource_id=consultation.id,
+                  details={"reason": reason, "message_id": new_msg.id})
+        db.commit()
+    except Exception as e:
+        logger.error(f"Failed to persist moderation flag: {e}")
+        db.rollback()
+
+    # Strong alarm in both seeker and astrologer panels.
+    alert = {
+        "type": "MODERATION_ALERT",
+        "consultation_id": consultation.id,
+        "reason": reason,
+        "message": "Sharing personal contact details or external links is not allowed. This conversation is monitored.",
+    }
+    try:
+        asyncio.create_task(manager.broadcast(consultation.id, alert))
+    except RuntimeError:
+        pass
+
+    # Alert the super admin (in-app + WhatsApp).
+    try:
+        admin_user_id = get_setting("moderation_admin_user_id")
+        if admin_user_id:
+            notify_user(int(admin_user_id), {
+                "type": "MODERATION_ALERT",
+                "consultation_id": consultation.id,
+                "flagged_user_id": sender_id,
+                "reason": reason,
+                "snippet": content,
+            })
+        admin_wa = get_setting("moderation_admin_whatsapp")
+        if admin_wa:
+            send_whatsapp(admin_wa, "moderation_admin_template", {
+                "reason": reason,
+                "consultation_id": consultation.id,
+                "user_id": sender_id,
+                "snippet": (content or "")[:120],
+            })
+    except Exception as e:
+        logger.error(f"Failed to alert admin of moderation flag: {e}")
+
+    return new_msg, masked
+
+
+# Statuses that mean an astrologer is currently occupied with a session.
+BUSY_STATUSES = (
+    models.ConsultationStatus.ACCEPTED,
+    models.ConsultationStatus.ACTIVE,
+    models.ConsultationStatus.PAUSED,
+)
+
+
+def astrologer_has_other_active(db: Session, astrologer_id: int, exclude_id: int) -> bool:
+    """True if the astrologer is already engaged in a different live session.
+    Enforces the one-chat-at-a-time policy."""
+    return db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == astrologer_id,
+        models.Consultation.id != exclude_id,
+        models.Consultation.status.in_(BUSY_STATUSES),
+    ).first() is not None
+
+
+def promote_next_in_queue(db: Session, astrologer_id: int):
+    """When an astrologer frees up, alert the next waiting seeker that it's their turn."""
+    from .realtime import notify_user
+    from ..services.whatsapp_service import send_whatsapp
+    from ..services.settings_service import get_setting
+
+    next_req = db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == astrologer_id,
+        models.Consultation.status == models.ConsultationStatus.REQUESTED,
+    ).order_by(models.Consultation.created_at.asc()).first()
+    if not next_req:
+        return
+
+    # Refresh the astrologer's dashboard and tell the seeker it's their turn.
+    notify_user(astrologer_id, {"type": "QUEUE_UPDATE", "consultation_id": next_req.id})
+    notify_user(next_req.seeker_id, {
+        "type": "YOUR_TURN",
+        "consultation_id": next_req.id,
+        "astrologer_id": astrologer_id,
+    })
+    try:
+        for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == next_req.seeker_id).all():
+            send_push_notification(
+                token=tok.fcm_token,
+                title="It's your turn!",
+                body="The astrologer is now available for your consultation.",
+                data={"consultation_id": str(next_req.id), "type": "YOUR_TURN"},
+            )
+    except Exception as e:
+        logger.error(f"promote_next_in_queue push failed: {e}")
+
+
 @router.get("/history/{consultation_id}", response_model=list[schemas.ChatMessage])
 async def get_chat_history(
     consultation_id: int,
@@ -83,16 +216,9 @@ async def send_message(
         if current_user.id != consultation.seeker_id and current_user.id != consultation.astrologer_id:
             raise HTTPException(status_code=403, detail="Not authorized to participate in this chat")
         
-        # Save to DB
-        new_msg = models.ChatMessage(
-            consultation_id=data.consultation_id,
-            sender_id=current_user.id,
-            message=data.content
-        )
-        db.add(new_msg)
-        db.commit()
-        db.refresh(new_msg)
-        
+        # Save to DB (+ moderation). broadcast_content has contact info masked.
+        new_msg, broadcast_content = persist_and_moderate(db, consultation, current_user.id, data.content)
+
         # Check for Timer Start (First Astrologer Message)
         if current_user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:
             try:
@@ -106,12 +232,12 @@ async def send_message(
             except Exception as e:
                 logger.error(f"Error starting timer: {e}")
 
-        # Broadcast to any active WS connections
+        # Broadcast to any active WS connections (masked content if flagged)
         await manager.broadcast(data.consultation_id, {
             "type": "NEW_MESSAGE",
             "id": new_msg.id,
             "sender_id": current_user.id,
-            "content": data.content,
+            "content": broadcast_content,
             "timestamp": new_msg.timestamp.isoformat() if new_msg.timestamp else datetime.utcnow().isoformat()
         })
         
@@ -137,7 +263,7 @@ async def send_message(
                      send_push_notification(
                          token=token_obj.fcm_token,
                          title=f"New Message from {sender_name}",
-                         body=data.content[:50] + ("..." if len(data.content) > 50 else ""),
+                         body=broadcast_content[:50] + ("..." if len(broadcast_content) > 50 else ""),
                          data={"consultation_id": str(consultation.id), "type": "CHAT_MESSAGE"}
                      )
         except Exception as push_err:
@@ -236,6 +362,7 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                         if redis:
                             redis.delete(f"active_consultation:{consultation_id}")
                         await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "package_time_exhausted"})
+                        promote_next_in_queue(db, consultation.astrologer_id)
                         break
 
                     consultation.package_seconds_remaining = pkg_secs
@@ -274,6 +401,7 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                         if redis:
                             redis.delete(f"active_consultation:{consultation_id}")
                         await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "insufficient_balance"})
+                        promote_next_in_queue(db, consultation.astrologer_id)
                         break
 
                     user_wallet.balance -= cost
@@ -346,8 +474,17 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
         return
 
     try:
-        # Auto-accept if astrologer joins
+        # Auto-accept if astrologer joins — but enforce one chat at a time.
         if user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.REQUESTED:
+            if astrologer_has_other_active(db, consultation.astrologer_id, consultation.id):
+                await websocket.send_text(json.dumps({
+                    "type": "ERROR",
+                    "code": "ALREADY_IN_SESSION",
+                    "message": "Finish your current chat before starting a new one.",
+                }))
+                await websocket.close(code=4009)
+                manager.disconnect(websocket, consultation_id)
+                return
             consultation.status = models.ConsultationStatus.ACCEPTED
             db.commit()
             db.refresh(consultation)
@@ -403,15 +540,9 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
             
             if msg_type == "MESSAGE":
                 content = message_data.get("content")
-                
-                # Save to DB
-                new_msg = models.ChatMessage(
-                    consultation_id=consultation_id,
-                    sender_id=user.id,
-                    message=content
-                )
-                db.add(new_msg)
-                db.commit()
+
+                # Save to DB (+ moderation). broadcast_content has contact info masked.
+                new_msg, broadcast_content = persist_and_moderate(db, consultation, user.id, content)
 
                 # Re-read latest status; billing_loop runs on a separate session and
                 # may have changed status (PAUSED/AUTO_ENDED) since this socket connected.
@@ -419,22 +550,29 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
 
                 # Check for Timer Start (First Astrologer Message)
                 if user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:
+                    if astrologer_has_other_active(db, consultation.astrologer_id, consultation.id):
+                        await websocket.send_text(json.dumps({
+                            "type": "ERROR",
+                            "code": "ALREADY_IN_SESSION",
+                            "message": "Finish your current chat before starting a new one.",
+                        }))
+                        continue
                     consultation.status = models.ConsultationStatus.ACTIVE
                     consultation.start_time = datetime.utcnow()
                     db.commit()
-                    
+
                     # Notify Timer Start
                     await manager.broadcast(consultation_id, {"type": "TIMER_STARTED"})
                     
                     # Start Billing Loop
                     asyncio.create_task(billing_loop(consultation_id, float(consultation.rate_per_min), database.SessionLocal))
                 
-                # Broadcast
+                # Broadcast (masked content if flagged)
                 await manager.broadcast(consultation_id, {
                     "type": "NEW_MESSAGE",
                     "id": new_msg.id,
                     "sender_id": user.id,
-                    "content": content,
+                    "content": broadcast_content,
                     "timestamp": str(new_msg.timestamp)
                 })
 
@@ -455,7 +593,7 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                         send_push_notification(
                             token=token_obj.fcm_token,
                             title=f"New Message from {user.seeker_profile.full_name if user.role == models.UserRole.SEEKER else user.astrologer_profile.full_name}",
-                            body=content[:50] + ("..." if len(content) > 50 else ""),
+                            body=broadcast_content[:50] + ("..." if len(broadcast_content) > 50 else ""),
                             data={"consultation_id": str(consultation_id), "type": "CHAT_MESSAGE"}
                         )
                 
@@ -494,6 +632,8 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                                    "duration_seconds": consultation.duration_seconds or 0})
                 db.commit()
                 await manager.broadcast(consultation_id, {"type": "CHAT_ENDED", "reason": "user_ended"})
+                # Astrologer is now free — alert the next seeker in their queue.
+                promote_next_in_queue(db, consultation.astrologer_id)
                 break
 
     except WebSocketDisconnect:

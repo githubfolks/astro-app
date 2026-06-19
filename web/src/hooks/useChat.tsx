@@ -26,6 +26,8 @@ export const useChat = (consultationId: string) => {
     const [billingInfo, setBillingInfo] = useState({ balance: 0, spent: 0, minutes_remaining: 0 });
     const [timerActive, setTimerActive] = useState(false);
     const [lowBalance, setLowBalance] = useState(false);
+    const [moderationAlert, setModerationAlert] = useState<string | null>(null);
+    const [sessionError, setSessionError] = useState<string | null>(null);
 
     // Reconnection state
     const shouldReconnect = useRef(true);
@@ -122,6 +124,12 @@ export const useChat = (consultationId: string) => {
                     break;
                 case 'RESUME_FAILED':
                     break;
+                case 'MODERATION_ALERT':
+                    setModerationAlert(data.message || 'Sharing personal contact details is not allowed. This chat is monitored.');
+                    break;
+                case 'ERROR':
+                    setSessionError(data.message || 'Something went wrong.');
+                    break;
                 default:
                     break;
             }
@@ -207,5 +215,10 @@ export const useChat = (consultationId: string) => {
         }
     };
 
-    return { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance };
+    return {
+        messages, sendMessage, endChat, resumeChat, status, pauseReason,
+        billingInfo, timerActive, lowBalance,
+        moderationAlert, dismissModerationAlert: () => setModerationAlert(null),
+        sessionError, dismissSessionError: () => setSessionError(null),
+    };
 };

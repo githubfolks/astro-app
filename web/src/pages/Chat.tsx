@@ -137,7 +137,25 @@ export const Chat: React.FC = () => {
     }, [activeConsultationId, token, user]);
 
 
-    const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance } = useChat(activeConsultationId || '');
+    const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, moderationAlert, dismissModerationAlert, sessionError } = useChat(activeConsultationId || '');
+
+    // Queue position for a waiting seeker (Q2): poll until the astrologer engages.
+    const [queueAhead, setQueueAhead] = useState<number | null>(null);
+    useEffect(() => {
+        if (user?.role !== 'SEEKER' || !activeConsultationId) return;
+        if (timerActive || status === 'ACTIVE' || status === 'ENDED') { setQueueAhead(null); return; }
+        let cancelled = false;
+        const poll = () => {
+            api.consultations.queuePosition(activeConsultationId)
+                .then((r: { ahead: number; status: string }) => {
+                    if (!cancelled) setQueueAhead(r.status === 'REQUESTED' ? r.ahead : null);
+                })
+                .catch(() => { /* ignore */ });
+        };
+        poll();
+        const t = setInterval(poll, 8000);
+        return () => { cancelled = true; clearInterval(t); };
+    }, [user?.role, activeConsultationId, timerActive, status]);
 
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [isRecharging, setIsRecharging] = useState(false);
@@ -546,6 +564,37 @@ export const Chat: React.FC = () => {
                                     >
                                         Add funds
                                     </button>
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Moderation Alarm — strong, can't-miss banner (Q6) */}
+                        {moderationAlert && (
+                            <div className="bg-red-600 text-white px-4 py-3 flex items-center gap-2 text-sm flex-shrink-0 animate-pulse">
+                                <AlertTriangle size={18} className="flex-shrink-0" />
+                                <span className="flex-1 font-semibold">{moderationAlert}</span>
+                                <button onClick={dismissModerationAlert} className="text-white/80 hover:text-white">
+                                    <X size={16} />
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Session error (e.g. astrologer already in another chat — Q4) */}
+                        {sessionError && (
+                            <div className="bg-orange-100 border-b border-orange-300 px-4 py-2 flex items-center gap-2 text-orange-800 text-sm flex-shrink-0">
+                                <AlertTriangle size={15} className="flex-shrink-0 text-orange-500" />
+                                <span>{sessionError}</span>
+                            </div>
+                        )}
+
+                        {/* Queue waiting banner for seeker (Q2) */}
+                        {user?.role === 'SEEKER' && queueAhead !== null && status !== 'ENDED' && (
+                            <div className="bg-indigo-50 border-b border-indigo-200 px-4 py-2 flex items-center gap-2 text-indigo-800 text-sm flex-shrink-0">
+                                <Clock size={15} className="flex-shrink-0 text-indigo-500" />
+                                <span>
+                                    {queueAhead > 0
+                                        ? <>Astrologer is busy — <span className="font-bold">{queueAhead} ahead of you</span>. We'll start as soon as it's your turn.</>
+                                        : <>Waiting for the astrologer to respond…</>}
                                 </span>
                             </div>
                         )}

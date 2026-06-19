@@ -768,6 +768,58 @@ def get_audit_logs(
     ]}
 
 
+# --- App Settings (WhatsApp gateway, moderation, tunables) ---
+
+@router.get("/settings")
+def get_app_settings():
+    from ..services import settings_service
+    return settings_service.get_all(mask_secrets=True)
+
+
+@router.put("/settings")
+def update_app_settings(values: dict, db: Session = Depends(database.get_db)):
+    from ..services import settings_service
+    settings_service.set_many(db, {k: ("" if v is None else str(v)) for k, v in values.items()})
+    return settings_service.get_all(mask_secrets=True)
+
+
+# --- Moderation flags ---
+
+@router.get("/moderation-flags")
+def list_moderation_flags(status: Optional[str] = None, limit: int = 100, offset: int = 0, db: Session = Depends(database.get_db)):
+    q = db.query(models.ModerationFlag)
+    if status:
+        q = q.filter(models.ModerationFlag.status == status)
+    total = q.count()
+    flags = q.order_by(models.ModerationFlag.created_at.desc()).offset(offset).limit(limit).all()
+    return {"total": total, "flags": [
+        {
+            "id": f.id,
+            "consultation_id": f.consultation_id,
+            "message_id": f.message_id,
+            "flagged_user_id": f.flagged_user_id,
+            "reason": f.reason,
+            "snippet": f.snippet,
+            "status": f.status.value if hasattr(f.status, "value") else f.status,
+            "created_at": f.created_at.isoformat() if f.created_at else None,
+        }
+        for f in flags
+    ]}
+
+
+@router.post("/moderation-flags/{flag_id}/resolve")
+def resolve_moderation_flag(flag_id: int, status: str = "REVIEWED", db: Session = Depends(database.get_db)):
+    flag = db.query(models.ModerationFlag).filter(models.ModerationFlag.id == flag_id).first()
+    if not flag:
+        raise HTTPException(status_code=404, detail="Flag not found")
+    try:
+        flag.status = models.ModerationFlagStatus(status)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid status")
+    db.commit()
+    return {"status": "ok", "flag_id": flag_id, "new_status": flag.status.value}
+
+
 @router.patch("/astrologers/{user_id}/commission")
 def update_astrologer_commission(user_id: int, request: CommissionUpdateRequest, db: Session = Depends(database.get_db)):
     if not (0 < request.commission_percentage <= 100):

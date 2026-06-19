@@ -4,7 +4,7 @@ import os
 import json
 import asyncio
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes, realtime
 from . import models_edu # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,8 +35,58 @@ async def startup_event():
     except Exception as e:
         print(f"FAILED to connect to DB or create tables: {e}")
 
+    # Capture the running loop so sync handlers can push realtime notifications.
+    from .routers.realtime import set_main_loop
+    set_main_loop(asyncio.get_running_loop())
+
     # Crash recovery: restart billing loops for any ACTIVE consultations
     await _recover_active_billing_loops()
+
+    # Background sweep: expire stale REQUESTED consultations (seeker waiting on a no-show)
+    asyncio.create_task(_stale_request_sweep())
+
+
+async def _stale_request_sweep():
+    """Periodically mark unanswered REQUESTED consultations as MISSED and notify the seeker."""
+    from datetime import datetime, timedelta
+    from .database import SessionLocal
+    from . import models, audit
+    from .services.settings_service import get_setting
+    from .routers.realtime import notify_user
+    from .notifications import send_push_notification
+
+    while True:
+        try:
+            await asyncio.sleep(60)
+            try:
+                stale_minutes = int(get_setting("request_stale_minutes") or 5)
+            except (TypeError, ValueError):
+                stale_minutes = 5
+            cutoff = datetime.utcnow() - timedelta(minutes=stale_minutes)
+            with SessionLocal() as db:
+                stale = db.query(models.Consultation).filter(
+                    models.Consultation.status == models.ConsultationStatus.REQUESTED,
+                    models.Consultation.created_at < cutoff,
+                ).all()
+                for cons in stale:
+                    cons.status = models.ConsultationStatus.MISSED
+                    audit.log(db, "CONSULTATION_MISSED", resource_type="consultation",
+                              resource_id=cons.id, details={"reason": "astrologer_no_response"})
+                    db.commit()
+                    notify_user(cons.seeker_id, {
+                        "type": "REQUEST_EXPIRED",
+                        "consultation_id": cons.id,
+                        "astrologer_id": cons.astrologer_id,
+                    })
+                    for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == cons.seeker_id).all():
+                        send_push_notification(
+                            token=tok.fcm_token,
+                            title="Astrologer unavailable",
+                            body="Your consultation request expired. Please try another astrologer.",
+                            data={"consultation_id": str(cons.id), "type": "REQUEST_EXPIRED"},
+                        )
+        except Exception as e:
+            print(f"Stale request sweep error: {e}")
 
 
 async def _recover_active_billing_loops():
@@ -185,6 +235,7 @@ app.include_router(kundli.router)
 app.include_router(edu.router)
 app.include_router(packages.router)
 app.include_router(disputes.router)
+app.include_router(realtime.router)
 
 @app.get("/")
 def read_root():

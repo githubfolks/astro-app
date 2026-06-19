@@ -1,0 +1,22 @@
+Dear ##name##,
+
+We’re thrilled to welcome you officially to the ##companyName## family — one of the fastest growing astrology platforms in India. You’ve successfully cleared the selection process, and your astrologer profile has now been created.
+
+What’s Next?
+To begin receiving calls, chats, and live sessions — and become discoverable on the app — please complete the following onboarding steps:
+
+Login to the ##companyName## Astrologer App: Use your registered mobile number and OTP sent to you.
+Fill in Personal Details: Add your alternate/WhatsApp number.
+Sign the Contract: You'll be prompted to sign it digitally after login.
+Upload Your Documents:
+Complete KYC by uploading valid ID proof (PAN, Aadhaar, Bank details).
+Upload relevant astrology certificates (optional but recommended).
+Upload Gallery Photos: Add 2–3 professional, clear photos that will be visible to users.
+Upload Certificates: These will be used for internal verification purposes only.
+If you face any issues, please reach out to your onboarding manager by clicking the "Need Help" button in the app.
+
+Let’s begin this exciting journey together!
+
+Warm regards,
+Team ##companyName##
+www.##website##.com

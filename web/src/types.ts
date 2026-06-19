@@ -1,3 +1,5 @@
+export type AvailabilityStatus = 'ONLINE' | 'BUSY' | 'OFFLINE';
+
 export interface Astrologer {
     id: number;
     slug?: string | null;
@@ -9,6 +11,8 @@ export interface Astrologer {
     consultation_fee_per_min: number;
     rating_avg: number;
     is_online: boolean;
+    availability_status?: AvailabilityStatus;
+    queue_length?: number;
     about_me?: string;
     availability_hours?: string | null;
 }
@@ -30,6 +34,8 @@ export interface AstrologerListItem {
     consultation_fee_per_min?: number;
     rating_avg?: number;
     is_online?: boolean;
+    availability_status?: AvailabilityStatus;
+    queue_length?: number;
     availability_hours?: string | null;
 }
 

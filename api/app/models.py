@@ -77,6 +77,7 @@ class AstrologerProfile(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     full_name = Column(String, nullable=False)
+    display_name = Column(String, nullable=True)  # Public stage name shown to seekers; falls back to full_name
     profile_picture_url = Column(String)
     short_bio = Column(String) # For card view
     about_me = Column(Text)
@@ -179,7 +180,56 @@ class ChatMessage(Base):
     consultation_id = Column(Integer, ForeignKey("consultations.id"))
     sender_id = Column(Integer, ForeignKey("users.id"))
     message = Column(Text)
+    is_flagged = Column(Boolean, default=False)  # Set when moderation detects a violation
+    flag_reason = Column(String, nullable=True)  # e.g. "phone_number,contact_intent"
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AppSetting(Base):
+    """Generic key/value store for super-admin-managed runtime config
+    (WhatsApp gateway credentials, moderation recipient, tunables)."""
+    __tablename__ = "app_settings"
+
+    key = Column(String, primary_key=True, index=True)
+    value = Column(Text, nullable=True)
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
+
+class AvailabilityNotification(Base):
+    """A seeker's request to be notified when a specific astrologer comes online."""
+    __tablename__ = "availability_notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    seeker_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    astrologer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    notified = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    seeker = relationship("User", foreign_keys=[seeker_id])
+    astrologer = relationship("User", foreign_keys=[astrologer_id])
+
+
+class ModerationFlagStatus(str, enum.Enum):
+    OPEN = "OPEN"
+    REVIEWED = "REVIEWED"
+    DISMISSED = "DISMISSED"
+
+
+class ModerationFlag(Base):
+    """A flagged chat message (spam / contact-sharing) surfaced to the super admin."""
+    __tablename__ = "moderation_flags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    consultation_id = Column(Integer, ForeignKey("consultations.id"), nullable=False)
+    message_id = Column(Integer, ForeignKey("chat_messages.id"), nullable=True)
+    flagged_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Who sent the offending message
+    reason = Column(String, nullable=False)  # comma-separated violation types
+    snippet = Column(Text, nullable=True)  # Original (unmasked) text, admin-only
+    status = Column(Enum(ModerationFlagStatus), default=ModerationFlagStatus.OPEN)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    consultation = relationship("Consultation", foreign_keys=[consultation_id])
+    flagged_user = relationship("User", foreign_keys=[flagged_user_id])
 
 class VerificationTokenType(str, enum.Enum):
     FORGOT_PASSWORD = "FORGOT_PASSWORD"
