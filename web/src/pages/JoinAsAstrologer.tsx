@@ -1,4 +1,5 @@
 import { getErrorMessage } from '../utils/errors';
+import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
@@ -107,8 +108,9 @@ export const JoinAsAstrologer: React.FC = () => {
             return;
         }
 
-        if (formData.password.length < 8) {
-            setError('Password must be at least 8 characters long');
+        const passwordError = getPasswordError(formData.password);
+        if (passwordError) {
+            setError(passwordError);
             return;
         }
 
@@ -195,6 +197,7 @@ export const JoinAsAstrologer: React.FC = () => {
                             <div className="form-group">
                                 <label>Password</label>
                                 <input type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                                <p className="field-hint">{PASSWORD_REQUIREMENTS}</p>
                             </div>
                             <div className="form-group">
                                 <label>Mobile Number</label>

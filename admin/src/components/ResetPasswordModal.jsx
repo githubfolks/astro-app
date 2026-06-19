@@ -3,6 +3,7 @@ import { Modal } from './ui/Modal';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import api from '../services/api';
+import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 
 export const ResetPasswordModal = ({ isOpen, onClose, userId, userEmail }) => {
     const [password, setPassword] = useState('');
@@ -11,8 +12,9 @@ export const ResetPasswordModal = ({ isOpen, onClose, userId, userEmail }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters long.');
+        const passwordError = getPasswordError(password);
+        if (passwordError) {
+            setError(passwordError);
             return;
         }
 
@@ -52,6 +54,7 @@ export const ResetPasswordModal = ({ isOpen, onClose, userId, userEmail }) => {
                         required
                         autoFocus
                     />
+                    <p className="text-xs text-gray-500 -mt-2">{PASSWORD_REQUIREMENTS}</p>
                     
                     <div className="flex gap-3 pt-2">
                         <Button 

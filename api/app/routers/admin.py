@@ -9,16 +9,17 @@ from datetime import datetime, timedelta
 from .. import models, schemas, database
 from .. import models_edu, schemas_edu
 from decimal import Decimal
-from fastapi_mail import FastMail, MessageSchema, MessageType
 from .auth import get_current_admin, get_password_hash
 from ..services.email_service import (
-    conf,
     send_email,
     build_interview_scheduled_email,
     build_profile_activation_email,
     build_onboarding_welcome_email,
     build_onboarding_started_email,
     build_growth_meeting_email,
+    build_astrologer_approved_email,
+    build_astrologer_rejected_email,
+    build_admin_password_reset_email,
 )
 
 router = APIRouter(
@@ -621,20 +622,8 @@ async def approve_astrologer(user_id: int, request: ApproveAstrologerRequest, ba
     db.commit()
 
     if astrologer_email:
-        frontend_url = os.getenv("FRONTEND_URL", "https://aadikarta.org")
-        message = MessageSchema(
-            subject="Aadikarta - Your Application Has Been Approved!",
-            recipients=[astrologer_email],
-            body=(
-                f"Congratulations! Your astrologer application on Aadikarta has been approved.<br><br>"
-                f"You can now log in and start accepting consultations at "
-                f"<a href='{frontend_url}/login'>{frontend_url}/login</a>.<br><br>"
-                f"Welcome to the Aadikarta family!"
-            ),
-            subtype=MessageType.html
-        )
-        fm = FastMail(conf)
-        background_tasks.add_task(fm.send_message, message)
+        subject, html_body = build_astrologer_approved_email()
+        send_email(background_tasks, [astrologer_email], subject, html_body)
 
     return {"message": "Astrologer approved successfully"}
 
@@ -656,19 +645,8 @@ async def reject_astrologer(user_id: int, request: RejectAstrologerRequest, back
     db.commit()
 
     if astrologer_email:
-        message = MessageSchema(
-            subject="Aadikarta - Application Status Update",
-            recipients=[astrologer_email],
-            body=(
-                f"Thank you for your interest in joining Aadikarta as an astrologer.<br><br>"
-                f"After reviewing your application, we are unable to approve it at this time.<br><br>"
-                f"<strong>Reason:</strong> {request.reason}<br><br>"
-                f"If you believe this is an error or would like to reapply, please contact support."
-            ),
-            subtype=MessageType.html
-        )
-        fm = FastMail(conf)
-        background_tasks.add_task(fm.send_message, message)
+        subject, html_body = build_astrologer_rejected_email(request.reason)
+        send_email(background_tasks, [astrologer_email], subject, html_body)
 
     return {"message": "Astrologer application rejected"}
 
@@ -843,21 +821,9 @@ async def admin_reset_password(user_id: int, request: schemas.AdminPasswordReset
     db.commit()
 
     # Send notification email — never include the password in the email body
-    frontend_url = os.getenv("FRONTEND_URL", "https://aadikarta.org")
-    message = MessageSchema(
-        subject="Aadikarta - Your Password Has Been Reset",
-        recipients=[user.email],
-        body=(
-            f"An administrator has reset your Aadikarta account password.<br><br>"
-            f"Please log in at <a href='{frontend_url}/login'>{frontend_url}/login</a> "
-            f"using your new credentials.<br><br>"
-            f"If you did not request this change, please contact support immediately."
-        ),
-        subtype=MessageType.html
-    )
-    
-    fm = FastMail(conf)
-    background_tasks.add_task(fm.send_message, message)
+    if user.email:
+        subject, html_body = build_admin_password_reset_email()
+        send_email(background_tasks, [user.email], subject, html_body)
 
     return {"message": "Password reset successfully and notification email sent."}
 

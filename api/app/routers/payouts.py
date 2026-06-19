@@ -3,11 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from .. import models, database, audit
 from ..routers.auth import get_current_user
-from ..services.email_service import conf
+from ..services.email_service import send_email, build_payout_processed_email
 from typing import List, Optional
 from datetime import datetime, timedelta
 import decimal
-from fastapi_mail import FastMail, MessageSchema, MessageType
 
 router = APIRouter(
     prefix="/admin/payouts",
@@ -147,18 +146,9 @@ async def mark_payout_paid(
     db.commit()
 
     if astrologer_email:
-        message = MessageSchema(
-            subject="Aadikarta - Payout Processed",
-            recipients=[astrologer_email],
-            body=(
-                f"Your payout of ₹{payout_amount:,.2f} has been processed.<br><br>"
-                f"Transaction Reference: <strong>{transaction_reference}</strong><br>"
-                f"TDS Deducted: ₹{tds_amount:,.2f}<br><br>"
-                f"Please allow 1-3 business days for the amount to reflect in your account."
-            ),
-            subtype=MessageType.html
+        subject, html_body = build_payout_processed_email(
+            float(payout_amount), transaction_reference, float(tds_amount)
         )
-        fm = FastMail(conf)
-        background_tasks.add_task(fm.send_message, message)
+        send_email(background_tasks, [astrologer_email], subject, html_body)
 
     return payout

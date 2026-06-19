@@ -1,8 +1,30 @@
-from pydantic import BaseModel, Field, EmailStr
-from typing import Optional, List
+from pydantic import BaseModel, Field, EmailStr, AfterValidator
+from typing import Optional, List, Annotated
 from datetime import date, time, datetime
 from enum import Enum
 from decimal import Decimal
+import re
+
+# Strong password policy: at least 8 characters with one lowercase letter,
+# one uppercase letter, one digit and one special character.
+def _validate_strong_password(value: str) -> str:
+    errors = []
+    if len(value) < 8:
+        errors.append("at least 8 characters")
+    if not re.search(r"[a-z]", value):
+        errors.append("one lowercase letter")
+    if not re.search(r"[A-Z]", value):
+        errors.append("one uppercase letter")
+    if not re.search(r"\d", value):
+        errors.append("one number")
+    if not re.search(r"[^A-Za-z0-9]", value):
+        errors.append("one special character")
+    if errors:
+        raise ValueError("Password must contain " + ", ".join(errors) + ".")
+    return value
+
+# Reusable annotated type so every password field shares one policy.
+StrongPassword = Annotated[str, AfterValidator(_validate_strong_password)]
 
 # Enums
 class UserRole(str, Enum):
@@ -29,7 +51,7 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
 
 class UserCreate(UserBase):
-    password: str = Field(..., min_length=8)
+    password: StrongPassword
     role: UserRole
 
 class UserLogin(BaseModel):
@@ -56,10 +78,10 @@ class VerifyOTPRequest(BaseModel):
 
 class ResetPasswordRequest(BaseModel):
     token: str # The reset token received after verifying OTP
-    new_password: str
+    new_password: StrongPassword
 
 class AdminPasswordResetRequest(BaseModel):
-    new_password: str = Field(..., min_length=8)
+    new_password: StrongPassword
 
 # Seeker Profile Schemas
 class SeekerProfileBase(BaseModel):
@@ -222,7 +244,7 @@ class AdminCreateAstrologer(BaseModel):
     # User info
     email: str
     phone_number: str
-    password: str
+    password: StrongPassword
     # Profile info
     full_name: str
     short_bio: Optional[str] = None
@@ -244,7 +266,7 @@ class AstrologerOnboardingRequest(BaseModel):
     full_name: str
     email: str
     phone_number: str
-    password: str
+    password: StrongPassword
     # Profile fields
     astrology_types: List[str]
     experience_years: int

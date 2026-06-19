@@ -1,18 +1,18 @@
 """
 Centralized email service.
 
-Holds the single SMTP connection configuration and a set of branded HTML
-templates used across the app (signup verification, password reset, welcome /
-onboarding, batch-creation notifications). Routers should import the
-``build_*`` helpers and ``send_email`` from here rather than constructing
-``MessageSchema`` objects inline.
+Sends transactional emails through the Resend HTTP API and holds a set of
+branded HTML templates used across the app (signup verification, password
+reset, welcome / onboarding, batch-creation and astrologer-lifecycle
+notifications). Routers should import the ``build_*`` helpers and
+``send_email`` from here rather than talking to the mail provider directly.
 """
 import os
 import logging
 from typing import List, Tuple
 
+import httpx
 from fastapi import BackgroundTasks
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +23,12 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "https://aadikarta.org").rstrip("/")
 SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL") or os.getenv("MAIL_FROM", "support@aadikarta.org")
 OTP_VALIDITY_MINUTES = 10
 
-conf = ConnectionConfig(
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME", "user"),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", "password"),
-    MAIL_FROM=os.getenv("MAIL_FROM", "admin@example.com"),
-    MAIL_FROM_NAME=os.getenv("MAIL_FROM_NAME", APP_NAME),
-    MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
-    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=False,
-)
+# Resend (https://resend.com) transactional email API.
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+RESEND_API_URL = "https://api.resend.com/emails"
+# The sender must be an address on a domain verified in your Resend account.
+MAIL_FROM = os.getenv("MAIL_FROM", "no-reply@aadikarta.org")
+MAIL_FROM_NAME = os.getenv("MAIL_FROM_NAME", APP_NAME)
 
 # --- Base layout -------------------------------------------------------------
 
@@ -367,7 +361,117 @@ def build_growth_meeting_email(
     )
 
 
+# --- Transactional notification templates ------------------------------------
+
+
+def build_payout_processed_email(
+    amount: float, transaction_reference: str, tds_amount: float
+) -> Tuple[str, str]:
+    content = f"""
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Good news &mdash; your payout has been processed.
+      </p>
+      {_detail_rows([
+        ("Amount", f"&#8377;{amount:,.2f}"),
+        ("TDS deducted", f"&#8377;{tds_amount:,.2f}"),
+        ("Transaction reference", transaction_reference or "—"),
+      ])}
+      <p style="margin:0 0 8px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        Please allow 1&ndash;3 business days for the amount to reflect in your account.
+      </p>"""
+    return f"{APP_NAME} - Payout Processed", _layout(
+        "Payout processed", content, preheader="Your payout has been processed"
+    )
+
+
+def build_astrologer_approved_email() -> Tuple[str, str]:
+    content = f"""
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Congratulations! Your astrologer application on {APP_NAME} has been <strong>approved</strong>.
+      </p>
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;">
+        You can now log in and start accepting consultations.
+      </p>
+      {_button("Log in", f"{FRONTEND_URL}/login")}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">Welcome to the {APP_NAME} family!</p>"""
+    return f"{APP_NAME} - Your Application Has Been Approved!", _layout(
+        "Application approved", content, preheader=f"Your {APP_NAME} application was approved"
+    )
+
+
+def build_astrologer_rejected_email(reason: str) -> Tuple[str, str]:
+    content = f"""
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Thank you for your interest in joining {APP_NAME} as an astrologer.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        After reviewing your application, we are unable to approve it at this time.
+      </p>
+      {_detail_rows([("Reason", reason or "—")])}
+      <p style="margin:0 0 8px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        If you believe this is an error or would like to reapply, please contact support.
+      </p>"""
+    return f"{APP_NAME} - Application Status Update", _layout(
+        "Application status update", content, preheader=f"Update on your {APP_NAME} application"
+    )
+
+
+def build_admin_password_reset_email() -> Tuple[str, str]:
+    content = f"""
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        An administrator has reset your {APP_NAME} account password.
+      </p>
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;">
+        Please log in using your new credentials.
+      </p>
+      {_button("Log in", f"{FRONTEND_URL}/login")}
+      <p style="margin:0 0 16px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        If you did not request this change, please contact support immediately.
+      </p>"""
+    return f"{APP_NAME} - Your Password Has Been Reset", _layout(
+        "Your password was reset", content, preheader=f"Your {APP_NAME} password was reset"
+    )
+
+
 # --- Sending -----------------------------------------------------------------
+
+
+def _send_via_resend(recipients: List[str], subject: str, html_body: str) -> None:
+    """Deliver one email through the Resend API. Runs in a background task.
+
+    Failures are logged rather than raised so a mail outage never breaks the
+    request that scheduled the email.
+    """
+    if not RESEND_API_KEY:
+        logger.warning(
+            "RESEND_API_KEY not configured; skipping email %r to %s", subject, recipients
+        )
+        return
+    payload = {
+        "from": f"{MAIL_FROM_NAME} <{MAIL_FROM}>",
+        "to": recipients,
+        "subject": subject,
+        "html": html_body,
+    }
+    try:
+        resp = httpx.post(
+            RESEND_API_URL,
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=15.0,
+        )
+        if resp.status_code >= 400:
+            logger.error(
+                "Resend API error %s sending %r to %s: %s",
+                resp.status_code, subject, recipients, resp.text,
+            )
+        else:
+            logger.info("Sent email %r to %s", subject, recipients)
+    except Exception:  # noqa: BLE001 - background task must never propagate
+        logger.exception("Failed to send email %r to %s", subject, recipients)
 
 
 def send_email(
@@ -376,18 +480,11 @@ def send_email(
     subject: str,
     html_body: str,
 ) -> None:
-    """Queue an HTML email to be sent in the background.
+    """Queue an HTML email to be sent in the background via Resend.
 
     No-ops when there are no recipients so callers don't need to guard.
     """
     recipients = [r for r in (recipients or []) if r]
     if not recipients:
         return
-    message = MessageSchema(
-        subject=subject,
-        recipients=recipients,
-        body=html_body,
-        subtype=MessageType.html,
-    )
-    fm = FastMail(conf)
-    background_tasks.add_task(fm.send_message, message)
+    background_tasks.add_task(_send_via_resend, recipients, subject, html_body)

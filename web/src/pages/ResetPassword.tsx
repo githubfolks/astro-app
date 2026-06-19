@@ -1,4 +1,5 @@
 import { getErrorMessage } from '../utils/errors';
+import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -21,6 +22,11 @@ export const ResetPassword: React.FC = () => {
         }
         if (newPassword !== confirmPassword) {
             setError('Passwords do not match');
+            return;
+        }
+        const passwordError = getPasswordError(newPassword);
+        if (passwordError) {
+            setError(passwordError);
             return;
         }
         setIsLoading(true);
@@ -57,8 +63,9 @@ export const ResetPassword: React.FC = () => {
                             onChange={(e) => setNewPassword(e.target.value)}
                             disabled={isLoading}
                             required
-                            minLength={6}
+                            minLength={8}
                         />
+                        <p className="field-hint">{PASSWORD_REQUIREMENTS}</p>
                     </div>
 
                     <div className="form-group">

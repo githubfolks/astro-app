@@ -1,4 +1,5 @@
 import { getErrorMessage } from '../utils/errors';
+import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -20,6 +21,11 @@ export const Signup: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        const passwordError = getPasswordError(formData.password);
+        if (passwordError) {
+            setError(passwordError);
+            return;
+        }
         setIsLoading(true);
         try {
             setError('');
@@ -78,6 +84,7 @@ export const Signup: React.FC = () => {
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             disabled={isLoading}
                         />
+                        <p className="field-hint">{PASSWORD_REQUIREMENTS}</p>
                     </div>
 
                     <button type="submit" className="auth-btn" disabled={isLoading}>

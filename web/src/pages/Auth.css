@@ -45,6 +45,13 @@
     position: relative;
 }
 
+.field-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #888;
+}
+
 .auth-form input {
     width: 100%;
     padding: 12px 15px;

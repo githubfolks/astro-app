@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
 import api from '../services/api';
 import { Button, Input, TextArea } from '../components/ui';
+import { getPasswordError } from '../utils/password';
 
 export default function AstrologerForm() {
     const navigate = useNavigate();
@@ -111,7 +112,14 @@ export default function AstrologerForm() {
         if (!formData.email) newErrors.email = "Email is required";
         if (!formData.phone_number) newErrors.phone_number = "Phone is required";
 
-        if (!isEditMode && !formData.password) newErrors.password = "Password is required";
+        if (!isEditMode) {
+            if (!formData.password) {
+                newErrors.password = "Password is required";
+            } else {
+                const passwordError = getPasswordError(formData.password);
+                if (passwordError) newErrors.password = passwordError;
+            }
+        }
 
         if (formData.experience_years < 0) newErrors.experience_years = "Cannot be negative";
         if (formData.consultation_fee_per_min < 0) newErrors.consultation_fee_per_min = "Cannot be negative";

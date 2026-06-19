@@ -6,7 +6,7 @@ pydantic
 python-jose[cryptography]
 python-multipart
 python-dotenv
-fastapi-mail==1.5.0
+email-validator
 alembic
 python-slugify
 razorpay
