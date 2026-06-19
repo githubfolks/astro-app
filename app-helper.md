@@ -10,8 +10,13 @@ Seeker: seeker@test.com
 
 all passwords: password
 
-docker compose down
-docker compose up -d --build
+# Local
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+
+# VPS (bring up the standalone DB once first)
+docker compose -f api/scripts/docker-compose.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
+
 
 
 # mobile app emulation:

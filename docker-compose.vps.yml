@@ -1,0 +1,45 @@
+# VPS / production overlay.
+#
+# Database: a STANDALONE dockerized PostgreSQL container (api/scripts/docker-compose.yml)
+# running on the VPS host. The api reaches it via host.docker.internal:5432 (its published
+# port), exactly like local — so SQLALCHEMY_DATABASE_URL in .env stays host.docker.internal.
+# Bring the DB up first, once per host:
+#   docker compose -f api/scripts/docker-compose.yml up -d
+#
+# This overlay attaches the public-facing services to the shared external reverse-proxy
+# network and bakes the production API URL into the frontend images at build time.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
+services:
+  api:
+    environment:
+      APP_ENV: production
+    networks:
+      - default
+      - global-proxy-network
+
+  web:
+    build:
+      args:
+        VITE_API_URL: "https://api.aadikarta.org"
+    networks:
+      - default
+      - global-proxy-network
+
+  admin:
+    build:
+      args:
+        VITE_API_URL: "https://api.aadikarta.org"
+    networks:
+      - default
+      - global-proxy-network
+
+  mirotalk:
+    networks:
+      - default
+      - global-proxy-network
+
+networks:
+  global-proxy-network:
+    external: true

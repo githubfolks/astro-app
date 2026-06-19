@@ -1,3 +1,15 @@
+# Base stack — services shared by every environment.
+#
+# Do NOT run this file on its own. Always combine it with one environment overlay,
+# which decides where the database lives and what API URL the frontends are built with:
+#
+#   Local (macOS, native Postgres on the host):
+#     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+#   VPS (standalone dockerized Postgres — see api/scripts/docker-compose.yml):
+#     docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
+#
+# The DB connection (SQLALCHEMY_DATABASE_URL) and other secrets come from .env.
 services:
   api:
     build: ./api
@@ -14,43 +26,38 @@ services:
       - ./api/uploads:/app/uploads
     depends_on:
       - redis
+    # Lets the api container reach Postgres running on the Docker host
+    # (native Postgres locally, the standalone Postgres container on the VPS).
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - default
-      - global-proxy-network
-
-
 
   web:
-    build: 
+    build:
       context: ./web
-      args:
-        VITE_API_URL: "${VITE_API_URL}"
     container_name: astro_web
     ports:
       - "4002:80"
     networks:
       - default
-      - global-proxy-network
 
   admin:
     build:
       context: ./admin
-      args:
-        VITE_API_URL: "${VITE_API_URL}"
     container_name: astro_admin
     ports:
       - "4001:80"
     networks:
       - default
-      - global-proxy-network
 
   redis:
     image: "redis:alpine"
     container_name: astro_redis
     ports:
       - "6389:6379"
+    networks:
+      - default
 
   mirotalk:
     image: mirotalk/sfu:latest
@@ -64,11 +71,7 @@ services:
       - JWT_SECRET=${MIROTALK_JWT_SECRET}
     networks:
       - default
-      - global-proxy-network
 
 networks:
   default:
     name: astro-app-network
-  global-proxy-network:
-    external: true
-
