@@ -187,6 +187,186 @@ def build_batch_created_admin_email(
     )
 
 
+# --- Astrologer onboarding step emails ---------------------------------------
+# Copy ported from docs/email-contents/Step 1..5*.txt. ##companyName## -> APP_NAME,
+# and the support/footer line is already supplied by _layout().
+
+
+def _detail_rows(pairs: List[Tuple[str, str]]) -> str:
+    rows = "".join(
+        f'<tr><td style="padding:4px 0;color:#6b7280;white-space:nowrap;">{label}:</td>'
+        f'<td style="padding:4px 0 4px 16px;font-weight:600;color:#374151;">{value}</td></tr>'
+        for label, value in pairs
+    )
+    return (
+        '<table role="presentation" cellpadding="0" cellspacing="0" '
+        'style="margin:8px 0 16px 0;font-size:14px;">' + rows + "</table>"
+    )
+
+
+def _greeting(name: str = None, word: str = "Dear") -> str:
+    who = name if name else "there"
+    return f'<p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">{word} {who},</p>'
+
+
+def _signoff(regards: str = "Warm regards,") -> str:
+    return (
+        f'<p style="margin:24px 0 0 0;font-size:15px;line-height:24px;">'
+        f'{regards}<br>Team {APP_NAME}</p>'
+    )
+
+
+def build_interview_scheduled_email(
+    name: str, date: str, time: str, interviewer: str, meeting_link: str
+) -> Tuple[str, str]:
+    """Step 1 - interview scheduled for astrologer."""
+    content = f"""
+      {_greeting(name)}
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;">
+        We are pleased to inform you that your interview with {APP_NAME} has been scheduled as per the details below:
+      </p>
+      {_detail_rows([
+        ("Date", date or "—"),
+        ("Time", time or "—"),
+        ("Interviewer", interviewer or "—"),
+      ])}
+      {_button("Join the meeting", meeting_link) if meeting_link else ""}
+      <p style="margin:0 0 16px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        Please make sure to join the meeting 5 minutes before the interview time using the link above.
+      </p>
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;"><strong>About {APP_NAME}:</strong></p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        {APP_NAME} is one of India's fastest-growing astrology platforms, trusted by millions of users.
+        We connect skilled astrologers and tarot readers with people seeking guidance in love, career,
+        health, and life decisions. We're excited to explore how you can be part of this growing family.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        If you have any questions, feel free to reach out to our team by replying to this email.
+        Looking forward to seeing you in the interview!
+      </p>
+      {_signoff()}"""
+    return f"Your interview with {APP_NAME} is scheduled", _layout(
+        "Interview scheduled", content, preheader=f"Your {APP_NAME} interview details"
+    )
+
+
+def build_profile_activation_email(name: str) -> Tuple[str, str]:
+    """Step 2 - astrologer profile activation."""
+    content = f"""
+      {_greeting(name)}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We're happy to inform you that your documents have been successfully verified, and your
+        profile is now <strong>ACTIVE</strong> on {APP_NAME}! &#127881;
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        As part of your initial training, our advisors will call you in the next 1&ndash;2 days to guide
+        you through the next steps. You're now ready to connect with users seeking your astrological guidance.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We're excited to have you onboard and look forward to seeing your journey and success on our platform.
+        If you have any questions or need assistance, please feel free to reach out to your account manager.
+      </p>
+      {_signoff()}"""
+    return f"Your {APP_NAME} profile is now active", _layout(
+        "Your profile is active", content, preheader=f"Your {APP_NAME} profile is now active"
+    )
+
+
+def build_onboarding_welcome_email(name: str) -> Tuple[str, str]:
+    """Step 3 - welcome to aadikarta (selected after interview)."""
+    content = f"""
+      {_greeting(name)}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">Namaste and Congratulations! &#10024;</p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We're thrilled to welcome you to {APP_NAME} &ndash; one of India's fastest growing astrology
+        platforms, trusted by millions seeking clarity, guidance, and healing.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We're pleased to inform you that you have been successfully selected after your interview. Your
+        expertise, passion, and dedication truly stood out, and we are excited to have you join our family
+        of top astrologers and tarot readers.
+      </p>
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;"><strong>What's Next?</strong></p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Within 24&ndash;48 hours, you'll receive your login credentials for the {APP_NAME} Astrologer App.
+        You will also receive a digital contract to read and sign after logging in. Please complete this
+        process promptly so we can begin your onboarding.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Our team is always here to support you. Let's work together to bring guidance and light to those
+        in need through the power of astrology. Welcome aboard!
+      </p>
+      {_signoff()}"""
+    return f"Welcome to {APP_NAME} - You've been selected!", _layout(
+        f"Welcome to {APP_NAME}", content, preheader=f"You've been selected to join {APP_NAME}"
+    )
+
+
+def build_onboarding_started_email(name: str) -> Tuple[str, str]:
+    """Step 4 - astrologer welcome onboard (onboarding checklist)."""
+    steps = [
+        f"<strong>Login to the {APP_NAME} Astrologer App:</strong> Use your registered mobile number and the OTP sent to you.",
+        "<strong>Fill in Personal Details:</strong> Add your alternate/WhatsApp number.",
+        "<strong>Sign the Contract:</strong> You'll be prompted to sign it digitally after login.",
+        "<strong>Upload Your Documents:</strong> Complete KYC by uploading valid ID proof (PAN, Aadhaar, Bank details).",
+        "<strong>Upload Gallery Photos:</strong> Add 2&ndash;3 professional, clear photos that will be visible to users.",
+        "<strong>Upload Certificates:</strong> Astrology certificates (optional but recommended) for internal verification.",
+    ]
+    steps_html = "".join(
+        f'<li style="margin:0 0 10px 0;font-size:15px;line-height:24px;">{s}</li>' for s in steps
+    )
+    content = f"""
+      {_greeting(name)}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We're thrilled to welcome you officially to the {APP_NAME} family &mdash; one of the fastest growing
+        astrology platforms in India. You've successfully cleared the selection process, and your astrologer
+        profile has now been created.
+      </p>
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;"><strong>What's Next?</strong></p>
+      <p style="margin:0 0 12px 0;font-size:15px;line-height:24px;">
+        To begin receiving calls, chats, and live sessions &mdash; and become discoverable on the app &mdash;
+        please complete the following onboarding steps:
+      </p>
+      <ol style="margin:0 0 16px 0;padding-left:20px;color:#374151;">{steps_html}</ol>
+      <p style="margin:0 0 16px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        If you face any issues, please reach out to your onboarding manager by clicking the "Need Help"
+        button in the app. Let's begin this exciting journey together!
+      </p>
+      {_button("Open the Astrologer App", FRONTEND_URL)}
+      {_signoff()}"""
+    return f"Welcome onboard to {APP_NAME}!", _layout(
+        f"Welcome onboard, {name}!" if name else "Welcome onboard!",
+        content,
+        preheader=f"Complete your {APP_NAME} onboarding steps",
+    )
+
+
+def build_growth_meeting_email(
+    name: str, day: str, date: str, time: str, timezone: str, meeting_link: str
+) -> Tuple[str, str]:
+    """Step 5 - astrologers growth meeting / training."""
+    when = " ".join(p for p in [day, date] if p) or "—"
+    at = " ".join(p for p in [time, timezone] if p) or "—"
+    content = f"""
+      {_greeting(name, word="Hello")}
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;">
+        Kindly join the meeting scheduled as per the details below:
+      </p>
+      {_detail_rows([
+        ("Day & Date", when),
+        ("Time", at),
+      ])}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        In this meeting, we will discuss Astrologer Performance Growth &amp; Training on how to effectively
+        use the application.
+      </p>
+      {_button("Join the meeting", meeting_link) if meeting_link else ""}
+      {_signoff(regards="Regards,")}"""
+    return f"{APP_NAME} - Growth & Training meeting", _layout(
+        "Growth & training meeting", content, preheader="Your performance growth & training meeting"
+    )
+
+
 # --- Sending -----------------------------------------------------------------
 
 

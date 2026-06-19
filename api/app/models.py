@@ -41,6 +41,16 @@ class TransactionType(str, enum.Enum):
     COURSE_PURCHASE = "COURSE_PURCHASE"
     PACKAGE_PURCHASE = "PACKAGE_PURCHASE"
 
+class OnboardingStage(str, enum.Enum):
+    APPLIED = "APPLIED"
+    INTERVIEW_SCHEDULED = "INTERVIEW_SCHEDULED"
+    PROFILE_ACTIVATED = "PROFILE_ACTIVATED"
+    ONBOARDING_INTIMATED = "ONBOARDING_INTIMATED"
+    ONBOARDING_STARTED = "ONBOARDING_STARTED"
+    TRAINING_SCHEDULED = "TRAINING_SCHEDULED"
+    COMPLETED = "COMPLETED"
+    REJECTED = "REJECTED"
+
 class User(Base):
     __tablename__ = "users"
 
@@ -95,6 +105,8 @@ class AstrologerProfile(Base):
     slug = Column(String, unique=True, index=True, nullable=True)
     astrology_types = Column(JSON, nullable=True) # List of types
     is_approved = Column(Boolean, default=False)
+    onboarding_stage = Column(Enum(OnboardingStage), default=OnboardingStage.APPLIED, nullable=False)
+    onboarding_meta = Column(JSON, nullable=True)  # Last-entered email fields per step, for card re-display
     legal_agreement_accepted = Column(Boolean, default=False)
     legal_agreement_accepted_at = Column(DateTime(timezone=True), nullable=True)
 

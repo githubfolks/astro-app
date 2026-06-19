@@ -22,7 +22,7 @@ export default function DashboardLayout() {
         { text: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/' },
         { text: 'Users', icon: <Users size={20} />, path: '/users' },
         { text: 'Astrologers', icon: <Star size={20} />, path: '/astrologers' },
-        { text: 'Approvals', icon: <ShieldCheck size={20} />, path: '/astrologer-approvals' },
+        { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
         { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
         { text: 'Horoscopes', icon: <Moon size={20} />, path: '/cms/horoscopes' },

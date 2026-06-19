@@ -90,6 +90,8 @@ export const cms = {
         approve: (id, data) => api.post(`/admin/astrologers/${id}/approve`, data),
         reject: (id, data) => api.post(`/admin/astrologers/${id}/reject`, data),
         updateCommission: (id, data) => api.patch(`/admin/astrologers/${id}/commission`, data),
+        onboarding: () => api.get('/admin/astrologers/onboarding'),
+        advance: (id, data) => api.post(`/admin/astrologers/${id}/onboarding/advance`, data),
     },
     users: {
         getWalletHistory: (id) => api.get(`/admin/users/${id}/wallet-history`),

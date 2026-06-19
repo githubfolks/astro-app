@@ -11,7 +11,15 @@ from .. import models_edu, schemas_edu
 from decimal import Decimal
 from fastapi_mail import FastMail, MessageSchema, MessageType
 from .auth import get_current_admin, get_password_hash
-from ..services.email_service import conf
+from ..services.email_service import (
+    conf,
+    send_email,
+    build_interview_scheduled_email,
+    build_profile_activation_email,
+    build_onboarding_welcome_email,
+    build_onboarding_started_email,
+    build_growth_meeting_email,
+)
 
 router = APIRouter(
     prefix="/admin",
@@ -230,6 +238,19 @@ class RejectAstrologerRequest(BaseModel):
 
 class CommissionUpdateRequest(BaseModel):
     commission_percentage: float
+
+class AdvanceOnboardingRequest(BaseModel):
+    target_stage: models.OnboardingStage
+    # Step 1 (interview) fields
+    date: Optional[str] = None
+    time: Optional[str] = None
+    interviewer: Optional[str] = None
+    meeting_link: Optional[str] = None
+    # Step 5 (growth/training) fields
+    day: Optional[str] = None
+    timezone: Optional[str] = None
+    # Step 2 (activation) field
+    consultation_fee_per_min: Optional[float] = None
 
 @router.put("/users/{user_id}/status")
 def update_user_status(user_id: int, status_update: UserStatusUpdate, db: Session = Depends(database.get_db)):
@@ -629,6 +650,7 @@ async def reject_astrologer(user_id: int, request: RejectAstrologerRequest, back
         raise HTTPException(status_code=404, detail="Profile not found")
 
     profile.is_approved = False
+    profile.onboarding_stage = models.OnboardingStage.REJECTED
     user.is_active = False
     astrologer_email = user.email
     db.commit()
@@ -649,6 +671,110 @@ async def reject_astrologer(user_id: int, request: RejectAstrologerRequest, back
         background_tasks.add_task(fm.send_message, message)
 
     return {"message": "Astrologer application rejected"}
+
+
+# --- Onboarding pipeline (Kanban) --------------------------------------------
+
+# Email builder per stage entered. Stages with no email map to None.
+_ONBOARDING_EMAIL_BUILDERS = {
+    models.OnboardingStage.INTERVIEW_SCHEDULED: lambda p, r: build_interview_scheduled_email(
+        p.full_name, r.date, r.time, r.interviewer, r.meeting_link
+    ),
+    models.OnboardingStage.PROFILE_ACTIVATED: lambda p, r: build_profile_activation_email(p.full_name),
+    models.OnboardingStage.ONBOARDING_INTIMATED: lambda p, r: build_onboarding_welcome_email(p.full_name),
+    models.OnboardingStage.ONBOARDING_STARTED: lambda p, r: build_onboarding_started_email(p.full_name),
+    models.OnboardingStage.TRAINING_SCHEDULED: lambda p, r: build_growth_meeting_email(
+        p.full_name, r.day, r.date, r.time, r.timezone, r.meeting_link
+    ),
+}
+
+
+@router.get("/astrologers/onboarding")
+def list_onboarding_astrologers(db: Session = Depends(database.get_db)):
+    """All astrologers with their onboarding stage, for the Kanban board."""
+    results = db.query(models.User, models.AstrologerProfile).join(
+        models.AstrologerProfile, models.User.id == models.AstrologerProfile.user_id
+    ).filter(
+        models.User.role == models.UserRole.ASTROLOGER
+    ).all()
+
+    cards = []
+    for user, profile in results:
+        cards.append({
+            "id": user.id,
+            "email": user.email,
+            "phone_number": user.phone_number,
+            "onboarding_stage": profile.onboarding_stage.value if profile.onboarding_stage else models.OnboardingStage.APPLIED.value,
+            "onboarding_meta": profile.onboarding_meta or {},
+            "is_approved": profile.is_approved,
+            "profile": {
+                "full_name": profile.full_name,
+                "short_bio": profile.short_bio,
+                "experience_years": profile.experience_years,
+                "languages": profile.languages,
+                "astrology_types": profile.astrology_types,
+                "profile_picture_url": profile.profile_picture_url,
+                "id_proof_url": profile.id_proof_url,
+                "city": profile.city,
+                "legal_agreement_accepted": profile.legal_agreement_accepted,
+            },
+        })
+    return cards
+
+
+@router.post("/astrologers/{user_id}/onboarding/advance")
+async def advance_onboarding(
+    user_id: int,
+    request: AdvanceOnboardingRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db),
+):
+    """Move an astrologer to a target onboarding stage and send the matching step email."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    target = request.target_stage
+    profile.onboarding_stage = target
+
+    # Persist the entered email fields for card re-display.
+    meta = dict(profile.onboarding_meta or {})
+    provided = {
+        k: v for k, v in {
+            "date": request.date,
+            "time": request.time,
+            "interviewer": request.interviewer,
+            "meeting_link": request.meeting_link,
+            "day": request.day,
+            "timezone": request.timezone,
+        }.items() if v
+    }
+    if provided:
+        meta[target.value] = provided
+        profile.onboarding_meta = meta
+
+    # Stage side effects.
+    if target == models.OnboardingStage.PROFILE_ACTIVATED:
+        profile.is_approved = True
+        user.is_active = True
+        if request.consultation_fee_per_min is not None:
+            profile.consultation_fee_per_min = Decimal(str(request.consultation_fee_per_min))
+    elif target == models.OnboardingStage.REJECTED:
+        profile.is_approved = False
+        user.is_active = False
+
+    astrologer_email = user.email
+    db.commit()
+
+    builder = _ONBOARDING_EMAIL_BUILDERS.get(target)
+    if builder and astrologer_email:
+        subject, html_body = builder(profile, request)
+        send_email(background_tasks, [astrologer_email], subject, html_body)
+
+    return {"message": f"Astrologer moved to {target.value}", "onboarding_stage": target.value}
 
 
 @router.get("/edu/stats", response_model=schemas_edu.AdminEduStatsResponse)
