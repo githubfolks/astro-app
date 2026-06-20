@@ -14,7 +14,6 @@ all passwords: password
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 # VPS (bring up the standalone DB once first)
-docker compose -f api/scripts/docker-compose.yml up -d
 docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
 
 
