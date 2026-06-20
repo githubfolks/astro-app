@@ -166,11 +166,13 @@ def generate_otp(length=6):
 @router.post("/forgot-password")
 @limiter.limit("3/minute")
 async def forgot_password(request_data: schemas.ForgotPasswordRequest, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(database.get_db)):
+    # Generic response used whether or not the account exists, so this endpoint
+    # can't be used to enumerate registered emails.
+    generic_response = {"message": "If the email is registered, an OTP has been sent."}
+
     user = db.query(models.User).filter(models.User.email == request_data.email).first()
     if not user:
-        # Don't reveal if user exists or not, but for now helpful for debugging
-        # raise HTTPException(status_code=404, detail="User not found")
-        return {"message": "If the email is registered, an OTP has been sent."}
+        return generic_response
 
     otp = generate_otp()
     # Expire in 10 minutes
@@ -190,7 +192,7 @@ async def forgot_password(request_data: schemas.ForgotPasswordRequest, backgroun
     subject, html = email_service.build_password_reset_email(otp)
     email_service.send_email(background_tasks, [user.email], subject, html)
 
-    return {"message": "OTP sent to email"}
+    return generic_response
 
 @router.post("/verify-email")
 def verify_email(request: schemas.VerifyOTPRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
@@ -251,17 +253,19 @@ async def resend_verification(request_data: schemas.ResendVerificationRequest, b
 @router.post("/verify-otp")
 def verify_otp(request: schemas.VerifyOTPRequest, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.email == request.email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Find valid OTP
-    token = db.query(models.VerificationToken).filter(
-        models.VerificationToken.user_id == user.id,
-        models.VerificationToken.token == request.otp,
-        models.VerificationToken.verification_type == models.VerificationTokenType.FORGOT_PASSWORD,
-        models.VerificationToken.is_used == False,
-        models.VerificationToken.expires_at > datetime.utcnow()
-    ).first()
+
+    # Look up a valid OTP only if the user exists. We deliberately return the same
+    # generic error for "no such user" and "bad/expired OTP" so this endpoint can't
+    # be used to enumerate which emails are registered (matches /forgot-password).
+    token = None
+    if user:
+        token = db.query(models.VerificationToken).filter(
+            models.VerificationToken.user_id == user.id,
+            models.VerificationToken.token == request.otp,
+            models.VerificationToken.verification_type == models.VerificationTokenType.FORGOT_PASSWORD,
+            models.VerificationToken.is_used == False,
+            models.VerificationToken.expires_at > datetime.utcnow()
+        ).first()
 
     if not token:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP")

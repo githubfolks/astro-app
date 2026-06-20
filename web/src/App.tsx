@@ -14,6 +14,7 @@ const Login = lazy(() => import('./pages/Login').then(module => ({ default: modu
 const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then(module => ({ default: module.VerifyOTP })));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail').then(module => ({ default: module.VerifyEmail })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
 const Chat = lazy(() => import('./pages/Chat').then(module => ({ default: module.Chat })));
@@ -142,6 +143,7 @@ function App() {
                         />
                         <Route path="/login" element={<Login />} />
                         <Route path="/signup" element={<Signup />} />
+                        <Route path="/verify-email" element={<VerifyEmail />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/verify-otp" element={<VerifyOTP />} />
                         <Route path="/reset-password" element={<ResetPassword />} />

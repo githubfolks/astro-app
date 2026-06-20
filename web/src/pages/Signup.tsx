@@ -1,7 +1,6 @@
 import { getErrorMessage } from '../utils/errors';
 import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -15,7 +14,6 @@ export const Signup: React.FC = () => {
         role: 'SEEKER'
     });
     const [error, setError] = useState('');
-    const { login } = useAuth();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -29,9 +27,11 @@ export const Signup: React.FC = () => {
         setIsLoading(true);
         try {
             setError('');
-            const data = await api.auth.signup(formData);
-            login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '' });
-            navigate('/');
+            await api.auth.signup(formData);
+            // Backend creates an unverified account and emails a verification code.
+            // Send the user to the email-verification screen; they can log in only
+            // after verifying.
+            navigate('/verify-email', { state: { email: formData.email } });
         } catch (err) {
             setError(getErrorMessage(err) || 'Signup failed');
         } finally {

@@ -26,7 +26,7 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
             setError('');
             // Using the same API service as the main login page
             const data = await api.auth.login(username, password);
-            login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '' });
+            login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '', full_name: data.full_name });
             onLoginSuccess();
             onClose();
         } catch (err) {

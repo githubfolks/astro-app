@@ -144,6 +144,17 @@
     border: 1px solid #ffcdd2;
 }
 
+.info-banner {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 14px;
+    border: 1px solid #c8e6c9;
+}
+
 /* Decorative elements matching theme */
 .decor-circle {
     position: absolute;

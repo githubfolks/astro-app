@@ -1,8 +1,23 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: './src/test/setup.ts',
+        css: false,
+        // Unit/integration tests live under src/. Playwright owns e2e/.
+        include: ['src/**/*.{test,spec}.{ts,tsx}'],
+        exclude: ['e2e/**', 'node_modules/**'],
+        // The api service reads import.meta.env.VITE_API_URL; pin it so MSW handlers
+        // can match a stable origin.
+        env: {
+            VITE_API_URL: 'http://localhost:8000',
+        },
+    },
     plugins: [
         react(),
         VitePWA({

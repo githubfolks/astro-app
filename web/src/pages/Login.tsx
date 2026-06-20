@@ -2,7 +2,7 @@ import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import './Auth.css';
 
@@ -12,6 +12,8 @@ export const Login: React.FC = () => {
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const justVerified = location.state?.verified === true;
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +63,7 @@ export const Login: React.FC = () => {
                     <p className="auth-subtitle">Login to continue your cosmic journey</p>
                 </div>
 
+                {justVerified && !error && <div className="info-banner">Email verified! You can now log in.</div>}
                 {error && <div className="error-banner">{error}</div>}
 
                 <form onSubmit={handleSubmit} className="auth-form">

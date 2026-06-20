@@ -87,7 +87,10 @@ const customFetch = async (url: string, options: RequestInit = {}): Promise<Resp
 
 const handleResponse = async (response: Response, defaultError: string) => {
     if (!response.ok) {
-        if (response.status === 401) {
+        // Only treat a 401 as an expired session (clear auth + redirect) when we
+        // actually had a token. A 401 on the login request itself just means the
+        // credentials were wrong, and should surface as an inline error instead.
+        if (response.status === 401 && (await getAuthToken())) {
             await storage.removeItem('token');
             await storage.removeItem('user');
             window.location.href = '/login';
@@ -128,6 +131,22 @@ export const api = {
                 body: JSON.stringify(data),
             });
             return handleResponse(response, 'Signup failed');
+        },
+        verifyEmail: async (email: string, otp: string) => {
+            const response = await customFetch(`${API_URL}/verify-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp }),
+            });
+            return handleResponse(response, 'Failed to verify email');
+        },
+        resendVerification: async (email: string) => {
+            const response = await customFetch(`${API_URL}/resend-verification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            return handleResponse(response, 'Failed to resend verification code');
         },
         forgotPassword: async (email: string) => {
             const response = await customFetch(`${API_URL}/forgot-password`, {

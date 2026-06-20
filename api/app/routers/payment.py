@@ -8,6 +8,7 @@ import os
 import hmac
 import hashlib
 import json
+from decimal import Decimal
 from pydantic import BaseModel
 
 router = APIRouter(
@@ -120,8 +121,9 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             wallet = models.UserWallet(user_id=current_user.id, balance=0.0)
             db.add(wallet)
         
-        # 3. Add Balance
-        wallet.balance += amount_paid_inr
+        # 3. Add Balance. wallet.balance is a DECIMAL column, so coerce the float
+        # amount to Decimal to avoid `Decimal + float` TypeErrors.
+        wallet.balance = (wallet.balance or Decimal("0")) + Decimal(str(amount_paid_inr))
         
         # 4. Record Transaction
         txn = models.WalletTransaction(
@@ -196,7 +198,7 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
         wallet = models.UserWallet(user_id=int(user_id), balance=0.0)
         db.add(wallet)
 
-    wallet.balance += amount_inr
+    wallet.balance = (wallet.balance or Decimal("0")) + Decimal(str(amount_inr))
     txn = models.WalletTransaction(
         user_id=int(user_id),
         amount=amount_inr,

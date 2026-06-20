@@ -158,7 +158,7 @@ async def csrf_middleware(request: Request, call_next):
     
     # State-changing methods require token validation
     # EXEMPTIONS for initial auth where session doesn't exist yet
-    exempt_paths = ["/login", "/signup", "/forgot-password", "/verify-otp", "/reset-password", "/payment/razorpay-webhook"]
+    exempt_paths = ["/login", "/signup", "/verify-email", "/resend-verification", "/forgot-password", "/verify-otp", "/reset-password", "/payment/razorpay-webhook"]
     
     # Also exempt requests with Bearer token (JWT) as they are inherently CSRF-protected
     auth_header = request.headers.get("Authorization")

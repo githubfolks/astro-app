@@ -39,7 +39,7 @@ export const VerifyOTP: React.FC = () => {
             <div className="auth-card">
                 <div className="auth-header">
                     <h2 className="auth-title">Verify OTP</h2>
-                    <p className="auth-subtitle">Enter the OTP sent to {email}</p>
+                    <p className="auth-subtitle">If an account exists for {email}, we've sent a one-time code. Enter it below.</p>
                 </div>
 
                 {error && <div className="error-banner">{error}</div>}
