@@ -23,7 +23,7 @@ const Hero: React.FC = () => {
                 <div className="hero-image-container relative">
                     <div className="absolute inset-0 bg-indigo-500/10 blur-[100px] rounded-full"></div>
                     <img
-                        src="/assets/hero_astrology.png"
+                        src="/assets/hero_astrology.webp"
                         alt="Indian Mythological Astrology"
                         className="hero-image relative z-10 rounded-[3rem] shadow-2xl border-4 border-white/10"
                         fetchPriority="high"

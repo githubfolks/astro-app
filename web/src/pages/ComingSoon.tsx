@@ -68,7 +68,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ onEnter }) => {
                 >
                     <div className="relative z-10">
                         <img
-                            src="/assets/hero_astrology.png"
+                            src="/assets/hero_astrology.webp"
                             alt="Ancient Wisdom"
                             className="w-full h-auto drop-shadow-[0_0_50px_rgba(245,158,11,0.2)] animate-float"
                         />

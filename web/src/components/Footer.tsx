@@ -33,7 +33,7 @@ const Footer: React.FC = () => {
                     {/* Left Column: Brand Info */}
                     <div className="footer-column brand-column">
                         <div className="footer-logo">
-                            <img src="/assets/logo.png" alt="Aadikarta" className="h-12 w-auto" width="160" height="48" />
+                            <img src="/assets/logo.webp" alt="Aadikarta" className="h-12 w-auto" width="160" height="48" />
                         </div>
                         <p className="footer-desc">
                             Your trusted companion for astrological guidance.

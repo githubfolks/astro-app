@@ -56,7 +56,7 @@ const Header: React.FC = () => {
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                     <Link to="/" className="brand-logo" aria-label="Aadikarta Home">
-                        <img src="/assets/logo.png" alt="Aadikarta" className="h-20 w-auto" width="146" height="80" />
+                        <img src="/assets/logo.webp" alt="Aadikarta" className="h-20 w-auto" width="146" height="80" />
                     </Link>
                 </div>
 
