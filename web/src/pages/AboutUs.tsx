@@ -10,9 +10,9 @@ const AboutUs: React.FC = () => {
     useEffect(() => {
         AOS.init({
             duration: 1000,
-            once: false,
-            mirror: true,
-            offset: 100
+            once: true,
+            disable: 'mobile',
+            offset: 50
         });
         AOS.refresh();
     }, []);

@@ -12,6 +12,8 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ onEnter }) => {
         AOS.init({
             duration: 1000,
             once: true,
+            disable: 'mobile',
+            offset: 50
         });
     }, []);
 

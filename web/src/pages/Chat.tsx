@@ -11,6 +11,7 @@ import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle } from 'lucide-rea
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
+import { loadRazorpay } from '../utils/loadRazorpay';
 
 export const Chat: React.FC = () => {
     const { consultationId, astrologerId } = useParams<{ consultationId: string; astrologerId: string }>();
@@ -165,6 +166,12 @@ export const Chat: React.FC = () => {
         if (!rechargeAmount || isNaN(amt) || amt <= 0) return;
         try {
             setIsRecharging(true);
+            const loaded = await loadRazorpay();
+            if (!loaded) {
+                alert('Failed to load Razorpay SDK. Please try again.');
+                setIsRecharging(false);
+                return;
+            }
             const orderData = await api.payment.createOrder(amt);
             if (orderData.key_id === 'mock_key' || !orderData.key_id) {
                 const ok = confirm(`[DEV] Simulate ₹${amt} payment?`);

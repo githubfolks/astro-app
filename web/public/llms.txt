@@ -1,0 +1,20 @@
+# Aadikarta
+
+> India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists.
+
+Aadikarta provides live chat consultations starting from ₹10/min. We bridge ancient Vedic wisdom with modern life, providing authentic astrological guidance.
+
+## Services
+- Vedic Astrology
+- Kundli Matching
+- Tarot Reading
+- Love Advice
+- Daily Horoscope
+- Vastu Shastra
+
+## Features
+- Verified Astrologers
+- Secure & Private Chat
+- 100% Confidentiality
+
+Website: https://aadikarta.org

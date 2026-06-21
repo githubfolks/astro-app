@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { Wallet as WalletIcon, PlusCircle } from 'lucide-react';
 import type { RazorpayResponse, RazorpayError } from '../types';
+import { loadRazorpay } from '../utils/loadRazorpay';
 
 export const Wallet: React.FC = () => {
     const [balance, setBalance] = useState<number>(0);
@@ -33,6 +34,13 @@ export const Wallet: React.FC = () => {
 
         try {
             setIsRecharging(true);
+
+            const loaded = await loadRazorpay();
+            if (!loaded) {
+                alert('Failed to load Razorpay SDK. Please try again.');
+                setIsRecharging(false);
+                return;
+            }
 
             // 1. Create Order
             const orderData = await api.payment.createOrder(amt);

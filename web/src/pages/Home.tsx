@@ -63,9 +63,9 @@ const Home: React.FC = () => {
     useEffect(() => {
         AOS.init({
             duration: 1000,
-            once: false,
-            mirror: true,
-            offset: 100
+            once: true,
+            disable: 'mobile',
+            offset: 50
         });
         // Refresh AOS to ensure it picks up dynamically rendered content
         AOS.refresh();

@@ -39,7 +39,7 @@ const vastuStructuredData = {
 
 const VastuShastra: React.FC = () => {
     useEffect(() => {
-        AOS.init({ duration: 1000, once: false, mirror: true });
+        AOS.init({ duration: 1000, once: true, disable: 'mobile' });
     }, []);
 
     return (
