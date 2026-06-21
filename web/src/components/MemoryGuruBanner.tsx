@@ -80,6 +80,8 @@ const MemoryGuruBanner: React.FC = () => {
                                 src="/assets/memory_guru/rajesh-1.jpeg"
                                 alt="Rajesh Chaudhary - Memory Guru"
                                 className="w-full h-[500px] object-cover rounded-[2.5rem] shadow-2xl relative z-10 filter contrast-110"
+                                width="400"
+                                height="500"
                             />
 
                             {/* Floating Badge */}

@@ -48,6 +48,7 @@ export default defineConfig({
     build: {
         target: 'esnext',
         cssCodeSplit: true,
+        minify: 'terser',
         rollupOptions: {
             output: {
                 manualChunks: {

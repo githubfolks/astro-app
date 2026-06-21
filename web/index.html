@@ -8,9 +8,9 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
 
   <!-- Primary SEO — fallback shown before JS runs (Googlebot sees this) -->
-  <title>Aadikarta — Talk to Expert Astrologers Online | Vedic Astrology, Tarot & More</title>
+  <title>Aadikarta — Talk to Expert Astrologers Online</title>
   <meta name="description"
-    content="Connect with India's top verified astrologers on Aadikarta. Get live chat consultations on Vedic astrology, kundli matching, tarot reading, love advice, and daily horoscope. Starting from ₹10/min." />
+    content="Connect with top verified astrologers on Aadikarta. Get live chat consultations on Vedic astrology, kundli matching, and daily horoscope from ₹10/min." />
   <link rel="canonical" href="https://aadikarta.org/" />
   <meta name="robots" content="index, follow" />
 
@@ -45,10 +45,34 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="preload" href="/assets/logo.png" as="image">
+  <link rel="preload" href="/assets/hero_astrology.png" as="image" fetchpriority="high">
 </head>
 
 <body>
   <div id="app"></div>
+  
+  <!-- Static fallback links for SEO crawlers that don't wait for React -->
+  <nav style="display:none;" aria-label="Quick Links">
+    <a href="/">Home</a>
+    <a href="/about-us">About Us</a>
+    <a href="/blog">Blog</a>
+    <a href="/chat-with-astrologers">Chat with Astrologers</a>
+    <a href="/join-as-astrologer">Join as Astrologer</a>
+    <a href="/privacy-policy">Privacy Policy</a>
+    <a href="/terms-of-service">Terms of Service</a>
+  </nav>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Aadikarta",
+    "url": "https://aadikarta.org",
+    "logo": "https://aadikarta.org/assets/logo.png",
+    "description": "We bridge ancient Vedic wisdom with modern life, providing authentic astrological guidance."
+  }
+  </script>
+
   <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
