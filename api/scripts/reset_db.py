@@ -16,13 +16,10 @@ def reset_database():
         # Disable auto-commit for transaction? No, just run.
         transaction = connection.begin()
         
-        # Reflect all tables to ensure we catch everything or just drop widely
-        print("Dropping all tables with CASCADE...")
-        # Hard nuke approach for Postgres specific
-        connection.execute(text("DROP SCHEMA public CASCADE;"))
-        connection.execute(text("CREATE SCHEMA public;"))
-        connection.execute(text("GRANT ALL ON SCHEMA public TO postgres;"))
-        connection.execute(text("GRANT ALL ON SCHEMA public TO public;"))
+        print("Dropping aadikarta_db schema with CASCADE...")
+        connection.execute(text("DROP SCHEMA IF EXISTS aadikarta_db CASCADE;"))
+        connection.execute(text("CREATE SCHEMA aadikarta_db;"))
+        connection.execute(text("GRANT ALL ON SCHEMA aadikarta_db TO postgres;"))
         
         transaction.commit()
         connection.close()
