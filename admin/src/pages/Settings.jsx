@@ -4,23 +4,10 @@ import { Button } from '../components/ui/Button';
 
 const GROUPS = [
     {
-        title: 'WhatsApp Gateway (wa.aavyalabtech.com)',
-        desc: 'System sends WhatsApp alerts to astrologers on new requests and to admin on moderation flags.',
-        fields: [
-            { key: 'wa_base_url', label: 'Gateway Base URL' },
-            { key: 'wa_api_key', label: 'API Key', secret: true },
-            { key: 'wa_sender', label: 'Sender Number / Session ID' },
-            { key: 'wa_template_new_request', label: 'Template: New Request', textarea: true },
-            { key: 'wa_template_your_turn', label: 'Template: Your Turn', textarea: true },
-        ],
-    },
-    {
         title: 'Moderation Alerts',
         desc: 'Where to send alerts when spam / contact-sharing is detected in chats.',
         fields: [
             { key: 'moderation_admin_user_id', label: 'Super-admin User ID (in-app alert)' },
-            { key: 'moderation_admin_whatsapp', label: 'Super-admin WhatsApp Number' },
-            { key: 'moderation_admin_template', label: 'Template: Admin Alert', textarea: true },
         ],
     },
     {
@@ -80,7 +67,7 @@ export default function Settings() {
     return (
         <div className="p-6 max-w-3xl">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Platform Settings</h1>
-            <p className="text-gray-500 mb-6 text-sm">Configure WhatsApp notifications, moderation alerts and system tunables.</p>
+            <p className="text-gray-500 mb-6 text-sm">Configure moderation alerts and system tunables.</p>
 
             {GROUPS.map(group => (
                 <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

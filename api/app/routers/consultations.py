@@ -59,7 +59,6 @@ def request_consultation(request: schemas.ConsultationCreate, current_user: mode
 def _notify_astrologer_of_request(db: Session, consultation: models.Consultation, seeker: models.User):
     from .realtime import notify_user
     from ..notifications import send_push_notification
-    from ..services.whatsapp_service import send_whatsapp
     from ..services.settings_service import get_setting
 
     seeker_name = (seeker.seeker_profile.full_name if seeker.seeker_profile else None) or "A seeker"
@@ -86,17 +85,6 @@ def _notify_astrologer_of_request(db: Session, consultation: models.Consultation
             )
     except Exception as e:
         print(f"push notify failed: {e}")
-
-    # 3. WhatsApp nudge (pulls the astrologer back into the app).
-    try:
-        if astro and astro.phone_number:
-            send_whatsapp(astro.phone_number, "wa_template_new_request", {
-                "seeker": seeker_name,
-                "app": get_setting("APP_NAME") or "Aadikarta",
-                "link": (get_setting("FRONTEND_URL") or "https://aadikarta.org") + "/dashboard",
-            })
-    except Exception as e:
-        print(f"whatsapp notify failed: {e}")
 
 
 @router.get("/{consultation_id}/queue-position")

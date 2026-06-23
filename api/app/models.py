@@ -199,7 +199,7 @@ class ChatMessage(Base):
 
 class AppSetting(Base):
     """Generic key/value store for super-admin-managed runtime config
-    (WhatsApp gateway credentials, moderation recipient, tunables)."""
+    (moderation recipient, tunables)."""
     __tablename__ = "app_settings"
 
     key = Column(String, primary_key=True, index=True)

@@ -59,7 +59,6 @@ def persist_and_moderate(db: Session, consultation: "models.Consultation", sende
     """
     from ..services import moderation
     from ..services.settings_service import get_setting
-    from ..services.whatsapp_service import send_whatsapp
     from .realtime import notify_user
 
     violations, masked = moderation.scan(content or "")
@@ -108,7 +107,7 @@ def persist_and_moderate(db: Session, consultation: "models.Consultation", sende
     except RuntimeError:
         pass
 
-    # Alert the super admin (in-app + WhatsApp).
+    # Alert the super admin (in-app).
     try:
         admin_user_id = get_setting("moderation_admin_user_id")
         if admin_user_id:
@@ -118,14 +117,6 @@ def persist_and_moderate(db: Session, consultation: "models.Consultation", sende
                 "flagged_user_id": sender_id,
                 "reason": reason,
                 "snippet": content,
-            })
-        admin_wa = get_setting("moderation_admin_whatsapp")
-        if admin_wa:
-            send_whatsapp(admin_wa, "moderation_admin_template", {
-                "reason": reason,
-                "consultation_id": consultation.id,
-                "user_id": sender_id,
-                "snippet": (content or "")[:120],
             })
     except Exception as e:
         logger.error(f"Failed to alert admin of moderation flag: {e}")
@@ -154,7 +145,6 @@ def astrologer_has_other_active(db: Session, astrologer_id: int, exclude_id: int
 def promote_next_in_queue(db: Session, astrologer_id: int):
     """When an astrologer frees up, alert the next waiting seeker that it's their turn."""
     from .realtime import notify_user
-    from ..services.whatsapp_service import send_whatsapp
     from ..services.settings_service import get_setting
 
     next_req = db.query(models.Consultation).filter(
