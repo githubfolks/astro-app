@@ -176,6 +176,19 @@ def _notify_waiting_seekers(db: Session, astrologer_id: int):
                 )
         except Exception as e:
             print(f"notify waiting seeker push failed: {e}")
+
+        # Send WhatsApp alert to seeker
+        try:
+            from ..services.whatsapp_service import send_whatsapp
+            if sub.seeker and sub.seeker.phone_number:
+                send_whatsapp(
+                    to_phone=sub.seeker.phone_number,
+                    template_key="waplex_template_astrologer_online",
+                    params={"astrologer_name": astro_name}
+                )
+        except Exception as e:
+            print(f"notify waiting seeker WhatsApp failed: {e}")
+
         sub.notified = True
     db.commit()
 
@@ -189,6 +202,19 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
     astro = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == astrologer_id).first()
     if not astro:
         raise HTTPException(status_code=404, detail="Astrologer not found")
+
+    # Send WhatsApp notification to the astrologer (always triggered on click)
+    try:
+        from ..services.whatsapp_service import send_whatsapp
+        seeker_name = (current_user.seeker_profile.full_name if current_user.seeker_profile else None) or "Seeker"
+        if astro.user and astro.user.phone_number:
+            send_whatsapp(
+                to_phone=astro.user.phone_number,
+                template_key="waplex_template_notify_astrologer",
+                params={"seeker_name": seeker_name}
+            )
+    except Exception as e:
+        print(f"Failed to send notify WhatsApp message to astrologer: {e}")
 
     existing = db.query(models.AvailabilityNotification).filter(
         models.AvailabilityNotification.seeker_id == current_user.id,

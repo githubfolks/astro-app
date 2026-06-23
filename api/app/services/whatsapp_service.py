@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 HARDCODED_TEMPLATES = {
     "waplex_template_new_request": "You have a new consultation request from {seeker} on {app}. Open your dashboard to respond: {link}",
     "waplex_template_your_turn": "It's your turn to consult {astrologer} on {app}. Open the app to start: {link}",
+    "waplex_template_notify_astrologer": "seeker({seeker_name}) wants your consultation",
+    "waplex_template_astrologer_online": "Astrologer({astrologer_name}) is online now. You can start chat.",
 }
 
 

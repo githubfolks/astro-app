@@ -7,6 +7,7 @@ import LoginModal from './LoginModal';
 import ProfileCompletionModal from './ProfileCompletionModal';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import { useRealtime } from '../hooks/useRealtime';
 import './AstrologerList.css';
 
 interface AstrologerListProps {
@@ -131,6 +132,21 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     useEffect(() => {
         fetchAstrologers();
     }, [topRankingOnly, limit]); // Refetch if these props change
+
+    useRealtime((event) => {
+        if (event.type === 'ASTRO_ONLINE' && event.astrologer_id) {
+            setAstrologers(prev => prev.map(astro => {
+                if (astro.id === event.astrologer_id) {
+                    return {
+                        ...astro,
+                        is_online: true,
+                        availability_status: 'ONLINE'
+                    };
+                }
+                return astro;
+            }));
+        }
+    });
 
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');

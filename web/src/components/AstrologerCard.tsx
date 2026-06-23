@@ -98,10 +98,10 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
                             Join Queue{astro.queue_length ? ` (${astro.queue_length})` : ''}
                         </button>
                     ) : notified ? (
-                        <span className="offline-badge">We'll notify you</span>
+                        <span className="offline-badge">Knocked</span>
                     ) : (
                         <button className="notify-btn" onClick={handleNotify}>
-                            <Bell size={14} /> Notify me
+                            <Bell size={14} /> Knock
                         </button>
                     )}
                 </div>

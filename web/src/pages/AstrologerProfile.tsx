@@ -7,6 +7,7 @@ import LoginModal from '../components/LoginModal';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import { useRealtime } from '../hooks/useRealtime';
 import {
     Star,
     MessageCircle,
@@ -86,6 +87,16 @@ const AstrologerProfile: React.FC = () => {
                 .catch(console.error);
         }
     }, [isAuthenticated, user]);
+
+    useRealtime((event) => {
+        if (event.type === 'ASTRO_ONLINE' && event.astrologer_id && (String(event.astrologer_id) === String(astrologer?.user_id) || String(event.astrologer_id) === String(id))) {
+            setAstrologer(prev => prev ? {
+                ...prev,
+                is_online: true,
+                availability_status: 'ONLINE'
+            } : null);
+        }
+    });
 
     const isProfileComplete = (profile: SeekerProfile | null) => {
         return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
@@ -271,7 +282,7 @@ const AstrologerProfile: React.FC = () => {
                                         className="w-full bg-white/15 border border-white/30 text-white font-bold py-4 rounded-xl hover:bg-white/25 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-default"
                                     >
                                         <Bell size={20} />
-                                        {notified ? "We'll notify you when online" : 'Notify me when online'}
+                                        {notified ? "Knocked" : 'Knock'}
                                     </button>
                                 ) : (
                                     <button
@@ -414,7 +425,7 @@ const AstrologerProfile: React.FC = () => {
                                         className="w-full bg-white text-[#E91E63] font-bold py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-default"
                                     >
                                         <Bell size={18} />
-                                        {notified ? "We'll notify you" : 'Notify me when online'}
+                                        {notified ? "Knocked" : 'Knock'}
                                     </button>
                                 ) : (
                                     <button
