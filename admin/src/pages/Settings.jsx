@@ -22,7 +22,7 @@ const GROUPS = [
     },
 ];
 
-function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop }) {
+function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop, error }) {
     const state = String(waStatus?.status || '').toUpperCase();
     const isConnected = state === 'CONNECTED';
     const pairingCode = waStatus?.pairing_code || waStatus?.code;
@@ -87,6 +87,15 @@ function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone
 
             {isConfigured && !isConnected && (
                 <div className="space-y-3">
+                    {error && (
+                        <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <div>
+                                <p className="font-semibold">Connection Error</p>
+                                <p className="text-xs mt-0.5">{error}</p>
+                            </div>
+                        </div>
+                    )}
                     {!isPairing && (
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
@@ -159,8 +168,8 @@ export default function Settings() {
     const [isConnecting, setIsConnecting] = useState(false);
     const [isStopping, setIsStopping] = useState(false);
     const [waPhone, setWaPhone] = useState('');
+    const [waError, setWaError] = useState('');
     const waPollRef = useRef(null);
-    const waCodeRefreshRef = useRef(null);
 
     const load = async () => {
         try {
@@ -179,7 +188,17 @@ export default function Settings() {
     const fetchWaStatus = async () => {
         try {
             const res = await settingsApi.getWhatsappStatus();
-            setWaStatus(prev => ({ pairing_code: prev?.pairing_code, ...res.data }));
+            setWaStatus(prev => {
+                const next = { ...prev, ...res.data };
+                // The status poll often returns a null pairing_code (the code is only
+                // emitted by start_session, not by status checks). Keep the last known
+                // code so it doesn't blink out from under the user while pairing.
+                const incomingCode = res.data?.pairing_code || res.data?.code;
+                if (!incomingCode && prev?.pairing_code) {
+                    next.pairing_code = prev.pairing_code;
+                }
+                return next;
+            });
             return res.data;
         } catch (e) {
             console.error(e);
@@ -194,10 +213,6 @@ export default function Settings() {
             if (s && String(s.status || '').toUpperCase() === 'CONNECTED') {
                 clearInterval(waPollRef.current);
                 waPollRef.current = null;
-                if (waCodeRefreshRef.current) {
-                    clearInterval(waCodeRefreshRef.current);
-                    waCodeRefreshRef.current = null;
-                }
             }
         }, 4000);
         setTimeout(() => {
@@ -216,35 +231,23 @@ export default function Settings() {
         });
         return () => {
             if (waPollRef.current) clearInterval(waPollRef.current);
-            if (waCodeRefreshRef.current) clearInterval(waCodeRefreshRef.current);
         };
     }, []);
 
     const handleWaConnect = async () => {
         const phone = waPhone.replace(/\D/g, '');
         if (!phone) {
-            alert('Please enter a WhatsApp phone number first.');
+            setWaError('Please enter a WhatsApp phone number first.');
             return;
         }
+        setWaError('');
         setIsConnecting(true);
-        if (waCodeRefreshRef.current) {
-            clearInterval(waCodeRefreshRef.current);
-            waCodeRefreshRef.current = null;
-        }
         try {
             const res = await settingsApi.connectWhatsapp(phone);
             setWaStatus(prev => ({ ...prev, status: 'CONNECTING', pairing_code: res.data?.pairing_code }));
             startWaPoll();
-            waCodeRefreshRef.current = setInterval(async () => {
-                try {
-                    const r = await settingsApi.connectWhatsapp(phone);
-                    if (r.data?.pairing_code) {
-                        setWaStatus(prev => ({ ...prev, status: 'CONNECTING', pairing_code: r.data.pairing_code }));
-                    }
-                } catch {}
-            }, 50_000);
         } catch (err) {
-            alert(err.message || 'Failed to connect WhatsApp');
+            setWaError(err.message || 'Failed to connect WhatsApp');
         } finally {
             setIsConnecting(false);
         }
@@ -253,14 +256,14 @@ export default function Settings() {
     const handleWaStop = async () => {
         if (!window.confirm('Disconnect WhatsApp device from the platform?')) return;
         setIsStopping(true);
+        setWaError('');
         if (waPollRef.current) { clearInterval(waPollRef.current); waPollRef.current = null; }
-        if (waCodeRefreshRef.current) { clearInterval(waCodeRefreshRef.current); waCodeRefreshRef.current = null; }
         try {
             await settingsApi.disconnectWhatsapp();
             setWaStatus(null);
             setWaPhone('');
         } catch (err) {
-            alert(err.message || 'Failed to disconnect WhatsApp');
+            setWaError(err.message || 'Failed to disconnect WhatsApp');
         } finally {
             setIsStopping(false);
         }
@@ -307,6 +310,7 @@ export default function Settings() {
                 onPhoneChange={setWaPhone}
                 onConnect={handleWaConnect}
                 onStop={handleWaStop}
+                error={waError}
             />
 
             {GROUPS.map(group => (
