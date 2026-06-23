@@ -1,6 +1,5 @@
-https://astro-app-web.vercel.app/
 
-https://astro-app-admin.vercel.app/
+astro@test.com
 
 Email: admin@aadikarta.org
 Password: admin123
@@ -9,6 +8,10 @@ Tutor: tutor@test.com
 Seeker: seeker@test.com
 
 all passwords: password
+
+
+kumavikram@gmail.com
+Welcome@123
 
 # Local
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build

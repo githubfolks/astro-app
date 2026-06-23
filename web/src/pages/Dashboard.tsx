@@ -781,14 +781,14 @@ export const Dashboard: React.FC = () => {
                                 My Wallet
                             </h3>
 
-                            <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] rounded-xl p-6 text-white mb-4">
-                                <div className="text-sm opacity-80 mb-1">Available Balance</div>
-                                <div className="text-3xl font-bold">₹{walletBalance.toFixed(2)}</div>
+                            <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] rounded-xl p-4 text-white mb-3">
+                                <div className="text-xs opacity-80 mb-1">Available Balance</div>
+                                <div className="text-2xl font-bold">₹{walletBalance.toFixed(2)}</div>
                             </div>
 
                             <button
                                 onClick={() => setShowPaymentModal(true)}
-                                className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors"
+                                className="w-full bg-gray-900 text-white font-bold py-2 rounded-xl hover:bg-gray-800 transition-colors text-sm"
                             >
                                 + Add Money
                             </button>

@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     // Allow API calls to production server
-    allowNavigation: ['dev.aadikarta.org'],
+    allowNavigation: ['aadikarta.org', 'api.aadikarta.org'],
   },
   plugins: {
     CapacitorHttp: {
