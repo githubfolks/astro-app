@@ -922,3 +922,113 @@ def update_astrologer_commission(user_id: int, request: CommissionUpdateRequest,
     profile.commission_percentage = Decimal(str(request.commission_percentage))
     db.commit()
     return {"message": "Commission updated", "commission_percentage": float(profile.commission_percentage)}
+
+
+class ConnectRequest(BaseModel):
+    phone_number: str
+
+
+@router.get("/whatsapp/status")
+async def get_whatsapp_status(db: Session = Depends(database.get_db)):
+    from ..services.whatsapp_service import _get_config
+    from ..services import settings_service
+    from waplex import WAPlexClient, WAPlexError
+    
+    config = _get_config()
+    if not config.base_url or not config.admin_key:
+        return {"is_configured": False, "status": "NOT_CONFIGURED"}
+    
+    api_key = settings_service.get_setting("waplex_api_key")
+    if not api_key:
+        return {"is_configured": True, "status": "DISCONNECTED", "provisioned": False}
+        
+    try:
+        async with WAPlexClient(config) as client:
+            status = await client.get_status(api_key)
+            return {
+                "is_configured": True,
+                "status": status.get("status"),
+                "qrcode": status.get("qrcode"),
+                "pairing_code": status.get("pairing_code") or status.get("code"),
+                "provisioned": True
+            }
+    except WAPlexError as e:
+        if e.status_code == 404:
+            # Session not found on evolution gateway - clear local settings so we can re-provision
+            settings_service.set_setting(db, "waplex_tenant_id", "")
+            settings_service.set_setting(db, "waplex_api_key", "")
+            return {"is_configured": True, "status": "DISCONNECTED", "provisioned": False}
+        raise HTTPException(status_code=502, detail=f"WAPlex error: {e}")
+
+
+@router.post("/whatsapp/connect")
+async def connect_whatsapp(body: ConnectRequest, db: Session = Depends(database.get_db)):
+    from ..services.whatsapp_service import _get_config
+    from ..services import settings_service
+    from waplex import WAPlexClient, ensure_provisioned, WAPlexError
+    
+    config = _get_config()
+    if not config.base_url or not config.admin_key:
+        raise HTTPException(status_code=400, detail="WAPlex is not configured")
+        
+    number = body.phone_number.replace("+", "").replace(" ", "").strip()
+    if not number.isdigit():
+        raise HTTPException(status_code=400, detail="Phone number must contain only digits")
+        
+    # Provision platform if not done
+    api_key = settings_service.get_setting("waplex_api_key")
+    tenant_id = settings_service.get_setting("waplex_tenant_id")
+    
+    if not api_key:
+        try:
+            async with WAPlexClient(config) as client:
+                result = await ensure_provisioned(
+                    client,
+                    name="astro_platform",
+                    webhook_url=config.inbound_url(),
+                    existing_key=None,
+                    existing_id=None
+                )
+                api_key = result.api_key
+                tenant_id = result.tenant_id
+                settings_service.set_setting(db, "waplex_tenant_id", tenant_id)
+                settings_service.set_setting(db, "waplex_api_key", api_key)
+        except WAPlexError as e:
+            raise HTTPException(status_code=502, detail=f"WAPlex provisioning failed: {e}")
+            
+    try:
+        async with WAPlexClient(config) as client:
+            try:
+                current = await client.get_status(api_key)
+                if str(current.get("status", "")).upper() == "CONNECTING":
+                    await client.stop_session(api_key)
+            except WAPlexError:
+                pass
+            result = await client.start_session(api_key, number=number)
+            settings_service.set_setting(db, "waplex_phone_number", number)
+            return {
+                "status": result.get("status") or "CONNECTING",
+                "pairing_code": result.get("pairing_code") or result.get("code")
+            }
+    except WAPlexError as e:
+        raise HTTPException(status_code=502, detail=f"WAPlex connection failed: {e}")
+
+
+@router.post("/whatsapp/disconnect")
+async def disconnect_whatsapp(db: Session = Depends(database.get_db)):
+    from ..services.whatsapp_service import _get_config
+    from ..services import settings_service
+    from waplex import WAPlexClient, WAPlexError
+    
+    config = _get_config()
+    api_key = settings_service.get_setting("waplex_api_key")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="WhatsApp is not connected")
+        
+    try:
+        async with WAPlexClient(config) as client:
+            await client.stop_session(api_key)
+        settings_service.set_setting(db, "waplex_phone_number", "")
+        return {"status": "DISCONNECTED"}
+    except WAPlexError as e:
+        raise HTTPException(status_code=502, detail=f"WAPlex disconnection failed: {e}")

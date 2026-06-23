@@ -14,13 +14,18 @@ logger = logging.getLogger(__name__)
 
 # Default values seeded/returned when a key has not been configured yet.
 DEFAULTS: dict[str, str] = {
+    "waplex_tenant_id": "",
+    "waplex_api_key": "",
+    "waplex_phone_number": "",
     "moderation_admin_user_id": "",     # in-app super-admin recipient for MODERATION_ALERT
+    "moderation_admin_whatsapp": "",    # WhatsApp number for moderation alerts
+    "moderation_admin_template": "[ALERT] Moderation flag ({reason}) in consultation {consultation_id} by user {user_id}: {snippet}",
     "request_stale_minutes": "5",
     "presence_ttl_seconds": "60",
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.
-SECRET_KEYS = set()
+SECRET_KEYS = {"waplex_api_key"}
 
 _CACHE: dict[str, str] = {}
 _CACHE_TS: float = 0.0

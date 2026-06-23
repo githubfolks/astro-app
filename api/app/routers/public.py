@@ -82,3 +82,17 @@ def submit_contact_inquiry(
     db.commit()
     db.refresh(db_inquiry)
     return {"message": "Inquiry submitted successfully", "id": db_inquiry.id}
+
+
+@router.post("/whatsapp/waplex/inbound")
+async def waplex_inbound(request: Request):
+    from waplex import parse_connection_update
+    try:
+        payload = await request.json()
+        state = parse_connection_update(payload)
+        if state:
+            print(f"[WAPlex Webhook] connection update: {state}")
+            return {"status": "ok", "event": "connection.update", "state": state}
+    except Exception as e:
+        print(f"[WAPlex Webhook] error: {e}")
+    return {"status": "ignored"}

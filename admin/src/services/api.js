@@ -121,6 +121,9 @@ export const disputes = {
 export const settings = {
     get: () => api.get('/admin/settings'),
     update: (data) => api.put('/admin/settings', data),
+    getWhatsappStatus: () => api.get('/admin/whatsapp/status'),
+    connectWhatsapp: (phone_number) => api.post('/admin/whatsapp/connect', { phone_number }),
+    disconnectWhatsapp: () => api.post('/admin/whatsapp/disconnect'),
 };
 
 export const moderation = {
