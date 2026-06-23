@@ -6,7 +6,7 @@ import shutil
 import uuid
 import os
 from datetime import datetime, timedelta, date, time
-from .. import models, schemas, database
+from .. import models, schemas, database, audit
 from .. import models_edu, schemas_edu
 from decimal import Decimal
 from .auth import get_current_admin, get_password_hash
@@ -525,7 +525,12 @@ def get_user_details(user_id: int, db: Session = Depends(database.get_db)):
     }
 
 @router.put("/users/{user_id}/edit")
-def edit_user_details(user_id: int, request: UserEditRequest, db: Session = Depends(database.get_db)):
+def edit_user_details(
+    user_id: int,
+    request: UserEditRequest,
+    current_admin: models.User = Depends(get_current_admin),
+    db: Session = Depends(database.get_db)
+):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -570,6 +575,18 @@ def edit_user_details(user_id: int, request: UserEditRequest, db: Session = Depe
         if request.specialties is not None:
             p.specialties = request.specialties
 
+    audit.log(
+        db,
+        action="USER_DETAILS_UPDATED",
+        actor_id=current_admin.id,
+        resource_type="user",
+        resource_id=user_id,
+        details={
+            "phone_number": request.phone_number,
+            "full_name": request.full_name,
+            "role": user.role.value
+        }
+    )
     db.commit()
     return {"message": "User details updated successfully"}
 
@@ -609,7 +626,12 @@ class WalletAdjustmentRequest(BaseModel):
     description: str = "Admin adjustment"
 
 @router.post("/users/{user_id}/wallet/credit")
-def admin_wallet_credit(user_id: int, body: WalletAdjustmentRequest, db: Session = Depends(database.get_db)):
+def admin_wallet_credit(
+    user_id: int,
+    body: WalletAdjustmentRequest,
+    current_admin: models.User = Depends(get_current_admin),
+    db: Session = Depends(database.get_db)
+):
     """Manually credit or debit a user's wallet. Positive amount = credit, negative = debit."""
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
@@ -632,6 +654,19 @@ def admin_wallet_credit(user_id: int, body: WalletAdjustmentRequest, db: Session
         description=body.description,
     )
     db.add(tx)
+
+    audit.log(
+        db,
+        action="WALLET_ADJUSTED",
+        actor_id=current_admin.id,
+        resource_type="user",
+        resource_id=user_id,
+        details={
+            "adjustment_amount": body.amount,
+            "new_balance": new_balance,
+            "description": body.description
+        }
+    )
     db.commit()
     return {"new_balance": new_balance, "message": "Wallet adjusted successfully"}
 
@@ -871,7 +906,13 @@ def get_edu_stats(
     )
 
 @router.put("/users/{user_id}/reset-password")
-async def admin_reset_password(user_id: int, request: schemas.AdminPasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+async def admin_reset_password(
+    user_id: int,
+    request: schemas.AdminPasswordResetRequest,
+    background_tasks: BackgroundTasks,
+    current_admin: models.User = Depends(get_current_admin),
+    db: Session = Depends(database.get_db)
+):
     """
     Allows an admin to directly reset any user's password and sends a notification email.
     """
@@ -880,6 +921,15 @@ async def admin_reset_password(user_id: int, request: schemas.AdminPasswordReset
         raise HTTPException(status_code=404, detail="User not found")
         
     user.hashed_password = get_password_hash(request.new_password)
+    
+    audit.log(
+        db,
+        action="USER_PASSWORD_RESET",
+        actor_id=current_admin.id,
+        resource_type="user",
+        resource_id=user_id,
+        details={"email": user.email}
+    )
     db.commit()
 
     # Send notification email — never include the password in the email body
