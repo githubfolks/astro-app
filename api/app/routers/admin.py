@@ -5,7 +5,7 @@ from typing import List, Optional
 import shutil
 import uuid
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 from .. import models, schemas, database
 from .. import models_edu, schemas_edu
 from decimal import Decimal
@@ -227,6 +227,19 @@ def verify_user(user_id: int, db: Session = Depends(database.get_db)):
     return {"message": "User verified"}
 
 from pydantic import BaseModel
+
+class UserEditRequest(BaseModel):
+    phone_number: Optional[str] = None
+    full_name: Optional[str] = None
+    # Seeker fields
+    date_of_birth: Optional[date] = None
+    time_of_birth: Optional[time] = None
+    place_of_birth: Optional[str] = None
+    gender: Optional[models.GenderType] = None
+    # Astrologer fields
+    experience_years: Optional[int] = None
+    languages: Optional[str] = None
+    specialties: Optional[str] = None
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
@@ -510,6 +523,55 @@ def get_user_details(user_id: int, db: Session = Depends(database.get_db)):
             "total_spent": total_spent
         }
     }
+
+@router.put("/users/{user_id}/edit")
+def edit_user_details(user_id: int, request: UserEditRequest, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if request.phone_number:
+        # Check if phone number is already taken by another user
+        existing_phone = db.query(models.User).filter(
+            models.User.phone_number == request.phone_number,
+            models.User.id != user_id
+        ).first()
+        if existing_phone:
+            raise HTTPException(status_code=400, detail="Phone number is already in use by another account")
+        user.phone_number = request.phone_number
+
+    if user.role == models.UserRole.SEEKER:
+        p = db.query(models.SeekerProfile).filter(models.SeekerProfile.user_id == user_id).first()
+        if not p:
+            p = models.SeekerProfile(user_id=user_id)
+            db.add(p)
+        if request.full_name is not None:
+            p.full_name = request.full_name
+        if request.date_of_birth is not None:
+            p.date_of_birth = request.date_of_birth
+        if request.time_of_birth is not None:
+            p.time_of_birth = request.time_of_birth
+        if request.place_of_birth is not None:
+            p.place_of_birth = request.place_of_birth
+        if request.gender is not None:
+            p.gender = request.gender
+
+    elif user.role == models.UserRole.ASTROLOGER:
+        p = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+        if not p:
+            p = models.AstrologerProfile(user_id=user_id, full_name=request.full_name or "Astrologer")
+            db.add(p)
+        if request.full_name is not None:
+            p.full_name = request.full_name
+        if request.experience_years is not None:
+            p.experience_years = request.experience_years
+        if request.languages is not None:
+            p.languages = request.languages
+        if request.specialties is not None:
+            p.specialties = request.specialties
+
+    db.commit()
+    return {"message": "User details updated successfully"}
 
 @router.get("/users/{user_id}/consultations")
 def get_user_consultations(user_id: int, db: Session = Depends(database.get_db)):

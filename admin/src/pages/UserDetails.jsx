@@ -5,6 +5,7 @@ import api from '../services/api';
 import { Button, Avatar } from '../components/ui';
 import clsx from 'clsx';
 import { ResetPasswordModal } from '../components/ResetPasswordModal';
+import { EditUserModal } from '../components/EditUserModal';
 
 export default function UserDetails() {
     const { id } = useParams();
@@ -16,6 +17,7 @@ export default function UserDetails() {
     const [loading, setLoading] = useState(true);
 
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [walletModal, setWalletModal] = useState(false);
     const [walletAmount, setWalletAmount] = useState('');
     const [walletDesc, setWalletDesc] = useState('Admin adjustment');
@@ -97,9 +99,14 @@ export default function UserDetails() {
                         </div>
                     </div>
                 </div>
-                <Button variant="outlined" onClick={handleResetPassword} className="flex items-center gap-2">
-                    <Key size={18} className="text-amber-600" /> Reset Password
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outlined" onClick={() => setIsEditModalOpen(true)} className="flex items-center gap-2">
+                        <User size={18} className="text-indigo-600" /> Edit Details
+                    </Button>
+                    <Button variant="outlined" onClick={handleResetPassword} className="flex items-center gap-2">
+                        <Key size={18} className="text-amber-600" /> Reset Password
+                    </Button>
+                </div>
             </div>
 
             {/* Stats Cards */}
@@ -150,18 +157,44 @@ export default function UserDetails() {
                                 <span className="text-gray-500 text-xs uppercase tracking-wide block">Full Name</span>
                                 <span className="font-medium text-gray-900">{profile.full_name || "-"}</span>
                             </div>
-                            <div>
-                                <span className="text-gray-500 text-xs uppercase tracking-wide block">Date of Birth</span>
-                                <span className="font-medium text-gray-900">{profile.date_of_birth || "-"}</span>
-                            </div>
-                            <div>
-                                <span className="text-gray-500 text-xs uppercase tracking-wide block">Place of Birth</span>
-                                <span className="font-medium text-gray-900">{profile.place_of_birth || "-"}</span>
-                            </div>
-                            <div>
-                                <span className="text-gray-500 text-xs uppercase tracking-wide block">Gender</span>
-                                <span className="font-medium text-gray-900">{profile.gender || "-"}</span>
-                            </div>
+
+                            {user?.role === 'SEEKER' && (
+                                <>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Date of Birth</span>
+                                        <span className="font-medium text-gray-900">{profile.date_of_birth || "-"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Time of Birth</span>
+                                        <span className="font-medium text-gray-900">{profile.time_of_birth || "-"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Place of Birth</span>
+                                        <span className="font-medium text-gray-900">{profile.place_of_birth || "-"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Gender</span>
+                                        <span className="font-medium text-gray-900">{profile.gender || "-"}</span>
+                                    </div>
+                                </>
+                            )}
+
+                            {user?.role === 'ASTROLOGER' && (
+                                <>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Experience (Years)</span>
+                                        <span className="font-medium text-gray-900">{profile.experience_years !== undefined ? `${profile.experience_years} years` : "-"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Languages</span>
+                                        <span className="font-medium text-gray-900">{profile.languages || "-"}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Specialties</span>
+                                        <span className="font-medium text-gray-900">{profile.specialties || "-"}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -274,6 +307,14 @@ export default function UserDetails() {
                 onClose={() => setIsResetModalOpen(false)}
                 userId={id}
                 userEmail={user?.email}
+            />
+
+            <EditUserModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                user={user}
+                profile={profile}
+                onSuccess={fetchData}
             />
 
             {walletModal && (

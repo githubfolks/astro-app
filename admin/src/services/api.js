@@ -36,7 +36,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
+        if (error.response && error.response.status === 401 && localStorage.getItem('token')) {
             localStorage.removeItem('token');
             window.location.href = '/login';
         }
@@ -96,6 +96,7 @@ export const cms = {
     users: {
         getWalletHistory: (id) => api.get(`/admin/users/${id}/wallet-history`),
         adjustWallet: (id, data) => api.post(`/admin/users/${id}/wallet/credit`, data),
+        editDetails: (id, data) => api.put(`/admin/users/${id}/edit`, data),
     }
 };
 
