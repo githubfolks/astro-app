@@ -186,7 +186,7 @@ class ConsultationCreate(ConsultationBase):
 
 class Consultation(ConsultationBase):
     id: int
-    seeker_id: int
+    seeker_id: Optional[int] = None
     status: str
     start_time: Optional[datetime] = None
     end_time: Optional[datetime] = None
