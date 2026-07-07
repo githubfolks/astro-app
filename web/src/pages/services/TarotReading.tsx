@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import { Sparkles, Layers, Eye, Compass, Clock, HelpCircle, AlertCircle } from 'lucide-react';
+import './ServicesDetail.css';
 
 const tarotStructuredData = {
     '@context': 'https://schema.org',
@@ -43,33 +46,37 @@ const TarotReading: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-purple-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Online Tarot Card Reading | Expert Tarot Readers"
                 description="Accurate online tarot readings from expert readers. Past, present & future guidance on love, career & life. Live chat sessions from ₹10/min."
                 structuredData={tarotStructuredData}
             />
             <Header />
+            
             {/* Hero Section */}
-            <header className="celestial-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Tarot Reading</h1>
-                    </div>
-                    <p className="text-xl text-purple-100 font-light max-w-2xl mx-auto mt-8">
+            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
+                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Tarot Reading</h1>
+                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Unlock the subconscious through the symbolic language of the divine deck.
                     </p>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-16 space-y-24">
-                <section className="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
-                    <div className="md:w-1/2" data-aos="fade-right">
-                        <h2 className="text-3xl font-bold text-indigo-900 mb-6 flex items-center gap-3">
-                            <span className="bg-indigo-100 p-2 rounded-lg text-indigo-600 animate-pulse">🃏</span>
-                            What is Tarot Reading?
-                        </h2>
-                        <div className="space-y-4 text-slate-600 text-lg">
+            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+                {/* Intro Section */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="title-icon-wrapper"><Layers size={20} /></div>
+                            <h2 className="text-2xl md:text-3xl font-normal text-white">What is Tarot Reading?</h2>
+                        </div>
+                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
                             <p>
                                 Tarot is a symbolic language spoken through a deck of 78 cards, used to mirror your subconscious mind and reveal hidden truths.
                             </p>
@@ -78,50 +85,58 @@ const TarotReading: React.FC = () => {
                             </p>
                         </div>
                     </div>
-                    <div className="md:w-1/2 bg-white p-6 rounded-3xl shadow-xl shadow-indigo-100/50 border border-indigo-50 transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl" data-aos="fade-left">
-                        <div className="relative rounded-2xl overflow-hidden aspect-video bg-indigo-50 flex items-center justify-center gap-4">
-                            <div className="w-16 h-24 bg-indigo-200 rounded-lg animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-16 h-24 bg-indigo-600 rounded-lg animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                            <div className="w-16 h-24 bg-indigo-200 rounded-lg animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                    
+                    <div className="service-glass-panel p-8 flex items-center justify-center min-h-[250px]" data-aos="fade-left">
+                        <div className="flex gap-4 items-center justify-center w-full">
+                            <div className="w-16 h-28 bg-white/5 border border-white/10 rounded-xl animate-bounce hover:border-amber-500/30 transition-colors shadow-md" style={{ animationDelay: '0.1s' }}></div>
+                            <div className="w-18 h-32 bg-amber-500/10 border border-amber-500/30 rounded-xl animate-bounce hover:border-amber-500 transition-colors shadow-lg" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-16 h-28 bg-white/5 border border-white/10 rounded-xl animate-bounce hover:border-amber-500/30 transition-colors shadow-md" style={{ animationDelay: '0.3s' }}></div>
                         </div>
                     </div>
                 </section>
 
-                <section className="bg-indigo-900 rounded-[3rem] p-10 md:p-16 text-white overflow-hidden relative" data-aos="zoom-in">
-                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-purple-400/20 rounded-full blur-3xl"></div>
+                {/* Path to Mystical Clarity */}
+                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
-                        <h2 className="text-3xl font-bold mb-10" data-aos="fade-down">The Path to Mystical Clarity</h2>
+                        <h2 className="text-3xl font-normal text-white mb-12">The Path to Mystical Clarity</h2>
                         <div className="grid md:grid-cols-3 gap-8 text-left">
                             {[
-                                { emoji: '👁️', title: 'Intuitive Insights', desc: 'Go beyond the surface to understand underlying motivations and unseen obstacles.' },
-                                { emoji: '🔮', title: 'Future Pathways', desc: 'Map out potential outcomes based on your current energy and decisions.' },
-                                { emoji: '🧘', title: 'Spiritual Growth', desc: 'Identify karmic lessons and spiritual milestones on your soul\'s journey.' }
+                                { icon: <Eye size={24} />, title: 'Intuitive Insights', desc: 'Go beyond the surface to understand underlying motivations and unseen obstacles.' },
+                                { icon: <Compass size={24} />, title: 'Future Pathways', desc: 'Map out potential outcomes based on your current energy and decisions.' },
+                                { icon: <Sparkles size={24} />, title: 'Spiritual Growth', desc: 'Identify karmic lessons and spiritual milestones on your soul\'s journey.' }
                             ].map((item, idx) => (
-                                <div key={idx} className="p-8 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 transition-all hover:bg-white/10" data-aos="fade-up" data-aos-delay={(idx + 1) * 100}>
-                                    <div className="text-purple-300 text-3xl mb-4">{item.emoji}</div>
-                                    <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                                    <p className="text-indigo-100 font-light leading-relaxed">{item.desc}</p>
+                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
+                                    <div className="text-amber-500 mb-4">{item.icon}</div>
+                                    <h3 className="text-xl font-normal text-white mb-3">{item.title}</h3>
+                                    <p className="text-gray-300 font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </section>
 
+                {/* Features list */}
                 <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-6">Expert Tarot Interpretations</h2>
+                    <h2 className="text-3xl font-normal text-white mb-6">Expert Tarot Interpretations</h2>
                     <div className="grid md:grid-cols-2 gap-8 text-left mt-12">
-                        <div className="p-8 rounded-2xl bg-white border border-indigo-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos="fade-right">
-                            <h4 className="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-3">🎴 Celtic Cross Spreads</h4>
-                            <p className="text-slate-600 font-light">Comprehensive 10-card analysis for deep life questions and situational audits.</p>
-                        </div>
-                        <div className="p-8 rounded-2xl bg-white border border-indigo-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos="fade-left">
-                            <h4 className="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-3">🕯️ One-on-One Sessions</h4>
-                            <p className="text-slate-600 font-light">Direct interaction with intuitive readers to explore specific concerns in real-time.</p>
-                        </div>
+                        {[
+                            { icon: <Layers size={24} />, title: 'Celtic Cross Spreads', desc: 'Comprehensive 10-card analysis for deep life questions and situational audits.' },
+                            { icon: <Clock size={24} />, title: 'One-on-One Sessions', desc: 'Direct interaction with intuitive readers to explore specific concerns in real-time.' }
+                        ].map((item, idx) => (
+                            <div key={idx} className="custom-list-item">
+                                <div className="icon-box">{item.icon}</div>
+                                <div>
+                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <p className="text-gray-300 font-light">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <button className="mt-16 bg-indigo-600 hover:bg-indigo-700 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl shadow-indigo-200 transition-all hover:scale-110 active:scale-95" data-aos="zoom-in">
+
+                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Start Your Reading
-                    </button>
+                    </Link>
                 </section>
             </main>
             <Footer />

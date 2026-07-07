@@ -1,0 +1,106 @@
+.transit-widget {
+    width: 100%;
+}
+
+.planet-transit-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 12px;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.planet-transit-card:hover {
+    border-color: rgba(245, 158, 11, 0.2);
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.05);
+    transform: translateY(-3px);
+}
+
+.planet-transit-card .header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.planet-transit-card .planet-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.planet-transit-card .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.planet-transit-card .badge {
+    font-size: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 1px 4px;
+    border-radius: 4px;
+}
+
+.planet-transit-card .badge.retrograde {
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+}
+
+.planet-transit-card .badge.combust {
+    background: rgba(249, 115, 22, 0.1);
+    color: #fb923c;
+}
+
+.planet-transit-card .badge.exalted {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+}
+
+.planet-transit-card .badge.debilitated {
+    background: rgba(139, 92, 246, 0.1);
+    color: #a78bfa;
+}
+
+.planet-transit-card .badge.own-sign {
+    background: rgba(59, 130, 246, 0.1);
+    color: #60a5fa;
+}
+
+.planet-transit-card .body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.planet-transit-card .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+}
+
+.planet-transit-card .row .label {
+    color: #9ca3af;
+}
+
+.planet-transit-card .footer {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}

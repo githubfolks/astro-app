@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import { Sun, Moon, Sparkles, ShieldAlert, Eye, Compass, Heart, HelpCircle } from 'lucide-react';
+import './ServicesDetail.css';
 
 const horoscopeStructuredData = {
     '@context': 'https://schema.org',
@@ -37,97 +40,128 @@ const horoscopeStructuredData = {
     ],
 };
 
+const ZODIAC_SIGNS = [
+    { name: 'Aries', slug: 'aries' },
+    { name: 'Taurus', slug: 'taurus' },
+    { name: 'Gemini', slug: 'gemini' },
+    { name: 'Cancer', slug: 'cancer' },
+    { name: 'Leo', slug: 'leo' },
+    { name: 'Virgo', slug: 'virgo' },
+    { name: 'Libra', slug: 'libra' },
+    { name: 'Scorpio', slug: 'scorpio' },
+    { name: 'Sagittarius', slug: 'sagittarius' },
+    { name: 'Capricorn', slug: 'capricorn' },
+    { name: 'Aquarius', slug: 'aquarius' },
+    { name: 'Pisces', slug: 'pisces' }
+];
+
 const DailyHoroscope: React.FC = () => {
     useEffect(() => {
         AOS.init({ duration: 1000, once: true, disable: 'mobile' });
     }, []);
 
     return (
-        <div className="bg-blue-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Daily Horoscope | Personalized Zodiac Predictions"
                 description="Personalized daily horoscope readings from expert astrologers. Love, career, health & finance predictions for all 12 zodiac signs. From ₹10/min."
                 structuredData={horoscopeStructuredData}
             />
             <Header />
+            
             {/* Hero Section */}
-            <header className="celestial-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Daily Horoscope</h1>
-                    </div>
-                    <p className="text-xl text-blue-100 font-light max-w-2xl mx-auto mt-8">
+            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
+                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Daily Horoscope</h1>
+                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Align your actions with the cosmic rhythm every single day.
                     </p>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-16 space-y-24">
-                <section className="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
-                    <div className="md:w-1/2" data-aos="fade-right">
-                        <h2 className="text-3xl font-bold text-blue-900 mb-6 flex items-center gap-3">
-                            <span className="bg-blue-100 p-2 rounded-lg text-blue-600 animate-bounce">🌞</span>
-                            What is a Daily Horoscope?
-                        </h2>
-                        <div className="space-y-4 text-slate-600 text-lg">
+            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+                {/* Intro Section */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="title-icon-wrapper"><Sun size={20} /></div>
+                            <h2 className="text-2xl md:text-3xl font-normal text-white">What is a Daily Horoscope?</h2>
+                        </div>
+                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
                             <p>
-                                A daily horoscope is a snapshot of the celestial landscape, mapping the <span className="font-semibold text-blue-700">transits of planets</span> against your zodiac sign.
+                                A daily horoscope is a snapshot of the celestial landscape, mapping the <span className="font-normal text-amber-500">transits of planets</span> against your zodiac sign.
                             </p>
                             <p>
                                 By understanding the Moon's transit and planetary alignments, you can better navigate emotional tides and choose the most auspicious moments for action.
                             </p>
                         </div>
                     </div>
-                    <div className="md:w-1/2 bg-white p-6 rounded-3xl shadow-xl shadow-blue-100/50 border border-blue-50 transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl" data-aos="fade-left">
-                        <div className="grid grid-cols-3 gap-3">
-                            {['♈', '♉', '♊', '♋', '♌', '♍'].map((sign, idx) => (
-                                <div key={idx} className="aspect-square bg-blue-50 rounded-xl flex items-center justify-center text-2xl hover:bg-blue-100 transition-colors cursor-pointer hover:shadow-md">
-                                    {sign}
-                                </div>
+                    
+                    <div className="service-glass-panel p-8" data-aos="fade-left">
+                        <h3 className="text-lg font-normal text-white mb-6 text-center">Quick Select Zodiac Sign</h3>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                            {ZODIAC_SIGNS.map((sign, idx) => (
+                                <Link 
+                                    to={`/horoscope/${sign.slug}`}
+                                    key={idx} 
+                                    className="aspect-square bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center hover:bg-white/10 hover:border-amber-500/30 transition-all cursor-pointer shadow-md group p-2"
+                                >
+                                    <span className="text-2xl flex justify-center mb-2 group-hover:scale-110 transition-transform">
+                                        <img src={`https://www.astrosage.com/images/sign/${sign.slug}.png`} alt={`${sign.name} icon`} className="w-10 h-10 object-contain" />
+                                    </span>
+                                    <span className="text-[11px] text-gray-300 group-hover:text-amber-500 transition-colors font-normal">{sign.name}</span>
+                                </Link>
                             ))}
                         </div>
                     </div>
                 </section>
 
-                <section className="bg-blue-900 rounded-[3rem] p-10 md:p-16 text-white overflow-hidden relative" data-aos="zoom-in">
-                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl"></div>
+                {/* Why Read Section */}
+                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
-                        <h2 className="text-3xl font-bold mb-10" data-aos="fade-down">Why Read Your Horoscope Daily?</h2>
+                        <h2 className="text-3xl font-normal text-white mb-12">Why Read Your Horoscope Daily?</h2>
                         <div className="grid md:grid-cols-3 gap-8 text-left">
                             {[
-                                { emoji: '🎯', title: 'Clarity of Mind', desc: 'Start your day with an intentional focus, grounded in cosmic awareness.' },
-                                { emoji: '🛡️', title: 'Preparedness', desc: 'Identify potential pitfalls before they arise and navigate them with grace.' },
-                                { emoji: '🌈', title: 'Opportunity', desc: 'Spot hidden lucky patches in your timeline for major moves.' }
+                                { icon: <Sparkles size={24} />, title: 'Clarity of Mind', desc: 'Start your day with an intentional focus, grounded in cosmic awareness.' },
+                                { icon: <ShieldAlert size={24} />, title: 'Preparedness', desc: 'Identify potential pitfalls before they arise and navigate them with grace.' },
+                                { icon: <Eye size={24} />, title: 'Opportunity', desc: 'Spot hidden lucky patches in your timeline for major moves.' }
                             ].map((item, idx) => (
-                                <div key={idx} className="p-8 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 transition-all hover:bg-white/20" data-aos="fade-up" data-aos-delay={(idx + 1) * 100}>
-                                    <div className="text-blue-300 text-3xl mb-4">{item.emoji}</div>
-                                    <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                                    <p className="text-blue-100 font-light leading-relaxed">{item.desc}</p>
+                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
+                                    <div className="text-amber-500 mb-4">{item.icon}</div>
+                                    <h3 className="text-xl font-normal text-white mb-3">{item.title}</h3>
+                                    <p className="text-gray-300 font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </section>
 
+                {/* Features list */}
                 <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-6">Expert Guidance at Your Fingertips</h2>
+                    <h2 className="text-3xl font-normal text-white mb-6">Expert Guidance at Your Fingertips</h2>
                     <div className="grid md:grid-cols-2 gap-8 text-left mt-12">
                         {[
-                            { num: 1, title: 'Personalized Transits', desc: 'Go beyond general sun-sign astrology to see how planets move through your specific chart.' },
-                            { num: 2, title: 'Remedial Tips', desc: 'Simple color, habit, and mantra recommendations to optimize your daily outcome.' }
+                            { icon: <Compass size={24} />, title: 'Personalized Transits', desc: 'Go beyond general sun-sign astrology to see how planets move through your specific chart.' },
+                            { icon: <Heart size={24} />, title: 'Remedial Tips', desc: 'Simple color, habit, and mantra recommendations to optimize your daily outcome.' }
                         ].map((item, idx) => (
-                            <div key={idx} className="flex gap-6 p-8 rounded-2xl bg-white border border-blue-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos={idx % 2 === 0 ? "fade-right" : "fade-left"}>
-                                <div className="flex-shrink-0 w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">{item.num}</div>
+                            <div key={idx} className="custom-list-item">
+                                <div className="icon-box">{item.icon}</div>
                                 <div>
-                                    <h4 className="text-xl font-bold text-slate-800 mb-2">{item.title}</h4>
-                                    <p className="text-slate-600 font-light">{item.desc}</p>
+                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <p className="text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <button className="mt-16 bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl shadow-blue-200 transition-all hover:scale-110 active:scale-95" data-aos="zoom-in">
+
+                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Get Your Full Reading
-                    </button>
+                    </Link>
                 </section>
             </main>
             <Footer />

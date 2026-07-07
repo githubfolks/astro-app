@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import { Heart, HeartHandshake, Flame, Activity, Sparkles, CheckCircle, HelpCircle } from 'lucide-react';
+import './ServicesDetail.css';
 
 const loveStructuredData = {
     '@context': 'https://schema.org',
@@ -43,88 +46,99 @@ const LoveAdvice: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-rose-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Love & Relationship Astrology | Expert Advice Online"
                 description="Personalized love & relationship astrology consultations. Compatibility analysis, marriage timing & predictions from expert Vedic astrologers. From ₹10/min."
                 structuredData={loveStructuredData}
             />
             <Header />
+            
             {/* Hero Section */}
-            <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Love & Relationships</h1>
-                    </div>
-                    <p className="text-xl text-rose-100 font-light max-w-2xl mx-auto mt-8">
+            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
+                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Love & Relationships</h1>
+                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Navigate the complexities of the heart with celestial insight and compassionate guidance.
                     </p>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-16 space-y-24">
-                <section className="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
-                    <div className="md:w-1/2" data-aos="fade-right">
-                        <h2 className="text-3xl font-bold text-rose-900 mb-6 flex items-center gap-3">
-                            <span className="bg-rose-100 p-2 rounded-lg text-rose-600 animate-pulse">❤️</span>
-                            What is Love Advice?
-                        </h2>
-                        <div className="space-y-4 text-slate-600 text-lg">
+            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+                {/* Intro Section */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="title-icon-wrapper"><Heart size={20} /></div>
+                            <h2 className="text-2xl md:text-3xl font-normal text-white">What is Love Advice?</h2>
+                        </div>
+                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
                             <p>
-                                Love advice in astrology is the sacred practice of analyzing the <span className="font-semibold text-rose-700">7th House</span>, Venus, and Mars positions to understand your soul's romantic path.
+                                Love advice in astrology is the sacred practice of analyzing the <span className="font-normal text-amber-500">7th House</span>, Venus, and Mars positions to understand your soul's romantic path.
                             </p>
                             <p>
                                 Whether you are navigating a new romance or seeking to deepen a commitment, celestial guidance provides clarity that logic often cannot reach.
                             </p>
                         </div>
                     </div>
-                    <div className="md:w-1/2 bg-white p-6 rounded-3xl shadow-xl shadow-rose-100/50 border border-rose-50 transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl" data-aos="fade-left">
-                        <div className="relative rounded-2xl overflow-hidden aspect-video bg-rose-50 flex items-center justify-center">
-                            <span className="text-6xl animate-bounce">💖</span>
-                            <div className="absolute inset-0 bg-gradient-to-t from-rose-900/20 to-transparent"></div>
+                    
+                    <div className="service-glass-panel p-8 flex items-center justify-center min-h-[250px]" data-aos="fade-left">
+                        <div className="relative w-full text-center py-10">
+                            <div className="floating-box inline-block mb-4 p-4 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                                <Heart size={48} fill="currentColor" />
+                            </div>
+                            <h3 className="text-lg font-normal text-white mb-2">Sync Your Fates</h3>
+                            <p className="text-gray-400 text-sm max-w-xs mx-auto">Explore planetary aspects that trigger romantic attachments and compatibility.</p>
                         </div>
                     </div>
                 </section>
 
-                <section className="bg-rose-900 rounded-[3rem] p-10 md:p-16 text-white overflow-hidden relative" data-aos="zoom-in">
-                    <div className="absolute -left-20 -top-20 w-64 h-64 bg-rose-400/20 rounded-full blur-3xl"></div>
+                {/* Benefits of Guidance */}
+                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
-                        <h2 className="text-3xl font-bold mb-10" data-aos="fade-down">The Benefits of Relationship Guidance</h2>
-                        <div className="grid md:grid-cols-3 gap-8">
+                        <h2 className="text-3xl font-normal text-white mb-12">The Benefits of Relationship Guidance</h2>
+                        <div className="grid md:grid-cols-3 gap-8 text-left">
                             {[
-                                { emoji: '✨', title: 'Syncing Energies', desc: 'Align your personal vibrations with your partner for deeper emotional resonance.' },
-                                { emoji: '🕊️', title: 'Conflict Resolution', desc: 'Understand root causes of friction through planetary aspect analysis.' },
-                                { emoji: '⏳', title: 'Divine Timing', desc: 'Identify perfect moments for life-changing romantic decisions and commitments.' }
+                                { icon: <Flame size={24} />, title: 'Syncing Energies', desc: 'Align your personal vibrations with your partner for deeper emotional resonance.' },
+                                { icon: <HeartHandshake size={24} />, title: 'Conflict Resolution', desc: 'Understand root causes of friction through planetary aspect analysis.' },
+                                { icon: <Activity size={24} />, title: 'Divine Timing', desc: 'Identify perfect moments for life-changing romantic decisions and commitments.' }
                             ].map((item, idx) => (
-                                <div key={idx} className="p-8 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 transition-all hover:bg-white/20" data-aos="fade-up" data-aos-delay={(idx + 1) * 100}>
-                                    <div className="text-rose-300 text-3xl mb-4">{item.emoji}</div>
-                                    <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                                    <p className="text-rose-100 font-light leading-relaxed">{item.desc}</p>
+                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
+                                    <div className="text-amber-500 mb-4">{item.icon}</div>
+                                    <h3 className="text-xl font-normal text-white mb-3">{item.title}</h3>
+                                    <p className="text-gray-300 font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </section>
 
+                {/* Features list */}
                 <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-6">Aadikarta: Compassion Meets Wisdom</h2>
+                    <h2 className="text-3xl font-normal text-white mb-6">Aadikarta: Compassion Meets Wisdom</h2>
                     <div className="grid md:grid-cols-2 gap-8 text-left mt-12">
-                        <div className="p-8 rounded-2xl bg-white border border-rose-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos="fade-right">
-                            <h4 className="text-xl font-bold text-rose-900 mb-4 flex items-center gap-3">
-                                <span className="w-2 h-2 rounded-full bg-rose-500"></span> Synastry Reports
-                            </h4>
-                            <p className="text-slate-600 font-light">Deep-dive comparison of two birth charts to map out emotional, intellectual, and physical compatibility zones.</p>
-                        </div>
-                        <div className="p-8 rounded-2xl bg-white border border-rose-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos="fade-left">
-                            <h4 className="text-xl font-bold text-rose-900 mb-4 flex items-center gap-3">
-                                <span className="w-2 h-2 rounded-full bg-rose-500"></span> Venus Positioning
-                            </h4>
-                            <p className="text-slate-600 font-light">Understanding your love language and how to effectively communicate your needs to your significant other.</p>
-                        </div>
+                        {[
+                            { icon: <CheckCircle size={24} />, title: 'Synastry Reports', desc: 'Deep-dive comparison of two birth charts to map out emotional, intellectual, and physical compatibility zones.' },
+                            { icon: <Sparkles size={24} />, title: 'Venus Positioning', desc: 'Understanding your love language and how to effectively communicate your needs to your significant other.' }
+                        ].map((item, idx) => (
+                            <div key={idx} className="custom-list-item">
+                                <div className="icon-box">{item.icon}</div>
+                                <div>
+                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <p className="text-gray-300 font-light">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <button className="mt-16 bg-rose-600 hover:bg-rose-700 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl shadow-rose-200 transition-all hover:scale-110 active:scale-95" data-aos="zoom-in">
+
+                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Connect with Love Expert
-                    </button>
+                    </Link>
                 </section>
             </main>
             <Footer />

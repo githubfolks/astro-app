@@ -392,6 +392,15 @@ export const api = {
             const response = await customFetch(`${API_URL}/public/horoscopes?${params}`);
             return handleResponse(response, 'Failed to fetch horoscopes');
         },
+        getPanchangNow: async (lat: number, lon: number, place = '') => {
+            const params = new URLSearchParams({
+                lat: lat.toString(),
+                lon: lon.toString(),
+                ...(place && { place })
+            });
+            const response = await customFetch(`${API_URL}/public/panchang?${params}`);
+            return handleResponse(response, 'Failed to fetch daily panchang');
+        },
         contact: async (data: { name: string, email: string, message: string }) => {
             const response = await customFetch(`${API_URL}/public/contact`, {
                 method: 'POST',

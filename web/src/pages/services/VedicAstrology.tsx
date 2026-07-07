@@ -5,6 +5,8 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import { Compass, Layers, Award, BookOpen, Sparkles, HelpCircle, Activity } from 'lucide-react';
+import './ServicesDetail.css';
 
 const vedicStructuredData = {
     '@context': 'https://schema.org',
@@ -44,91 +46,101 @@ const VedicAstrology: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-amber-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Vedic Astrology (Jyotish) Consultations Online"
                 description="Authentic Vedic astrology consultations from India's top Jyotish experts. Natal chart analysis, planetary transits, dasha predictions. Starting from ₹10/min."
                 structuredData={vedicStructuredData}
             />
             <Header />
+            
             {/* Hero Section */}
-            <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Vedic Astrology</h1>
-                    </div>
-                    <p className="text-xl text-amber-100 font-light max-w-2xl mx-auto mt-8">
+            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
+                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Vedic Astrology</h1>
+                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                         The science of light that illuminates your soul's journey through time.
                     </p>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-16 space-y-24">
-                <section className="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
-                    <div className="md:w-1/2" data-aos="fade-right">
-                        <h2 className="text-3xl font-bold text-amber-900 mb-6 flex items-center gap-3">
-                            <span className="bg-amber-100 p-2 rounded-lg text-amber-600">☸️</span>
-                            What is Vedic Astrology?
-                        </h2>
-                        <div className="space-y-4 text-slate-600 text-lg">
+            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+                {/* Intro Section */}
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="title-icon-wrapper"><Compass size={20} /></div>
+                            <h2 className="text-2xl md:text-3xl font-normal text-white">What is Vedic Astrology?</h2>
+                        </div>
+                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
                             <p>
-                                Vedic Astrology, or <span className="font-semibold text-amber-800">Jyotish</span> (the science of light), is the world's most ancient system of understanding human destiny.
+                                Vedic Astrology, or <span className="font-normal text-amber-500">Jyotish</span> (the science of light), is the world's most ancient system of understanding human destiny.
                             </p>
                             <p>
                                 Unlike Western systems, it uses the sidereal zodiac and Nakshatras (lunar mansions) to provide surgical precision in timing life milestones.
                             </p>
                         </div>
                     </div>
-                    <div className="md:w-1/2 bg-white p-6 rounded-3xl shadow-xl shadow-amber-100/50 border border-amber-50 transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl" data-aos="fade-left">
-                        <div className="relative rounded-2xl overflow-hidden aspect-video bg-amber-50 flex items-center justify-center p-8">
-                            <div className="grid grid-cols-4 gap-2 w-full text-center text-xs font-bold text-amber-800">
+                    
+                    <div className="service-glass-panel p-8 flex items-center justify-center min-h-[250px]" data-aos="fade-left">
+                        <div className="w-full">
+                            <h3 className="text-lg font-normal text-white mb-6 text-center">Planetary Influences</h3>
+                            <div className="grid grid-cols-4 gap-3 text-center">
                                 {['ASC', 'SUN', 'MOO', 'MER', 'VEN', 'MAR', 'JUP', 'SAT'].map((planet, idx) => (
-                                    <div key={idx} className={`p-2 border border-amber-200 ${planet === 'SUN' ? 'bg-amber-100' : ''}`}>{planet}</div>
+                                    <div key={idx} className={`p-3 rounded-xl border text-xs font-normal transition-all hover:-translate-y-0.5 ${planet === 'SUN' || planet === 'MOO' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                        {planet}
+                                    </div>
                                 ))}
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="bg-amber-900 rounded-[3rem] p-10 md:p-16 text-white overflow-hidden relative" data-aos="zoom-in">
-                    <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-amber-400/20 rounded-full blur-3xl"></div>
+                {/* Pillars of Jyotish */}
+                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
-                        <h2 className="text-3xl font-bold mb-10" data-aos="fade-down">The Pillars of Jyotish Wisdom</h2>
-                        <div className="grid md:grid-cols-3 gap-8">
+                        <h2 className="text-3xl font-normal text-white mb-12">The Pillars of Jyotish Wisdom</h2>
+                        <div className="grid md:grid-cols-3 gap-8 text-left">
                             {[
-                                { title: 'Dasha Systems', desc: 'Unique planetary time periods that reveal exactly WHEN events will manifest.' },
-                                { title: 'Varga Charts', desc: 'Divisional charts that act like a microscope, showing specific details about life.' },
-                                { title: 'Planetary Yogas', desc: 'Combinations that reveal your inherent potential for wealth and growth.' }
+                                { icon: <Activity size={24} />, title: 'Dasha Systems', desc: 'Unique planetary time periods that reveal exactly WHEN events will manifest.' },
+                                { icon: <Layers size={24} />, title: 'Varga Charts', desc: 'Divisional charts that act like a microscope, showing specific details about life.' },
+                                { icon: <Award size={24} />, title: 'Remedies', desc: 'Practical actions like gemstones, mantras, and charity to balance planetary influences.' }
                             ].map((item, idx) => (
-                                <div key={idx} className="p-8 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 transition-all hover:bg-white/10" data-aos="fade-up" data-aos-delay={(idx + 1) * 100}>
-                                    <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                                    <p className="text-amber-100 font-light leading-relaxed">{item.desc}</p>
+                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
+                                    <div className="text-amber-500 mb-4">{item.icon}</div>
+                                    <h3 className="text-xl font-normal text-white mb-3">{item.title}</h3>
+                                    <p className="text-gray-300 font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </section>
 
+                {/* Features list */}
                 <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-6">Expert Vedic Interpretation</h2>
+                    <h2 className="text-3xl font-normal text-white mb-6">Explore the Science of Planets</h2>
                     <div className="grid md:grid-cols-2 gap-8 text-left mt-12">
-                        <div className="p-8 rounded-2xl bg-white border border-amber-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos="fade-right">
-                            <h4 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-3">📜 Birth Chart Analysis</h4>
-                            <p className="text-slate-600 font-light italic">"Know yourself through the mirror of the stars."</p>
-                            <p className="mt-4 text-slate-500">A comprehensive reading of your Kundli to identify life's purpose and karma.</p>
-                        </div>
-                        <div className="p-8 rounded-2xl bg-white border border-amber-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos="fade-left">
-                            <h4 className="text-xl font-bold text-amber-900 mb-4 flex items-center gap-3">💎 Vedic Remedies</h4>
-                            <p className="text-slate-600 font-light italic">"Mitigate challenges, amplify strengths."</p>
-                            <p className="mt-4 text-slate-500">Personalized suggestions for gemstones and mantras to balance planetary energy.</p>
-                        </div>
+                        {[
+                            { icon: <BookOpen size={24} />, title: 'Janma Kundli', desc: 'Your birth chart details planetary coordinates mapping your strengths, weaknesses, and potential.' },
+                            { icon: <Sparkles size={24} />, title: 'Transit Calculations', desc: 'Understand how moving planets interact with your natal chart today to shape immediate events.' }
+                        ].map((item, idx) => (
+                            <div key={idx} className="custom-list-item">
+                                <div className="icon-box">{item.icon}</div>
+                                <div>
+                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <p className="text-gray-300 font-light">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <Link
-                        to="/astrologers"
-                        className="mt-16 inline-block bg-amber-700 hover:bg-amber-800 text-white px-12 py-4 rounded-full font-bold text-lg shadow-xl shadow-amber-200 transition-all hover:scale-110 active:scale-95"
-                        data-aos="zoom-in"
-                    >
-                        Book a Reading Now
+
+                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
+                        Consult with Astrologer
                     </Link>
                 </section>
             </main>

@@ -1,0 +1,105 @@
+.service-detail-page {
+    background: radial-gradient(circle at 50% 50%, #130c2c 0%, #04010a 100%);
+    color: #f3f4f6;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Glass panel */
+.service-glass-panel {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    border-radius: 28px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.service-glass-panel:hover {
+    border-color: rgba(245, 158, 11, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 30px 60px rgba(245, 158, 11, 0.08);
+}
+
+/* Floating animation */
+@keyframes float-element {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+    100% { transform: translateY(0px); }
+}
+
+.floating-box {
+    animation: float-element 5s ease-in-out infinite;
+}
+
+/* Accent text/gradient */
+.gold-text {
+    color: #f59e0b;
+}
+
+.celestial-title {
+    color: #ffffff;
+}
+
+/* Custom list items */
+.custom-list-item {
+    display: flex;
+    gap: 16px;
+    padding: 24px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.3s ease;
+}
+
+.custom-list-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.custom-list-item .icon-box {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, 0.08);
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Icon style of headers */
+.title-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+/* Quick Facts card wrapper */
+.facts-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+}
+
+.facts-card .label {
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+}
+
+.facts-card .value {
+    font-size: 15px;
+    font-weight: 400;
+    color: #ffffff;
+}

@@ -1,0 +1,120 @@
+.panchang-widget {
+    width: 100%;
+}
+
+.astro-time-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    backdrop-filter: blur(10px);
+}
+
+.astro-time-card .icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+.astro-time-card .icon-wrapper.sun {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.astro-time-card .icon-wrapper.sunset {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.astro-time-card .icon-wrapper.moon {
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+}
+
+.astro-time-card .icon-wrapper.moonset {
+    background: rgba(168, 85, 247, 0.1);
+    color: #c084fc;
+}
+
+.astro-time-card .label {
+    font-size: 12px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.astro-time-card .value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.panchang-element-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 12px 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 90px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.panchang-element-card:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+.panchang-element-card .title {
+    font-size: 10px;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.panchang-element-card .name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+
+.panchang-element-card .sub {
+    font-size: 10px;
+    color: #f59e0b;
+    font-weight: 500;
+}
+
+.advanced-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.advanced-item .label {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.advanced-item .val {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+}

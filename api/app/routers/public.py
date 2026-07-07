@@ -96,3 +96,22 @@ async def waplex_inbound(request: Request):
     except Exception as e:
         print(f"[WAPlex Webhook] error: {e}")
     return {"status": "ignored"}
+
+
+@router.get("/panchang", response_model=dict)
+async def get_public_panchang(
+    lat: float,
+    lon: float,
+    place: Optional[str] = ""
+):
+    try:
+        from ..vedic_rishi_service import get_panchang_now
+        return await get_panchang_now(lat, lon, place)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AstroAPI error: {str(e)}")
+
+
+
+

@@ -12,6 +12,7 @@ import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
 import AiAstrologerBanner from '../components/AiAstrologerBanner';
+import PanchangSection from '../components/PanchangSection';
 
 const homeStructuredData = {
     "@context": "https://schema.org",
@@ -88,6 +89,18 @@ const Home: React.FC = () => {
                 <MemoryGuruBanner />
                 <HoroscopeSection />
 
+                {/* Daily Panchang Section */}
+                <section className="panchang-section py-24 relative overflow-hidden bg-gradient-to-b from-[#0f0927] to-[#03010b]">
+                    <div className="absolute top-[20%] left-[-150px] w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+                    <div className="absolute bottom-[20%] right-[-150px] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                    <div className="container mx-auto px-4 relative z-10">
+                        <div className="max-w-4xl mx-auto">
+                            <PanchangSection />
+                        </div>
+                    </div>
+                </section>
+
                 <section className="promise-section py-24 bg-indigo-50/50 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/20 to-transparent"></div>
                     <div className="container mx-auto px-4 relative z-10">
@@ -119,7 +132,8 @@ const Home: React.FC = () => {
                     </div>
                 </section>
 
-                <Testimonials />
+                {/* Testimonials temporarily hidden */}
+
 
                 <section className="join-astrologer-section py-32 relative overflow-hidden">
                     {/* Midnight Celestial Background */}

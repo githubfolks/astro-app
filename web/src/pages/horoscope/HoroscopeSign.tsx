@@ -4,6 +4,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import { api } from '../../services/api';
+import './HoroscopeSign.css';
 
 interface SignData {
     name: string;
@@ -226,7 +227,7 @@ const HoroscopeSign: React.FC = () => {
     };
 
     return (
-        <div className="bg-white text-slate-900 min-h-screen">
+        <div className="horoscope-sign-page min-h-screen">
             <SEO
                 title={`${data.name} Horoscope (${data.hindi}) | Aadikarta`}
                 description={`${data.name} horoscope today — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. ${data.strengths.slice(0, 80)}. Get your personalised ${data.name} reading.`}
@@ -234,111 +235,121 @@ const HoroscopeSign: React.FC = () => {
             />
             <Header />
 
-            <main>
+            <main className="relative overflow-hidden pb-24">
+                {/* Background glows */}
+                <div className="absolute top-[10%] left-[-200px] w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute top-[40%] right-[-200px] w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
                 {/* Hero */}
-                <section className="spiritual-bg text-white py-20 px-6 text-center">
-                    <div className="max-w-3xl mx-auto">
-                        <div className="text-7xl mb-4 flex justify-center">
-                            <img src={`https://www.astrosage.com/images/sign/${sign}.png`} alt={`${data.name} icon`} className="w-24 h-24 object-contain" />
+                <section className="relative pt-24 pb-16 px-6 text-center">
+                    <div className="max-w-3xl mx-auto relative z-10">
+                        <div className="rashi-icon-wrapper">
+                            <img src={`https://www.astrosage.com/images/sign/${sign}.png`} alt={`${data.name} icon`} />
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-bold mb-2">
-                            {data.name} <span className="text-indigo-200 font-normal">({data.hindi})</span>
+                        <h1 className="text-4xl md:text-6xl font-normal mb-4 tracking-tight">
+                            {data.name} <span className="text-amber-500 font-medium">({data.hindi})</span>
                         </h1>
-                        <p className="text-indigo-100 text-lg mt-4">{data.dates}</p>
-                        <div className="flex justify-center gap-6 mt-6 text-sm text-indigo-200 flex-wrap">
-                            <span>Element: <strong className="text-white">{data.element}</strong></span>
-                            <span>Ruling Planet: <strong className="text-white">{data.ruling_planet}</strong></span>
-                            <span>Quality: <strong className="text-white">{data.quality}</strong></span>
+                        <p className="text-gray-300 text-lg mt-3 font-medium">{data.dates}</p>
+                        
+                        <div className="flex justify-center gap-4 mt-6 flex-wrap">
+                            <span className="meta-chip">Element: <strong>{data.element}</strong></span>
+                            <span className="meta-chip">Ruling Planet: <strong>{data.ruling_planet}</strong></span>
+                            <span className="meta-chip">Quality: <strong>{data.quality}</strong></span>
                         </div>
-                        <Link
-                            to="/astrologers"
-                            className="inline-block mt-10 bg-white text-indigo-700 font-bold px-10 py-4 rounded-full shadow-xl hover:scale-105 transition-transform"
+                        
+                        <a
+                            href="#prediction-section"
+                            className="inline-block mt-10 bg-amber-500 text-indigo-950 font-normal px-10 py-4 rounded-full shadow-2xl hover:bg-amber-400 transition-all active:scale-95"
                         >
-                            Get Your {data.name} Reading
-                        </Link>
+                            Read Today's Forecast
+                        </a>
                     </div>
                 </section>
 
                 {/* Today's Daily Prediction */}
-                <section className="max-w-4xl mx-auto px-6 py-12">
-                    <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                        {data.name} Horoscope Today
-                        <span className="ml-3 text-sm font-normal text-slate-400">
-                            {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                        </span>
-                    </h2>
+                <section id="prediction-section" className="max-w-4xl mx-auto px-6 py-12 relative z-10">
+                    <div className="glass-panel p-8 md:p-10">
+                        <h2 className="text-2xl md:text-3xl font-normal text-white mb-2 flex items-center justify-between flex-wrap gap-4">
+                            <span>{data.name} Horoscope Today</span>
+                            <span className="text-sm font-normal text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-4 py-1.5 rounded-full">
+                                {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            </span>
+                        </h2>
 
-                    {predLoading ? (
-                        <div className="animate-pulse space-y-3 mt-6">
-                            <div className="h-4 bg-slate-100 rounded w-full" />
-                            <div className="h-4 bg-slate-100 rounded w-5/6" />
-                            <div className="h-4 bg-slate-100 rounded w-4/6" />
-                        </div>
-                    ) : prediction?.overview ? (
-                        <div className="mt-4 space-y-6">
-                            <p className="text-slate-600 text-lg leading-relaxed">{prediction.overview}</p>
-                            {(prediction.love || prediction.career || prediction.health) && (
-                                <div className="grid md:grid-cols-3 gap-4">
-                                    {prediction.love && (
-                                        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-5">
-                                            <div className="text-xs font-bold uppercase tracking-widest text-rose-400 mb-2">Love</div>
-                                            <p className="text-slate-600 text-sm leading-relaxed">{prediction.love}</p>
-                                        </div>
-                                    )}
-                                    {prediction.career && (
-                                        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-                                            <div className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-2">Career</div>
-                                            <p className="text-slate-600 text-sm leading-relaxed">{prediction.career}</p>
-                                        </div>
-                                    )}
-                                    {prediction.health && (
-                                        <div className="bg-green-50 border border-green-100 rounded-2xl p-5">
-                                            <div className="text-xs font-bold uppercase tracking-widest text-green-400 mb-2">Health</div>
-                                            <p className="text-slate-600 text-sm leading-relaxed">{prediction.health}</p>
-                                        </div>
-                                    )}
+                        {predLoading ? (
+                            <div className="animate-pulse space-y-3 mt-8">
+                                <div className="h-4 bg-white/5 rounded w-full" />
+                                <div className="h-4 bg-white/5 rounded w-5/6" />
+                                <div className="h-4 bg-white/5 rounded w-4/6" />
+                            </div>
+                        ) : prediction?.overview ? (
+                            <div className="mt-8 space-y-8">
+                                <p className="text-gray-300 text-lg leading-relaxed">{prediction.overview}</p>
+                                {(prediction.love || prediction.career || prediction.health) && (
+                                    <div className="grid md:grid-cols-3 gap-6 mt-8">
+                                        {prediction.love && (
+                                            <div className="prediction-card love">
+                                                <div className="title text-rose-400">Love & Relations</div>
+                                                <p className="content">{prediction.love}</p>
+                                            </div>
+                                        )}
+                                        {prediction.career && (
+                                            <div className="prediction-card career">
+                                                <div className="title text-blue-400">Career & Finance</div>
+                                                <p className="content">{prediction.career}</p>
+                                            </div>
+                                        )}
+                                        {prediction.health && (
+                                            <div className="prediction-card health">
+                                                <div className="title text-emerald-400">Health & Vigor</div>
+                                                <p className="content">{prediction.health}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="mt-8 bg-amber-500/5 border border-amber-500/10 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6">
+                                <div className="flex-shrink-0">
+                                    <img src={`https://www.astrosage.com/images/sign/${sign}.png`} alt={`${data.name} icon`} className="w-14 h-14 object-contain" />
                                 </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4">
-                            <div className="text-4xl">
-                                <img src={`https://www.astrosage.com/images/sign/${sign}.png`} alt={`${data.name} icon`} className="w-12 h-12 object-contain" />
+                                <div>
+                                    <p className="text-gray-300">Today's full prediction for {data.name} is available. Consult with our expert Vedic astrologers for personal predictions.</p>
+                                    <Link to="/astrologers" className="inline-block mt-3 text-amber-500 font-normal hover:text-amber-400 hover:underline">
+                                        Consult with Astrologer Now →
+                                    </Link>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-slate-600">Today's personalised prediction for {data.name} is available from our expert Vedic astrologers.</p>
-                                <Link to="/astrologers" className="inline-block mt-3 text-indigo-600 font-semibold hover:underline">
-                                    Chat with an astrologer now →
-                                </Link>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </section>
 
                 {/* Sign Overview */}
-                <section className="max-w-4xl mx-auto px-6 py-16">
-                    <h2 className="text-3xl font-bold text-slate-800 mb-6">{data.name} Personality</h2>
-                    <p className="text-slate-600 text-lg leading-relaxed mb-10">{data.desc}</p>
+                <section className="max-w-4xl mx-auto px-6 py-12 relative z-10">
+                    <div className="glass-panel p-8 md:p-10">
+                        <h2 className="text-3xl font-normal text-white mb-6">{data.name} Personality</h2>
+                        <p className="text-gray-300 text-lg leading-relaxed mb-10">{data.desc}</p>
 
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-green-50 rounded-2xl p-6 border border-green-100">
-                            <h3 className="font-bold text-green-800 mb-3">Core Strengths</h3>
-                            <p className="text-slate-600">{data.strengths}</p>
-                        </div>
-                        <div className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
-                            <h3 className="font-bold text-amber-800 mb-3">Potential Challenges</h3>
-                            <p className="text-slate-600">{data.challenges}</p>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="personality-box strengths">
+                                <h3 className="font-normal text-lg text-emerald-400 mb-3">Core Strengths</h3>
+                                <p className="text-gray-300 leading-relaxed text-sm">{data.strengths}</p>
+                            </div>
+                            <div className="personality-box challenges">
+                                <h3 className="font-normal text-lg text-amber-500 mb-3">Potential Challenges</h3>
+                                <p className="text-gray-300 leading-relaxed text-sm">{data.challenges}</p>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 {/* Traits */}
-                <section className="bg-indigo-50 py-12 px-6">
-                    <div className="max-w-4xl mx-auto">
-                        <h2 className="text-2xl font-bold text-slate-800 mb-8 text-center">Key Traits</h2>
-                        <div className="flex flex-wrap justify-center gap-4">
+                <section className="py-12 px-6 relative z-10">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <h2 className="text-2xl font-normal text-white mb-8">Key Character Traits</h2>
+                        <div className="flex flex-wrap justify-center gap-3">
                             {data.traits.map((t, i) => (
-                                <span key={i} className="bg-white border border-indigo-100 text-indigo-700 font-semibold px-6 py-2 rounded-full shadow-sm">
+                                <span key={i} className="bg-white/5 border border-white/10 text-amber-500 font-normal px-6 py-2.5 rounded-full shadow-md text-sm hover:border-amber-500/30 transition-colors">
                                     {t}
                                 </span>
                             ))}
@@ -347,41 +358,43 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* Lucky details */}
-                <section className="max-w-4xl mx-auto px-6 py-12">
-                    <h2 className="text-2xl font-bold text-slate-800 mb-8 text-center">Quick Facts</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {[
-                            { label: 'Lucky Color', value: data.lucky_color },
-                            { label: 'Lucky Number', value: data.lucky_number },
-                            { label: 'Compatible Signs', value: data.compatible },
-                            { label: 'Ruling Planet', value: data.ruling_planet },
-                        ].map((item, i) => (
-                            <div key={i} className="bg-white border border-slate-100 rounded-2xl p-4 text-center shadow-sm">
-                                <div className="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-2">{item.label}</div>
-                                <div className="font-bold text-slate-800">{item.value}</div>
-                            </div>
-                        ))}
+                <section className="max-w-4xl mx-auto px-6 py-12 relative z-10">
+                    <div className="glass-panel p-8">
+                        <h2 className="text-2xl font-normal text-white mb-8 text-center">Quick Facts</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Lucky Color', value: data.lucky_color },
+                                { label: 'Lucky Number', value: data.lucky_number },
+                                { label: 'Compatible', value: data.compatible },
+                                { label: 'Ruler', value: data.ruling_planet },
+                            ].map((item, i) => (
+                                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center transition-colors hover:border-white/20">
+                                    <div className="text-xs uppercase tracking-wider text-gray-400 font-normal mb-2">{item.label}</div>
+                                    <div className="font-normal text-white text-base">{item.value}</div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </section>
 
                 {/* All Signs Nav */}
-                <section className="bg-slate-50 py-12 px-6">
+                <section className="py-12 px-6 relative z-10">
                     <div className="max-w-5xl mx-auto">
-                        <h2 className="text-2xl font-bold text-slate-800 mb-8 text-center">All Zodiac Signs</h2>
-                        <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+                        <h2 className="text-2xl font-normal text-white mb-8 text-center">Explore Other Zodiac Signs</h2>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                             {Object.entries(SIGNS).map(([slug, s]) => (
                                 <Link
                                     key={slug}
                                     to={`/horoscope/${slug}`}
-                                    className={`flex flex-col items-center p-3 rounded-xl border text-center transition-all hover:shadow-md ${slug === sign?.toLowerCase()
-                                        ? 'bg-indigo-600 text-white border-indigo-600'
-                                        : 'bg-white text-slate-700 border-slate-100 hover:border-indigo-200'
+                                    className={`zodiac-nav-card flex flex-col items-center p-4 rounded-xl border text-center transition-all ${slug === sign?.toLowerCase()
+                                        ? 'active'
+                                        : 'text-gray-300 border-white/5 hover:border-amber-500/30'
                                         }`}
                                 >
-                                    <span className="text-2xl flex justify-center">
-                                        <img src={`https://www.astrosage.com/images/sign/${slug}.png`} alt={`${s.name} icon`} className="w-8 h-8 object-contain" />
+                                    <span className="text-2xl flex justify-center mb-2">
+                                        <img src={`https://www.astrosage.com/images/sign/${slug}.png`} alt={`${s.name} icon`} className="w-10 h-10 object-contain" />
                                     </span>
-                                    <span className="text-xs font-semibold mt-1">{s.name}</span>
+                                    <span className="text-xs font-normal name">{s.name}</span>
                                 </Link>
                             ))}
                         </div>
@@ -389,17 +402,19 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* CTA */}
-                <section className="bg-indigo-700 text-white py-16 px-6 text-center">
-                    <h2 className="text-3xl font-bold mb-4">Want a personalised {data.name} reading?</h2>
-                    <p className="text-indigo-200 mb-8 text-lg">
-                        Connect with a Vedic astrologer who specialises in {data.name} charts — live, right now.
-                    </p>
-                    <Link
-                        to="/astrologers"
-                        className="inline-block bg-white text-indigo-700 font-bold px-12 py-4 rounded-full shadow-xl hover:scale-105 transition-transform"
-                    >
-                        Find a {data.name} Astrologer
-                    </Link>
+                <section className="max-w-4xl mx-auto px-6 py-12 relative z-10">
+                    <div className="glass-panel p-8 md:p-12 text-center bg-gradient-to-r from-indigo-950/40 to-purple-950/40 border border-indigo-500/10">
+                        <h2 className="text-3xl font-normal mb-4 text-white">Want a Personalised {data.name} Reading?</h2>
+                        <p className="text-gray-300 mb-8 text-lg max-w-xl mx-auto">
+                            Connect with verified Vedic astrologers who specialize in {data.name} birth charts — live, 24/7.
+                        </p>
+                        <Link
+                            to="/astrologers"
+                            className="inline-block bg-amber-500 text-indigo-950 font-normal px-12 py-4 rounded-full shadow-2xl hover:bg-amber-400 transition-all active:scale-95"
+                        >
+                            Connect with an Astrologer
+                        </Link>
+                    </div>
                 </section>
             </main>
 

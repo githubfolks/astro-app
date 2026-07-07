@@ -9,7 +9,7 @@ const Hero: React.FC = () => {
                 <div className="hero-text">
                     <h1 className="hero-title mt-2">
                         Talk to Verified
-                        <span className="gradient-text block mt-2">Astrologers Online</span>
+                        <span className="gradient-text block mt-2 py-2">Astrologers Online</span>
                     </h1>
                     <p className="hero-description text-indigo-100 text-xl mt-6 opacity-90 leading-relaxed">
                         Connect with India's top Vedic astrologers for live chat consultations on kundli, tarot, love & career. Guidance starts at ₹10/min.

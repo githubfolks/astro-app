@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import { HeartHandshake, Users, CheckCircle, Award, Sparkles, HelpCircle, Activity } from 'lucide-react';
+import './ServicesDetail.css';
 
 const kundliStructuredData = {
     '@context': 'https://schema.org',
@@ -43,7 +46,7 @@ const KundliMatching: React.FC = () => {
     }, []);
 
     return (
-        <div className="bg-slate-50/30 text-slate-900 leading-relaxed min-h-screen font-['Open Sans']">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Kundli Matching for Marriage | Kundali Milan Online"
                 description="Expert kundali milan (kundli matching) for marriage — 36-gun analysis, manglik dosha check & compatibility report from verified Vedic astrologers. From ₹10/min."
@@ -52,71 +55,70 @@ const KundliMatching: React.FC = () => {
             <Header />
 
             {/* Hero Section */}
-            <header className="spiritual-bg text-white py-24 px-6 text-center relative overflow-hidden min-h-[600px] flex flex-col items-center justify-center">
-                <div className="max-w-4xl mx-auto relative z-10 pointer-events-none">
-                    <div className="flex flex-col items-center justify-center">
-                        <h1 className="text-5xl md:text-5xl mb-4 drop-shadow-2xl">Kundli Matching</h1>
-                    </div>
-                    <p className="text-xl text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
+            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
+                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Kundli Matching</h1>
+                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                         Discover divine compatibility and ensure a harmonious union through the ancient wisdom of Vedic Astrology.
                     </p>
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-16 space-y-24">
+            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
                 {/* What is Kundli Matching */}
-                <section className="flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
-                    <div className="md:w-1/2" data-aos="fade-right" data-aos-delay="200">
-                        <h2 className="text-3xl font-bold text-indigo-900 mb-6 flex items-center gap-3">
-                            <span className="bg-indigo-100 p-2 rounded-lg text-indigo-600 animate-bounce">🕉️</span>
-                            What is Kundli Matching?
-                        </h2>
-                        <div className="space-y-4 text-slate-600 text-lg">
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                    <div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="title-icon-wrapper"><HeartHandshake size={20} /></div>
+                            <h2 className="text-2xl md:text-3xl font-normal text-white">What is Kundli Matching?</h2>
+                        </div>
+                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
                             <p>
-                                Kundli Matching, also known as <span className="font-semibold text-slate-800">Guna Milan</span> or
-                                Horoscope Matching, is the time-tested Vedic practice of comparing the celestial blueprints of
-                                two individuals before they enter the sacred bond of marriage.
+                                Kundli Matching, also known as <span className="font-normal text-amber-500">Guna Milan</span> or Horoscope Matching, is the time-tested Vedic practice of comparing the celestial blueprints of two individuals before they enter the sacred bond of marriage.
                             </p>
                             <p>
-                                At its core, it utilizes the <span className="italic">Ashta-koota</span> system, which evaluates 8
-                                different aspects (Kootas) of compatibility, resulting in a total score out of 36 Gunas.
+                                At its core, it utilizes the <span className="italic text-amber-500">Ashta-koota</span> system, which evaluates 8 different aspects (Kootas) of compatibility, resulting in a total score out of 36 Gunas.
                             </p>
                         </div>
                     </div>
-                    <div className="md:w-1/2 bg-white p-8 rounded-3xl shadow-xl shadow-indigo-100/50 border border-indigo-50 transition-all duration-400 hover:-translate-y-2 hover:shadow-2xl"
-                        data-aos="fade-left" data-aos-delay="400">
+                    
+                    <div className="service-glass-panel p-8" data-aos="fade-left">
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { emoji: '🦁', label: 'Varna', bg: 'bg-amber-50', text: 'text-amber-900' },
-                                { emoji: '🌊', label: 'Vashya', bg: 'bg-indigo-50', text: 'text-indigo-900' },
-                                { emoji: '🌟', label: 'Tara', bg: 'bg-rose-50', text: 'text-rose-900' },
-                                { emoji: '🐉', label: 'Yoni', bg: 'bg-emerald-50', text: 'text-emerald-900' }
+                                { label: 'Varna', desc: 'Work profile/ego' },
+                                { label: 'Vashya', desc: 'Mutual control' },
+                                { label: 'Tara', desc: 'Destiny/health' },
+                                { label: 'Yoni', desc: 'Physical affinity' }
                             ].map((item, idx) => (
-                                <div key={idx} className={`p-4 ${item.bg} rounded-2xl text-center transition-colors hover:shadow-md`}>
-                                    <span className="block text-2xl mb-1">{item.emoji}</span>
-                                    <span className={`text-sm font-medium ${item.text}`}>{item.label}</span>
+                                <div key={idx} className="p-4 bg-white/5 border border-white/5 rounded-2xl text-center hover:border-amber-500/20 transition-all hover:-translate-y-0.5">
+                                    <span className="block text-amber-500 font-normal text-base mb-1">{item.label}</span>
+                                    <span className="text-xs text-gray-400 font-light">{item.desc}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="mt-4 text-center text-xs text-slate-400 uppercase tracking-widest">The 8 Pillars of Compatibility</div>
+                        <div className="mt-6 text-center text-xs text-amber-500/60 uppercase tracking-widest font-normal">The Pillars of Compatibility</div>
                     </div>
                 </section>
 
-                {/* Why This is Required for a Couple */}
-                <section className="bg-indigo-900 rounded-[3rem] p-10 md:p-16 text-white overflow-hidden relative" data-aos="zoom-in">
-                    <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-amber-400/10 rounded-full blur-3xl"></div>
-                    <div className="relative z-10">
-                        <h2 className="text-3xl font-bold mb-10 text-center" data-aos="fade-down">Why is it Required for a Couple?</h2>
-                        <div className="grid md:grid-cols-3 gap-8">
+                {/* Why is it Required for a Couple */}
+                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                    <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
+                    <div className="relative z-10 text-center">
+                        <h2 className="text-3xl font-normal text-white mb-12">Why is it Required for a Couple?</h2>
+                        <div className="grid md:grid-cols-3 gap-8 text-left">
                             {[
-                                { num: '01', title: 'Health & Longevity', desc: 'Predictions regarding the physical and mental well-being of both partners after marriage.' },
-                                { num: '02', title: 'Family & Progeny', desc: 'Assessing the happiness of the household and the potential for healthy offspring.' },
-                                { num: '03', title: 'Mental Accord', desc: 'Analyzing temperamental compatibility to prevent future conflicts and foster mutual respect.' }
+                                { icon: <Activity size={24} />, title: 'Health & Longevity', desc: 'Predictions regarding the physical and mental well-being of both partners after marriage.' },
+                                { icon: <Users size={24} />, title: 'Family & Progeny', desc: 'Assessing the happiness of the household and the potential for healthy offspring.' },
+                                { icon: <HeartHandshake size={24} />, title: 'Mental Accord', desc: 'Analyzing temperamental compatibility to prevent future conflicts and foster mutual respect.' }
                             ].map((item, idx) => (
-                                <div key={idx} className="bg-white/5 backdrop-blur-sm p-6 rounded-2xl border border-white/10 transition-all hover:bg-white/10" data-aos="fade-up" data-aos-delay={(idx + 1) * 100}>
-                                    <div className="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center text-indigo-900 text-xl font-bold mb-4">{item.num}</div>
-                                    <h3 className="text-xl font-semibold mb-3">{item.title}</h3>
-                                    <p className="text-indigo-100 leading-relaxed font-light">{item.desc}</p>
+                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
+                                    <div className="text-amber-500 mb-4">{item.icon}</div>
+                                    <h3 className="text-xl font-normal text-white mb-3">{item.title}</h3>
+                                    <p className="text-gray-300 font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -125,31 +127,31 @@ const KundliMatching: React.FC = () => {
 
                 {/* How Aadikarta Helps */}
                 <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-6" data-aos="fade-down">How Aadikarta Astrologers Help You</h2>
-                    <p className="text-lg text-slate-600 max-w-3xl mx-auto mb-12" data-aos="fade-up">
+                    <h2 className="text-3xl font-normal text-white mb-6">How Aadikarta Astrologers Help You</h2>
+                    <p className="text-lg text-gray-300 max-w-3xl mx-auto mb-12">
                         While digital matching gives you a score, only an expert astrologer can interpret the deeper nuances and provide effective mitigation strategies.
                     </p>
 
                     <div className="grid md:grid-cols-2 gap-6 text-left">
                         {[
-                            { letter: 'A', title: 'Detailed Dosha Analysis', desc: 'Comprehensive checking for Manglik Dosha, Bhakoot Dosha, and Nadi Dosha.' },
-                            { letter: 'B', title: 'Remedial Solutions', desc: 'Personalized remedies including gemstones, mantras, and pujas to neutralize influences.' },
-                            { letter: 'C', title: 'Face-to-Face Clarity', desc: 'Direct interaction with verified Vedic experts to discuss specific concerns.' },
-                            { letter: 'D', title: 'Holistic Prediction', desc: 'Going beyond simple scores to analyze Navamsha charts and planetary periods.' }
+                            { icon: <CheckCircle size={24} />, title: 'Detailed Dosha Analysis', desc: 'Comprehensive checking for Manglik Dosha, Bhakoot Dosha, and Nadi Dosha.' },
+                            { icon: <Award size={24} />, title: 'Remedial Solutions', desc: 'Personalized remedies including gemstones, mantras, and pujas to neutralize influences.' },
+                            { icon: <Users size={24} />, title: 'Face-to-Face Clarity', desc: 'Direct interaction with verified Vedic experts to discuss specific concerns.' },
+                            { icon: <Sparkles size={24} />, title: 'Holistic Prediction', desc: 'Going beyond simple scores to analyze Navamsha charts and planetary periods.' }
                         ].map((item, idx) => (
-                            <div key={idx} className="flex gap-5 p-6 rounded-2xl bg-white shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1" data-aos={idx % 2 === 0 ? "fade-right" : "fade-left"} data-aos-delay={(idx + 1) * 100}>
-                                <div className="flex-shrink-0 w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center font-bold">{item.letter}</div>
+                            <div key={idx} className="custom-list-item">
+                                <div className="icon-box">{item.icon}</div>
                                 <div>
-                                    <h4 className="font-bold text-slate-800 text-lg mb-1">{item.title}</h4>
-                                    <p className="text-slate-500 font-light">{item.desc}</p>
+                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <p className="text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <button className="mt-16 bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg shadow-indigo-200 transition-all hover:scale-105" data-aos="zoom-in" data-aos-delay="500">
+                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Consult an Expert Now
-                    </button>
+                    </Link>
                 </section>
             </main>
             <Footer />
