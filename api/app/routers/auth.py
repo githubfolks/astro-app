@@ -86,7 +86,7 @@ def get_current_admin(current_user: models.User = Depends(get_current_user)):
 
 @router.post("/signup")
 @limiter.limit("5/minute")
-async def signup(request: Request, user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+def signup(request: Request, user: schemas.UserCreate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     if user.role != models.UserRole.SEEKER:
         raise HTTPException(status_code=400, detail="Only seekers can sign up via this endpoint")
     # Check existing
@@ -165,7 +165,7 @@ def generate_otp(length=6):
 
 @router.post("/forgot-password")
 @limiter.limit("3/minute")
-async def forgot_password(request_data: schemas.ForgotPasswordRequest, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(database.get_db)):
+def forgot_password(request_data: schemas.ForgotPasswordRequest, background_tasks: BackgroundTasks, request: Request, db: Session = Depends(database.get_db)):
     # Generic response used whether or not the account exists, so this endpoint
     # can't be used to enumerate registered emails.
     generic_response = {"message": "If the email is registered, an OTP has been sent."}
@@ -225,7 +225,7 @@ def verify_email(request: schemas.VerifyOTPRequest, background_tasks: Background
     return {"message": "Email verified successfully. You can now login."}
 
 @router.post("/resend-verification")
-async def resend_verification(request_data: schemas.ResendVerificationRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+def resend_verification(request_data: schemas.ResendVerificationRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.email == request_data.email).first()
     if not user:
         return {"message": "If the email is registered, a new verification code has been sent."}

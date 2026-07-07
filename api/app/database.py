@@ -21,7 +21,11 @@ SQLALCHEMY_DATABASE_URL = os.getenv(
 )
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL
+    SQLALCHEMY_DATABASE_URL,
+    # Validate pooled connections before use so the first request after a DB
+    # restart or idle-timeout doesn't fail on a stale connection.
+    pool_pre_ping=True,
+    pool_recycle=1800,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

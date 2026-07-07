@@ -126,7 +126,7 @@ const ContactUs: React.FC = () => {
                             {/* Decorative Illustration */}
                             <div className="mt-12 relative flex justify-center z-10">
                                 <img
-                                    src="/assets/contact-illustration.png"
+                                    src="/assets/contact-illustration.webp"
                                     alt="Customer Support"
                                     className="w-full max-w-[280px] object-contain drop-shadow-xl transform hover:scale-105 transition-transform duration-500"
                                 />

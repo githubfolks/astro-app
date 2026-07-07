@@ -207,6 +207,10 @@ async def log_requests(request: Request, call_next):
             content={"detail": "Internal Server Error", "error": str(e)}
         )
 
+# Compress JSON responses when the API is reached without an nginx layer in front.
+from fastapi.middleware.gzip import GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=1024)
+
 # CORS Middleware (Add LAST to be Outer-Most for responses)
 app.add_middleware(
     CORSMiddleware,

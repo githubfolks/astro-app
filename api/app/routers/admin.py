@@ -702,7 +702,7 @@ def list_pending_astrologers(db: Session = Depends(database.get_db)):
     return pending
 
 @router.post("/astrologers/{user_id}/approve")
-async def approve_astrologer(user_id: int, request: ApproveAstrologerRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+def approve_astrologer(user_id: int, request: ApproveAstrologerRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -726,7 +726,7 @@ async def approve_astrologer(user_id: int, request: ApproveAstrologerRequest, ba
 
 
 @router.post("/astrologers/{user_id}/reject")
-async def reject_astrologer(user_id: int, request: RejectAstrologerRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+def reject_astrologer(user_id: int, request: RejectAstrologerRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -798,7 +798,7 @@ def list_onboarding_astrologers(db: Session = Depends(database.get_db)):
 
 
 @router.post("/astrologers/{user_id}/onboarding/advance")
-async def advance_onboarding(
+def advance_onboarding(
     user_id: int,
     request: AdvanceOnboardingRequest,
     background_tasks: BackgroundTasks,
@@ -906,7 +906,7 @@ def get_edu_stats(
     )
 
 @router.put("/users/{user_id}/reset-password")
-async def admin_reset_password(
+def admin_reset_password(
     user_id: int,
     request: schemas.AdminPasswordResetRequest,
     background_tasks: BackgroundTasks,

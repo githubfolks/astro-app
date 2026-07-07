@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Enum, DECIMAL, Text, Date, Time, JSON
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Enum, DECIMAL, Text, Date, Time, JSON, Index
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -125,7 +125,7 @@ class WalletTransaction(Base):
     __tablename__ = "wallet_transactions"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     amount = Column(DECIMAL(10, 2), nullable=False) # Positive for credit, negative for debit
     transaction_type = Column(Enum(TransactionType), nullable=False)
     reference_id = Column(String) # Can be Consultation ID or Payment Gateway ID
@@ -147,6 +147,10 @@ class ChatPackage(Base):
 
 class Consultation(Base):
     __tablename__ = "consultations"
+    __table_args__ = (
+        Index("ix_consultations_astrologer_id_status", "astrologer_id", "status"),
+        Index("ix_consultations_seeker_id_status", "seeker_id", "status"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     seeker_id = Column(Integer, ForeignKey("users.id"))
@@ -189,7 +193,7 @@ class Review(Base):
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
     id = Column(Integer, primary_key=True, index=True)
-    consultation_id = Column(Integer, ForeignKey("consultations.id"))
+    consultation_id = Column(Integer, ForeignKey("consultations.id"), index=True)
     sender_id = Column(Integer, ForeignKey("users.id"))
     message = Column(Text)
     is_flagged = Column(Boolean, default=False)  # Set when moderation detects a violation
@@ -210,6 +214,9 @@ class AppSetting(Base):
 class AvailabilityNotification(Base):
     """A seeker's request to be notified when a specific astrologer comes online."""
     __tablename__ = "availability_notifications"
+    __table_args__ = (
+        Index("ix_availability_notifications_astrologer_id_notified", "astrologer_id", "notified"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     seeker_id = Column(Integer, ForeignKey("users.id"), nullable=False)
@@ -349,7 +356,7 @@ class DeviceToken(Base):
     __tablename__ = "device_tokens"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     fcm_token = Column(String, unique=True, index=True, nullable=False)
     platform = Column(String) # android, ios, web
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())

@@ -117,7 +117,7 @@ def generate_payout(
     return payout
 
 @router.post("/{payout_id}/mark-paid")
-async def mark_payout_paid(
+def mark_payout_paid(
     payout_id: int,
     transaction_reference: str,
     background_tasks: BackgroundTasks,

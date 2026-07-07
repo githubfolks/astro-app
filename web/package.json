@@ -55,8 +55,6 @@
     "@capacitor/splash-screen": "^8.0.0",
     "@capacitor/status-bar": "^8.0.0",
     "@types/aos": "^3.0.7",
-    "@types/dompurify": "^3.0.5",
-    "@types/three": "^0.183.1",
     "aos": "^2.3.4",
     "clsx": "^2.1.1",
     "dompurify": "^3.3.2",
@@ -66,7 +64,6 @@
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.11.0",
     "tailwind-merge": "^3.4.0",
-    "three": "^0.183.2",
     "vite-plugin-pwa": "^1.2.0"
   }
 }

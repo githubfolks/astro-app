@@ -73,7 +73,7 @@ const AboutUs: React.FC = () => {
                         <div className="w-full md:w-1/2" data-aos="fade-left">
                             <div className="relative rounded-[3rem] overflow-hidden shadow-2xl transform hover:scale-[1.02] transition-transform duration-500 border-8 border-white group">
                                 <img
-                                    src="/assets/about-mission.png"
+                                    src="/assets/about-mission.webp"
                                     alt="Our Mission - Guidance and Clarity"
                                     className="w-full h-auto object-cover"
                                     loading="lazy"

@@ -198,7 +198,7 @@ def promote_next_in_queue(db: Session, astrologer_id: int):
 
 
 @router.get("/history/{consultation_id}", response_model=list[schemas.ChatMessage])
-async def get_chat_history(
+def get_chat_history(
     consultation_id: int,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user)

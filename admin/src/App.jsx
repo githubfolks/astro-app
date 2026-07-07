@@ -1,30 +1,31 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import DashboardLayout from './layout/DashboardLayout';
 import Login from './pages/Login';
-import Users from './pages/Users';
-import Astrologers from './pages/Astrologers';
-import AstrologerForm from './pages/AstrologerForm';
-import AstrologerDetails from './pages/AstrologerDetails';
-import UserDetails from './pages/UserDetails';
-import Dashboard from './pages/Dashboard';
 
-import Payouts from './pages/Payouts';
-
-import AstrologerOnboarding from './pages/AstrologerOnboarding';
-
-import PostList from './pages/cms/PostList';
-import PostEditor from './pages/cms/PostEditor';
-import PageList from './pages/cms/PageList';
-import PageEditor from './pages/cms/PageEditor';
-import HoroscopeList from './pages/cms/HoroscopeList';
-import HoroscopeEditor from './pages/cms/HoroscopeEditor';
-import ContactInquiries from './pages/cms/ContactInquiries';
-import EduReports from './pages/EduReports';
-import Disputes from './pages/Disputes';
-import Settings from './pages/Settings';
-import ModerationFlags from './pages/ModerationFlags';
+// Route-level code splitting: heavy pages (recharts dashboard, quill editors)
+// load on demand instead of shipping in the initial bundle.
+const Users = lazy(() => import('./pages/Users'));
+const Astrologers = lazy(() => import('./pages/Astrologers'));
+const AstrologerForm = lazy(() => import('./pages/AstrologerForm'));
+const AstrologerDetails = lazy(() => import('./pages/AstrologerDetails'));
+const UserDetails = lazy(() => import('./pages/UserDetails'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Payouts = lazy(() => import('./pages/Payouts'));
+const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
+const PostList = lazy(() => import('./pages/cms/PostList'));
+const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
+const PageList = lazy(() => import('./pages/cms/PageList'));
+const PageEditor = lazy(() => import('./pages/cms/PageEditor'));
+const HoroscopeList = lazy(() => import('./pages/cms/HoroscopeList'));
+const HoroscopeEditor = lazy(() => import('./pages/cms/HoroscopeEditor'));
+const ContactInquiries = lazy(() => import('./pages/cms/ContactInquiries'));
+const EduReports = lazy(() => import('./pages/EduReports'));
+const Disputes = lazy(() => import('./pages/Disputes'));
+const Settings = lazy(() => import('./pages/Settings'));
+const ModerationFlags = lazy(() => import('./pages/ModerationFlags'));
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -43,6 +44,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/login" element={<Login />} />
 
@@ -79,6 +81,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas, database
@@ -34,7 +35,7 @@ _BUSY_STATUSES = [
 ]
 
 
-def _decorate_availability(db: Session, profile: models.AstrologerProfile):
+def _apply_availability(profile: models.AstrologerProfile, queue_length: int, is_busy: bool):
     """Attach computed availability_status + queue_length to a profile instance
     so they serialize through schemas.AstrologerProfile."""
     from .realtime import is_present
@@ -43,21 +44,59 @@ def _decorate_availability(db: Session, profile: models.AstrologerProfile):
     if profile.display_name:
         profile.full_name = profile.display_name
 
-    profile.queue_length = db.query(models.Consultation).filter(
-        models.Consultation.astrologer_id == profile.user_id,
-        models.Consultation.status == models.ConsultationStatus.REQUESTED,
-    ).count()
+    profile.queue_length = queue_length
 
     if not profile.is_online or not is_present(profile.user_id):
         profile.availability_status = "OFFLINE"
-    elif db.query(models.Consultation).filter(
-        models.Consultation.astrologer_id == profile.user_id,
-        models.Consultation.status.in_(_BUSY_STATUSES),
-    ).first() is not None:
+    elif is_busy:
         profile.availability_status = "BUSY"
     else:
         profile.availability_status = "ONLINE"
     return profile
+
+
+def _decorate_availability(db: Session, profile: models.AstrologerProfile):
+    queue_length = db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == profile.user_id,
+        models.Consultation.status == models.ConsultationStatus.REQUESTED,
+    ).count()
+    is_busy = db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == profile.user_id,
+        models.Consultation.status.in_(_BUSY_STATUSES),
+    ).first() is not None
+    return _apply_availability(profile, queue_length, is_busy)
+
+
+def _decorate_availability_bulk(db: Session, profiles: List[models.AstrologerProfile]):
+    """Batch variant of _decorate_availability: two grouped queries for the whole
+    page instead of two queries per profile."""
+    ids = [p.user_id for p in profiles]
+    if not ids:
+        return profiles
+
+    queue_counts = dict(
+        db.query(models.Consultation.astrologer_id, func.count(models.Consultation.id))
+        .filter(
+            models.Consultation.astrologer_id.in_(ids),
+            models.Consultation.status == models.ConsultationStatus.REQUESTED,
+        )
+        .group_by(models.Consultation.astrologer_id)
+        .all()
+    )
+    busy_ids = {
+        row[0]
+        for row in db.query(models.Consultation.astrologer_id)
+        .filter(
+            models.Consultation.astrologer_id.in_(ids),
+            models.Consultation.status.in_(_BUSY_STATUSES),
+        )
+        .distinct()
+        .all()
+    }
+
+    for p in profiles:
+        _apply_availability(p, queue_counts.get(p.user_id, 0), p.user_id in busy_ids)
+    return profiles
 
 
 @router.post("/onboarding")
@@ -120,8 +159,7 @@ def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Se
         query = query.order_by(models.AstrologerProfile.rating_avg.desc())
 
     profiles = query.offset(skip).limit(limit).all()
-    for p in profiles:
-        _decorate_availability(db, p)
+    _decorate_availability_bulk(db, profiles)
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)

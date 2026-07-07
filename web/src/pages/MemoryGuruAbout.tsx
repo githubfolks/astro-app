@@ -206,10 +206,10 @@ const MemoryGuruAbout: React.FC = () => {
                             <h2 className="text-3xl md:text-4xl text-gray-900 mb-10">Event <span className="gradient-text">Gallery</span></h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {[
-                                    { img: '/assets/memory_guru/mixcollage-1.jpg', title: 'Seminar Photographs' },
-                                    { img: '/assets/memory_guru/mixcollage-2.jpg', title: 'Stage Appearances' },
-                                    { img: '/assets/memory_guru/mixcollage-3.jpg', title: 'Institutional Events' },
-                                    { img: '/assets/memory_guru/mixcollage-4.jpg', title: 'Workshop Highlights' }
+                                    { img: '/assets/memory_guru/mixcollage-1.webp', title: 'Seminar Photographs' },
+                                    { img: '/assets/memory_guru/mixcollage-2.webp', title: 'Stage Appearances' },
+                                    { img: '/assets/memory_guru/mixcollage-3.webp', title: 'Institutional Events' },
+                                    { img: '/assets/memory_guru/mixcollage-4.webp', title: 'Workshop Highlights' }
                                 ].map((item, i) => (
                                     <div key={i} className="group relative overflow-hidden rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-128 border border-white">
                                         <img src={item.img} alt={item.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
