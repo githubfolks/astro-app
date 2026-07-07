@@ -22,6 +22,7 @@ export const Dashboard: React.FC = () => {
     const [isOnline, setIsOnline] = useState(false);
     const [availabilityText, setAvailabilityText] = useState('');
     const [updatingProfile, setUpdatingProfile] = useState(false);
+    const [payoutHistory, setPayoutHistory] = useState<any[]>([]);
 
     // Seeker specific state
     const [walletBalance, setWalletBalance] = useState<number>(0);
@@ -85,6 +86,14 @@ export const Dashboard: React.FC = () => {
 
                     setIsOnline(profile.is_online);
                     setAvailabilityText(profile.availability_hours || '');
+
+                    // Load payout history
+                    try {
+                        const payoutsData = await api.astrologers.getPayoutHistory();
+                        setPayoutHistory(payoutsData);
+                    } catch (err) {
+                        console.error('Failed to load payout history', err);
+                    }
 
                     // Load live classes
                     // Removed from ASTROLOGER as per new requirement
@@ -315,6 +324,63 @@ export const Dashboard: React.FC = () => {
                                                     <tr>
                                                         <td colSpan={5} className="p-8 text-center text-gray-400">
                                                             <p>No past consultations.</p>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Payout & Transaction History */}
+                            <div className="mt-8">
+                                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Wallet size={20} className="text-[#E91E63]" />
+                                    Payout & Transaction History
+                                </h3>
+                                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-gray-50 border-b border-gray-100">
+                                                <tr>
+                                                    <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Date</th>
+                                                    <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Ref ID / Trans ID</th>
+                                                    <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Status</th>
+                                                    <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">TDS (10%)</th>
+                                                    <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Net Paid</th>
+                                                    <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Comments</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {payoutHistory.map((p: any) => (
+                                                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                                        <td className="p-4 text-sm text-gray-600 font-medium">
+                                                            {new Date(p.processed_at || p.created_at).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="p-4 text-sm font-mono text-gray-900 font-bold">
+                                                            {p.transaction_reference || '—'}
+                                                        </td>
+                                                        <td className="p-4">
+                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${p.status === 'PROCESSED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                                                {p.status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="p-4 text-sm font-mono text-gray-500 font-semibold">
+                                                            ₹{Number(p.tds_deducted || 0).toFixed(2)}
+                                                        </td>
+                                                        <td className="p-4 text-sm font-mono font-bold text-green-600">
+                                                            ₹{Number(p.amount || 0).toFixed(2)}
+                                                        </td>
+                                                        <td className="p-4 text-sm text-gray-600 max-w-[200px] truncate" title={p.admin_comments || ''}>
+                                                            {p.admin_comments || '—'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {payoutHistory.length === 0 && (
+                                                    <tr>
+                                                        <td colSpan={6} className="p-8 text-center text-gray-400">
+                                                            <p>No payout transactions found.</p>
                                                         </td>
                                                     </tr>
                                                 )}

@@ -23,11 +23,10 @@ export default function DashboardLayout() {
         { text: 'Users', icon: <Users size={20} />, path: '/users' },
         { text: 'Astrologers', icon: <Star size={20} />, path: '/astrologers' },
         { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
+        { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
         { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
         { text: 'Horoscopes', icon: <Moon size={20} />, path: '/cms/horoscopes' },
-
-        { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
         { text: 'Edu Reports', icon: <GraduationCap size={20} />, path: '/edu-reports' },
 
         { text: 'Disputes', icon: <AlertCircle size={20} />, path: '/disputes' },
@@ -68,7 +67,9 @@ export default function DashboardLayout() {
                             )}
                             title={!sidebarOpen ? item.text : undefined}
                         >
-                            {item.icon}
+                            <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                                {item.icon}
+                            </span>
                             {sidebarOpen && <span className="ml-3">{item.text}</span>}
                         </button>
                     ))}
@@ -83,7 +84,9 @@ export default function DashboardLayout() {
                         )}
                         title={!sidebarOpen ? "Logout" : undefined}
                     >
-                        <LogOut size={20} />
+                        <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center">
+                            <LogOut size={20} />
+                        </span>
                         {sidebarOpen && <span className="ml-3">Logout</span>}
                     </button>
                 </div>

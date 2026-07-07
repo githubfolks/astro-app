@@ -228,6 +228,12 @@ export const api = {
                 body: formData
             });
             return handleResponse(response, 'File upload failed');
+        },
+        getPayoutHistory: async () => {
+            const response = await customFetch(`${API_URL}/astrologers/payouts/history`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to fetch payout history');
         }
     },
 

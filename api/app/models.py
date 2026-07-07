@@ -365,6 +365,7 @@ class Payout(Base):
     period_start = Column(DateTime(timezone=True))
     period_end = Column(DateTime(timezone=True))
     transaction_reference = Column(String, nullable=True)
+    admin_comments = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     processed_at = Column(DateTime(timezone=True), nullable=True)
 

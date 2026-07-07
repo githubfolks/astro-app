@@ -76,6 +76,7 @@ def get_pending_earnings(db: Session = Depends(database.get_db), current_user: m
             results.append({
                 "astrologer_id": astro.user_id,
                 "astrologer_name": astro.full_name,
+                "phone_number": astro.user.phone_number if astro.user else None,
                 "total_revenue": total_revenue,
                 "commission_percentage": float(astro.commission_percentage or 70.0),
                 "gross_earnings": round(gross_share, 2),
@@ -124,6 +125,8 @@ def mark_payout_paid(
     payout_id: int,
     transaction_reference: str,
     background_tasks: BackgroundTasks,
+    payout_date: Optional[str] = None,
+    comments: Optional[str] = None,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_admin)
 ):
@@ -141,7 +144,20 @@ def mark_payout_paid(
 
     payout.status = models.PayoutStatus.PROCESSED
     payout.transaction_reference = transaction_reference
-    payout.processed_at = datetime.utcnow()
+    payout.admin_comments = comments
+
+    if payout_date:
+        try:
+            if "T" in payout_date:
+                # Remove Z or offset if present
+                clean_date = payout_date.replace("Z", "").split("+")[0]
+                payout.processed_at = datetime.fromisoformat(clean_date)
+            else:
+                payout.processed_at = datetime.strptime(payout_date, "%Y-%m-%d")
+        except Exception:
+            payout.processed_at = datetime.utcnow()
+    else:
+        payout.processed_at = datetime.utcnow()
 
     audit.log(db, "PAYOUT_MARKED_PAID", actor_id=current_user.id,
               resource_type="payout", resource_id=payout_id,
@@ -149,9 +165,39 @@ def mark_payout_paid(
     db.commit()
 
     if astrologer_email:
+        payment_date_str = payout.processed_at.strftime("%Y-%m-%d")
         subject, html_body = build_payout_processed_email(
-            float(payout_amount), transaction_reference, float(tds_amount)
+            float(payout_amount), transaction_reference, float(tds_amount), payment_date_str, comments
         )
         send_email(background_tasks, [astrologer_email], subject, html_body)
 
     return payout
+
+
+@router.get("/history")
+def get_all_payouts_history(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_admin)
+):
+    """
+    Get all processed and generated payouts for admin reporting.
+    """
+    payouts = db.query(models.Payout).order_by(models.Payout.created_at.desc()).all()
+    return [
+        {
+            "id": p.id,
+            "astrologer_id": p.astrologer_id,
+            "astrologer_name": p.astrologer.astrologer_profile.full_name if p.astrologer and p.astrologer.astrologer_profile else "Unknown",
+            "phone_number": p.astrologer.phone_number if p.astrologer else None,
+            "amount": float(p.amount),
+            "tds_deducted": float(p.tds_deducted or 0),
+            "status": p.status,
+            "period_start": p.period_start,
+            "period_end": p.period_end,
+            "transaction_reference": p.transaction_reference,
+            "admin_comments": p.admin_comments,
+            "created_at": p.created_at,
+            "processed_at": p.processed_at
+        }
+        for p in payouts
+    ]

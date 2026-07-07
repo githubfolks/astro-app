@@ -365,17 +365,23 @@ def build_growth_meeting_email(
 
 
 def build_payout_processed_email(
-    amount: float, transaction_reference: str, tds_amount: float
+    amount: float, transaction_reference: str, tds_amount: float, payout_date: str = None, comments: str = None
 ) -> Tuple[str, str]:
+    rows = [
+        ("Amount", f"&#8377;{amount:,.2f}"),
+        ("TDS deducted", f"&#8377;{tds_amount:,.2f}"),
+        ("Transaction reference", transaction_reference or "—"),
+    ]
+    if payout_date:
+        rows.append(("Payment Date", payout_date))
+    if comments:
+        rows.append(("Comments", comments))
+
     content = f"""
       <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
         Good news &mdash; your payout has been processed.
       </p>
-      {_detail_rows([
-        ("Amount", f"&#8377;{amount:,.2f}"),
-        ("TDS deducted", f"&#8377;{tds_amount:,.2f}"),
-        ("Transaction reference", transaction_reference or "—"),
-      ])}
+      {_detail_rows(rows)}
       <p style="margin:0 0 8px 0;font-size:14px;line-height:24px;color:#6b7280;">
         Please allow 1&ndash;3 business days for the amount to reflect in your account.
       </p>"""

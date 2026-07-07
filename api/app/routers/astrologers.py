@@ -291,3 +291,36 @@ def get_astrologer_by_identifier(identifier: str, db: Session = Depends(database
         raise HTTPException(status_code=404, detail="Astrologer not found or not approved")
     _decorate_availability(db, profile)
     return profile
+
+
+@router.get("/payouts/history")
+def get_payout_history(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Get payout history for the logged-in astrologer.
+    """
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=403, detail="Only astrologers can view their payout history")
+
+    payouts = db.query(models.Payout).filter(
+        models.Payout.astrologer_id == current_user.id
+    ).order_by(models.Payout.created_at.desc()).all()
+
+    return [
+        {
+            "id": p.id,
+            "amount": float(p.amount),
+            "tds_deducted": float(p.tds_deducted or 0),
+            "status": p.status,
+            "period_start": p.period_start,
+            "period_end": p.period_end,
+            "transaction_reference": p.transaction_reference,
+            "admin_comments": p.admin_comments,
+            "created_at": p.created_at,
+            "processed_at": p.processed_at
+        }
+        for p in payouts
+    ]
+

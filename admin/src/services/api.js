@@ -107,7 +107,13 @@ export const payouts = {
     // Better to fix Backend to accept Pydantic model for Generate. 
     // BUT for now, let's match existing backend:
     // generate_payout(astrologer_id: int, amount: float ...) -> Query Params.
-    markPaid: (id, transactionRef) => api.post(`/admin/payouts/${id}/mark-paid?transaction_reference=${encodeURIComponent(transactionRef)}`)
+    markPaid: (id, transactionRef, payoutDate, comments) => {
+        let url = `/admin/payouts/${id}/mark-paid?transaction_reference=${encodeURIComponent(transactionRef)}`;
+        if (payoutDate) url += `&payout_date=${encodeURIComponent(payoutDate)}`;
+        if (comments) url += `&comments=${encodeURIComponent(comments)}`;
+        return api.post(url);
+    },
+    getHistory: () => api.get('/admin/payouts/history')
 };
 
 export const edu = {
