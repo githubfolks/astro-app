@@ -60,16 +60,15 @@
     opacity: 1;
 }
 
-.zodiac-svg {
-    width: 48px;
-    height: 48px;
+.zodiac-icon {
+    width: 60px;
+    height: 60px;
     margin-bottom: 15px;
-    stroke: url(#goldGradient);
     filter: drop-shadow(0 2px 8px rgba(217, 119, 6, 0.3));
     transition: transform 0.4s ease, filter 0.4s ease;
 }
 
-.zodiac-card:hover .zodiac-svg {
+.zodiac-card:hover .zodiac-icon {
     transform: scale(1.15) rotate(5deg);
     filter: drop-shadow(0 4px 12px rgba(217, 119, 6, 0.6));
 }

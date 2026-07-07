@@ -238,7 +238,9 @@ const HoroscopeSign: React.FC = () => {
                 {/* Hero */}
                 <section className="spiritual-bg text-white py-20 px-6 text-center">
                     <div className="max-w-3xl mx-auto">
-                        <div className="text-7xl mb-4">{data.symbol}</div>
+                        <div className="text-7xl mb-4 flex justify-center">
+                            <img src={`https://www.astrosage.com/images/sign/${sign}.png`} alt={`${data.name} icon`} className="w-24 h-24 object-contain" />
+                        </div>
                         <h1 className="text-4xl md:text-5xl font-bold mb-2">
                             {data.name} <span className="text-indigo-200 font-normal">({data.hindi})</span>
                         </h1>
@@ -300,7 +302,9 @@ const HoroscopeSign: React.FC = () => {
                         </div>
                     ) : (
                         <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-4">
-                            <div className="text-4xl">{data.symbol}</div>
+                            <div className="text-4xl">
+                                <img src={`https://www.astrosage.com/images/sign/${sign}.png`} alt={`${data.name} icon`} className="w-12 h-12 object-contain" />
+                            </div>
                             <div>
                                 <p className="text-slate-600">Today's personalised prediction for {data.name} is available from our expert Vedic astrologers.</p>
                                 <Link to="/astrologers" className="inline-block mt-3 text-indigo-600 font-semibold hover:underline">
@@ -374,7 +378,9 @@ const HoroscopeSign: React.FC = () => {
                                         : 'bg-white text-slate-700 border-slate-100 hover:border-indigo-200'
                                         }`}
                                 >
-                                    <span className="text-2xl">{s.symbol}</span>
+                                    <span className="text-2xl flex justify-center">
+                                        <img src={`https://www.astrosage.com/images/sign/${slug}.png`} alt={`${s.name} icon`} className="w-8 h-8 object-contain" />
+                                    </span>
                                     <span className="text-xs font-semibold mt-1">{s.name}</span>
                                 </Link>
                             ))}
