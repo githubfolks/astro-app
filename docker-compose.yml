@@ -20,6 +20,7 @@ services:
       SQLALCHEMY_DATABASE_URL: "${SQLALCHEMY_DATABASE_URL}"
       REDIS_URL: "${REDIS_URL}"
       JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
+      ENABLE_MOCK_PAYMENTS: "${ENABLE_MOCK_PAYMENTS}"
     ports:
       - "9000:8000"
     volumes:

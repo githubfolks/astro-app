@@ -14,7 +14,7 @@ def test_request_requires_auth(client, make_user):
 
 
 def test_seeker_can_request_consultation(client, make_user):
-    seeker = make_user(models.UserRole.SEEKER)
+    seeker = make_user(models.UserRole.SEEKER, balance=100.0)
     astro = make_user(models.UserRole.ASTROLOGER, fee=12.0)
 
     resp = client.post("/consultations/", headers=auth_headers(seeker), json=_request_body(astro.id))
@@ -36,7 +36,7 @@ def test_astrologer_cannot_request_consultation(client, make_user):
 
 
 def test_request_unknown_astrologer_returns_404(client, make_user):
-    seeker = make_user(models.UserRole.SEEKER)
+    seeker = make_user(models.UserRole.SEEKER, balance=100.0)
     resp = client.post(
         "/consultations/", headers=auth_headers(seeker), json=_request_body(999999)
     )
@@ -44,7 +44,7 @@ def test_request_unknown_astrologer_returns_404(client, make_user):
 
 
 def test_concurrent_active_consultation_blocked(client, make_user):
-    seeker = make_user(models.UserRole.SEEKER)
+    seeker = make_user(models.UserRole.SEEKER, balance=100.0)
     astro = make_user(models.UserRole.ASTROLOGER)
 
     first = client.post("/consultations/", headers=auth_headers(seeker), json=_request_body(astro.id))
@@ -55,8 +55,8 @@ def test_concurrent_active_consultation_blocked(client, make_user):
 
 
 def test_history_is_isolated_per_seeker(client, make_user):
-    seeker_a = make_user(models.UserRole.SEEKER)
-    seeker_b = make_user(models.UserRole.SEEKER)
+    seeker_a = make_user(models.UserRole.SEEKER, balance=100.0)
+    seeker_b = make_user(models.UserRole.SEEKER, balance=100.0)
     astro = make_user(models.UserRole.ASTROLOGER)
 
     client.post("/consultations/", headers=auth_headers(seeker_a), json=_request_body(astro.id))
@@ -70,8 +70,8 @@ def test_history_is_isolated_per_seeker(client, make_user):
 
 
 def test_cannot_read_another_users_consultation(client, make_user):
-    seeker_a = make_user(models.UserRole.SEEKER)
-    seeker_b = make_user(models.UserRole.SEEKER)
+    seeker_a = make_user(models.UserRole.SEEKER, balance=100.0)
+    seeker_b = make_user(models.UserRole.SEEKER, balance=100.0)
     astro = make_user(models.UserRole.ASTROLOGER)
 
     created = client.post(

@@ -78,6 +78,17 @@
             ],
             "title": "Consultation Fee Per Min"
           },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
           "email": {
             "title": "Email",
             "type": "string"
@@ -111,8 +122,15 @@
             "type": "string"
           },
           "password": {
-            "title": "Password",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
           },
           "phone_number": {
             "title": "Phone Number",
@@ -148,7 +166,6 @@
         "required": [
           "email",
           "phone_number",
-          "password",
           "full_name",
           "experience_years",
           "languages",
@@ -685,6 +702,11 @@
           },
           "is_online": {
             "title": "Is Online",
+            "type": "boolean"
+          },
+          "is_premium": {
+            "default": false,
+            "title": "Is Premium",
             "type": "boolean"
           },
           "languages": {
@@ -1501,6 +1523,17 @@
               }
             ]
           },
+          "concern_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concern Note"
+          },
           "consultation_type": {
             "title": "Consultation Type",
             "type": "string"
@@ -1537,6 +1570,30 @@
           "id": {
             "title": "Id",
             "type": "integer"
+          },
+          "is_promotional_first_chat": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": false,
+            "title": "Is Promotional First Chat"
+          },
+          "promotional_rate_total": {
+            "anyOf": [
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Promotional Rate Total"
           },
           "rate_per_min": {
             "anyOf": [
@@ -1597,6 +1654,17 @@
             "title": "Status",
             "type": "string"
           },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          },
           "total_cost": {
             "anyOf": [
               {
@@ -1627,6 +1695,17 @@
             "title": "Astrologer Id",
             "type": "integer"
           },
+          "concern_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concern Note"
+          },
           "consultation_type": {
             "title": "Consultation Type",
             "type": "string"
@@ -1645,6 +1724,17 @@
               }
             ],
             "title": "Rate Per Min"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
           }
         },
         "required": [
@@ -3025,6 +3115,19 @@
         "title": "PostUpdate",
         "type": "object"
       },
+      "PremiumUpdate": {
+        "properties": {
+          "is_premium": {
+            "title": "Is Premium",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_premium"
+        ],
+        "title": "PremiumUpdate",
+        "type": "object"
+      },
       "QuotaResponse": {
         "properties": {
           "questions_remaining": {
@@ -4271,6 +4374,61 @@
           }
         ],
         "summary": "Advance Onboarding",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/astrologers/{user_id}/premium": {
+      "put": {
+        "operationId": "update_astrologer_premium_admin_astrologers__user_id__premium_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PremiumUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Astrologer Premium",
         "tags": [
           "Admin"
         ]

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star, X, Clock, MessageSquare, User } from 'lucide-react';
 import type { Consultation } from '../types';
+import { api } from '../services/api';
 
 interface Props {
     consultation: Consultation | null;
@@ -15,15 +16,34 @@ const formatDuration = (totalSeconds?: number) => {
 };
 
 const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => {
+    const [messages, setMessages] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        if (consultation) {
+            setLoading(true);
+            setMessages([]);
+            api.consultations.getChatHistory(consultation.id)
+                .then((data: any) => {
+                    setMessages(data);
+                    setLoading(false);
+                })
+                .catch((err: any) => {
+                    console.error('Failed to load chat history', err);
+                    setLoading(false);
+                });
+        }
+    }, [consultation]);
+
     if (!consultation) return null;
 
     const rating = consultation.review?.rating;
     const feedback = consultation.review?.comment;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] p-4" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in"
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in border border-gray-100"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] p-6 text-white">
@@ -40,7 +60,7 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
                     </div>
                 </div>
 
-                <div className="p-6 space-y-5">
+                <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
                     <div className="flex items-center gap-3">
                         <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
                             <User size={20} />
@@ -93,6 +113,42 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
                             </div>
                         ) : (
                             <p className="text-sm text-gray-400">Seeker hasn't left a rating yet.</p>
+                        )}
+                    </div>
+
+                    <div className="border-t border-gray-100 pt-4">
+                        <p className="text-xs text-gray-400 uppercase font-semibold tracking-wider mb-3 flex items-center gap-1">
+                            <MessageSquare size={12} /> Chat Transcript
+                        </p>
+                        {loading ? (
+                            <p className="text-sm text-gray-500">Loading transcript...</p>
+                        ) : messages.length === 0 ? (
+                            <p className="text-sm text-gray-400 italic">No messages sent in this session.</p>
+                        ) : (
+                            <div className="space-y-3 max-h-60 overflow-y-auto pr-1 p-3 rounded-xl border border-gray-100" style={{ backgroundColor: '#F9FAFB' }}>
+                                {messages.map((msg) => {
+                                    const isSeeker = msg.sender_id === consultation.seeker_id;
+                                    return (
+                                        <div key={msg.id} className={`flex flex-col ${isSeeker ? 'items-start' : 'items-end'}`}>
+                                            <span className="text-[10px] font-bold mb-0.5" style={{ color: '#4B5563' }}>
+                                                {isSeeker ? (consultation.seeker_profile?.full_name || 'Seeker') : 'You'}
+                                            </span>
+                                            <div 
+                                                className="px-4 py-2.5 rounded-2xl text-sm max-w-[85%] font-medium leading-relaxed"
+                                                style={isSeeker 
+                                                    ? { backgroundColor: '#E5E7EB', color: '#111827', border: '1px solid #D1D5DB', borderTopLeftRadius: '0px' } 
+                                                    : { backgroundColor: '#E91E63', color: '#FFFFFF', borderTopRightRadius: '0px' }
+                                                }
+                                            >
+                                                {msg.message}
+                                            </div>
+                                            <span className="text-[9px] mt-1 font-semibold" style={{ color: '#6B7280' }}>
+                                                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         )}
                     </div>
                 </div>

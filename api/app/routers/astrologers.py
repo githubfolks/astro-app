@@ -190,6 +190,12 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
     # If the astrologer just came online, alert seekers who asked to be notified.
     if not was_online and db_profile.is_online:
         _notify_waiting_seekers(db, current_user.id)
+        from .realtime import broadcast_event, is_present
+        if is_present(current_user.id):
+            broadcast_event({"type": "ASTRO_ONLINE", "astrologer_id": current_user.id})
+    elif was_online and not db_profile.is_online:
+        from .realtime import broadcast_event
+        broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": current_user.id})
 
     return db_profile
 

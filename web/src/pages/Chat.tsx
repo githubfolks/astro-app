@@ -618,11 +618,15 @@ export const Chat: React.FC = () => {
                                     </div>
                                 )}
 
-                                {user?.role === 'ASTROLOGER' && timerActive && (
-                                    <div className="text-sm hidden sm:flex items-center gap-3 text-gray-600">
+                                {user?.role === 'ASTROLOGER' && (
+                                    <div className="text-sm flex items-center gap-3 text-gray-600">
                                         <span>Talk Time: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span></span>
-                                        <span className="text-gray-300">|</span>
-                                        <span className={lowBalance ? 'text-amber-700' : ''}>Time Remaining: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>{billingInfo.minutes_remaining} min</span></span>
+                                        {status !== 'ENDED' && (
+                                            <>
+                                                <span className="text-gray-300">|</span>
+                                                <span className={lowBalance ? 'text-amber-700' : ''}>Time Remaining: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>{billingInfo.minutes_remaining} min</span></span>
+                                            </>
+                                        )}
                                     </div>
                                 )}
 

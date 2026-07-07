@@ -157,13 +157,15 @@ def get_queue_position(consultation_id: int, current_user: models.User = Depends
 @router.get("/history", response_model=List[schemas.Consultation])
 def get_consultation_history(current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
     if current_user.role == models.UserRole.SEEKER:
-        return db.query(models.Consultation).filter(models.Consultation.seeker_id == current_user.id).all()
+        return db.query(models.Consultation).filter(
+            models.Consultation.seeker_id == current_user.id
+        ).order_by(models.Consultation.created_at.desc()).all()
     elif current_user.role == models.UserRole.ASTROLOGER:
         from ..services.identity import mask_name
         rows = db.query(models.Consultation).filter(
             models.Consultation.astrologer_id == current_user.id,
             models.Consultation.consultation_type == models.ConsultationType.CHAT
-        ).order_by(models.Consultation.created_at.asc()).all()
+        ).order_by(models.Consultation.created_at.desc()).all()
         # Identity protection: mask seeker names for the astrologer's view.
         for c in rows:
             if c.seeker_profile:

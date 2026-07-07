@@ -146,6 +146,17 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 }
                 return astro;
             }));
+        } else if (event.type === 'ASTRO_OFFLINE' && event.astrologer_id) {
+            setAstrologers(prev => prev.map(astro => {
+                if (astro.id === event.astrologer_id) {
+                    return {
+                        ...astro,
+                        is_online: false,
+                        availability_status: 'OFFLINE'
+                    };
+                }
+                return astro;
+            }));
         }
     });
 

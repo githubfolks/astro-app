@@ -305,12 +305,6 @@ export const Dashboard: React.FC = () => {
                                                                     onClick={() => setDetailConsultation(c)}
                                                                     className="text-gray-400 hover:text-[#E91E63] font-medium text-sm transition-colors"
                                                                 >
-                                                                    Details
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => navigate(`/chat/${c.id}`)}
-                                                                    className="text-gray-400 hover:text-[#E91E63] font-medium text-sm transition-colors"
-                                                                >
                                                                     View
                                                                 </button>
                                                             </div>
@@ -502,9 +496,8 @@ export const Dashboard: React.FC = () => {
         setLoadingMaterials(prev => ({ ...prev, [courseId]: false }));
     };
 
-    const handlePaymentSuccess = async (amount: number) => {
+    const handlePaymentSuccess = async (_amount: number) => {
         try {
-            await api.wallet.addMoney(amount);
             const w = await api.wallet.getBalance();
             setWalletBalance(Number(w.balance));
         } catch (e) {

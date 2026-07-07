@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Smartphone, Wallet, CheckCircle } from 'lucide-react';
+import { api } from '../services/api';
+import { loadRazorpay } from '../utils/loadRazorpay';
+import type { RazorpayResponse, RazorpayError } from '../types';
+import { getErrorMessage } from '../utils/errors';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -23,18 +27,87 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
         if (amount <= 0) return;
         setProcessing(true);
 
-        // Simulate payment processing
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            const loaded = await loadRazorpay();
+            if (!loaded) {
+                alert('Failed to load Razorpay SDK. Please try again.');
+                setProcessing(false);
+                return;
+            }
 
-        setProcessing(false);
-        setSuccess(true);
+            // 1. Create Order
+            const orderData = await api.payment.createOrder(amount);
 
-        // After showing success, close and notify parent
-        setTimeout(() => {
-            onSuccess(amount);
-            setSuccess(false);
-            setAmount(100);
-        }, 1500);
+            // Mock Mode Handling
+            if (orderData.key_id === "mock_key" || !orderData.key_id) {
+                const confirmMock = confirm(`[DEV MODE] Simulate successful payment of ₹${orderData.amount / 100}?`);
+                if (confirmMock) {
+                    await api.payment.verifyPayment({
+                        razorpay_order_id: orderData.order_id,
+                        razorpay_payment_id: "pay_mock_" + Date.now(),
+                        razorpay_signature: "mock_signature"
+                    });
+                    setSuccess(true);
+                    setTimeout(() => {
+                        onSuccess(amount);
+                        setSuccess(false);
+                        setAmount(100);
+                    }, 1500);
+                } else {
+                    setProcessing(false);
+                }
+                return;
+            }
+
+            // 2. Open Razorpay
+            const options = {
+                key: orderData.key_id,
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: "Aadikarta",
+                description: "Wallet Recharge",
+                order_id: orderData.order_id,
+                handler: async function (response: RazorpayResponse) {
+                    try {
+                        await api.payment.verifyPayment({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+                        setSuccess(true);
+                        setTimeout(() => {
+                            onSuccess(amount);
+                            setSuccess(false);
+                            setAmount(100);
+                        }, 1500);
+                    } catch (err) {
+                        console.error(err);
+                        alert("Payment Verification Failed");
+                        setProcessing(false);
+                    }
+                },
+                prefill: {
+                    name: "Astro User",
+                    email: "user@example.com",
+                    contact: "9999999999"
+                },
+                theme: {
+                    color: "#E91E63"
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on("payment.failed", function (response: RazorpayError) {
+                alert("Payment Failed: " + response.error.description);
+                setProcessing(false);
+            });
+            rzp.open();
+
+        } catch (e) {
+            console.error(e);
+            alert('Failed to initiate payment: ' + (getErrorMessage(e) || "Unknown error"));
+            setProcessing(false);
+        }
     };
 
     if (success) {

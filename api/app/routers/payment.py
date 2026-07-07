@@ -47,7 +47,7 @@ def create_payment_order(order: OrderCreate, current_user: models.User = Depends
     # Mock Mode
     if not RAZORPAY_KEY_ID or RAZORPAY_KEY_ID == "mock_key":
         return {
-            "order_id": f"order_mock_{uuid.uuid4().hex[:10]}",
+            "order_id": f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}",
             "amount": amount_paise,
             "currency": "INR",
             "key_id": "mock_key"
@@ -82,8 +82,12 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             if os.getenv("ENABLE_MOCK_PAYMENTS") != "true":
                 raise HTTPException(status_code=400, detail="Mock payments are disabled in this environment")
             print(f"Processing Mock Payment: {data.razorpay_order_id}")
-            # For mock flow, we default to 100 INR or assumes logic handled handled upstream
-            amount_paid_inr = 100.0 # Default test amount
+            # Try to extract the amount from order_id (format: order_mock_{amount_paise}_{uuid})
+            parts = data.razorpay_order_id.split("_")
+            if len(parts) >= 3 and parts[2].isdigit():
+                amount_paid_inr = float(parts[2]) / 100.0
+            else:
+                amount_paid_inr = 100.0 # Default fallback test amount
         
         else:
             # Verify Signature
