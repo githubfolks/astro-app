@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-import { Home, Compass, Shield, Wind, Sun, Activity, HelpCircle } from 'lucide-react';
+import { Home, Compass, Shield, Sun, Activity } from 'lucide-react';
 import './ServicesDetail.css';
 
 const vastuStructuredData = {

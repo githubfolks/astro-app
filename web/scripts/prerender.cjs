@@ -52,6 +52,10 @@ const ROUTES = [
 ];
 
 async function main() {
+    if (process.env.SKIP_PRERENDER === 'true') {
+        console.log('[prerender] Skipping static prerendering due to SKIP_PRERENDER=true.');
+        return;
+    }
     const prerenderer = new Prerenderer({
         staticDir: DIST,
         renderer: new PuppeteerRenderer({

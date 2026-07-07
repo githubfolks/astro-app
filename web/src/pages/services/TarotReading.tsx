@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-import { Sparkles, Layers, Eye, Compass, Clock, HelpCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, Layers, Eye, Compass, Clock } from 'lucide-react';
 import './ServicesDetail.css';
 
 const tarotStructuredData = {

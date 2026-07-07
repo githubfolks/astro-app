@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getBrowserLocation, getIpBasedLocation } from '../utils/location';
 import type { UserCoords } from '../utils/location';
 import { api } from '../services/api';
-import { MapPin, Sun, Moon, RefreshCw, Compass } from 'lucide-react';
+import { MapPin, Sun, Moon, RefreshCw } from 'lucide-react';
 import './PanchangSection.css';
 
 interface PanchangData {
@@ -28,12 +28,7 @@ interface PanchangData {
     gol: string;
 }
 
-const TITHI_NAMES = [
-    "Prathama / Pratipada (1)", "Dwitiya (2)", "Tritiya (3)", "Chaturthi (4)", 
-    "Panchami (5)", "Shasthi (6)", "Saptami (7)", "Ashtami (8)", 
-    "Navami (9)", "Dashami (10)", "Ekadashi (11)", "Dwadashi (12)", 
-    "Trayodashi (13)", "Chaturdashi (14)", "Purnima / Amavasya (15)"
-];
+
 
 const PanchangSection: React.FC = () => {
     const [coords, setCoords] = useState<UserCoords | null>(null);
@@ -100,9 +95,7 @@ const PanchangSection: React.FC = () => {
         }
     };
 
-    const getTithiName = (tithiNum: number) => {
-        return TITHI_NAMES[(tithiNum - 1) % 15] || `Tithi ${tithiNum}`;
-    };
+
 
     return (
         <div className="panchang-widget relative z-10" data-aos="fade-up">

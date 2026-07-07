@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-import { HeartHandshake, Users, CheckCircle, Award, Sparkles, HelpCircle, Activity } from 'lucide-react';
+import { HeartHandshake, Users, CheckCircle, Award, Sparkles, Activity } from 'lucide-react';
 import './ServicesDetail.css';
 
 const kundliStructuredData = {

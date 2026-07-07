@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Hero from '../components/Hero';
 import HowItWorks from '../components/HowItWorks';
 import AstrologerList from '../components/AstrologerList';
-import Testimonials from '../components/Testimonials';
+// import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';

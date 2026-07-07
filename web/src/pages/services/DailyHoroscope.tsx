@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-import { Sun, Moon, Sparkles, ShieldAlert, Eye, Compass, Heart, HelpCircle } from 'lucide-react';
+import { Sun, Sparkles, ShieldAlert, Eye, Compass, Heart } from 'lucide-react';
 import './ServicesDetail.css';
 
 const horoscopeStructuredData = {

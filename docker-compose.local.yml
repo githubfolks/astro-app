@@ -19,6 +19,7 @@ services:
     build:
       args:
         VITE_API_URL: "http://localhost:9000"
+        SKIP_PRERENDER: "true"
 
   admin:
     build:

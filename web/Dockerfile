@@ -22,6 +22,8 @@ RUN npm install --legacy-peer-deps
 COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
+ARG SKIP_PRERENDER
+ENV SKIP_PRERENDER=$SKIP_PRERENDER
 RUN npm run build
 
 # Production Stage

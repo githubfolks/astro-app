@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-import { Compass, Layers, Award, BookOpen, Sparkles, HelpCircle, Activity } from 'lucide-react';
+import { Compass, Layers, Award, BookOpen, Sparkles, Activity } from 'lucide-react';
 import './ServicesDetail.css';
 
 const vedicStructuredData = {
