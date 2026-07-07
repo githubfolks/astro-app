@@ -8,7 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "build": "node scripts/generate-sitemap.js ; tsc && vite build && (node scripts/prerender.cjs || echo '[prerender] Skipped due to error — deploy continues')",
+    "build": "node scripts/generate-sitemap.js ; tsc && vite build",
     "sitemap": "node scripts/generate-sitemap.js",
     "preview": "vite preview",
     "mobile:build": "tsc && vite build --mode mobile",
@@ -40,7 +40,6 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.61.1",
     "vite": "^7.2.4",
-    "vite-plugin-prerender": "^1.0.8",
     "vitest": "^2.1.9"
   },
   "dependencies": {
