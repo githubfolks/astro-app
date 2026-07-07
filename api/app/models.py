@@ -211,6 +211,17 @@ class AppSetting(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
 
+class AiAstrologerUsage(Base):
+    """Free-question counter for the public AI Astrologer teaser.
+    Identity is name + date of birth (normalized), since guests aren't logged in."""
+    __tablename__ = "ai_astrologer_usage"
+
+    identity = Column(String, primary_key=True)  # "<lowercased name>|<YYYY-MM-DD>"
+    questions_used = Column(Integer, nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
+
 class AvailabilityNotification(Base):
     """A seeker's request to be notified when a specific astrologer comes online."""
     __tablename__ = "availability_notifications"

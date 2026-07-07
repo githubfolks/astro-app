@@ -38,6 +38,7 @@ const Book = lazy(() => import('./pages/Book'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
+const AiAstrologer = lazy(() => import('./pages/AiAstrologer'));
 const HoroscopeListing = lazy(() => import('./pages/horoscope/HoroscopeListing'));
 
 // Service Pages
@@ -127,6 +128,7 @@ function App() {
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/verify-otp" element={<VerifyOTP />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/ai-astrologer" element={<AiAstrologer />} />
                         <Route path="/astrologers" element={<AstrologersPage />} />
                         <Route path="/chat-with-astrologers" element={<Navigate to="/astrologers" replace />} />
                         <Route path="/astrologers/:id" element={<AstrologerProfile />} />

@@ -257,6 +257,27 @@ export const api = {
         }
     },
 
+    aiAstrologer: {
+        quota: async (name: string, dateOfBirth: string) => {
+            const params = new URLSearchParams({ name, date_of_birth: dateOfBirth });
+            const response = await customFetch(`${API_URL}/ai-astrologer/quota?${params}`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Could not check your remaining free questions.');
+        },
+        chat: async (data: JsonBody) => {
+            const response = await customFetch(`${API_URL}/ai-astrologer/chat`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'The AI Astrologer could not read the stars right now. Please try again.');
+        }
+    },
+
     wallet: {
         getBalance: async () => {
             const response = await customFetch(`${API_URL}/wallet/balance`, {

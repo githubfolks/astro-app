@@ -1,5 +1,5 @@
 import React from 'react';
-import { UserPlus, Search, UserCheck, MessageCircle } from 'lucide-react';
+import { UserPlus, UserCheck, MessageCircle } from 'lucide-react';
 import './HowItWorks.css';
 
 const steps = [
@@ -10,22 +10,16 @@ const steps = [
         stepNumber: "01"
     },
     {
-        icon: <Search size={32} />,
-        title: "Choose Service",
-        description: "Browse our list of services: Chat, Call, or detailed manual Reports.",
-        stepNumber: "02"
-    },
-    {
         icon: <UserCheck size={32} />,
         title: "Select Astrologer",
         description: "Check ratings, reviews, and profiles to find the best expert for you.",
-        stepNumber: "03"
+        stepNumber: "02"
     },
     {
         icon: <MessageCircle size={32} />,
         title: "Start Consultation",
         description: "Fill in your birth details and start your consultation instantly.",
-        stepNumber: "04"
+        stepNumber: "03"
     }
 ];
 
@@ -36,7 +30,7 @@ const HowItWorks: React.FC = () => {
                 <div className="section-header" data-aos="fade-up">
                     <h2 className="section-title">How It Works</h2>
                     <p className="section-description">
-                        Get connected with the world's best astrologers in just 4 simple steps.
+                        Get connected with the world's best astrologers in just 3 simple steps.
                     </p>
                 </div>
 

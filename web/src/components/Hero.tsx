@@ -16,6 +16,7 @@ const Hero: React.FC = () => {
                     </p>
                     <div className="hero-actions mt-10 flex flex-wrap gap-4">
                         <Link to="/astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20">Chat with Astrologer</Link>
+                        <Link to="/ai-astrologer" className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-indigo-950 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-amber-900/20">✨ Ask AI Astrologer — Free</Link>
                         <Link to="/memory-guru" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105">Memory Guru</Link>
                     </div>
                 </div>

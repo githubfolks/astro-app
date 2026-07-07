@@ -12,6 +12,7 @@ const today = new Date().toISOString().slice(0, 10);
 const URLS = [
     { loc: '/',                          changefreq: 'daily',   priority: '1.0' },
     { loc: '/astrologers',               changefreq: 'daily',   priority: '0.9' },
+    { loc: '/ai-astrologer',             changefreq: 'monthly', priority: '0.9' },
     { loc: '/how-it-works',              changefreq: 'monthly', priority: '0.8' },
     { loc: '/pricing',                   changefreq: 'monthly', priority: '0.8' },
     { loc: '/blog',                      changefreq: 'daily',   priority: '0.8' },

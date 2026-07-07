@@ -11,6 +11,7 @@ import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
+import AiAstrologerBanner from '../components/AiAstrologerBanner';
 
 const homeStructuredData = {
     "@context": "https://schema.org",
@@ -81,6 +82,7 @@ const Home: React.FC = () => {
             <Header />
             <main id="main-content">
                 <Hero />
+                <AiAstrologerBanner />
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <MemoryGuruBanner />
