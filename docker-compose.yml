@@ -32,6 +32,11 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - default
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
   web:
     build:
@@ -41,6 +46,11 @@ services:
       - "4002:80"
     networks:
       - default
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
 
   admin:
     build:
@@ -50,6 +60,11 @@ services:
       - "4001:80"
     networks:
       - default
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
 
   redis:
     image: "redis:alpine"
@@ -58,6 +73,11 @@ services:
       - "6389:6379"
     networks:
       - default
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
 
   mirotalk:
     image: mirotalk/sfu:latest
@@ -71,6 +91,11 @@ services:
       - JWT_SECRET=${MIROTALK_JWT_SECRET}
     networks:
       - default
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1G
 
 networks:
   default:
