@@ -20,6 +20,13 @@ const GROUPS = [
             { key: 'presence_ttl_seconds', label: 'Presence heartbeat TTL (seconds)' },
         ],
     },
+    {
+        title: 'Promotions',
+        desc: 'A seeker\'s very first chat is billed at this flat rate for the first 5 minutes, instead of the astrologer\'s normal per-minute rate.',
+        fields: [
+            { key: 'promo_first_chat_amount', label: 'First Chat Promotional Rate (₹ for first 5 minutes)' },
+        ],
+    },
 ];
 
 function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop, error }) {

@@ -53,7 +53,10 @@ def get_pending_earnings(db: Session = Depends(database.get_db), current_user: m
     for astro in astrologers:
         consultations = db.query(models.Consultation).filter(
             models.Consultation.astrologer_id == astro.user_id,
-            models.Consultation.status == models.ConsultationStatus.COMPLETED
+            models.Consultation.status.in_([
+                models.ConsultationStatus.COMPLETED,
+                models.ConsultationStatus.AUTO_ENDED,
+            ])
         ).all()
 
         total_revenue = float(sum([c.total_cost for c in consultations if c.total_cost]))

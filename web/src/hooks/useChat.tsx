@@ -25,9 +25,11 @@ export const useChat = (consultationId: string) => {
     const [pauseReason, setPauseReason] = useState<string | null>(null);
     const [billingInfo, setBillingInfo] = useState({ balance: 0, spent: 0, minutes_remaining: 0 });
     const [timerActive, setTimerActive] = useState(false);
+    const [talkTimeSeconds, setTalkTimeSeconds] = useState(0);
     const [lowBalance, setLowBalance] = useState(false);
     const [moderationAlert, setModerationAlert] = useState<string | null>(null);
     const [sessionError, setSessionError] = useState<string | null>(null);
+    const [endedReason, setEndedReason] = useState<string | null>(null);
 
     // Reconnection state
     const shouldReconnect = useRef(true);
@@ -83,7 +85,8 @@ export const useChat = (consultationId: string) => {
                 case 'STATE_SYNC':
                     if (data.timer_active) setTimerActive(true);
                     setBillingInfo({ balance: data.balance, spent: data.spent, minutes_remaining: data.minutes_remaining ?? 0 });
-                    if (data.status === 'COMPLETED' || data.status === 'AUTO_ENDED') setStatus('ENDED');
+                    setTalkTimeSeconds(data.duration_seconds ?? 0);
+                    if (data.status === 'COMPLETED' || data.status === 'AUTO_ENDED') { setStatus('ENDED'); setTimerActive(false); }
                     else if (data.status === 'PAUSED') setStatus('PAUSED');
                     else if (data.status === 'ACTIVE') setStatus('ACTIVE');
                     break;
@@ -99,6 +102,7 @@ export const useChat = (consultationId: string) => {
                     break;
                 case 'BALANCE_UPDATE':
                     setBillingInfo({ balance: data.balance, spent: data.spent, minutes_remaining: data.minutes_remaining ?? 0 });
+                    if (data.duration_seconds !== undefined) setTalkTimeSeconds(data.duration_seconds);
                     if (data.minutes_remaining > 5) setLowBalance(false);
                     break;
                 case 'BALANCE_WARNING':
@@ -107,6 +111,8 @@ export const useChat = (consultationId: string) => {
                 case 'CHAT_ENDED':
                     shouldReconnect.current = false;
                     setStatus('ENDED');
+                    setTimerActive(false);
+                    setEndedReason(data.reason ?? null);
                     break;
                 case 'CONSULTATION_PAUSED':
                     setStatus('PAUSED');
@@ -158,6 +164,13 @@ export const useChat = (consultationId: string) => {
             // onclose fires immediately after, which handles reconnect
         };
     }, [consultationId, token]);
+
+    // Tick the talk-time clock locally between server duration syncs
+    useEffect(() => {
+        if (!timerActive) return;
+        const interval = setInterval(() => setTalkTimeSeconds(prev => prev + 1), 1000);
+        return () => clearInterval(interval);
+    }, [timerActive]);
 
     // Fetch History
     useEffect(() => {
@@ -217,8 +230,9 @@ export const useChat = (consultationId: string) => {
 
     return {
         messages, sendMessage, endChat, resumeChat, status, pauseReason,
-        billingInfo, timerActive, lowBalance,
+        billingInfo, timerActive, lowBalance, talkTimeSeconds,
         moderationAlert, dismissModerationAlert: () => setModerationAlert(null),
         sessionError, dismissSessionError: () => setSessionError(null),
+        endedReason,
     };
 };

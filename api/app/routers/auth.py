@@ -145,7 +145,13 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
     if not user.is_verified:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified. Please verify your account.")
     
-    access_token = create_access_token(data={"sub": str(user.id), "role": user.role.value})
+    # No refresh-token flow exists yet, so the access token must outlive a full
+    # chat session — a 15-30 min token was expiring mid-chat and forcing both
+    # the seeker and astrologer to be logged out right as (or after) they ended it.
+    access_token = create_access_token(
+        data={"sub": str(user.id), "role": user.role.value},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 48)  # 24h
+    )
     
     # Fetch full name
     full_name = None
@@ -155,6 +161,16 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
     elif user.role == models.UserRole.ASTROLOGER:
         if user.astrologer_profile:
             full_name = user.astrologer_profile.full_name
+            # Logging in means the astrologer is available: flip them online
+            # so seekers see the Chat button without a manual toggle.
+            if user.astrologer_profile.is_approved and not user.astrologer_profile.is_online:
+                user.astrologer_profile.is_online = True
+                db.commit()
+                from .astrologers import _notify_waiting_seekers
+                try:
+                    _notify_waiting_seekers(db, user.id)
+                except Exception as e:
+                    print(f"notify waiting seekers on login failed: {e}")
 
     return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "role": user.role, "full_name": full_name}
 

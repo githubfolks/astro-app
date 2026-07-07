@@ -305,7 +305,7 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch consultation details');
         },
-        create: async (data: { astrologer_id: number, consultation_type: string }) => {
+        create: async (data: { astrologer_id: number, consultation_type: string, topic?: string, concern_note?: string }) => {
             const response = await customFetch(`${API_URL}/consultations/`, {
                 method: 'POST',
                 headers: {

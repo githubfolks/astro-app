@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Languages, Award, Clock, Bell } from 'lucide-react';
+import { Star, Languages, Award, Clock, Bell, Crown } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { resolveImageUrl } from '../utils/url';
 import { api } from '../services/api';
@@ -47,7 +47,17 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
                 <div className="astro-info">
                     <p className="astro-spec">{astro.specialties}</p>
                     <Link to={`/astrologers/${astro.slug || astro.id}`} style={{ textDecoration: 'none' }}>
-                        <h3 className="astro-name">{astro.full_name}</h3>
+                        <h3 className="astro-name flex items-center gap-1.5">
+                            {astro.full_name}
+                            {astro.is_premium && (
+                                <span
+                                    title="Premium Astrologer"
+                                    className="inline-flex items-center gap-0.5 bg-amber-400 text-amber-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                                >
+                                    <Crown size={10} /> Premium
+                                </span>
+                            )}
+                        </h3>
                     </Link>
                     <div className="astro-lang">
                         <Languages size={14} />

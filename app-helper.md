@@ -1,17 +1,9 @@
 
-astro@test.com
 
-Email: admin@aadikarta.org
-Password: admin123
+Admin	kumavikram@gmail.com	Welcome@123
+Seeker	seeker@test.com	Welcome@123
+Astrologer	astro@test.com	Welcome@123
 
-Tutor: tutor@test.com
-Seeker: seeker@test.com
-
-all passwords: password
-
-
-kumavikram@gmail.com
-Welcome@123
 
 # Local
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build

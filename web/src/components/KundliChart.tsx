@@ -2,19 +2,12 @@ import type { ChartDivision } from '../types';
 import React from 'react';
 
 /**
- * South Indian style Kundli chart component.
- * Renders a 4x4 grid with 12 outer cells representing the 12 houses.
- * 
- * House layout (South Indian):
- *  ┌────┬────┬────┬────┐
- *  │ 12 │  1 │  2 │  3 │
- *  ├────┼────┼────┼────┤
- *  │ 11 │         │  4 │
- *  ├────┤  Center  ├────┤
- *  │ 10 │         │  5 │
- *  ├────┼────┼────┼────┤
- *  │  9 │  8 │  7 │  6 │
- *  └────┴────┴────┴────┘
+ * North Indian style Kundli chart component.
+ * Renders the traditional diamond-in-a-square layout: House 1 (Lagna) is
+ * always the top point, and houses run clockwise from there (2, 3, 4 = right
+ * point, ...). Which rashi (zodiac sign) falls in each house depends on the
+ * ascendant, so — unlike the South Indian style — the rashi numbers move
+ * from chart to chart while the house positions stay fixed.
  */
 
 interface Planet {
@@ -66,15 +59,6 @@ const PLANET_SHORT: Record<string, string> = {
     ketu: 'Ke',
 };
 
-// South Indian chart: house positions in the 4x4 grid
-// [row, col] for each house (0-indexed)
-const HOUSE_POSITIONS: Record<number, [number, number]> = {
-    12: [0, 0], 1: [0, 1], 2: [0, 2], 3: [0, 3],
-    11: [1, 0], 4: [1, 3],
-    10: [2, 0], 5: [2, 3],
-    9: [3, 0], 8: [3, 1], 7: [3, 2], 6: [3, 3],
-};
-
 function extractPlanetsFromChart(chart: ChartDivision): Planet[] {
     if (!chart) return [];
 
@@ -106,6 +90,47 @@ function getRashiForHouse(chart: ChartDivision, house: number): number | null {
     return null;
 }
 
+/** Builds the 12 fixed house polygons for a North Indian chart inscribed in
+ * a `size`x`size` square. See module doc for the geometry: an outer square,
+ * its two corner-to-corner diagonals, and the diamond connecting the
+ * midpoints of its sides together carve out exactly 12 regions. */
+function buildHousePolygons(size: number) {
+    const A: [number, number] = [0, 0];
+    const B: [number, number] = [size, 0];
+    const C: [number, number] = [size, size];
+    const D: [number, number] = [0, size];
+    const P: [number, number] = [size / 2, 0];       // top mid
+    const Q: [number, number] = [size, size / 2];     // right mid
+    const R: [number, number] = [size / 2, size];     // bottom mid
+    const Sm: [number, number] = [0, size / 2];       // left mid
+    const O: [number, number] = [size / 2, size / 2]; // center
+    const X1: [number, number] = [size * 0.75, size * 0.75]; // mid of QR / CO
+    const X2: [number, number] = [size * 0.25, size * 0.25]; // mid of SP / AO
+    const X3: [number, number] = [size * 0.75, size * 0.25]; // mid of PQ / BO
+    const X4: [number, number] = [size * 0.25, size * 0.75]; // mid of RS / DO
+
+    return {
+        1: [P, X3, O, X2],
+        2: [B, P, X3],
+        3: [B, Q, X3],
+        4: [Q, X1, O, X3],
+        5: [C, Q, X1],
+        6: [C, R, X1],
+        7: [R, X4, O, X1],
+        8: [D, R, X4],
+        9: [D, Sm, X4],
+        10: [Sm, X2, O, X4],
+        11: [A, Sm, X2],
+        12: [A, P, X2],
+    } as Record<number, [number, number][]>;
+}
+
+function centroid(points: [number, number][]): [number, number] {
+    const n = points.length;
+    const sum = points.reduce((acc, [x, y]) => [acc[0] + x, acc[1] + y], [0, 0]);
+    return [sum[0] / n, sum[1] / n];
+}
+
 const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Chart', size = 360 }) => {
     if (!chartData) {
         return (
@@ -116,8 +141,7 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
     }
 
     const planets = extractPlanetsFromChart(chartData);
-    const cellSize = size / 4;
-    const padding = 4;
+    const housePolygons = buildHousePolygons(size);
 
     return (
         <div className="flex flex-col items-center">
@@ -128,62 +152,19 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                 viewBox={`0 0 ${size} ${size}`}
                 className="border border-gray-300 rounded-lg bg-[#FFFBF0]"
             >
-                {/* Grid lines */}
-                {[0, 1, 2, 3, 4].map(i => (
-                    <React.Fragment key={`grid-${i}`}>
-                        <line
-                            x1={0} y1={i * cellSize}
-                            x2={size} y2={i * cellSize}
-                            stroke="#B8860B" strokeWidth={1.5}
-                        />
-                        <line
-                            x1={i * cellSize} y1={0}
-                            x2={i * cellSize} y2={size}
-                            stroke="#B8860B" strokeWidth={1.5}
-                        />
-                    </React.Fragment>
-                ))}
+                {/* Outer square */}
+                <rect x={0.5} y={0.5} width={size - 1} height={size - 1} fill="none" stroke="#8B4513" strokeWidth={2} />
 
-                {/* Center area diagonal lines */}
-                <line
-                    x1={cellSize} y1={cellSize}
-                    x2={2 * cellSize} y2={2 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={2 * cellSize} y1={cellSize}
-                    x2={cellSize} y2={2 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={2 * cellSize} y1={cellSize}
-                    x2={3 * cellSize} y2={2 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={3 * cellSize} y1={cellSize}
-                    x2={2 * cellSize} y2={2 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={cellSize} y1={2 * cellSize}
-                    x2={2 * cellSize} y2={3 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={2 * cellSize} y1={2 * cellSize}
-                    x2={cellSize} y2={3 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={2 * cellSize} y1={2 * cellSize}
-                    x2={3 * cellSize} y2={3 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
-                />
-                <line
-                    x1={3 * cellSize} y1={2 * cellSize}
-                    x2={2 * cellSize} y2={3 * cellSize}
-                    stroke="#B8860B" strokeWidth={1} strokeDasharray="4,4"
+                {/* Diagonals */}
+                <line x1={0} y1={0} x2={size} y2={size} stroke="#B8860B" strokeWidth={1.5} />
+                <line x1={size} y1={0} x2={0} y2={size} stroke="#B8860B" strokeWidth={1.5} />
+
+                {/* Diamond connecting side midpoints */}
+                <polygon
+                    points={`${size / 2},0 ${size},${size / 2} ${size / 2},${size} 0,${size / 2}`}
+                    fill="none"
+                    stroke="#B8860B"
+                    strokeWidth={1.5}
                 />
 
                 {/* Center label */}
@@ -191,7 +172,7 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                     x={size / 2}
                     y={size / 2 - 6}
                     textAnchor="middle"
-                    fontSize={11}
+                    fontSize={10}
                     fontWeight="bold"
                     fill="#8B4513"
                 >
@@ -199,66 +180,56 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                 </text>
                 <text
                     x={size / 2}
-                    y={size / 2 + 10}
+                    y={size / 2 + 9}
                     textAnchor="middle"
-                    fontSize={9}
+                    fontSize={8}
                     fill="#A0522D"
                 >
-                    (South Indian)
+                    (North Indian)
                 </text>
 
                 {/* House contents */}
-                {Object.entries(HOUSE_POSITIONS).map(([houseStr, [row, col]]) => {
+                {Object.entries(housePolygons).map(([houseStr, points]) => {
                     const house = parseInt(houseStr);
-                    const x = col * cellSize;
-                    const y = row * cellSize;
                     const rashi = getRashiForHouse(chartData, house);
                     const housePlanets = planets.filter(p => p.house === house);
+                    const [cx, cy] = centroid(points);
 
                     return (
                         <g key={`house-${house}`}>
-                            {/* Rashi name (small, top-left of cell) */}
-                            {rashi !== null && (
-                                <text
-                                    x={x + padding + 2}
-                                    y={y + 12}
-                                    fontSize={8}
-                                    fill="#999"
-                                    fontWeight="500"
-                                >
-                                    {RASHI_NAMES[rashi]}
-                                </text>
-                            )}
-
-                            {/* House number (small, top-right of cell) */}
+                            {/* House number */}
                             <text
-                                x={x + cellSize - padding - 2}
-                                y={y + 12}
-                                fontSize={8}
-                                fill="#CCC"
-                                textAnchor="end"
+                                x={cx}
+                                y={cy - (housePlanets.length > 0 ? 10 : 0)}
+                                textAnchor="middle"
+                                fontSize={9}
+                                fill="#B8860B"
+                                fontWeight="600"
                             >
-                                H{house}
+                                {rashi !== null ? RASHI_NAMES[rashi] : ''} · H{house}
                             </text>
 
                             {/* Planets */}
                             {housePlanets.map((planet, idx) => {
-                                const planetX = x + padding + 6 + (idx % 3) * 28;
-                                const planetY = y + 28 + Math.floor(idx / 3) * 18;
+                                const col = idx % 2;
+                                const row = Math.floor(idx / 2);
+                                const px = cx + (col === 0 ? -12 : 12) * (housePlanets.length > 1 ? 1 : 0.3);
+                                const py = cy + 8 + row * 14;
                                 const color = PLANET_COLORS[planet.name] || '#333';
 
                                 return (
                                     <text
                                         key={`${house}-${planet.name}`}
-                                        x={planetX}
-                                        y={planetY}
-                                        fontSize={12}
+                                        x={px}
+                                        y={py}
+                                        textAnchor="middle"
+                                        fontSize={11}
                                         fontWeight="bold"
                                         fill={color}
                                     >
                                         {planet.shortName}
                                         {planet.retrograde && (
-                                            <tspan fontSize={8} fill="#C62828">(R)</tspan>
+                                            <tspan fontSize={7} fill="#C62828">(R)</tspan>
                                         )}
                                     </text>
                                 );
@@ -266,16 +237,6 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                         </g>
                     );
                 })}
-
-                {/* Outer border */}
-                <rect
-                    x={0.5} y={0.5}
-                    width={size - 1} height={size - 1}
-                    fill="none"
-                    stroke="#8B4513"
-                    strokeWidth={2}
-                    rx={8}
-                />
             </svg>
         </div>
     );

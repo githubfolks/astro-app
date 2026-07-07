@@ -1,0 +1,19 @@
+1. remove End Chat from astrologer login.
+
+2. when seeker ends the chat; astrolger does not get any information. he should get infomation and timer should stop.
+
+3. astrolger and seeker gets logged out when they end the chat.
+
+4. on login page; save password option should be available.
+
+5. check the earning of astrolger. its always 0. need to test end to end; start chat spend some time, let the wallet value recalculated, finally the amount should be added in the astrologer earning.
+
+6. when astrolger clicks chat history; it should show chat details like seeker, time spent, questions, rating, feedback.
+
+7. admin should be able to make an astrolger premium. premium astrologer should come at the top of the astrolger listing.
+
+8. hide real name of astrolger. admin should have suggestions to assign nick name. users will can see only nick name.
+
+9. kundali should open with North India style.
+
+10. Astrologer should have voice to text feature. astrologer can speak in hindi, converted text should be in hinglish.

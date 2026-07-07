@@ -15,6 +15,7 @@ export interface Astrologer {
     queue_length?: number;
     about_me?: string;
     availability_hours?: string | null;
+    is_premium?: boolean;
 }
 
 export interface AstrologerProfile extends Astrologer {
@@ -37,6 +38,7 @@ export interface AstrologerListItem {
     availability_status?: AvailabilityStatus;
     queue_length?: number;
     availability_hours?: string | null;
+    is_premium?: boolean;
 }
 
 export interface SeekerProfile {
@@ -57,6 +59,7 @@ export interface ProfileSummary {
 
 export interface ConsultationReview {
     rating?: number;
+    comment?: string | null;
 }
 
 export interface Consultation {
@@ -68,6 +71,10 @@ export interface Consultation {
     duration_seconds?: number;
     rate_per_min?: number;
     total_cost?: number;
+    topic?: string | null;
+    concern_note?: string | null;
+    is_promotional_first_chat?: boolean;
+    promotional_rate_total?: number | null;
     review?: ConsultationReview | null;
     astrologer_profile?: ProfileSummary | null;
     seeker_profile?: ProfileSummary | null;

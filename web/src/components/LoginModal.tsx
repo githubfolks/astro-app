@@ -45,11 +45,13 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
 
                 {error && <div className="error-msg">{error}</div>}
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} autoComplete="on">
                     <div className="form-group">
                         <label>Email or Phone</label>
                         <input
                             type="text"
+                            name="username"
+                            autoComplete="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             required
@@ -59,6 +61,8 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
                         <label>Password</label>
                         <input
                             type="password"
+                            name="password"
+                            autoComplete="current-password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required

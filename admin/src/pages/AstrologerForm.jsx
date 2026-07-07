@@ -1,9 +1,23 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Image as ImageIcon, Sparkles } from 'lucide-react';
 import api from '../services/api';
 import { Button, Input, TextArea } from '../components/ui';
 import { getPasswordError } from '../utils/password';
+
+const NICKNAME_PREFIXES = ['Acharya', 'Pandit', 'Guruji', 'Astro'];
+
+/** Client-side nickname suggestions — first name + a common Vedic-astrologer
+ * honorific, so seekers never see the astrologer's real full name. */
+function suggestNicknames(fullName, specialties) {
+    const firstName = (fullName || '').trim().split(/\s+/)[0] || 'Astrologer';
+    const suggestions = NICKNAME_PREFIXES.map(prefix => `${prefix} ${firstName}`);
+    const primarySpecialty = (specialties || '').split(',')[0]?.trim();
+    if (primarySpecialty) {
+        suggestions.push(`${firstName} — ${primarySpecialty} Expert`);
+    }
+    return [...new Set(suggestions)];
+}
 
 export default function AstrologerForm() {
     const navigate = useNavigate();
@@ -18,6 +32,7 @@ export default function AstrologerForm() {
         phone_number: '',
         password: '',
         full_name: '',
+        display_name: '',
         short_bio: '',
         about_me: '',
         experience_years: 0,
@@ -42,6 +57,7 @@ export default function AstrologerForm() {
                     phone_number: found.phone_number,
                     password: '',
                     full_name: found.profile?.full_name,
+                    display_name: found.profile?.display_name || '',
                     short_bio: found.profile?.short_bio || '',
                     about_me: found.profile?.about_me || '',
                     experience_years: found.profile?.experience_years || 0,
@@ -179,10 +195,32 @@ export default function AstrologerForm() {
                     </div>
 
                     <Input
-                        label="Full Name" name="full_name"
+                        label="Full Name (legal — never shown to seekers)" name="full_name"
                         value={formData.full_name} onChange={handleChange}
                         error={errors.full_name}
                     />
+                    <div>
+                        <Input
+                            label="Nickname (shown to seekers instead of real name)" name="display_name"
+                            value={formData.display_name} onChange={handleChange}
+                            placeholder="e.g. Acharya Rohit"
+                        />
+                        <div className="flex flex-wrap gap-2 mt-2">
+                            <span className="text-xs text-gray-400 flex items-center gap-1 mr-1">
+                                <Sparkles size={12} /> Suggestions:
+                            </span>
+                            {suggestNicknames(formData.full_name, formData.specialties).map((suggestion) => (
+                                <button
+                                    key={suggestion}
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, display_name: suggestion }))}
+                                    className="text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 transition-colors"
+                                >
+                                    {suggestion}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <Input
                         label="Email Address" name="email"
                         value={formData.email} onChange={handleChange}

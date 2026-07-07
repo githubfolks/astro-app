@@ -66,10 +66,12 @@ export const Login: React.FC = () => {
                 {justVerified && !error && <div className="info-banner">Email verified! You can now log in.</div>}
                 {error && <div className="error-banner">{error}</div>}
 
-                <form onSubmit={handleSubmit} className="auth-form">
+                <form onSubmit={handleSubmit} className="auth-form" autoComplete="on">
                     <div className="form-group">
                         <input
                             type="text"
+                            name="username"
+                            autoComplete="username"
                             placeholder="Email or Phone"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
@@ -80,6 +82,8 @@ export const Login: React.FC = () => {
                     <div className="form-group">
                         <input
                             type="password"
+                            name="password"
+                            autoComplete="current-password"
                             placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

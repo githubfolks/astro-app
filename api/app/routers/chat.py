@@ -6,6 +6,7 @@ from jose import jwt, JWTError
 import asyncio
 import json
 from datetime import datetime
+from decimal import Decimal
 import logging
 
 # Configure logging
@@ -306,6 +307,17 @@ async def get_user_from_token(token: str, db: Session):
 from ..redis_client import get_redis
 from ..notifications import send_push_notification
 
+PROMO_WINDOW_SECONDS = 300  # first 5 minutes of a seeker's very first chat
+
+
+def _effective_rate_per_min(consultation: "models.Consultation", base_rate: float) -> float:
+    """Flat promotional rate (spread over 5 minutes) while within the promo window
+    of a seeker's first-ever chat; the astrologer's normal rate otherwise."""
+    if consultation.promotional_rate_total is not None and (consultation.duration_seconds or 0) <= PROMO_WINDOW_SECONDS:
+        return float(consultation.promotional_rate_total) / (PROMO_WINDOW_SECONDS / 60)
+    return base_rate
+
+
 async def billing_loop(consultation_id: int, rate_per_min: float, db_session_maker):
     """
     Background task to deduct balance every minute while chat is ACTIVE.
@@ -388,7 +400,8 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                         "balance": 0,  # Wallet not used
                         "spent": float(consultation.total_cost or 0),
                         "minutes_remaining": round(minutes_remaining, 1),
-                        "package_seconds_remaining": pkg_secs
+                        "package_seconds_remaining": pkg_secs,
+                        "duration_seconds": consultation.duration_seconds
                     })
 
                     if minutes_remaining <= 5:
@@ -404,7 +417,7 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                     if not user_wallet:
                         break
 
-                    cost = rate_per_min
+                    cost = Decimal(str(_effective_rate_per_min(consultation, rate_per_min)))
                     if float(user_wallet.balance) < cost:
                         consultation.status = models.ConsultationStatus.AUTO_ENDED
                         consultation.end_time = datetime.utcnow()
@@ -421,23 +434,26 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                     user_wallet.balance -= cost
                     consultation.total_cost = (consultation.total_cost or 0) + cost
 
+                    is_promo_minute = consultation.promotional_rate_total is not None and consultation.duration_seconds <= PROMO_WINDOW_SECONDS
                     txn = models.WalletTransaction(
                         user_id=consultation.seeker_id,
                         amount=-cost,
                         transaction_type=models.TransactionType.CHAT_DEDUCTION,
                         reference_id=str(consultation.id),
-                        description=f"Chat deduction min {int(consultation.duration_seconds / 60)}"
+                        description=f"Chat deduction min {int(consultation.duration_seconds / 60)}" + (" (promotional rate)" if is_promo_minute else "")
                     )
                     db.add(txn)
                     db.commit()
 
                     remaining_balance = float(user_wallet.balance)
-                    minutes_remaining = remaining_balance / rate_per_min if rate_per_min > 0 else 0
+                    next_rate = _effective_rate_per_min(consultation, rate_per_min)
+                    minutes_remaining = remaining_balance / next_rate if next_rate > 0 else 0
                     await manager.broadcast(consultation_id, {
                         "type": "BALANCE_UPDATE",
                         "balance": remaining_balance,
                         "spent": float(consultation.total_cost),
-                        "minutes_remaining": round(minutes_remaining, 1)
+                        "minutes_remaining": round(minutes_remaining, 1),
+                        "duration_seconds": consultation.duration_seconds
                     })
 
                     if minutes_remaining <= 5:
@@ -507,7 +523,7 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
         is_active = consultation.status == models.ConsultationStatus.ACTIVE
         wallet_balance = 0.0
         spent = 0.0
-        rate = float(consultation.rate_per_min) if consultation.rate_per_min else 0.0
+        rate = _effective_rate_per_min(consultation, float(consultation.rate_per_min) if consultation.rate_per_min else 0.0)
         if consultation.seeker_id:
             u_wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
             if u_wallet: wallet_balance = float(u_wallet.balance)
@@ -523,7 +539,8 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
             "timer_active": is_active,
             "balance": wallet_balance,
             "spent": spent,
-            "minutes_remaining": minutes_remaining
+            "minutes_remaining": minutes_remaining,
+            "duration_seconds": consultation.duration_seconds or 0
         }))
         
         # Per-connection rate limiter: max 20 messages per 10 seconds

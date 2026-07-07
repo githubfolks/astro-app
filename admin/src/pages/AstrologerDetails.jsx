@@ -57,7 +57,17 @@ export default function AstrologerDetails() {
                             alt="Profile"
                         />
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900">{profile.profile.full_name}</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                                {profile.profile.full_name}
+                                {profile.profile.display_name && (
+                                    <span
+                                        title="Public nickname shown to seekers"
+                                        className="text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-full"
+                                    >
+                                        seen as: {profile.profile.display_name}
+                                    </span>
+                                )}
+                            </h1>
                             <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
                                 <span className="flex items-center gap-1"><Mail size={14} /> {profile.email}</span>
                                 <span className="flex items-center gap-1"><Phone size={14} /> {profile.phone_number}</span>

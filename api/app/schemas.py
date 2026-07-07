@@ -115,6 +115,7 @@ class AstrologerProfileBase(BaseModel):
     id_proof_url: Optional[str] = None
     astrology_types: Optional[List[str]] = None
     is_approved: bool = False
+    is_premium: bool = False
     legal_agreement_accepted: bool = False
     legal_agreement_accepted_at: Optional[datetime] = None
 
@@ -180,6 +181,8 @@ class ConsultationBase(BaseModel):
     astrologer_id: int
     consultation_type: str # CHAT, VOICE, VIDEO
     rate_per_min: Optional[Decimal] = None # Optional request, usually set by system
+    topic: Optional[str] = None
+    concern_note: Optional[str] = None
 
 class ConsultationCreate(ConsultationBase):
     pass
@@ -192,6 +195,8 @@ class Consultation(ConsultationBase):
     end_time: Optional[datetime] = None
     duration_seconds: Optional[int] = 0
     total_cost: Optional[Decimal] = 0.0
+    is_promotional_first_chat: Optional[bool] = False
+    promotional_rate_total: Optional[Decimal] = None
     created_at: datetime
     
     seeker_profile: Optional[SeekerProfile] = None
@@ -244,9 +249,15 @@ class AdminCreateAstrologer(BaseModel):
     # User info
     email: str
     phone_number: str
-    password: StrongPassword
+    # Required when creating a new astrologer; left blank ("") when editing an
+    # existing one (this schema is shared by both the create and update
+    # endpoints — see update_astrologer_full, which never reads this field).
+    # Plain Optional[str] rather than StrongPassword: the edit form always
+    # sends "", which the strength validator would otherwise reject outright.
+    password: Optional[str] = None
     # Profile info
     full_name: str
+    display_name: Optional[str] = None
     short_bio: Optional[str] = None
     about_me: Optional[str] = None
     experience_years: int

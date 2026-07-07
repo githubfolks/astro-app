@@ -155,8 +155,11 @@ def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Se
         models.User.is_verified == True
     )
 
+    # Premium astrologers always surface first, regardless of the secondary sort.
     if sort_by == 'rating':
-        query = query.order_by(models.AstrologerProfile.rating_avg.desc())
+        query = query.order_by(models.AstrologerProfile.is_premium.desc(), models.AstrologerProfile.rating_avg.desc())
+    else:
+        query = query.order_by(models.AstrologerProfile.is_premium.desc())
 
     profiles = query.offset(skip).limit(limit).all()
     _decorate_availability_bulk(db, profiles)

@@ -2,12 +2,14 @@ import { getErrorMessage } from '../utils/errors';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat } from '../hooks/useChat';
+import { useSpeechToText } from '../hooks/useSpeechToText';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import KundliPanel from '../components/KundliPanel';
-import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle } from 'lucide-react';
+import PreChatQuestionsModal from '../components/PreChatQuestionsModal';
+import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
@@ -31,6 +33,12 @@ export const Chat: React.FC = () => {
     const [kundliError, setKundliError] = useState<string | null>(null);
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
     const [showSidebarMobile, setShowSidebarMobile] = useState(false);
+    const [showPreChatModal, setShowPreChatModal] = useState(false);
+    const [creatingConsultation, setCreatingConsultation] = useState(false);
+    const [consultationTopic, setConsultationTopic] = useState<string | null>(null);
+    const [consultationConcernNote, setConsultationConcernNote] = useState<string | null>(null);
+    const [isPromotionalChat, setIsPromotionalChat] = useState(false);
+    const [promotionalRateTotal, setPromotionalRateTotal] = useState<number | null>(null);
 
     // Track visual viewport for mobile keyboard handling
     useEffect(() => {
@@ -73,27 +81,45 @@ export const Chat: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    const createNewConsultation = async (answers?: { topic: string; concern_note: string }) => {
+        if (!astrologerId) return;
+        try {
+            setCreatingConsultation(true);
+            const data = await api.consultations.create({
+                astrologer_id: parseInt(astrologerId),
+                consultation_type: 'CHAT',
+                ...(answers ? { topic: answers.topic, concern_note: answers.concern_note } : {})
+            });
+            setShowPreChatModal(false);
+            navigate(`/chat/${data.id}`, { replace: true });
+        } catch (error) {
+            console.error("Error creating consultation:", error);
+            const message = getErrorMessage(error) || "Failed to start chat session. Please try again.";
+            alert(message);
+            setShowPreChatModal(false);
+            if (message.toLowerCase().includes('insufficient balance')) {
+                navigate('/dashboard?recharge=1');
+            } else {
+                navigate('/dashboard');
+            }
+        } finally {
+            setCreatingConsultation(false);
+        }
+    };
+
     // Initialize consultation or set active ID
     useEffect(() => {
         if (astrologerId && !consultationId && token && user) {
-            const createNewConsultation = async () => {
-                try {
-                    const data = await api.consultations.create({
-                        astrologer_id: parseInt(astrologerId),
-                        consultation_type: 'CHAT'
-                    });
-                    navigate(`/chat/${data.id}`, { replace: true });
-                } catch (error) {
-                    console.error("Error creating consultation:", error);
-                    alert(getErrorMessage(error) || "Failed to start chat session. Please try again.");
-                    navigate('/dashboard');
-                }
-            };
-
+            // Seekers answer a short pre-chat questionnaire before the consultation is created.
+            if (user.role === 'SEEKER') {
+                setShowPreChatModal(true);
+                return;
+            }
             createNewConsultation();
         } else if (consultationId) {
             setActiveConsultationId(consultationId);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [astrologerId, consultationId, token, user, navigate]);
 
     // Fetch Profile Data (Astrologer OR Seeker)
@@ -104,6 +130,10 @@ export const Chat: React.FC = () => {
             try {
                 // 1. Get Consultation Details
                 const consultData = await api.consultations.getOne(activeConsultationId);
+                setConsultationTopic(consultData.topic || null);
+                setConsultationConcernNote(consultData.concern_note || null);
+                setIsPromotionalChat(!!consultData.is_promotional_first_chat);
+                setPromotionalRateTotal(consultData.promotional_rate_total ?? null);
 
                 // If I am a SEEKER, I want to see the ASTROLOGER
                 if (user.role === 'SEEKER') {
@@ -138,7 +168,27 @@ export const Chat: React.FC = () => {
     }, [activeConsultationId, token, user]);
 
 
-    const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, moderationAlert, dismissModerationAlert, sessionError } = useChat(activeConsultationId || '');
+    const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, talkTimeSeconds, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
+
+    // React to the chat ending regardless of who ended it (self, other party, or
+    // system auto-end) so both sides get feedback and are routed off the page.
+    const endHandledRef = useRef(false);
+    useEffect(() => {
+        if (status !== 'ENDED' || endHandledRef.current) return;
+        endHandledRef.current = true;
+        if (user?.role === 'SEEKER') {
+            setShowRatingModal(true);
+        } else if (user?.role === 'ASTROLOGER') {
+            const t = setTimeout(() => navigate('/dashboard'), 2500);
+            return () => clearTimeout(t);
+        }
+    }, [status, user?.role, navigate]);
+
+    const formatTalkTime = (totalSeconds: number) => {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
 
     // Queue position for a waiting seeker (Q2): poll until the astrologer engages.
     const [queueAhead, setQueueAhead] = useState<number | null>(null);
@@ -240,14 +290,23 @@ export const Chat: React.FC = () => {
         }
     };
 
+    // Astrologer voice input: speak in Hindi, get Hinglish text appended to the composer.
+    const speech = useSpeechToText();
+    const toggleVoiceInput = () => {
+        if (speech.isListening) {
+            speech.stop();
+            return;
+        }
+        speech.start((hinglishChunk) => {
+            setInput(prev => (prev ? `${prev.trim()} ${hinglishChunk}` : hinglishChunk));
+        });
+    };
+
     const handleEndChat = () => {
         endChat();
-        // Show rating modal for Seekers
-        if (user?.role === 'SEEKER') {
-            setShowRatingModal(true);
-        } else {
-            navigate('/dashboard');
-        }
+        // Side effects (rating modal / redirect) are handled by the status-watching
+        // effect above so they fire the same way whether I ended the chat or the
+        // other party did.
     };
 
     const handleSubmitReview = async (rating: number, comment: string) => {
@@ -304,6 +363,14 @@ export const Chat: React.FC = () => {
                     <p className="text-gray-600 font-medium">Initializing secure chat session...</p>
                 </div>
                 <Footer />
+
+                {/* Pre-Chat Questions for Seekers starting a new consultation */}
+                <PreChatQuestionsModal
+                    isOpen={showPreChatModal}
+                    onClose={() => { setShowPreChatModal(false); navigate('/dashboard'); }}
+                    onSubmit={createNewConsultation}
+                    submitting={creatingConsultation}
+                />
             </div>
         );
     }
@@ -534,11 +601,28 @@ export const Chat: React.FC = () => {
                                     </div>
                                 )}
 
+                                {isPromotionalChat && (
+                                    <div
+                                        className="flex items-center gap-1.5 text-[#E91E63] bg-pink-50 px-3 py-1 rounded-full border border-pink-200 text-xs font-bold"
+                                        title={promotionalRateTotal ? `₹${promotionalRateTotal} for the first 5 minutes` : undefined}
+                                    >
+                                        Promotional Call
+                                    </div>
+                                )}
+
                                 {user?.role === 'SEEKER' && (
                                     <div className={`text-sm hidden sm:flex items-center gap-3 ${lowBalance ? 'text-amber-700' : 'text-gray-600'}`}>
                                         <span>Balance: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>₹{billingInfo.balance.toFixed(2)}</span></span>
                                         <span className="text-gray-300">|</span>
                                         <span>Spent: <span className="font-bold font-mono text-gray-900">₹{billingInfo.spent}</span></span>
+                                    </div>
+                                )}
+
+                                {user?.role === 'ASTROLOGER' && timerActive && (
+                                    <div className="text-sm hidden sm:flex items-center gap-3 text-gray-600">
+                                        <span>Talk Time: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span></span>
+                                        <span className="text-gray-300">|</span>
+                                        <span className={lowBalance ? 'text-amber-700' : ''}>Time Remaining: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>{billingInfo.minutes_remaining} min</span></span>
                                     </div>
                                 )}
 
@@ -550,12 +634,14 @@ export const Chat: React.FC = () => {
                                     <Info size={20} />
                                 </button>
 
-                                <button
-                                    onClick={handleEndChat}
-                                    className="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-xs font-bold transition-colors border border-red-200"
-                                >
-                                    End Chat
-                                </button>
+                                {user?.role === 'SEEKER' && (
+                                    <button
+                                        onClick={handleEndChat}
+                                        className="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-xs font-bold transition-colors border border-red-200"
+                                    >
+                                        End Chat
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -575,6 +661,27 @@ export const Chat: React.FC = () => {
                             </div>
                         )}
 
+                        {/* Low Time Warning Banner (Astrologer view) */}
+                        {user?.role === 'ASTROLOGER' && lowBalance && status !== 'ENDED' && (
+                            <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center gap-2 text-amber-800 text-sm flex-shrink-0">
+                                <AlertTriangle size={15} className="flex-shrink-0 text-amber-500" />
+                                <span>
+                                    Seeker's balance is low — <span className="font-bold">{billingInfo.minutes_remaining} min remaining</span>. The chat may pause soon.
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Discussion Topic (Astrologer view) — what the seeker said they want to talk about */}
+                        {user?.role === 'ASTROLOGER' && consultationTopic && (
+                            <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2 flex items-start gap-2 text-indigo-800 text-sm flex-shrink-0">
+                                <Info size={15} className="flex-shrink-0 text-indigo-500 mt-0.5" />
+                                <span>
+                                    <span className="font-bold">{consultationTopic}</span>
+                                    {consultationConcernNote && <span> — {consultationConcernNote}</span>}
+                                </span>
+                            </div>
+                        )}
+
                         {/* Moderation Alarm — strong, can't-miss banner (Q6) */}
                         {moderationAlert && (
                             <div className="bg-red-600 text-white px-4 py-3 flex items-center gap-2 text-sm flex-shrink-0 animate-pulse">
@@ -583,6 +690,19 @@ export const Chat: React.FC = () => {
                                 <button onClick={dismissModerationAlert} className="text-white/80 hover:text-white">
                                     <X size={16} />
                                 </button>
+                            </div>
+                        )}
+
+                        {/* Chat Ended banner — shown to whichever party did not click End Chat themselves */}
+                        {status === 'ENDED' && (
+                            <div className="bg-gray-800 text-white px-4 py-2 flex items-center gap-2 text-sm flex-shrink-0">
+                                <Info size={15} className="flex-shrink-0" />
+                                <span>
+                                    {endedReason === 'insufficient_balance' && "Chat ended — seeker's balance ran out."}
+                                    {endedReason === 'package_time_exhausted' && 'Chat ended — package time exhausted.'}
+                                    {(endedReason === 'user_ended' || !endedReason) && 'This chat has ended.'}
+                                    {user?.role === 'ASTROLOGER' && ' Returning to dashboard…'}
+                                </span>
                             </div>
                         )}
 
@@ -699,8 +819,36 @@ export const Chat: React.FC = () => {
                             <div ref={messagesEndRef} />
                         </div>
 
+                        {/* Voice input feedback (Astrologer only) */}
+                        {user?.role === 'ASTROLOGER' && (speech.isListening || speech.error) && (
+                            <div className={`px-4 py-2 text-xs flex items-center gap-2 flex-shrink-0 ${speech.error ? 'bg-red-50 text-red-700' : 'bg-pink-50 text-pink-700'}`}>
+                                {speech.error ? (
+                                    <span>{speech.error}</span>
+                                ) : (
+                                    <>
+                                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                        <span>Listening (Hindi)… {speech.interimText}</span>
+                                    </>
+                                )}
+                            </div>
+                        )}
+
                         {/* Input Area */}
                         <form onSubmit={handleSend} className="bg-white p-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
+                            {user?.role === 'ASTROLOGER' && speech.isSupported && (
+                                <button
+                                    type="button"
+                                    onClick={toggleVoiceInput}
+                                    disabled={status === 'ENDED'}
+                                    title="Speak in Hindi — converted to Hinglish text"
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${speech.isListening
+                                        ? 'bg-red-500 text-white animate-pulse'
+                                        : 'bg-gray-50 text-gray-500 border border-gray-200 hover:text-[#E91E63] hover:border-[#E91E63]'
+                                        }`}
+                                >
+                                    {speech.isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                                </button>
+                            )}
                             <input
                                 type="text"
                                 value={input}

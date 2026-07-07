@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Crown } from 'lucide-react';
 import api from '../services/api';
 import { Button, Switch, Avatar } from '../components/ui';
 
@@ -42,6 +42,16 @@ export default function Astrologers() {
         }
     };
 
+    const handleTogglePremium = async (item, newValue) => {
+        setAstrologers(astrologers.map(a => a.id === item.id ? { ...a, profile: { ...a.profile, is_premium: newValue } } : a));
+        try {
+            await api.put(`/admin/astrologers/${item.id}/premium`, { is_premium: newValue });
+        } catch (error) {
+            console.error("Premium toggle failed", error);
+            fetchAstrologers();
+        }
+    };
+
     return (
         <div className="p-6 max-w-[1600px] mx-auto">
             <div className="flex justify-between items-center mb-8">
@@ -58,6 +68,11 @@ export default function Astrologers() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {astrologers.map((item) => (
                     <div key={item.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden flex flex-col group h-full relative">
+                        {item.profile?.is_premium && (
+                            <div className="absolute top-2 left-2 z-10 flex items-center gap-1 bg-amber-400 text-amber-950 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                                <Crown size={10} /> Premium
+                            </div>
+                        )}
                         <div
                             className="p-5 flex flex-col items-center text-center border-b border-gray-50 flex-grow cursor-pointer hover:bg-gray-50/30 transition-colors"
                             onClick={() => navigate(`/astrologers/view/${item.id}`)}
@@ -92,6 +107,15 @@ export default function Astrologers() {
                             </p>
                         </div>
 
+                        <div className="bg-gray-50/50 px-3 py-2 flex justify-between items-center border-b border-gray-100">
+                            <span className="text-[11px] font-semibold text-gray-500 flex items-center gap-1">
+                                <Crown size={12} className={item.profile?.is_premium ? 'text-amber-500' : 'text-gray-300'} /> Premium
+                            </span>
+                            <Switch
+                                checked={!!item.profile?.is_premium}
+                                onCheckedChange={(checked) => handleTogglePremium(item, checked)}
+                            />
+                        </div>
                         <div className="bg-gray-50/50 p-2 flex justify-between items-center gap-2">
                             <Button
                                 variant="outlined"

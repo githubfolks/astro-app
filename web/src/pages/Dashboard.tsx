@@ -3,12 +3,13 @@ import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile } 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRealtime } from '../hooks/useRealtime';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
 import RatingModal from '../components/RatingModal';
+import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import { resolveImageUrl } from '../utils/url';
 import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon } from 'lucide-react';
 
@@ -27,6 +28,7 @@ export const Dashboard: React.FC = () => {
     const [seekerHistory, setSeekerHistory] = useState<Consultation[]>([]);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
+    const [detailConsultation, setDetailConsultation] = useState<Consultation | null>(null);
     const [ratingConsultation, setRatingConsultation] = useState<Consultation | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -38,6 +40,18 @@ export const Dashboard: React.FC = () => {
     const [loadingMaterials, setLoadingMaterials] = useState<Record<number, boolean>>({});
 
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // Deep-link support: /dashboard?recharge=1 opens the add-money modal directly
+    // (used when a seeker is redirected here after an insufficient-balance error).
+    useEffect(() => {
+        if (searchParams.get('recharge') === '1') {
+            setShowPaymentModal(true);
+            searchParams.delete('recharge');
+            setSearchParams(searchParams, { replace: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const { user } = useAuth();
 
     // Helper to format session time
@@ -286,12 +300,20 @@ export const Dashboard: React.FC = () => {
                                                         </td>
                                                         <td className="p-4 font-mono font-bold text-gray-900">₹{c.total_cost || 0}</td>
                                                         <td className="p-4 text-right">
-                                                            <button
-                                                                onClick={() => navigate(`/chat/${c.id}`)}
-                                                                className="text-gray-400 hover:text-[#E91E63] font-medium text-sm transition-colors"
-                                                            >
-                                                                View
-                                                            </button>
+                                                            <div className="flex items-center justify-end gap-3">
+                                                                <button
+                                                                    onClick={() => setDetailConsultation(c)}
+                                                                    className="text-gray-400 hover:text-[#E91E63] font-medium text-sm transition-colors"
+                                                                >
+                                                                    Details
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => navigate(`/chat/${c.id}`)}
+                                                                    className="text-gray-400 hover:text-[#E91E63] font-medium text-sm transition-colors"
+                                                                >
+                                                                    View
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -385,6 +407,12 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </main>
                 <Footer />
+
+                {/* Consultation Detail Modal (Astrologer chat history) */}
+                <ConsultationDetailModal
+                    consultation={detailConsultation}
+                    onClose={() => setDetailConsultation(null)}
+                />
             </div>
         );
     }

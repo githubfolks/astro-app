@@ -105,6 +105,7 @@ class AstrologerProfile(Base):
     slug = Column(String, unique=True, index=True, nullable=True)
     astrology_types = Column(JSON, nullable=True) # List of types
     is_approved = Column(Boolean, default=False)
+    is_premium = Column(Boolean, default=False, nullable=False)  # Admin-granted: surfaces astrologer at the top of listings
     onboarding_stage = Column(Enum(OnboardingStage), default=OnboardingStage.APPLIED, nullable=False)
     onboarding_meta = Column(JSON, nullable=True)  # Last-entered email fields per step, for card re-display
     legal_agreement_accepted = Column(Boolean, default=False)
@@ -156,11 +157,17 @@ class Consultation(Base):
     seeker_id = Column(Integer, ForeignKey("users.id"))
     astrologer_id = Column(Integer, ForeignKey("users.id"))
     consultation_type = Column(Enum(ConsultationType), nullable=False)
+    topic = Column(String, nullable=True)
+    concern_note = Column(Text, nullable=True)
     start_time = Column(DateTime(timezone=True))
     end_time = Column(DateTime(timezone=True))
     duration_seconds = Column(Integer, default=0)
     rate_per_min = Column(DECIMAL(10, 2), nullable=False)
     total_cost = Column(DECIMAL(10, 2), default=0.0)
+    # Seeker's very first-ever chat: billed at a flat promotional rate for the first 5
+    # minutes (see promotional_rate_total) instead of the astrologer's normal rate_per_min.
+    is_promotional_first_chat = Column(Boolean, default=False)
+    promotional_rate_total = Column(DECIMAL(10, 2), nullable=True)
     status = Column(Enum(ConsultationStatus), default=ConsultationStatus.REQUESTED)
     disconnection_snapshot = Column(Text) # JSON string for resume state
     # Package billing fields (nullable — only set when booked via a fixed-time package)

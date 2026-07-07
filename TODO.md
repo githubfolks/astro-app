@@ -54,5 +54,4 @@ Request is discoverable in initial document
 # Reduce unused CSS Est savings of 107 KiB
 # Image elements do not have explicit width and height
 
-X-XSS-Protection
-Cache-Control Header
+

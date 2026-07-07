@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from typing import List
+from decimal import Decimal
 import asyncio
 from .. import models, schemas, database
 from .auth import get_current_user
@@ -39,12 +40,37 @@ def request_consultation(request: schemas.ConsultationCreate, current_user: mode
     if not astro_profile:
         raise HTTPException(status_code=404, detail="Astrologer not found")
 
+    # A seeker's very first-ever consultation is billed at a flat promotional rate
+    # for the first 5 minutes (see billing_loop in chat.py), instead of the
+    # astrologer's normal per-minute rate.
+    is_first_chat = db.query(models.Consultation).filter(
+        models.Consultation.seeker_id == current_user.id
+    ).first() is None
+
+    promotional_rate_total = None
+    if is_first_chat:
+        from ..services.settings_service import get_setting
+        try:
+            promotional_rate_total = Decimal(get_setting("promo_first_chat_amount") or "0")
+        except Exception:
+            promotional_rate_total = Decimal("0")
+
+    effective_min_charge = (promotional_rate_total / 5) if promotional_rate_total is not None else astro_profile.consultation_fee_per_min
+
+    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == current_user.id).first()
+    if not wallet or float(wallet.balance) < float(effective_min_charge):
+        raise HTTPException(status_code=400, detail="Insufficient balance. Please recharge your wallet to start a chat.")
+
     new_consultation = models.Consultation(
         seeker_id=current_user.id,
         astrologer_id=request.astrologer_id,
         consultation_type=request.consultation_type,
         rate_per_min=astro_profile.consultation_fee_per_min,
-        status=models.ConsultationStatus.REQUESTED
+        status=models.ConsultationStatus.REQUESTED,
+        topic=request.topic,
+        concern_note=request.concern_note,
+        is_promotional_first_chat=is_first_chat,
+        promotional_rate_total=promotional_rate_total
     )
     db.add(new_consultation)
     db.commit()

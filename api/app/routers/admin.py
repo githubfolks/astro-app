@@ -7,6 +7,7 @@ import uuid
 import os
 from datetime import datetime, timedelta, date, time
 from .. import models, schemas, database, audit
+from ..schemas import _validate_strong_password
 from .. import models_edu, schemas_edu
 from decimal import Decimal
 from .auth import get_current_admin, get_password_hash
@@ -244,6 +245,9 @@ class UserEditRequest(BaseModel):
 class UserStatusUpdate(BaseModel):
     is_active: bool
 
+class PremiumUpdate(BaseModel):
+    is_premium: bool
+
 class ApproveAstrologerRequest(BaseModel):
     consultation_fee_per_min: Optional[float] = None
 
@@ -276,6 +280,16 @@ def update_user_status(user_id: int, status_update: UserStatusUpdate, db: Sessio
     db.commit()
     return {"message": f"User {'activated' if user.is_active else 'deactivated'} successfully", "is_active": user.is_active}
 
+@router.put("/astrologers/{user_id}/premium")
+def update_astrologer_premium(user_id: int, update: PremiumUpdate, db: Session = Depends(database.get_db)):
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Astrologer profile not found")
+
+    profile.is_premium = update.is_premium
+    db.commit()
+    return {"message": f"Astrologer {'marked premium' if profile.is_premium else 'unmarked premium'}", "is_premium": profile.is_premium}
+
 # Specific endpoint to create an Admin (only by another admin)
 @router.post("/create_admin", response_model=schemas.Token)
 def create_admin(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
@@ -303,7 +317,16 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
     db_user = db.query(models.User).filter((models.User.email == astrologer.email) | (models.User.phone_number == astrologer.phone_number)).first()
     if db_user:
         raise HTTPException(status_code=400, detail="User already exists")
-    
+
+    # password is Optional on the shared schema (the edit form sends "") but
+    # is required when actually creating a new astrologer account.
+    if not astrologer.password:
+        raise HTTPException(status_code=422, detail="Password is required")
+    try:
+        _validate_strong_password(astrologer.password)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
     # Create User
     hashed_password = get_password_hash(astrologer.password)
     new_user = models.User(
@@ -321,6 +344,7 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
     new_profile = models.AstrologerProfile(
         user_id=new_user.id,
         full_name=astrologer.full_name,
+        display_name=astrologer.display_name,
         short_bio=astrologer.short_bio,
         about_me=astrologer.about_me,
         experience_years=astrologer.experience_years,
@@ -358,6 +382,7 @@ def list_astrologers_full(skip: int = 0, limit: int = 100, db: Session = Depends
             "is_active": user.is_active,
             "profile": {
                 "full_name": profile.full_name,
+                "display_name": profile.display_name,
                 "short_bio": profile.short_bio,
                 "about_me": profile.about_me,
                 "profile_picture_url": profile.profile_picture_url,
@@ -368,7 +393,8 @@ def list_astrologers_full(skip: int = 0, limit: int = 100, db: Session = Depends
                 "availability_hours": profile.availability_hours,
                 "rating_avg": profile.rating_avg,
                 "commission_percentage": float(profile.commission_percentage),
-                "is_approved": profile.is_approved
+                "is_approved": profile.is_approved,
+                "is_premium": profile.is_premium
             }
         }
         astrologers.append(data)
@@ -397,6 +423,7 @@ def update_astrologer_full(user_id: int, data: schemas.AdminCreateAstrologer, db
     
     # Update Profile
     profile.full_name = data.full_name
+    profile.display_name = data.display_name
     profile.short_bio = data.short_bio
     profile.about_me = data.about_me
     profile.experience_years = data.experience_years
