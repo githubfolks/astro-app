@@ -155,8 +155,18 @@ async def csrf_middleware(request: Request, call_next):
         csrf_token = secrets.token_urlsafe(32)
     
     # State-changing methods require token validation
-    # EXEMPTIONS for initial auth where session doesn't exist yet
-    exempt_paths = ["/login", "/signup", "/verify-email", "/resend-verification", "/forgot-password", "/verify-otp", "/reset-password", "/payment/razorpay-webhook"]
+    # EXEMPTIONS for initial auth where session doesn't exist yet, and public AI chat
+    exempt_paths = [
+        "/login",
+        "/signup",
+        "/verify-email",
+        "/resend-verification",
+        "/forgot-password",
+        "/verify-otp",
+        "/reset-password",
+        "/payment/razorpay-webhook",
+        "/ai-astrologer/chat",
+    ]
     
     # Also exempt requests with Bearer token (JWT) as they are inherently CSRF-protected
     auth_header = request.headers.get("Authorization")
@@ -189,7 +199,17 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org https://aadikarta.org http://aadikarta.org https://*.aadikarta.org http://*.aadikarta.org http://localhost:* ws://localhost:* http://192.168.1.13:* ws://192.168.1.13:* wss://api.aadikarta.org wss://*.aadikarta.org; frame-src 'self' https://checkout.razorpay.com http://localhost:* https://*.aadikarta.org http://*.aadikarta.org http://192.168.1.13:*; media-src 'self' blob:; object-src 'none';"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com data:; "
+        "img-src 'self' data: https: blob:; "
+        "connect-src 'self' https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org https://aadikarta.org http://aadikarta.org https://*.aadikarta.org http://*.aadikarta.org http://localhost:* ws://localhost:* http://192.168.1.13:* ws://192.168.1.13:* wss://api.aadikarta.org wss://*.aadikarta.org; "
+        "frame-src 'self' https://checkout.razorpay.com http://localhost:* https://*.aadikarta.org http://*.aadikarta.org http://192.168.1.13:* https://www.youtube.com https://*.youtube.com https://*.youtube-nocookie.com; "
+        "media-src 'self' blob:; "
+        "object-src 'none';"
+    )
     return response
 
 @app.middleware("http")

@@ -402,6 +402,75 @@
         "title": "AdvanceOnboardingRequest",
         "type": "object"
       },
+      "AiChatMessage": {
+        "properties": {
+          "content": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Content",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "AiChatMessage",
+        "type": "object"
+      },
+      "AiChatRequest": {
+        "properties": {
+          "birth_details": {
+            "$ref": "#/components/schemas/BirthDetails"
+          },
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/AiChatMessage"
+            },
+            "maxItems": 11,
+            "minItems": 1,
+            "title": "Messages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "birth_details",
+          "messages"
+        ],
+        "title": "AiChatRequest",
+        "type": "object"
+      },
+      "AiChatResponse": {
+        "properties": {
+          "questions_remaining": {
+            "title": "Questions Remaining",
+            "type": "integer"
+          },
+          "questions_used": {
+            "title": "Questions Used",
+            "type": "integer"
+          },
+          "reply": {
+            "title": "Reply",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reply",
+          "questions_used",
+          "questions_remaining"
+        ],
+        "title": "AiChatResponse",
+        "type": "object"
+      },
       "ApproveAstrologerRequest": {
         "properties": {
           "consultation_fee_per_min": {
@@ -1052,6 +1121,50 @@
         "title": "BatchStatus",
         "type": "string"
       },
+      "BirthDetails": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "gender": {
+            "$ref": "#/components/schemas/GenderType"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "place_of_birth": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Of Birth"
+          }
+        },
+        "required": [
+          "name",
+          "date_of_birth",
+          "place_of_birth",
+          "gender"
+        ],
+        "title": "BirthDetails",
+        "type": "object"
+      },
       "Body_login_login_post": {
         "properties": {
           "client_id": {
@@ -1359,6 +1472,19 @@
         "title": "CommissionUpdateRequest",
         "type": "object"
       },
+      "ConnectRequest": {
+        "properties": {
+          "phone_number": {
+            "title": "Phone Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number"
+        ],
+        "title": "ConnectRequest",
+        "type": "object"
+      },
       "Consultation": {
         "properties": {
           "astrologer_id": {
@@ -1435,8 +1561,15 @@
             ]
           },
           "seeker_id": {
-            "title": "Seeker Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seeker Id"
           },
           "seeker_profile": {
             "anyOf": [
@@ -1482,7 +1615,6 @@
           "astrologer_id",
           "consultation_type",
           "id",
-          "seeker_id",
           "status",
           "created_at"
         ],
@@ -2893,6 +3025,24 @@
         "title": "PostUpdate",
         "type": "object"
       },
+      "QuotaResponse": {
+        "properties": {
+          "questions_remaining": {
+            "title": "Questions Remaining",
+            "type": "integer"
+          },
+          "questions_used": {
+            "title": "Questions Used",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "questions_used",
+          "questions_remaining"
+        ],
+        "title": "QuotaResponse",
+        "type": "object"
+      },
       "RejectAstrologerRequest": {
         "properties": {
           "reason": {
@@ -3258,6 +3408,112 @@
           "role"
         ],
         "title": "UserCreate",
+        "type": "object"
+      },
+      "UserEditRequest": {
+        "properties": {
+          "date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Of Birth"
+          },
+          "experience_years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Experience Years"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GenderType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "languages": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Languages"
+          },
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "place_of_birth": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Of Birth"
+          },
+          "specialties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Specialties"
+          },
+          "time_of_birth": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Of Birth"
+          }
+        },
+        "title": "UserEditRequest",
         "type": "object"
       },
       "UserPaginationResponse": {
@@ -5051,6 +5307,61 @@
         ]
       }
     },
+    "/admin/users/{user_id}/edit": {
+      "put": {
+        "operationId": "edit_user_details_admin_users__user_id__edit_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserEditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Edit User Details",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/users/{user_id}/reset-password": {
       "put": {
         "description": "Allows an admin to directly reset any user's password and sends a notification email.",
@@ -5311,6 +5622,194 @@
         "summary": "Admin Wallet Credit",
         "tags": [
           "Admin"
+        ]
+      }
+    },
+    "/admin/whatsapp/connect": {
+      "post": {
+        "operationId": "connect_whatsapp_admin_whatsapp_connect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Connect Whatsapp",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/whatsapp/disconnect": {
+      "post": {
+        "operationId": "disconnect_whatsapp_admin_whatsapp_disconnect_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Disconnect Whatsapp",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/whatsapp/status": {
+      "get": {
+        "operationId": "get_whatsapp_status_admin_whatsapp_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Whatsapp Status",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/ai-astrologer/chat": {
+      "post": {
+        "operationId": "ai_chat_ai_astrologer_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiChatResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ai Chat",
+        "tags": [
+          "AI Astrologer"
+        ]
+      }
+    },
+    "/ai-astrologer/quota": {
+      "get": {
+        "description": "How many free questions this identity has left. The chat endpoint\nre-checks the same counter on every call, so this is purely informational.",
+        "operationId": "quota_ai_astrologer_quota_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_of_birth",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date Of Birth",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuotaResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Quota",
+        "tags": [
+          "AI Astrologer"
         ]
       }
     },
@@ -8338,6 +8837,76 @@
         ]
       }
     },
+    "/public/panchang": {
+      "get": {
+        "operationId": "get_public_panchang_public_panchang_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lat",
+            "required": true,
+            "schema": {
+              "title": "Lat",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lon",
+            "required": true,
+            "schema": {
+              "title": "Lon",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "place",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "",
+              "title": "Place"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Public Panchang Public Panchang Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Public Panchang",
+        "tags": [
+          "Public Content"
+        ]
+      }
+    },
     "/public/posts": {
       "get": {
         "operationId": "get_public_posts_public_posts_get",
@@ -8444,6 +9013,25 @@
           }
         },
         "summary": "Get Public Post",
+        "tags": [
+          "Public Content"
+        ]
+      }
+    },
+    "/public/whatsapp/waplex/inbound": {
+      "post": {
+        "operationId": "waplex_inbound_public_whatsapp_waplex_inbound_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Waplex Inbound",
         "tags": [
           "Public Content"
         ]

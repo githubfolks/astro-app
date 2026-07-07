@@ -43,8 +43,8 @@ const PanchangSection: React.FC = () => {
         try {
             const data = await api.cms.getPanchangNow(userCoords.lat, userCoords.lon, userCoords.place);
             setPanchang(data);
-        } catch (err: any) {
-            setError(err.message || "Failed to load Panchang data");
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Failed to load Panchang data");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -73,7 +73,7 @@ const PanchangSection: React.FC = () => {
             setCoords(activeCoords);
             localStorage.setItem('user_coords', JSON.stringify(activeCoords));
             await loadPanchang(activeCoords);
-        } catch (err: any) {
+        } catch {
             setError("Could not resolve location. Using default location.");
             const fallback: UserCoords = { lat: 28.6139, lon: 77.2090, place: "New Delhi" };
             setCoords(fallback);

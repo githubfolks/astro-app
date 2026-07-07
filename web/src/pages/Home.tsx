@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { Link } from 'react-router-dom';
@@ -80,6 +81,9 @@ const Home: React.FC = () => {
                 description="India's top verified astrologers for live chat. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
                 structuredData={homeStructuredData}
             />
+            <Helmet>
+                <link rel="preload" href="/assets/hero_astrology.webp" as="image" fetchPriority="high" />
+            </Helmet>
             <Header />
             <main id="main-content">
                 <Hero />
