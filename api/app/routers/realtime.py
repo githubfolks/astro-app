@@ -200,31 +200,15 @@ async def realtime_endpoint(websocket: WebSocket, token: str = Query(...)):
     except WebSocketDisconnect:
         notifier.disconnect(user.id, websocket)
         logger.info(f"Realtime disconnected: user={user.id}")
-        # If astrologer disconnects and presence is cleared, broadcast offline status
+        # Presence (is_present, Redis TTL) already makes _apply_availability show this
+        # astrologer as OFFLINE while no socket is connected — don't also overwrite the
+        # manual is_online preference, or navigating between pages (e.g. into a chat,
+        # which doesn't hold this socket) permanently flips them offline even after
+        # they return and reconnect.
         if user.role == models.UserRole.ASTROLOGER and not notifier.is_user_connected(user.id):
-            db = database.SessionLocal()
-            try:
-                profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user.id).first()
-                if profile:
-                    profile.is_online = False
-                    db.commit()
-            except Exception as ex:
-                logger.error(f"Failed to set astrologer offline on disconnect: {ex}")
-            finally:
-                db.close()
             asyncio.create_task(notifier.broadcast({"type": "ASTRO_OFFLINE", "astrologer_id": user.id}))
     except Exception as e:
         logger.error(f"Realtime socket error (user {user.id}): {e}")
         notifier.disconnect(user.id, websocket)
         if user.role == models.UserRole.ASTROLOGER and not notifier.is_user_connected(user.id):
-            db = database.SessionLocal()
-            try:
-                profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user.id).first()
-                if profile:
-                    profile.is_online = False
-                    db.commit()
-            except Exception as ex:
-                logger.error(f"Failed to set astrologer offline on error disconnect: {ex}")
-            finally:
-                db.close()
             asyncio.create_task(notifier.broadcast({"type": "ASTRO_OFFLINE", "astrologer_id": user.id}))

@@ -1,8 +1,8 @@
 
 
 Admin	kumavikram@gmail.com	Welcome@123
-Seeker	seeker@test.com	Welcome@123
-Astrologer	astro@test.com	Welcome@123
+Seeker	seeker@test.com	TestPass123
+Astrologer	astro@test.com	TestPass123
 
 
 # Local

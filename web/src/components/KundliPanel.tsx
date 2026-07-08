@@ -18,17 +18,20 @@ const TABS = [
     { key: 'd10', label: 'Dasamsa (D10)' },
 ];
 
-const KundliPanel: React.FC<KundliPanelProps> = ({
-    isOpen,
-    onClose,
+interface KundliContentProps {
+    chartData?: ChartData | null;
+    loading?: boolean;
+    error?: string | null;
+}
+
+/** The chart tabs, visualization and detail tables — no overlay/header, so it can be
+ * embedded inline (e.g. in the astrologer chat sidebar) as well as inside KundliPanel. */
+export const KundliContent: React.FC<KundliContentProps> = ({
     chartData,
-    seekerName = 'Seeker',
     loading = false,
     error = null,
 }) => {
     const [activeTab, setActiveTab] = useState('d1');
-
-    if (!isOpen) return null;
 
     const charts = chartData?.charts;
     const planets = chartData?.planets;
@@ -37,32 +40,8 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
 
     return (
         <>
-            {/* Overlay */}
-            <div
-                className="fixed inset-0 bg-black/40 z-40 transition-opacity"
-                onClick={onClose}
-            />
-
-            {/* Slide-over Panel */}
-            <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right overflow-hidden">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white p-5 flex items-center justify-between shrink-0">
-                    <div>
-                        <h2 className="text-lg font-bold flex items-center gap-2">
-                            🔮 Kundli — {seekerName}
-                        </h2>
-                        <p className="text-purple-200 text-xs mt-0.5">Vedic Birth Chart Analysis</p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
-
-                {/* Loading State */}
-                {loading && (
+            {/* Loading State */}
+            {loading && (
                     <div className="flex-1 flex flex-col items-center justify-center text-gray-500 gap-3">
                         <Loader2 size={40} className="animate-spin text-purple-600" />
                         <p className="font-medium">Generating Kundli...</p>
@@ -235,6 +214,54 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
                         </div>
                     </div>
                 )}
+        </>
+    );
+};
+
+const DetailItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div>
+        <span className="text-xs text-amber-700 font-semibold uppercase tracking-wide">{label}</span>
+        <p className="text-sm text-gray-900 font-medium mt-0.5">{value}</p>
+    </div>
+);
+
+const KundliPanel: React.FC<KundliPanelProps> = ({
+    isOpen,
+    onClose,
+    chartData,
+    seekerName = 'Seeker',
+    loading = false,
+    error = null,
+}) => {
+    if (!isOpen) return null;
+
+    return (
+        <>
+            {/* Overlay */}
+            <div
+                className="fixed inset-0 bg-black/40 z-40 transition-opacity"
+                onClick={onClose}
+            />
+
+            {/* Slide-over Panel */}
+            <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-purple-700 to-indigo-800 text-white p-5 flex items-center justify-between shrink-0">
+                    <div>
+                        <h2 className="text-lg font-bold flex items-center gap-2">
+                            🔮 Kundli — {seekerName}
+                        </h2>
+                        <p className="text-purple-200 text-xs mt-0.5">Vedic Birth Chart Analysis</p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <KundliContent chartData={chartData} loading={loading} error={error} />
             </div>
 
             <style>{`
@@ -249,12 +276,5 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
         </>
     );
 };
-
-const DetailItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-    <div>
-        <span className="text-xs text-amber-700 font-semibold uppercase tracking-wide">{label}</span>
-        <p className="text-sm text-gray-900 font-medium mt-0.5">{value}</p>
-    </div>
-);
 
 export default KundliPanel;

@@ -123,12 +123,15 @@ const AiAstrologer: React.FC = () => {
         }
     };
 
-    // Shuffle the pool once per visit, then always show the first few not yet asked
-    const [shuffledSuggestions] = useState(() => [...SUGGESTED_QUESTIONS].sort(() => Math.random() - 0.5));
+    // Re-shuffle the pool of unasked suggestions after every question, so the next
+    // batch shown is fresh rather than a fixed slice of one shuffle done at page load.
     const askedQuestions = new Set(messages.filter(m => m.role === 'user').map(m => m.content));
-    const remainingSuggestions = shuffledSuggestions
-        .filter(q => !askedQuestions.has(q.replace(/\s\S+$/, '')))
-        .slice(0, VISIBLE_SUGGESTIONS);
+    const turnCount = messages.length;
+    const remainingSuggestions = React.useMemo(() => {
+        const unasked = SUGGESTED_QUESTIONS.filter(q => !askedQuestions.has(q.replace(/\s\S+$/, '')));
+        return [...unasked].sort(() => Math.random() - 0.5).slice(0, VISIBLE_SUGGESTIONS);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [turnCount]);
 
     // Prefill: logged-in seekers from their saved profile, guests from localStorage
     useEffect(() => {

@@ -1,10 +1,15 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, Field
+from typing import Literal
 from .. import models, schemas, database, audit
 from .auth import get_current_user, SECRET_KEY, ALGORITHM
+from ..limiter import limiter
 from jose import jwt, JWTError
 import asyncio
 import json
+import os
+import httpx
 from datetime import datetime
 from decimal import Decimal
 import logging
@@ -375,7 +380,12 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
                 is_package_session = consultation.package_id is not None and (consultation.package_seconds_remaining or 0) > 0
 
                 if is_package_session:
-                    # Package billing: deduct 60 seconds from remaining package time
+                    # Package billing: deduct 60 seconds from remaining package time.
+                    # The seeker already paid for this time when buying the package, so no
+                    # wallet transaction here — but total_cost must still accrue at the
+                    # astrologer's normal rate, since payouts (admin/payouts.py) and the
+                    # astrologer's live "earnings" display are both derived from it.
+                    consultation.total_cost = (consultation.total_cost or 0) + Decimal(str(rate_per_min))
                     pkg_secs = (consultation.package_seconds_remaining or 0) - 60
                     if pkg_secs <= 0:
                         consultation.package_seconds_remaining = 0
@@ -695,6 +705,86 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
         except:
             pass
         manager.disconnect(websocket, consultation_id)
-        
+
     finally:
         db.close()
+
+
+# --- Message translation (Hindi <-> English) ---
+
+_TRANSLATE_GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+_TRANSLATE_MODEL = "llama-3.3-70b-versatile"
+_TRANSLATE_LANG_NAMES = {"hi": "Hindi", "en": "English"}
+
+
+class TranslateRequest(BaseModel):
+    consultation_id: int
+    text: str = Field(..., min_length=1, max_length=2000)
+    target_lang: Literal["hi", "en"]
+
+
+class TranslateResponse(BaseModel):
+    translated_text: str
+
+
+@router.post("/translate", response_model=TranslateResponse)
+@limiter.limit("60/minute")
+def translate_message(
+    request: Request,
+    payload: TranslateRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == payload.consultation_id).first()
+    if not consultation or current_user.id not in (consultation.seeker_id, consultation.astrologer_id):
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Translation is temporarily unavailable. Please try again later.")
+
+    target_name = _TRANSLATE_LANG_NAMES[payload.target_lang]
+    body = {
+        "model": _TRANSLATE_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    f"Translate the user's message into {target_name}. "
+                    "Output ONLY the translated text — no quotes, no explanation, no transliteration notes. "
+                    "Preserve tone and meaning. If the message is already in the target language, return it unchanged."
+                ),
+            },
+            {"role": "user", "content": payload.text},
+        ],
+        "max_tokens": 500,
+        "temperature": 0.2,
+    }
+
+    try:
+        response = httpx.post(
+            _TRANSLATE_GROQ_URL,
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        logger.error(f"Translate: Groq request failed: {e}")
+        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
+
+    if response.status_code == 429:
+        raise HTTPException(status_code=429, detail="Translation is busy right now. Please try again in a minute.")
+    if response.status_code != 200:
+        logger.error(f"Translate: Groq error {response.status_code}: {response.text[:500]}")
+        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
+
+    try:
+        translated = (response.json()["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, ValueError) as e:
+        logger.error(f"Translate: unexpected Groq response shape: {e}")
+        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
+
+    if not translated:
+        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
+
+    return TranslateResponse(translated_text=translated)

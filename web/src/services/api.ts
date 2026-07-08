@@ -371,6 +371,20 @@ export const api = {
         }
     },
 
+    chatTranslate: {
+        translate: async (consultation_id: number | string, text: string, target_lang: 'hi' | 'en') => {
+            const response = await customFetch(`${API_URL}/chat/translate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ consultation_id, text, target_lang })
+            });
+            return handleResponse(response, 'Failed to translate message');
+        }
+    },
+
     cms: {
         getPosts: async (skip = 0, limit = 10, search = '') => {
             const params = new URLSearchParams({

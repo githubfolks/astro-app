@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
-import KundliPanel from '../components/KundliPanel';
+import { KundliContent } from '../components/KundliPanel';
 import PreChatQuestionsModal from '../components/PreChatQuestionsModal';
 import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
@@ -39,6 +39,11 @@ export const Chat: React.FC = () => {
     const [consultationConcernNote, setConsultationConcernNote] = useState<string | null>(null);
     const [isPromotionalChat, setIsPromotionalChat] = useState(false);
     const [promotionalRateTotal, setPromotionalRateTotal] = useState<number | null>(null);
+
+    // Astrologer-side chat language toggle: when 'hi', the seeker's messages are shown translated
+    const [chatLanguage, setChatLanguage] = useState<'en' | 'hi'>('en');
+    const [translatedText, setTranslatedText] = useState<Record<number, string>>({});
+    const translatingIds = useRef<Set<number>>(new Set());
 
     // Track visual viewport for mobile keyboard handling
     useEffect(() => {
@@ -169,6 +174,20 @@ export const Chat: React.FC = () => {
 
 
     const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, talkTimeSeconds, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
+
+    // Translate the seeker's messages into Hindi for the astrologer when that toggle is on
+    useEffect(() => {
+        if (chatLanguage !== 'hi' || user?.role !== 'ASTROLOGER' || !activeConsultationId) return;
+        messages.forEach(m => {
+            if (m.id === undefined || m.sender_id === user.id) return;
+            if (translatedText[m.id] !== undefined || translatingIds.current.has(m.id)) return;
+            translatingIds.current.add(m.id);
+            api.chatTranslate.translate(activeConsultationId, m.content, 'hi')
+                .then(res => setTranslatedText(prev => ({ ...prev, [m.id as number]: res.translated_text })))
+                .catch(() => { /* keep showing the original text if translation fails */ })
+                .finally(() => translatingIds.current.delete(m.id as number));
+        });
+    }, [chatLanguage, messages, user, activeConsultationId, translatedText]);
 
     // React to the chat ending regardless of who ended it (self, other party, or
     // system auto-end) so both sides get feedback and are routed off the page.
@@ -492,58 +511,73 @@ export const Chat: React.FC = () => {
                                         <span className="text-sm text-gray-500 font-medium">Client Details</span>
                                     </div>
 
-                                    <div className="space-y-4 pt-4 border-t border-gray-100">
-
-                                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div>
-                                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date of Birth</h3>
-                                                    <p className="text-gray-900 font-medium">
-                                                        {seeker.date_of_birth ? new Date(seeker.date_of_birth).toLocaleDateString() : 'Not provided'}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time of Birth</h3>
-                                                    <p className="text-gray-900 font-medium">
-                                                        {seeker.time_of_birth ? seeker.time_of_birth : 'Not provided'}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Place of Birth</h3>
-                                                    <p className="text-gray-900 font-medium">
-                                                        {seeker.place_of_birth || 'Not provided'}
-                                                    </p>
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Gender</h3>
-                                                    <p className="text-gray-900 font-medium">
-                                                        {seeker.gender || 'Not specified'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                                            <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Notes</h3>
-                                            <p className="text-yellow-900 text-sm">
-                                                No additional notes.
-                                            </p>
-                                        </div>
-
-                                        {/* View Kundli Button */}
-                                        {seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth ? (
-                                            <button
-                                                onClick={handleViewKundli}
-                                                className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white py-3 px-4 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2 active:scale-[0.98]"
-                                            >
-                                                🔮 View Kundli
-                                            </button>
-                                        ) : (
-                                            <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-center">
-                                                <p className="text-gray-400 text-xs">Birth details not available for Kundli generation</p>
-                                            </div>
-                                        )}
+                                    {/* Toggle: Profile <-> Kundli (kept in the same panel so the chart never disappears once loaded) */}
+                                    <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+                                        <button
+                                            onClick={() => setShowKundli(false)}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${!showKundli ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        >
+                                            Profile
+                                        </button>
+                                        <button
+                                            onClick={handleViewKundli}
+                                            disabled={!(seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth)}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${showKundli ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'} disabled:opacity-40 disabled:cursor-not-allowed`}
+                                        >
+                                            🔮 Kundli
+                                        </button>
                                     </div>
+
+                                    {!showKundli ? (
+                                        <div className="space-y-4 pt-4 border-t border-gray-100">
+
+                                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date of Birth</h3>
+                                                        <p className="text-gray-900 font-medium">
+                                                            {seeker.date_of_birth ? new Date(seeker.date_of_birth).toLocaleDateString() : 'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time of Birth</h3>
+                                                        <p className="text-gray-900 font-medium">
+                                                            {seeker.time_of_birth ? seeker.time_of_birth : 'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Place of Birth</h3>
+                                                        <p className="text-gray-900 font-medium">
+                                                            {seeker.place_of_birth || 'Not provided'}
+                                                        </p>
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Gender</h3>
+                                                        <p className="text-gray-900 font-medium">
+                                                            {seeker.gender || 'Not specified'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+                                                <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Notes</h3>
+                                                <p className="text-yellow-900 text-sm">
+                                                    {consultationConcernNote || 'No additional notes.'}
+                                                </p>
+                                            </div>
+
+                                            {!(seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth) && (
+                                                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-center">
+                                                    <p className="text-gray-400 text-xs">Birth details not available for Kundli generation</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="pt-2 border-t border-gray-100">
+                                            <KundliContent chartData={kundliData} loading={kundliLoading} error={kundliError} />
+                                        </div>
+                                    )}
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-gray-400">
@@ -621,12 +655,31 @@ export const Chat: React.FC = () => {
                                 {user?.role === 'ASTROLOGER' && (
                                     <div className="text-sm flex items-center gap-3 text-gray-600">
                                         <span>Talk Time: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span></span>
+                                        <span className="text-gray-300">|</span>
+                                        <span>Earnings: <span className="font-bold font-mono text-green-700">₹{billingInfo.spent.toFixed(2)}</span></span>
                                         {status !== 'ENDED' && (
                                             <>
                                                 <span className="text-gray-300">|</span>
                                                 <span className={lowBalance ? 'text-amber-700' : ''}>Time Remaining: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>{billingInfo.minutes_remaining} min</span></span>
                                             </>
                                         )}
+                                    </div>
+                                )}
+
+                                {user?.role === 'ASTROLOGER' && (
+                                    <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold flex-shrink-0" title="Translate the seeker's messages">
+                                        <button
+                                            onClick={() => setChatLanguage('en')}
+                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        >
+                                            EN
+                                        </button>
+                                        <button
+                                            onClick={() => setChatLanguage('hi')}
+                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                        >
+                                            हिं
+                                        </button>
                                     </div>
                                 )}
 
@@ -806,13 +859,20 @@ export const Chat: React.FC = () => {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                             {messages.map((msg, idx) => {
                                 const isMe = msg.sender_id === user?.id;
+                                const showTranslation = !isMe && chatLanguage === 'hi' && msg.id !== undefined;
+                                const translation = showTranslation ? translatedText[msg.id as number] : undefined;
                                 return (
                                     <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in`}>
                                         <div className={`max-w-[85%] md:max-w-[70%] p-4 rounded-2xl shadow-sm ${isMe
                                             ? 'bg-[#E91E63] text-white rounded-br-none'
                                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
                                             }`}>
-                                            <p className="text-sm md:text-base leading-relaxed">{msg.content}</p>
+                                            <p className="text-sm md:text-base leading-relaxed">{translation || msg.content}</p>
+                                            {showTranslation && (
+                                                <p className={`text-xs italic mt-1 ${translation ? 'text-gray-400' : 'text-gray-300'}`}>
+                                                    {translation ? `Original: ${msg.content}` : 'Translating…'}
+                                                </p>
+                                            )}
                                             <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-pink-100' : 'text-gray-400'}`}>
                                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
@@ -881,15 +941,6 @@ export const Chat: React.FC = () => {
                 onSkip={handleSkipReview}
             />
 
-            {/* Kundli Panel */}
-            <KundliPanel
-                isOpen={showKundli}
-                onClose={() => setShowKundli(false)}
-                chartData={kundliData}
-                seekerName={seeker?.full_name || 'Seeker'}
-                loading={kundliLoading}
-                error={kundliError}
-            />
         </div>
     );
 };
