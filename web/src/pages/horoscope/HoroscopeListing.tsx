@@ -85,8 +85,8 @@ const HoroscopeListing: React.FC = () => {
                                 to={`/horoscope/${sign.slug}`}
                                 className="group flex flex-col items-center p-5 rounded-2xl border border-slate-100 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
                             >
-                                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${ELEMENT_COLORS[sign.element]} flex items-center justify-center text-2xl mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                                    <img src={`https://www.astrosage.com/images/sign/${sign.slug}.png`} alt={`${sign.name} icon`} className="w-10 h-10 object-contain" />
+                                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${ELEMENT_COLORS[sign.element]} flex items-center justify-center text-3xl text-white mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`} aria-label={`${sign.name} icon`}>
+                                    {sign.symbol}
                                 </div>
                                 <h2 className="font-bold text-slate-800 text-base">{sign.name}</h2>
                                 <span className="text-xs text-slate-400 mt-0.5">{sign.hindi}</span>

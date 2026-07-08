@@ -41,18 +41,18 @@ const horoscopeStructuredData = {
 };
 
 const ZODIAC_SIGNS = [
-    { name: 'Aries', slug: 'aries' },
-    { name: 'Taurus', slug: 'taurus' },
-    { name: 'Gemini', slug: 'gemini' },
-    { name: 'Cancer', slug: 'cancer' },
-    { name: 'Leo', slug: 'leo' },
-    { name: 'Virgo', slug: 'virgo' },
-    { name: 'Libra', slug: 'libra' },
-    { name: 'Scorpio', slug: 'scorpio' },
-    { name: 'Sagittarius', slug: 'sagittarius' },
-    { name: 'Capricorn', slug: 'capricorn' },
-    { name: 'Aquarius', slug: 'aquarius' },
-    { name: 'Pisces', slug: 'pisces' }
+    { name: 'Aries', slug: 'aries', symbol: '♈' },
+    { name: 'Taurus', slug: 'taurus', symbol: '♉' },
+    { name: 'Gemini', slug: 'gemini', symbol: '♊' },
+    { name: 'Cancer', slug: 'cancer', symbol: '♋' },
+    { name: 'Leo', slug: 'leo', symbol: '♌' },
+    { name: 'Virgo', slug: 'virgo', symbol: '♍' },
+    { name: 'Libra', slug: 'libra', symbol: '♎' },
+    { name: 'Scorpio', slug: 'scorpio', symbol: '♏' },
+    { name: 'Sagittarius', slug: 'sagittarius', symbol: '♐' },
+    { name: 'Capricorn', slug: 'capricorn', symbol: '♑' },
+    { name: 'Aquarius', slug: 'aquarius', symbol: '♒' },
+    { name: 'Pisces', slug: 'pisces', symbol: '♓' }
 ];
 
 const DailyHoroscope: React.FC = () => {
@@ -110,8 +110,8 @@ const DailyHoroscope: React.FC = () => {
                                     key={idx} 
                                     className="aspect-square bg-white/5 border border-white/10 rounded-2xl flex flex-col items-center justify-center hover:bg-white/10 hover:border-amber-500/30 transition-all cursor-pointer shadow-md group p-2"
                                 >
-                                    <span className="text-2xl flex justify-center mb-2 group-hover:scale-110 transition-transform">
-                                        <img src={`https://www.astrosage.com/images/sign/${sign.slug}.png`} alt={`${sign.name} icon`} className="w-10 h-10 object-contain" />
+                                    <span className="text-3xl text-amber-500 flex justify-center mb-2 group-hover:scale-110 transition-transform" role="img" aria-label={`${sign.name} icon`}>
+                                        {sign.symbol}
                                     </span>
                                     <span className="text-[11px] text-gray-300 group-hover:text-amber-500 transition-colors font-normal">{sign.name}</span>
                                 </Link>

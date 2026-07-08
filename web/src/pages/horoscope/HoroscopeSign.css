@@ -49,10 +49,9 @@
     animation: float 6s ease-in-out infinite, pulse-glow 3s infinite;
 }
 
-.rashi-icon-wrapper img {
-    width: 84px;
-    height: 84px;
-    object-fit: contain;
+.rashi-icon-wrapper span {
+    font-size: 72px;
+    line-height: 1;
 }
 
 /* Glassmorphic card styling */

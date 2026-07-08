@@ -61,9 +61,15 @@
 }
 
 .zodiac-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 60px;
     height: 60px;
     margin-bottom: 15px;
+    font-size: 40px;
+    line-height: 1;
+    color: #d97706;
     filter: drop-shadow(0 2px 8px rgba(217, 119, 6, 0.3));
     transition: transform 0.4s ease, filter 0.4s ease;
 }

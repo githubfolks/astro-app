@@ -3,27 +3,25 @@ import { Link } from 'react-router-dom';
 import './HoroscopeSection.css';
 
 const zodiacSigns = [
-    { name: 'Mesh', translation: 'Aries', dates: 'Mar 21 - Apr 19', slug: 'aries', element: 'Fire' },
-    { name: 'Vrishabh', translation: 'Taurus', dates: 'Apr 20 - May 20', slug: 'taurus', element: 'Earth' },
-    { name: 'Mithun', translation: 'Gemini', dates: 'May 21 - Jun 20', slug: 'gemini', element: 'Air' },
-    { name: 'Kark', translation: 'Cancer', dates: 'Jun 21 - Jul 22', slug: 'cancer', element: 'Water' },
-    { name: 'Simha', translation: 'Leo', dates: 'Jul 23 - Aug 22', slug: 'leo', element: 'Fire' },
-    { name: 'Kanya', translation: 'Virgo', dates: 'Aug 23 - Sep 22', slug: 'virgo', element: 'Earth' },
-    { name: 'Tula', translation: 'Libra', dates: 'Sep 23 - Oct 22', slug: 'libra', element: 'Air' },
-    { name: 'Vrishchik', translation: 'Scorpio', dates: 'Oct 23 - Nov 21', slug: 'scorpio', element: 'Water' },
-    { name: 'Dhanu', translation: 'Sagittarius', dates: 'Nov 22 - Dec 21', slug: 'sagittarius', element: 'Fire' },
-    { name: 'Makar', translation: 'Capricorn', dates: 'Dec 22 - Jan 19', slug: 'capricorn', element: 'Earth' },
-    { name: 'Kumbha', translation: 'Aquarius', dates: 'Jan 20 - Feb 18', slug: 'aquarius', element: 'Air' },
-    { name: 'Meen', translation: 'Pisces', dates: 'Feb 19 - Mar 20', slug: 'pisces', element: 'Water' }
+    { name: 'Mesh', translation: 'Aries', dates: 'Mar 21 - Apr 19', slug: 'aries', element: 'Fire', symbol: '♈' },
+    { name: 'Vrishabh', translation: 'Taurus', dates: 'Apr 20 - May 20', slug: 'taurus', element: 'Earth', symbol: '♉' },
+    { name: 'Mithun', translation: 'Gemini', dates: 'May 21 - Jun 20', slug: 'gemini', element: 'Air', symbol: '♊' },
+    { name: 'Kark', translation: 'Cancer', dates: 'Jun 21 - Jul 22', slug: 'cancer', element: 'Water', symbol: '♋' },
+    { name: 'Simha', translation: 'Leo', dates: 'Jul 23 - Aug 22', slug: 'leo', element: 'Fire', symbol: '♌' },
+    { name: 'Kanya', translation: 'Virgo', dates: 'Aug 23 - Sep 22', slug: 'virgo', element: 'Earth', symbol: '♍' },
+    { name: 'Tula', translation: 'Libra', dates: 'Sep 23 - Oct 22', slug: 'libra', element: 'Air', symbol: '♎' },
+    { name: 'Vrishchik', translation: 'Scorpio', dates: 'Oct 23 - Nov 21', slug: 'scorpio', element: 'Water', symbol: '♏' },
+    { name: 'Dhanu', translation: 'Sagittarius', dates: 'Nov 22 - Dec 21', slug: 'sagittarius', element: 'Fire', symbol: '♐' },
+    { name: 'Makar', translation: 'Capricorn', dates: 'Dec 22 - Jan 19', slug: 'capricorn', element: 'Earth', symbol: '♑' },
+    { name: 'Kumbha', translation: 'Aquarius', dates: 'Jan 20 - Feb 18', slug: 'aquarius', element: 'Air', symbol: '♒' },
+    { name: 'Meen', translation: 'Pisces', dates: 'Feb 19 - Mar 20', slug: 'pisces', element: 'Water', symbol: '♓' }
 ];
 
-const getZodiacSVG = (slug: string) => {
+const getZodiacSVG = (symbol: string, name: string) => {
     return (
-        <img 
-            src={`https://www.astrosage.com/images/sign/${slug}.png`} 
-            alt={`${slug} icon`} 
-            className="zodiac-icon" 
-        />
+        <span className="zodiac-icon" role="img" aria-label={`${name} icon`}>
+            {symbol}
+        </span>
     );
 };
 
@@ -50,7 +48,7 @@ const HoroscopeSection: React.FC = () => {
                 <div className="zodiac-grid" data-aos="fade-up" data-aos-delay="100">
                     {zodiacSigns.map((sign) => (
                         <Link to={`/horoscope/${sign.slug}`} key={sign.slug} className="zodiac-card">
-                            {getZodiacSVG(sign.slug)}
+                            {getZodiacSVG(sign.symbol, sign.name)}
                             <h3 className="zodiac-name">{sign.name}</h3>
                             <span className="zodiac-translation">{sign.translation}</span>
                             <span className="zodiac-dates">{sign.dates}</span>
