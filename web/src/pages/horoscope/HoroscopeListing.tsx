@@ -5,18 +5,18 @@ import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 
 const SIGNS = [
-    { slug: 'aries', name: 'Aries', hindi: 'मेष', symbol: '♈', dates: 'Mar 21 – Apr 19', element: 'Fire' },
-    { slug: 'taurus', name: 'Taurus', hindi: 'वृषभ', symbol: '♉', dates: 'Apr 20 – May 20', element: 'Earth' },
-    { slug: 'gemini', name: 'Gemini', hindi: 'मिथुन', symbol: '♊', dates: 'May 21 – Jun 20', element: 'Air' },
-    { slug: 'cancer', name: 'Cancer', hindi: 'कर्क', symbol: '♋', dates: 'Jun 21 – Jul 22', element: 'Water' },
-    { slug: 'leo', name: 'Leo', hindi: 'सिंह', symbol: '♌', dates: 'Jul 23 – Aug 22', element: 'Fire' },
-    { slug: 'virgo', name: 'Virgo', hindi: 'कन्या', symbol: '♍', dates: 'Aug 23 – Sep 22', element: 'Earth' },
-    { slug: 'libra', name: 'Libra', hindi: 'तुला', symbol: '♎', dates: 'Sep 23 – Oct 22', element: 'Air' },
-    { slug: 'scorpio', name: 'Scorpio', hindi: 'वृश्चिक', symbol: '♏', dates: 'Oct 23 – Nov 21', element: 'Water' },
-    { slug: 'sagittarius', name: 'Sagittarius', hindi: 'धनु', symbol: '♐', dates: 'Nov 22 – Dec 21', element: 'Fire' },
-    { slug: 'capricorn', name: 'Capricorn', hindi: 'मकर', symbol: '♑', dates: 'Dec 22 – Jan 19', element: 'Earth' },
-    { slug: 'aquarius', name: 'Aquarius', hindi: 'कुंभ', symbol: '♒', dates: 'Jan 20 – Feb 18', element: 'Air' },
-    { slug: 'pisces', name: 'Pisces', hindi: 'मीन', symbol: '♓', dates: 'Feb 19 – Mar 20', element: 'Water' },
+    { slug: 'aries', name: 'Aries', hindi: 'मेष', symbol: '♈', glyph: '🐏', dates: 'Mar 21 – Apr 19', element: 'Fire' },
+    { slug: 'taurus', name: 'Taurus', hindi: 'वृषभ', symbol: '♉', glyph: '🐂', dates: 'Apr 20 – May 20', element: 'Earth' },
+    { slug: 'gemini', name: 'Gemini', hindi: 'मिथुन', symbol: '♊', glyph: '👯', dates: 'May 21 – Jun 20', element: 'Air' },
+    { slug: 'cancer', name: 'Cancer', hindi: 'कर्क', symbol: '♋', glyph: '🦀', dates: 'Jun 21 – Jul 22', element: 'Water' },
+    { slug: 'leo', name: 'Leo', hindi: 'सिंह', symbol: '♌', glyph: '🦁', dates: 'Jul 23 – Aug 22', element: 'Fire' },
+    { slug: 'virgo', name: 'Virgo', hindi: 'कन्या', symbol: '♍', glyph: '👧', dates: 'Aug 23 – Sep 22', element: 'Earth' },
+    { slug: 'libra', name: 'Libra', hindi: 'तुला', symbol: '♎', glyph: '⚖️', dates: 'Sep 23 – Oct 22', element: 'Air' },
+    { slug: 'scorpio', name: 'Scorpio', hindi: 'वृश्चिक', symbol: '♏', glyph: '🦂', dates: 'Oct 23 – Nov 21', element: 'Water' },
+    { slug: 'sagittarius', name: 'Sagittarius', hindi: 'धनु', symbol: '♐', glyph: '🏹', dates: 'Nov 22 – Dec 21', element: 'Fire' },
+    { slug: 'capricorn', name: 'Capricorn', hindi: 'मकर', symbol: '♑', glyph: '🕷️', dates: 'Dec 22 – Jan 19', element: 'Earth' },
+    { slug: 'aquarius', name: 'Aquarius', hindi: 'कुंभ', symbol: '♒', glyph: '🏺', dates: 'Jan 20 – Feb 18', element: 'Air' },
+    { slug: 'pisces', name: 'Pisces', hindi: 'मीन', symbol: '♓', glyph: '🐟', dates: 'Feb 19 – Mar 20', element: 'Water' },
 ];
 
 const ELEMENT_COLORS: Record<string, string> = {
@@ -85,8 +85,8 @@ const HoroscopeListing: React.FC = () => {
                                 to={`/horoscope/${sign.slug}`}
                                 className="group flex flex-col items-center p-5 rounded-2xl border border-slate-100 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
                             >
-                                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${ELEMENT_COLORS[sign.element]} flex items-center justify-center text-3xl text-white mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`} aria-label={`${sign.name} icon`}>
-                                    {sign.symbol}
+                                <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${ELEMENT_COLORS[sign.element]} flex items-center justify-center text-3xl mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`} role="img" aria-label={`${sign.name} icon`}>
+                                    {sign.glyph}
                                 </div>
                                 <h2 className="font-bold text-slate-800 text-base">{sign.name}</h2>
                                 <span className="text-xs text-slate-400 mt-0.5">{sign.hindi}</span>

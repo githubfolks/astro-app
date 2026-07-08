@@ -76,7 +76,7 @@ const SIGNS: Record<string, SignData> = {
         desc: 'Ruled by the Sun — source of all light — Leo shines with natural authority and warmth. Leos are born leaders who command attention and inspire others with their magnificent creativity.',
     },
     virgo: {
-        name: 'Virgo', hindi: 'कन्या', symbol: '♍', glyph: '🌾',
+        name: 'Virgo', hindi: 'कन्या', symbol: '♍', glyph: '👧',
         dates: 'August 23 – September 22',
         element: 'Earth', ruling_planet: 'Mercury', quality: 'Mutable',
         traits: ['Analytical', 'Meticulous', 'Helpful', 'Reliable', 'Modest'],
@@ -116,7 +116,7 @@ const SIGNS: Record<string, SignData> = {
         desc: 'Ruled by Jupiter — the planet of expansion and wisdom — Sagittarius is the great explorer of the zodiac. Archers seek meaning, truth, and adventure across cultures, philosophies, and horizons.',
     },
     capricorn: {
-        name: 'Capricorn', hindi: 'मकर', symbol: '♑', glyph: '🐐',
+        name: 'Capricorn', hindi: 'मकर', symbol: '♑', glyph: '🕷️',
         dates: 'December 22 – January 19',
         element: 'Earth', ruling_planet: 'Saturn', quality: 'Cardinal',
         traits: ['Disciplined', 'Ambitious', 'Responsible', 'Strategic', 'Persistent'],
@@ -392,7 +392,7 @@ const HoroscopeSign: React.FC = () => {
                                         }`}
                                 >
                                     <span className="text-2xl flex justify-center mb-2" role="img" aria-label={`${s.name} icon`}>
-                                        {s.symbol}
+                                        {s.glyph}
                                     </span>
                                     <span className="text-xs font-normal name">{s.name}</span>
                                 </Link>
