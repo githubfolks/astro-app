@@ -25,6 +25,11 @@ Refunds will not be issued in the following cases:
 - Subscription Plans: Subscription fees (e.g., ₹299/month) are billed on a recurring basis. Active subscriptions are non-refundable for the current billing cycle, but you can cancel the renewal at any time.
 - Promotional / Referral Credits: Any credits earned through marketing campaigns, coupon codes, first-minute free trials, or referral programs (e.g., ₹50 referral bonus) are non-withdrawable, have no cash value, and cannot be refunded or exchanged for cash.
 
-4. REFUND TIMELINES AND PROCEDURE
+4. COURSES AND CLASSROOM ENROLLMENTS
+- Cancellation Window: A full refund is available if you cancel your enrollment at least 24 hours before the batch or class start date.
+- Non-Refundable After Access: Once a course has commenced, or once you have accessed any live class session or downloadable course material, the enrollment fee becomes non-refundable.
+- Platform-Side Cancellations: If a scheduled class is cancelled or not delivered due to a platform-side issue, you will be offered a make-up session or a refund for that class.
+
+5. REFUND TIMELINES AND PROCEDURE
 - Claims: Any dispute or refund claim must be raised within 48 hours of the consultation by emailing support@aadikarta.org with your transaction details and chat ID.
 - Processing: Verified refund requests for payment gateway failures are processed within 7–10 working days and credited to the original payment source. Seeker wallet adjustments are credited immediately upon approval by the admin team.

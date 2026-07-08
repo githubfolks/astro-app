@@ -1,6 +1,6 @@
 DISCLAIMER
 
-Last Updated: June 18, 2026
+Last Updated: July 9, 2026
 
 1. GENERAL INFORMATION & PURPOSE
 Aadikarta (aadikarta.org) operates as an intermediary marketplace platform designed to facilitate real-time astrological consultations, Kundli matching, tarot readings, Vastu Shastra consultation, and numerology advice between independent certified astrologers and seekers. 
@@ -15,6 +15,9 @@ Aadikarta (aadikarta.org) operates as an intermediary marketplace platform desig
 - Critical Decisions: Users must consult qualified professionals (such as licensed doctors, lawyers, or certified financial planners) for medical, legal, and financial decisions. Aadikarta is not liable for any actions, losses, or decisions taken by seekers based on consultation readings.
 
 4. INDEPENDENT CONTRACTOR CLAUSE
-Astrologers on the Aadikarta network are independent service providers, not employees or direct agents of Aadikarta. Their views, statements, and planetary interpretations are entirely their own and do not reflect the stance or beliefs of Aadikarta.
+Astrologers on the Aadikarta network are independent service providers, not employees or direct agents of Aadikarta. Their views, statements, and planetary interpretations are entirely their own and do not reflect the stance or beliefs of Aadikarta. Our verification process confirms an astrologer's identity and stated credentials only; it is not an endorsement of the accuracy of their predictions.
+
+5. AI ASTROLOGER ("AADI")
+Responses from the AI Astrologer feature ("Aadi") are generated automatically by an AI model based on the details a user provides and are not written or reviewed by a human astrologer. Aadi's responses may be inaccurate or incomplete and, like all content on this platform, are provided for guidance and entertainment purposes only, subject to the same "No Professional Advice" limitations in Section 3.
 
 Users are advised to exercise personal discretion and critical judgment when registering for consultations and purchasing reports.

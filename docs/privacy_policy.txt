@@ -1,8 +1,8 @@
 PRIVACY POLICY
 
-Last Updated: June 18, 2026
+Last Updated: July 9, 2026
 
-At Aadikarta (accessible at aadikarta.org), protecting the privacy of our seekers and astrologers is our highest priority. This Privacy Policy details the types of information we collect, how we use it, and the security measures we implement to protect it.
+At Aadikarta (accessible at aadikarta.org), protecting the privacy of our seekers and astrologers is our highest priority. This Privacy Policy details the types of information we collect, how we use it, and the security measures we implement to protect it. By accessing or using our platform, you accept the practices described in this policy.
 
 1. INFORMATION WE COLLECT
 To provide accurate astrological guidance and consultations, we collect:
@@ -11,6 +11,8 @@ To provide accurate astrological guidance and consultations, we collect:
 - Chat & Consultation History: WebSocket-based live chat logs and transcripts between seekers and astrologers (stored securely to generate AI-assisted consultation summaries, review history, and handle quality audits/disputes).
 - Financial Transactions: Wallet recharge history, top-ups, and payout details. We do not store credit card or bank account details; all transactions are processed via secure, PCI-DSS compliant third-party payment gateways (e.g., Razorpay).
 - Technical Data: IP address, device type, operating system, browser specifications, and connection logs (used for billing engine synchronization and network drop-off detection).
+- Cookies: We use cookies and similar tracking technologies to keep you signed in, remember preferences, and understand platform usage. You can control cookies through your browser settings.
+- Astrologer Onboarding Data: For users registering as astrologers, we additionally collect ID proof, professional credentials, and bank/UPI payout details as part of the verification process.
 
 2. HOW WE USE YOUR INFORMATION
 Your data is used strictly to run and optimize the Aadikarta platform:
@@ -20,16 +22,31 @@ Your data is used strictly to run and optimize the Aadikarta platform:
 - Communications: Sending transaction alerts, wallet low-balance warnings, referral notifications, and booking reminders.
 - Legal & Compliance: Generating tax invoices (including Indian GST) and auditing transaction history.
 
-3. DATA RETENTION AND PROTECTION
+3. DATA RETENTION
+- Account Data: Profile and account data is retained for as long as your account remains active.
+- Consultation History: Chat and consultation history is retained for up to 3 years after your last activity, to support dispute resolution and quality audits.
+- Financial Records: Financial and transaction records are retained as required under Indian tax and GST recordkeeping law.
+- Deletion: If you request account deletion, we delete or anonymize your personal data within a reasonable period, except where retention is required by law.
+
+4. DATA PROTECTION
 - Confidentiality: We do not sell, rent, or trade your personal details or consultation history to any third parties.
 - Encryption: All live chat transmissions via WebSockets and database storage are protected using industry-standard SSL/TLS encryption.
 - Astrologer NDA: All verified astrologers on Aadikarta are bound by strict non-disclosure agreements regarding seeker details.
 
-4. THIRD-PARTY INTEGRATIONS
+5. THIRD-PARTY INTEGRATIONS
 We utilize trusted third-party services for specific platform operations:
 - Payment Processing: Razorpay (for secure credit, debit, UPI, and wallet payments).
 - Video & Audio: MiroTalk SFU (for live group webinars or video consultations).
 - Analytics: Standard tools to monitor platform performance and crash logs.
 
-5. SEEKER RIGHTS & CONSENT
-By registering an account and using the Aadikarta platform, you consent to the collection and processing of your birth and contact details as described here. You can update your profile details at any time or request account deletion by contacting support@aadikarta.org.
+6. SEEKER RIGHTS & CONSENT
+By registering an account and using the Aadikarta platform, you consent to the collection and processing of your birth and contact details as described here. Subject to applicable law, you have the right to access, correct, or delete your personal information, withdraw consent at any time, object to marketing communications, and lodge a complaint with the relevant data protection authority. You can update your profile details at any time or exercise any of the above rights by contacting our Grievance Officer at support@aadikarta.org or +91 86503 54783. We will acknowledge your request within 48 hours and aim to resolve it within 30 days.
+
+7. CHILDREN'S PRIVACY
+Our platform is intended for users who are at least 18 years old and is not directed at children. We do not knowingly collect personal information from anyone under 13, and any such information collected inadvertently will be deleted promptly upon notification.
+
+8. THIRD-PARTY LINKS
+Our platform may contain links to external websites. We are not responsible for the privacy practices or content of those third-party sites and encourage you to review their policies separately.
+
+9. CHANGES TO THIS POLICY
+We may update this Privacy Policy from time to time. The updated policy will be posted here with a revised "Last Updated" date, and your continued use of the platform after such changes constitutes acceptance of the revised policy.

@@ -1,16 +1,17 @@
 TERMS OF SERVICE
 
-Last Updated: June 18, 2026
+Last Updated: July 9, 2026
 
-Welcome to Aadikarta. By registering an account, topping up your wallet, or using our live chat consultation services, you agree to comply with the following terms and conditions.
+Welcome to Aadikarta. By registering an account, topping up your wallet, or using our live chat consultation services, you agree to comply with the following terms and conditions. Aadikarta reserves the right to modify, update, or amend these terms at any time; continued use of the platform after changes are posted constitutes acceptance of the revised terms.
 
 1. ELIGIBILITY AND ACCOUNT SECURITY
-- Age Limit: You must be at least 18 years of age to register an account and participate in astrological consultations.
+- Age Limit: You must be at least 18 years of age and legally capable of entering into a binding contract to register an account and participate in astrological consultations.
 - Accurate Data: Seekers must provide accurate birth coordinates (date, time, and place of birth) to ensure correct planetary charts are generated.
+- Login Security: You are responsible for maintaining the confidentiality of your login credentials and for all activity under your account, and must notify us immediately of any unauthorized access.
 - Single Account: Users are prohibited from creating multiple accounts to abuse referral credits or first-minute free trials.
 
 2. WALLET, PURCHASES, AND SUBSCRIPTIONS
-- Virtual Wallet: Aadikarta operates on a pre-paid virtual wallet system. You must purchase wallet credits using our secure payment gateways (e.g., Razorpay) before initiating a session.
+- Virtual Wallet: Aadikarta operates on a pre-paid virtual wallet system. You must purchase wallet credits using our secure payment gateways (e.g., Razorpay) before initiating a session. You warrant that any payment instrument you use belongs to you and that sufficient funds are available.
 - Minimum Balance: The platform enforces a minimum balance check before you can initiate a chat with a verified astrologer.
 - Session Billing: Billed on a per-minute or package rate. The session automatically terminates when your wallet reaches zero or package time runs out.
 - Paid Reports: Users can purchase digital reports (such as Full Kundli, Compatibility, and Career Path reports). These reports are generated digitally and delivered to your dashboard; once purchased, they are final and non-refundable.
@@ -18,18 +19,44 @@ Welcome to Aadikarta. By registering an account, topping up your wallet, or usin
 - Promotional Programs & Trials: Free first-minute trials (one per user per astrologer) and referral credits (e.g., ₹50 bonus for inviting a friend) are strictly promotional. Creating multiple accounts or using fraud to exploit these offers will result in account suspension and forfeiture of all credits.
 - Taxes: Prices shown for recharges, reports, and subscriptions are inclusive of applicable taxes (including Indian GST) as required by local regulation.
 
-3. USER CONDUCT AND ABUSE POLICY
-- Respectful Interaction: We maintain a zero-tolerance policy for harassment, threats, obscene language, or sharing of personal contact/payment details with astrologers.
+3. ASTROLOGER TERMS
+If you register on Aadikarta as an astrologer, tarot reader, numerologist, or Vastu consultant, the following also apply to you:
+- Verification: Joining is free; you go through a verification process (credentials and ID proof review, typically completed within 2-3 business days) before being listed.
+- Commission: Aadikarta charges a 30% platform commission on completed paid consultations; the remainder is paid out to you.
+- Payout Schedule: Payouts are processed weekly, every Monday, to your registered payout details.
+- Taxes: You are solely responsible for any tax obligations arising from your earnings on the platform.
+- Confidentiality: You must keep seeker information (birth details, chat history, contact information) confidential and must not use it outside the platform.
+- Independent Contractor: You are an independent service provider, not an employee or agent of Aadikarta; your advice and opinions are your own.
+
+4. AI ASTROLOGER ("AADI")
+Our AI Astrologer feature ("Aadi") generates responses automatically using an AI model and is not a human astrologer. Aadi's output is provided for guidance and entertainment purposes only, carries no guarantee of accuracy, and is subject to the same liability limitations as human astrologer consultations described in this document.
+
+5. COURSES AND CLASSROOM
+- License: Paid courses and live classroom sessions are licensed to the enrolled user for personal, non-commercial use only and may not be recorded, redistributed, or resold.
+- Access: Course access is tied to your account and may not be shared with others.
+- Refunds: See our Refund Policy for cancellation and refund eligibility.
+
+6. USER CONDUCT AND ABUSE POLICY
+- Respectful Interaction: We maintain a zero-tolerance policy for harassment, threats, obscene or hateful language, sexually explicit or violent content, or sharing of personal contact/payment details with astrologers.
+- Prohibited Content: Users must not post, transmit, or engage in unlawful, fraudulent, or deceptive activity, including attempts to exploit promotional offers or referral credits.
 - Account Termination: Any seeker or astrologer violating these code-of-conduct guidelines will face immediate account termination, and remaining wallet credits may be forfeited.
 
-4. PLATFORM ROLE AND LIABILITY
-- Intermediary Status: Aadikarta is an intermediary platform connecting seekers and independent astrologers. We do not edit, moderate, or take responsibility for the personal opinions, predictions, or remedies offered by astrologers.
+7. PLATFORM ROLE AND LIABILITY
+- Intermediary Status: Aadikarta is an intermediary platform connecting seekers and independent astrologers. We do not edit, moderate, or take responsibility for the personal opinions, predictions, or remedies offered by astrologers. Services are provided on an "as is" and "as available" basis without warranties of accuracy or availability.
 - Technical Interruptions: We provide grace periods for app crashes or network drops, but we are not liable for direct losses due to connectivity failures on the seeker's or astrologer's side.
 
-5. INTELLECTUAL PROPERTY
+8. INTELLECTUAL PROPERTY
 - Reports: Kundli reports and daily personalized horoscope text generated on the platform are licensed to the seeker for personal use only and cannot be repackaged or sold.
 
-6. GOVERNING LAW & JURISDICTION
+9. GRIEVANCE REDRESSAL
+If you have a complaint or grievance regarding our services, please write to our Grievance Officer at support@aadikarta.org or call +91 86503 54783. We will acknowledge your complaint within 48 hours and aim to resolve it within 30 days.
+
+10. GENERAL
+- Force Majeure: Aadikarta is not liable for any failure to perform obligations due to causes beyond our reasonable control, including natural disasters, internet or power outages, or government action.
+- Indemnification: You agree to indemnify and hold Aadikarta harmless from any claims arising out of your misuse of the platform or violation of these terms.
+- Severability: If any provision of these terms is found unenforceable, the remaining provisions will continue in full force.
+
+11. GOVERNING LAW & JURISDICTION
 - Jurisdiction: These terms shall be governed by and construed in accordance with the laws of India. Any disputes arising out of the use of this platform shall be subject to the exclusive jurisdiction of the competent courts of India.
 
 If you do not agree to these terms, you must not use our website, wallet, or consult with astrologers on our network. For inquiries, email support@aadikarta.org.
