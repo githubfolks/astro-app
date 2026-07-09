@@ -1,12 +1,13 @@
 """
 Kundli router — Generate and retrieve Vedic birth charts.
-Astrologer-only endpoints that use Vedic Rishi AstroAPI.
+Astrologer-only endpoints that use FreeAstroAPI for chart calculation.
 """
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas, database
-from ..vedic_rishi_service import generate_kundli, geocode_place
+from ..vedic_rishi_service import geocode_place
+from ..free_astro_service import generate_full_kundli
 from .auth import get_current_user
 import asyncio
 
@@ -63,14 +64,18 @@ async def generate_kundli_report(
             detail="date_of_birth, time_of_birth, and place_of_birth are required"
         )
 
-    # Check for existing cached report with same birth details
+    # Check for existing cached report with same birth details.
+    # Reports generated before the switch to FreeAstroAPI carry the old
+    # astroapi.dev response shape (no top-level "chart" key) and are
+    # incompatible with the current frontend — treat those as stale and
+    # regenerate rather than serving unusable cached data.
     existing = db.query(models.KundliReport).filter(
         models.KundliReport.date_of_birth == dob,
         models.KundliReport.time_of_birth == tob,
         models.KundliReport.place_of_birth == place,
     ).first()
 
-    if existing:
+    if existing and isinstance(existing.chart_data, dict) and "chart" in existing.chart_data:
         return existing
 
     # Geocode place of birth
@@ -81,26 +86,33 @@ async def generate_kundli_report(
     except Exception:
         raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
 
-    # Call AstroAPI
+    # Call FreeAstroAPI for the full Kundli (chart, vargas, dasha, yogas, panchang, shadbala, ashtakavarga)
     try:
-        chart_data = await generate_kundli(
+        chart_data = await generate_full_kundli(
             year=dob.year,
             month=dob.month,
             day=dob.day,
             hour=tob.hour,
             minute=tob.minute,
-            second=tob.second,
-            lat=lat,
-            lon=lon,
+            latitude=lat,
+            longitude=lon,
             timezone="Asia/Kolkata",
-            name=name,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AstroAPI error: {str(e)}")
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
 
-    # Save to database
+    # Save to database — refresh the stale row in place if one exists, otherwise insert new
+    if existing:
+        existing.full_name = name
+        existing.latitude = lat
+        existing.longitude = lon
+        existing.chart_data = chart_data
+        db.commit()
+        db.refresh(existing)
+        return existing
+
     report = models.KundliReport(
         seeker_id=request.seeker_id,
         generated_by=current_user.id,

@@ -199,6 +199,29 @@ export const useChat = (consultationId: string) => {
         };
     }, [connect]);
 
+    // Backgrounding a tab/screen freezes the heartbeat timer and the OS often drops
+    // the underlying socket outright, so by the time the tab is foregrounded again
+    // the connection is already dead — reconnect immediately instead of waiting out
+    // whatever exponential-backoff delay (up to 30s) happened to be in flight.
+    useEffect(() => {
+        const tryReconnectNow = () => {
+            if (!shouldReconnect.current) return;
+            const state = ws.current?.readyState;
+            if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) return;
+            if (reconnectTimer.current) { clearTimeout(reconnectTimer.current); reconnectTimer.current = null; }
+            reconnectAttempt.current = 0;
+            connect();
+        };
+
+        const onVisibilityChange = () => { if (document.visibilityState === 'visible') tryReconnectNow(); };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        window.addEventListener('online', tryReconnectNow);
+        return () => {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('online', tryReconnectNow);
+        };
+    }, [connect]);
+
     const sendMessage = async (content: string) => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify({ type: 'MESSAGE', content }));

@@ -55,3 +55,4 @@ Request is discoverable in initial document
 # Image elements do not have explicit width and height
 
 
+degree, retrogate, debilated, combust, exaulted

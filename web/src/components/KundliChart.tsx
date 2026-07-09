@@ -1,5 +1,7 @@
-import type { ChartDivision } from '../types';
+import type { DivisionChart } from '../types';
 import React from 'react';
+import { type Lang, RASHI_SHORT_HI, PLANET_SHORT_HI, UI_HI } from '../utils/kundliHindi';
+import { isExalted, isDebilitated } from '../utils/planetDignity';
 
 /**
  * North Indian style Kundli chart component.
@@ -10,31 +12,23 @@ import React from 'react';
  * from chart to chart while the house positions stay fixed.
  */
 
-interface Planet {
-    name: string;
-    shortName: string;
-    house: number;
-    retrograde?: boolean;
-}
-
 interface KundliChartProps {
-    chartData?: ChartDivision; // A single chart division (D1, D9, etc.)
+    chartData?: DivisionChart; // A single division chart (D1, D9, D10, ...)
     title?: string;
     size?: number;
+    lang?: Lang;
+    // Cross-chart dignity markers (need data beyond a single division) — see planetDignity.ts.
+    combustSet?: Set<string>;
+    vargottamaSet?: Set<string>;
 }
 
-const RASHI_NAMES: Record<number, string> = {
-    0: 'Ari', 1: 'Tau', 2: 'Gem', 3: 'Can', 4: 'Leo', 5: 'Vir',
-    6: 'Lib', 7: 'Sco', 8: 'Sag', 9: 'Cap', 10: 'Aqu', 11: 'Pis',
+const RASHI_ABBR: Record<string, string> = {
+    Aries: 'Ari', Taurus: 'Tau', Gemini: 'Gem', Cancer: 'Can',
+    Leo: 'Leo', Virgo: 'Vir', Libra: 'Lib', Scorpio: 'Sco',
+    Sagittarius: 'Sag', Capricorn: 'Cap', Aquarius: 'Aqu', Pisces: 'Pis',
 };
 
-const RASHI_NAMES_FULL: Record<number, string> = {
-    0: 'Aries', 1: 'Taurus', 2: 'Gemini', 3: 'Cancer',
-    4: 'Leo', 5: 'Virgo', 6: 'Libra', 7: 'Scorpio',
-    8: 'Sagittarius', 9: 'Capricorn', 10: 'Aquarius', 11: 'Pisces',
-};
-
-// Planet display colors
+// Planet display colors, keyed by lowercase planet name
 const PLANET_COLORS: Record<string, string> = {
     sun: '#E65100',
     moon: '#1565C0',
@@ -58,37 +52,6 @@ const PLANET_SHORT: Record<string, string> = {
     rahu: 'Ra',
     ketu: 'Ke',
 };
-
-function extractPlanetsFromChart(chart: ChartDivision): Planet[] {
-    if (!chart) return [];
-
-    const planets: Planet[] = [];
-
-    // The chart format has houses "1" through "12" with {rashi, planets}
-    for (let house = 1; house <= 12; house++) {
-        const houseData = chart[house.toString()];
-        if (houseData && houseData.planets && Array.isArray(houseData.planets)) {
-            houseData.planets.forEach((planetName: string) => {
-                planets.push({
-                    name: planetName,
-                    shortName: PLANET_SHORT[planetName] || planetName.substring(0, 2),
-                    house: house,
-                });
-            });
-        }
-    }
-
-    return planets;
-}
-
-function getRashiForHouse(chart: ChartDivision, house: number): number | null {
-    if (!chart) return null;
-    const houseData = chart[house.toString()];
-    if (houseData && houseData.rashi !== undefined) {
-        return houseData.rashi;
-    }
-    return null;
-}
 
 /** Builds the 12 fixed house polygons for a North Indian chart inscribed in
  * a `size`x`size` square. See module doc for the geometry: an outer square,
@@ -131,16 +94,21 @@ function centroid(points: [number, number][]): [number, number] {
     return [sum[0] / n, sum[1] / n];
 }
 
-const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Chart', size = 360 }) => {
-    if (!chartData) {
+const KundliChart: React.FC<KundliChartProps> = ({
+    chartData, title = 'Rashi Chart', size = 360, lang = 'en',
+    combustSet, vargottamaSet,
+}) => {
+    if (!chartData || !chartData.houses || !chartData.planets) {
         return (
             <div className="flex items-center justify-center p-8 text-gray-400">
-                <p>No chart data available</p>
+                <p>{lang === 'hi' ? UI_HI.noChartData : 'No chart data available'}</p>
             </div>
         );
     }
 
-    const planets = extractPlanetsFromChart(chartData);
+    const signByHouse: Record<number, { sign: string; signId: number }> = {};
+    chartData.houses.forEach(h => { signByHouse[h.house] = { sign: h.sign, signId: h.sign_id }; });
+
     const housePolygons = buildHousePolygons(size);
 
     return (
@@ -185,14 +153,14 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                     fontSize={8}
                     fill="#A0522D"
                 >
-                    (North Indian)
+                    {lang === 'hi' ? '(उत्तर भारतीय)' : '(North Indian)'}
                 </text>
 
                 {/* House contents */}
                 {Object.entries(housePolygons).map(([houseStr, points]) => {
                     const house = parseInt(houseStr);
-                    const rashi = getRashiForHouse(chartData, house);
-                    const housePlanets = planets.filter(p => p.house === house);
+                    const sign = signByHouse[house];
+                    const housePlanets = chartData.planets.filter(p => p.house === house);
                     const [cx, cy] = centroid(points);
 
                     return (
@@ -206,7 +174,10 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                                 fill="#B8860B"
                                 fontWeight="600"
                             >
-                                {rashi !== null ? RASHI_NAMES[rashi] : ''} · H{house}
+                                {sign
+                                    ? `${lang === 'hi' ? RASHI_SHORT_HI[sign.sign] || sign.sign : RASHI_ABBR[sign.sign] || sign.sign.substring(0, 3)}(${sign.signId})`
+                                    : ''} · {lang === 'hi' ? UI_HI.house.charAt(0) : 'H'}{house}
+                                {house === 1 && (lang === 'hi' ? ` (${UI_HI.lagna})` : ' (Asc)')}
                             </text>
 
                             {/* Planets */}
@@ -215,7 +186,13 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                                 const row = Math.floor(idx / 2);
                                 const px = cx + (col === 0 ? -12 : 12) * (housePlanets.length > 1 ? 1 : 0.3);
                                 const py = cy + 8 + row * 14;
-                                const color = PLANET_COLORS[planet.name] || '#333';
+                                const key = planet.name.toLowerCase();
+                                const color = PLANET_COLORS[key] || '#333';
+
+                                const exalted = isExalted(planet.name, planet.sign);
+                                const debilitated = isDebilitated(planet.name, planet.sign);
+                                const combust = combustSet?.has(planet.name) ?? false;
+                                const vargottama = vargottamaSet?.has(planet.name) ?? false;
 
                                 return (
                                     <text
@@ -227,10 +204,19 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
                                         fontWeight="bold"
                                         fill={color}
                                     >
-                                        {planet.shortName}
-                                        {planet.retrograde && (
-                                            <tspan fontSize={7} fill="#C62828">(R)</tspan>
+                                        {planet.degree_in_sign !== undefined && (
+                                            <tspan x={px} dy={-9} fontSize={7} fontWeight="normal" fill="#999">
+                                                {Math.floor(planet.degree_in_sign).toString().padStart(2, '0')}
+                                            </tspan>
                                         )}
+                                        <tspan x={px} dy={planet.degree_in_sign !== undefined ? 9 : 0}>
+                                            {lang === 'hi' ? PLANET_SHORT_HI[key] || planet.name : PLANET_SHORT[key] || planet.name.substring(0, 2)}
+                                        </tspan>
+                                        {planet.is_retrograde && <tspan fontSize={8} fill="#C62828">*</tspan>}
+                                        {combust && <tspan fontSize={8} fill="#B8860B">^</tspan>}
+                                        {vargottama && <tspan fontSize={8} fill="#6A1B9A">□</tspan>}
+                                        {exalted && <tspan fontSize={8} fill="#2E7D32">↑</tspan>}
+                                        {debilitated && <tspan fontSize={8} fill="#C62828">↓</tspan>}
                                     </text>
                                 );
                             })}
@@ -243,4 +229,4 @@ const KundliChart: React.FC<KundliChartProps> = ({ chartData, title = 'Rashi Cha
 };
 
 export default KundliChart;
-export { RASHI_NAMES, RASHI_NAMES_FULL, PLANET_SHORT, PLANET_COLORS };
+export { RASHI_ABBR, PLANET_SHORT, PLANET_COLORS };

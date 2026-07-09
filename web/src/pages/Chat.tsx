@@ -599,13 +599,13 @@ export const Chat: React.FC = () => {
                     {/* Right Panel: Chat Interface */}
                     <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 relative">
                         {/* Chat Header */}
-                        <div className="bg-white p-4 border-b border-gray-100 flex justify-between items-center z-10">
-                            <div className="flex items-center gap-4">
+                        <div className="bg-white p-3 md:p-4 border-b border-gray-100 flex justify-between items-center gap-2 z-10">
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
                                 {/* Mobile only profile summary */}
-                                <div className="md:hidden flex items-center gap-3">
-                                    <img src={resolveImageUrl(opponent?.profile_picture_url, opponent?.full_name)} className="w-10 h-10 rounded-full border-2 border-[#FFB700]" alt="Profile" />
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 text-sm">{opponent?.full_name || 'Loading...'}</h3>
+                                <div className="md:hidden flex items-center gap-2 min-w-0">
+                                    <img src={resolveImageUrl(opponent?.profile_picture_url, opponent?.full_name)} className="w-9 h-9 rounded-full border-2 border-[#FFB700] flex-shrink-0" alt="Profile" />
+                                    <div className="min-w-0">
+                                        <h3 className="font-bold text-gray-900 text-sm truncate">{opponent?.full_name || 'Loading...'}</h3>
                                         <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">● Live</span>
                                     </div>
                                 </div>
@@ -617,27 +617,30 @@ export const Chat: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1.5 md:gap-4 flex-shrink-0">
                                 {status === 'PAUSED' ? (
-                                    <div className="flex items-center gap-2 text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200 text-sm font-medium animate-pulse">
-                                        <Clock size={16} />
+                                    <div className="flex items-center gap-1 md:gap-2 text-orange-700 bg-orange-50 px-2 md:px-3 py-1 rounded-full border border-orange-200 text-xs md:text-sm font-medium animate-pulse">
+                                        <Clock size={14} className="md:hidden" />
+                                        <Clock size={16} className="hidden md:block" />
                                         <span className="font-mono">Paused</span>
                                     </div>
                                 ) : timerActive ? (
-                                    <div className="flex items-center gap-2 text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-200 text-sm font-medium">
-                                        <Clock size={16} />
+                                    <div className="flex items-center gap-1 md:gap-2 text-green-700 bg-green-50 px-2 md:px-3 py-1 rounded-full border border-green-200 text-xs md:text-sm font-medium">
+                                        <Clock size={14} className="md:hidden" />
+                                        <Clock size={16} className="hidden md:block" />
                                         <span className="font-mono">Active</span>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-2 text-yellow-700 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200 text-sm font-medium">
-                                        <Clock size={16} />
+                                    <div className="flex items-center gap-1 md:gap-2 text-yellow-700 bg-yellow-50 px-2 md:px-3 py-1 rounded-full border border-yellow-200 text-xs md:text-sm font-medium">
+                                        <Clock size={14} className="md:hidden" />
+                                        <Clock size={16} className="hidden md:block" />
                                         <span className="font-mono">Waiting</span>
                                     </div>
                                 )}
 
                                 {isPromotionalChat && (
                                     <div
-                                        className="flex items-center gap-1.5 text-[#E91E63] bg-pink-50 px-3 py-1 rounded-full border border-pink-200 text-xs font-bold"
+                                        className="hidden sm:flex items-center gap-1.5 text-[#E91E63] bg-pink-50 px-3 py-1 rounded-full border border-pink-200 text-xs font-bold"
                                         title={promotionalRateTotal ? `₹${promotionalRateTotal} for the first 5 minutes` : undefined}
                                     >
                                         Promotional Call
@@ -653,7 +656,7 @@ export const Chat: React.FC = () => {
                                 )}
 
                                 {user?.role === 'ASTROLOGER' && (
-                                    <div className="text-sm flex items-center gap-3 text-gray-600">
+                                    <div className="text-sm hidden sm:flex items-center gap-3 text-gray-600">
                                         <span>Talk Time: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span></span>
                                         <span className="text-gray-300">|</span>
                                         <span>Earnings: <span className="font-bold font-mono text-green-700">₹{billingInfo.spent.toFixed(2)}</span></span>
@@ -667,7 +670,7 @@ export const Chat: React.FC = () => {
                                 )}
 
                                 {user?.role === 'ASTROLOGER' && (
-                                    <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold flex-shrink-0" title="Translate the seeker's messages">
+                                    <div className="hidden sm:flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold flex-shrink-0" title="Translate the seeker's messages">
                                         <button
                                             onClick={() => setChatLanguage('en')}
                                             className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -685,21 +688,71 @@ export const Chat: React.FC = () => {
 
                                 <button
                                     onClick={() => setShowSidebarMobile(true)}
-                                    className="md:hidden p-2 text-gray-500 hover:text-[#E91E63] bg-gray-50 rounded-full border border-gray-200 transition-colors"
+                                    className="md:hidden p-2 text-gray-500 hover:text-[#E91E63] bg-gray-50 rounded-full border border-gray-200 transition-colors flex-shrink-0"
                                     aria-label="View Profile Info"
                                 >
-                                    <Info size={20} />
+                                    <Info size={18} />
                                 </button>
 
                                 {user?.role === 'SEEKER' && (
                                     <button
                                         onClick={handleEndChat}
-                                        className="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-lg text-xs font-bold transition-colors border border-red-200"
+                                        className="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-[11px] md:text-xs font-bold transition-colors border border-red-200 flex-shrink-0 whitespace-nowrap"
                                     >
                                         End Chat
                                     </button>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Mobile-only compact bar: billing details + language toggle move here so they
+                            never get clipped out of the cramped header row above (they were previously
+                            invisible on mobile — either hidden or pushed off-screen with no scroll). */}
+                        <div className="md:hidden flex items-center gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 overflow-x-auto text-[11px] flex-shrink-0 whitespace-nowrap">
+                            {user?.role === 'SEEKER' && (
+                                <span className={lowBalance ? 'text-amber-700' : 'text-gray-600'}>
+                                    Balance: <span className="font-bold font-mono">₹{billingInfo.balance.toFixed(2)}</span>
+                                </span>
+                            )}
+                            {user?.role === 'SEEKER' && (
+                                <span className="text-gray-600">
+                                    Spent: <span className="font-bold font-mono text-gray-900">₹{billingInfo.spent}</span>
+                                </span>
+                            )}
+                            {user?.role === 'ASTROLOGER' && (
+                                <span className="text-gray-600">
+                                    Talk: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span>
+                                </span>
+                            )}
+                            {user?.role === 'ASTROLOGER' && (
+                                <span className="text-green-700">
+                                    Earn: <span className="font-bold font-mono">₹{billingInfo.spent.toFixed(2)}</span>
+                                </span>
+                            )}
+                            {user?.role === 'ASTROLOGER' && status !== 'ENDED' && (
+                                <span className={lowBalance ? 'text-amber-700' : 'text-gray-600'}>
+                                    Left: <span className="font-bold font-mono">{billingInfo.minutes_remaining}m</span>
+                                </span>
+                            )}
+                            {isPromotionalChat && (
+                                <span className="text-[#E91E63] font-bold">Promo</span>
+                            )}
+                            {user?.role === 'ASTROLOGER' && (
+                                <div className="flex items-center bg-gray-200 rounded-full p-0.5 text-[10px] font-bold flex-shrink-0 ml-auto" title="Translate the seeker's messages">
+                                    <button
+                                        onClick={() => setChatLanguage('en')}
+                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                                    >
+                                        EN
+                                    </button>
+                                    <button
+                                        onClick={() => setChatLanguage('hi')}
+                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
+                                    >
+                                        हिं
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         {/* Low Balance Warning Banner */}

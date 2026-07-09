@@ -151,38 +151,145 @@ export interface ChatHistoryItem {
     timestamp: string;
 }
 
-// --- Kundli / AstroAPI chart structures (loosely-typed external data) ---
+// --- Kundli / FreeAstroAPI chart structures ---
+// Shape matches FreeAstroAPI's POST /api/v2/vedic/calculate response.
 
-export interface ChartHouse {
-    rashi: number;
-    planets?: string[];
+export interface NakshatraRef {
+    id?: number;
+    number?: number;
+    name: string;
+    pada: number;
+    lord: string;
 }
 
-/** A single chart division (e.g. D1/D9), keyed by house number "1".."12". */
-export type ChartDivision = Record<string, ChartHouse>;
-
-export interface PlanetDetail {
-    position?: string | number;
+export interface PlanetPosition {
+    name: string; // "Sun", "Moon", ... "Rahu", "Ketu" (title case)
+    sign: string;
+    sign_id: number;
+    house: number;
+    degree_in_sign?: number;
+    absolute_degree?: number;
+    is_retrograde?: boolean;
     nakshatra?: string;
-    retrograde?: boolean;
+    nakshatra_id?: number;
+    pada?: number;
+    nakshatra_lord?: string;
 }
 
-export interface BasicDetails {
-    ayanamsha?: string;
-    tithi?: string;
-    yog?: string;
-    karan?: string;
-    vaara?: string;
-    nakshatra?: string;
+export interface HousePosition {
+    house: number;
+    sign: string;
+    sign_id: number;
+    degree_cusp?: number;
+}
+
+export interface AscendantInfo {
+    sign: string;
+    sign_id: number;
+    degree?: number;
+    house?: number;
+    nakshatra?: NakshatraRef;
+}
+
+/** A single chart / divisional chart (D1, D9, D10, D60, ...). */
+export interface DivisionChart {
+    division?: number;
+    name?: string;
+    ascendant: AscendantInfo;
+    planets: PlanetPosition[];
+    houses: HousePosition[];
+}
+
+export interface SadeSati {
+    active: boolean;
+    phase?: string;
+    description?: string;
+    moon_sign?: string;
+    saturn_sign?: string;
+}
+
+export interface DashaPeriod {
+    level: 'Mahadasha' | 'Antardasha' | 'Pratyantardasha';
+    lord: string;
+    start: string;
+    end: string;
+    duration_years: number;
+    elapsed_years: number;
+    remaining_years: number;
+    progress_fraction: number;
+    path: string[];
+}
+
+export interface VimshottariDasha {
+    moon_nakshatra?: NakshatraRef;
+    birth_balance?: {
+        lord: string;
+        actual_start: string;
+        birth_date: string;
+        end: string;
+        full_duration_years: number;
+        elapsed_years: number;
+        remaining_years: number;
+    };
+    active_periods?: DashaPeriod[];
+}
+
+export interface Yoga {
+    id: string;
+    name: string;
+    type: string;
+    category: string;
+    active: boolean;
+    strength?: string;
+    description: string;
+    planets: string[];
+    houses_involved: number[];
+}
+
+export interface YogasSection {
+    yogas: Yoga[];
+    summary?: {
+        total_evaluated: number;
+        active: number;
+        inactive: number;
+    };
+}
+
+export interface Panchang {
+    date: string;
     sunrise?: string;
     sunset?: string;
+    weekday?: { number: number; name: string };
+    lunar_month?: { name: string; amanta: boolean; vikram_samvat: number };
+    tithi?: { number: number; name: string; paksha: string; ends_at?: string };
+    nakshatra?: NakshatraRef & { ends_at?: string };
+    yoga?: { number: number; name: string; ends_at?: string };
+    rahu_kalam?: { start: string; end: string };
 }
 
-/** Full AstroAPI Kundli response. */
+export interface ShadbalaEntry {
+    total: number;
+    shadbala_in_rupas: number;
+    minimum_requirements: number;
+    ratio: number;
+}
+
+export interface Ashtakavarga {
+    total_points: number;
+    sarvashtakavarga?: Record<string, number>;
+}
+
+/** Full FreeAstroAPI /vedic/calculate response, as stored in kundli_reports.chart_data. */
 export interface ChartData {
-    basicDetails?: BasicDetails;
-    charts?: Record<string, ChartDivision>;
-    planets?: Record<string, PlanetDetail>;
+    ayanamsha?: string;
+    timezone_used?: string;
+    chart?: DivisionChart & { sade_sati?: SadeSati };
+    vargas?: { vargas: Record<string, DivisionChart> };
+    vimshottari_dasha?: VimshottariDasha;
+    yogas?: YogasSection;
+    panchang?: Panchang;
+    shadbala?: Record<string, ShadbalaEntry>;
+    ashtakavarga?: Ashtakavarga;
 }
 
 export interface KundliReport {
