@@ -2368,34 +2368,6 @@
         "title": "Horoscope",
         "type": "object"
       },
-      "HoroscopeCreate": {
-        "properties": {
-          "content": {
-            "additionalProperties": true,
-            "title": "Content",
-            "type": "object"
-          },
-          "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
-          },
-          "period": {
-            "$ref": "#/components/schemas/HoroscopePeriod"
-          },
-          "sign": {
-            "$ref": "#/components/schemas/ZodiacSign"
-          }
-        },
-        "required": [
-          "sign",
-          "period",
-          "date",
-          "content"
-        ],
-        "title": "HoroscopeCreate",
-        "type": "object"
-      },
       "HoroscopePeriod": {
         "enum": [
           "DAILY",
@@ -2405,24 +2377,6 @@
         ],
         "title": "HoroscopePeriod",
         "type": "string"
-      },
-      "HoroscopeUpdate": {
-        "properties": {
-          "content": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Content"
-          }
-        },
-        "title": "HoroscopeUpdate",
-        "type": "object"
       },
       "InquiryStatus": {
         "enum": [
@@ -2778,128 +2732,6 @@
         "title": "Page",
         "type": "object"
       },
-      "PageCreate": {
-        "properties": {
-          "content": {
-            "title": "Content",
-            "type": "string"
-          },
-          "seo_description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seo Description"
-          },
-          "seo_title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seo Title"
-          },
-          "title": {
-            "title": "Title",
-            "type": "string"
-          }
-        },
-        "required": [
-          "title",
-          "content"
-        ],
-        "title": "PageCreate",
-        "type": "object"
-      },
-      "PageListResponse": {
-        "properties": {
-          "pages": {
-            "items": {
-              "$ref": "#/components/schemas/Page"
-            },
-            "title": "Pages",
-            "type": "array"
-          },
-          "total": {
-            "title": "Total",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "total",
-          "pages"
-        ],
-        "title": "PageListResponse",
-        "type": "object"
-      },
-      "PageUpdate": {
-        "properties": {
-          "content": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Content"
-          },
-          "seo_description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seo Description"
-          },
-          "seo_title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seo Title"
-          },
-          "slug": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Slug"
-          },
-          "title": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Title"
-          }
-        },
-        "title": "PageUpdate",
-        "type": "object"
-      },
       "PaymentVerification": {
         "properties": {
           "razorpay_order_id": {
@@ -2993,8 +2825,8 @@
         "required": [
           "title",
           "content",
-          "id",
           "slug",
+          "id",
           "author_id",
           "published_at",
           "created_at",
@@ -3019,6 +2851,17 @@
               }
             ],
             "title": "Featured Image"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
           },
           "status": {
             "$ref": "#/components/schemas/PostStatus",
@@ -3089,6 +2932,17 @@
               }
             ],
             "title": "Featured Image"
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Slug"
           },
           "status": {
             "anyOf": [
@@ -3471,6 +3325,48 @@
         ],
         "title": "TransactionType",
         "type": "string"
+      },
+      "TranslateRequest": {
+        "properties": {
+          "consultation_id": {
+            "title": "Consultation Id",
+            "type": "integer"
+          },
+          "target_lang": {
+            "enum": [
+              "hi",
+              "en"
+            ],
+            "title": "Target Lang",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "consultation_id",
+          "text",
+          "target_lang"
+        ],
+        "title": "TranslateRequest",
+        "type": "object"
+      },
+      "TranslateResponse": {
+        "properties": {
+          "translated_text": {
+            "title": "Translated Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "translated_text"
+        ],
+        "title": "TranslateResponse",
+        "type": "object"
       },
       "UserCreate": {
         "properties": {
@@ -5032,6 +4928,31 @@
         ]
       }
     },
+    "/admin/payouts/history": {
+      "get": {
+        "description": "Get all processed and generated payouts for admin reporting.",
+        "operationId": "get_all_payouts_history_admin_payouts_history_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get All Payouts History",
+        "tags": [
+          "Admin - Payouts"
+        ]
+      }
+    },
     "/admin/payouts/pending": {
       "get": {
         "description": "Calculate pending earnings for all astrologers including TDS deduction.\nFormula: (Total Revenue * Commission %) - TDS (10% above \u20b930k) - Already Paid.",
@@ -5078,6 +4999,38 @@
             "schema": {
               "title": "Transaction Reference",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "payout_date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Payout Date"
+            }
+          },
+          {
+            "in": "query",
+            "name": "comments",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Comments"
             }
           }
         ],
@@ -6076,6 +6029,31 @@
         ]
       }
     },
+    "/astrologers/payouts/history": {
+      "get": {
+        "description": "Get payout history for the logged-in astrologer.",
+        "operationId": "get_payout_history_astrologers_payouts_history_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Payout History",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
     "/astrologers/profile": {
       "get": {
         "operationId": "get_my_astrologer_profile_astrologers_profile_get",
@@ -6330,6 +6308,52 @@
         ]
       }
     },
+    "/chat/translate": {
+      "post": {
+        "operationId": "translate_message_chat_translate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Translate Message",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
     "/cms/contact-inquiries": {
       "get": {
         "operationId": "list_contact_inquiries_cms_contact_inquiries_get",
@@ -6399,532 +6423,6 @@
           }
         ],
         "summary": "List Contact Inquiries",
-        "tags": [
-          "CMS"
-        ]
-      }
-    },
-    "/cms/horoscopes": {
-      "get": {
-        "operationId": "list_horoscopes_cms_horoscopes_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "sign",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/ZodiacSign"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Sign"
-            }
-          },
-          {
-            "in": "query",
-            "name": "period",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/HoroscopePeriod"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Period"
-            }
-          },
-          {
-            "in": "query",
-            "name": "date",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Date"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Horoscope"
-                  },
-                  "title": "Response List Horoscopes Cms Horoscopes Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "List Horoscopes",
-        "tags": [
-          "CMS"
-        ]
-      },
-      "post": {
-        "operationId": "create_horoscope_cms_horoscopes_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/HoroscopeCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Horoscope"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Create Horoscope",
-        "tags": [
-          "CMS"
-        ]
-      }
-    },
-    "/cms/horoscopes/{horoscope_id}": {
-      "delete": {
-        "operationId": "delete_horoscope_cms_horoscopes__horoscope_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "horoscope_id",
-            "required": true,
-            "schema": {
-              "title": "Horoscope Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Delete Horoscope",
-        "tags": [
-          "CMS"
-        ]
-      },
-      "get": {
-        "operationId": "get_horoscope_cms_horoscopes__horoscope_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "horoscope_id",
-            "required": true,
-            "schema": {
-              "title": "Horoscope Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Horoscope"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Get Horoscope",
-        "tags": [
-          "CMS"
-        ]
-      },
-      "put": {
-        "operationId": "update_horoscope_cms_horoscopes__horoscope_id__put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "horoscope_id",
-            "required": true,
-            "schema": {
-              "title": "Horoscope Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/HoroscopeUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Horoscope"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Update Horoscope",
-        "tags": [
-          "CMS"
-        ]
-      }
-    },
-    "/cms/pages": {
-      "get": {
-        "operationId": "list_pages_cms_pages_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "skip",
-            "required": false,
-            "schema": {
-              "default": 0,
-              "title": "Skip",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "default": 20,
-              "title": "Limit",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PageListResponse"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "List Pages",
-        "tags": [
-          "CMS"
-        ]
-      },
-      "post": {
-        "operationId": "create_page_cms_pages_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PageCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Create Page",
-        "tags": [
-          "CMS"
-        ]
-      }
-    },
-    "/cms/pages/{page_id}": {
-      "delete": {
-        "operationId": "delete_page_cms_pages__page_id__delete",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "page_id",
-            "required": true,
-            "schema": {
-              "title": "Page Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Delete Page",
-        "tags": [
-          "CMS"
-        ]
-      },
-      "get": {
-        "operationId": "get_page_cms_pages__page_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "page_id",
-            "required": true,
-            "schema": {
-              "title": "Page Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Get Page",
-        "tags": [
-          "CMS"
-        ]
-      },
-      "put": {
-        "operationId": "update_page_cms_pages__page_id__put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "page_id",
-            "required": true,
-            "schema": {
-              "title": "Page Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PageUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Update Page",
         "tags": [
           "CMS"
         ]

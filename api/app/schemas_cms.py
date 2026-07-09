@@ -33,6 +33,7 @@ class HoroscopePeriod(str, Enum):
 class PostBase(BaseModel):
     title: str
     content: str
+    slug: Optional[str] = None
     featured_image: Optional[str] = None
     status: PostStatus = PostStatus.DRAFT
 
@@ -42,6 +43,7 @@ class PostCreate(PostBase):
 class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
+    slug: Optional[str] = None
     featured_image: Optional[str] = None
     status: Optional[PostStatus] = None
 

@@ -65,19 +65,6 @@ export const cms = {
         update: (id, data) => api.put(`/cms/posts/${id}`, data),
         delete: (id) => api.delete(`/cms/posts/${id}`),
     },
-    pages: {
-        list: (params) => api.get('/cms/pages', { params }),
-        get: (id) => api.get(`/cms/pages/${id}`),
-        create: (data) => api.post('/cms/pages', data),
-        update: (id, data) => api.put(`/cms/pages/${id}`, data),
-        delete: (id) => api.delete(`/cms/pages/${id}`),
-    },
-    horoscopes: {
-        list: (params) => api.get('/cms/horoscopes', { params }),
-        create: (data) => api.post('/cms/horoscopes', data),
-        update: (id, data) => api.put(`/cms/horoscopes/${id}`, data),
-        delete: (id) => api.delete(`/cms/horoscopes/${id}`),
-    },
     inquiries: {
         list: (params) => api.get('/cms/contact-inquiries', { params }),
         // Add update/delete if needed later

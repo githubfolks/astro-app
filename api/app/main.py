@@ -201,8 +201,8 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; "
         "font-src 'self' https://fonts.gstatic.com data:; "
         "img-src 'self' data: https: blob:; "
         "connect-src 'self' https://api.aadikarta.org http://api.aadikarta.org https://admin.aadikarta.org http://admin.aadikarta.org https://aadikarta.org http://aadikarta.org https://*.aadikarta.org http://*.aadikarta.org http://localhost:* ws://localhost:* http://192.168.1.13:* ws://192.168.1.13:* wss://api.aadikarta.org wss://*.aadikarta.org; "

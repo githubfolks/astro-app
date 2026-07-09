@@ -25,8 +25,6 @@ export default function DashboardLayout() {
         { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
         { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
-        { text: 'Pages', icon: <Files size={20} />, path: '/cms/pages' },
-        { text: 'Horoscopes', icon: <Moon size={20} />, path: '/cms/horoscopes' },
         { text: 'Edu Reports', icon: <GraduationCap size={20} />, path: '/edu-reports' },
 
         { text: 'Disputes', icon: <AlertCircle size={20} />, path: '/disputes' },
@@ -41,15 +39,15 @@ export default function DashboardLayout() {
             {/* Sidebar */}
             <aside
                 className={clsx(
-                    "bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
+                    "bg-slate-100 border-r border-slate-200 transition-all duration-300 flex flex-col",
                     sidebarOpen ? "w-64" : "w-16"
                 )}
             >
-                <div className="h-16 flex items-center justify-center border-b border-gray-200">
+                <div className="h-16 flex items-center justify-center border-b border-slate-200">
                     {sidebarOpen ? (
-                        <h1 className="text-xl font-bold text-indigo-600">Aadikarta</h1>
+                        <h1 className="text-xl font-bold text-orange-600">Aadikarta</h1>
                     ) : (
-                        <span className="text-xl font-bold text-indigo-600">A</span>
+                        <span className="text-xl font-bold text-orange-600">A</span>
                     )}
                 </div>
 
@@ -59,10 +57,10 @@ export default function DashboardLayout() {
                             key={item.path}
                             onClick={() => navigate(item.path)}
                             className={clsx(
-                                "flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                                "flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
                                 location.pathname === item.path
-                                    ? "bg-indigo-50 text-indigo-700"
-                                    : "text-gray-700 hover:bg-gray-100",
+                                    ? "bg-indigo-600 text-white shadow-sm"
+                                    : "text-slate-600 hover:bg-slate-200 hover:text-slate-900",
                                 !sidebarOpen && "justify-center"
                             )}
                             title={!sidebarOpen ? item.text : undefined}
@@ -75,11 +73,11 @@ export default function DashboardLayout() {
                     ))}
                 </nav>
 
-                <div className="p-4 border-t border-gray-200">
+                <div className="p-4 border-t border-slate-200">
                     <button
                         onClick={handleLogout}
                         className={clsx(
-                            "flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 transition-colors",
+                            "flex items-center w-full px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer",
                             !sidebarOpen && "justify-center"
                         )}
                         title={!sidebarOpen ? "Logout" : undefined}
@@ -90,6 +88,7 @@ export default function DashboardLayout() {
                         {sidebarOpen && <span className="ml-3">Logout</span>}
                     </button>
                 </div>
+
             </aside>
 
             {/* Main Content */}

@@ -17,10 +17,6 @@ const Payouts = lazy(() => import('./pages/Payouts'));
 const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
 const PostList = lazy(() => import('./pages/cms/PostList'));
 const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
-const PageList = lazy(() => import('./pages/cms/PageList'));
-const PageEditor = lazy(() => import('./pages/cms/PageEditor'));
-const HoroscopeList = lazy(() => import('./pages/cms/HoroscopeList'));
-const HoroscopeEditor = lazy(() => import('./pages/cms/HoroscopeEditor'));
 const ContactInquiries = lazy(() => import('./pages/cms/ContactInquiries'));
 const EduReports = lazy(() => import('./pages/EduReports'));
 const Disputes = lazy(() => import('./pages/Disputes'));
@@ -64,14 +60,6 @@ function App() {
             <Route path="/cms/posts" element={<PostList />} />
             <Route path="/cms/posts/new" element={<PostEditor />} />
             <Route path="/cms/posts/edit/:id" element={<PostEditor />} />
-
-            <Route path="/cms/pages" element={<PageList />} />
-            <Route path="/cms/pages/new" element={<PageEditor />} />
-            <Route path="/cms/pages/edit/:id" element={<PageEditor />} />
-
-            <Route path="/cms/horoscopes" element={<HoroscopeList />} />
-            <Route path="/cms/horoscopes/new" element={<HoroscopeEditor />} />
-            <Route path="/cms/horoscopes/edit/:id" element={<HoroscopeEditor />} />
 
             <Route path="/cms/contact-inquiries" element={<ContactInquiries />} />
 

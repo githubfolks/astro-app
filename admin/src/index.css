@@ -1,7 +1,42 @@
 @import "tailwindcss";
 
+@theme {
+  --color-indigo-50: #eff6ff;
+  --color-indigo-100: #dbeafe;
+  --color-indigo-200: #bfdbfe;
+  --color-indigo-300: #93c5fd;
+  --color-indigo-400: #60a5fa;
+  --color-indigo-500: #3b82f6;
+  --color-indigo-600: #2563eb;
+  --color-indigo-700: #1d4ed8;
+  --color-indigo-800: #1e40af;
+  --color-indigo-900: #1e3a8a;
+}
+
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-slate-50 text-slate-900 antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+
+  /* Modern CRM Table Styles */
+  table {
+    @apply w-full border-collapse text-left text-sm text-slate-600;
+  }
+
+  thead {
+    @apply bg-slate-100/80 border-b border-slate-200/80;
+  }
+
+  th {
+    @apply px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-slate-500 select-none align-middle;
+  }
+
+  tbody tr {
+    @apply border-b border-slate-100 transition-colors bg-white hover:bg-slate-50/80;
+  }
+
+  td {
+    @apply px-5 py-4 align-middle text-slate-700;
   }
 }
