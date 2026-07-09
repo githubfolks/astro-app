@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
@@ -11,17 +11,38 @@ export default function Login() {
     const [error, setError] = useState('');
     const { login } = useAuth();
     const navigate = useNavigate();
+    const [savePassword, setSavePassword] = useState(false);
+
+    useEffect(() => {
+        const savedUser = localStorage.getItem('saved_username');
+        const savedPass = localStorage.getItem('saved_password');
+        if (savedUser && savedPass) {
+            setUsername(savedUser);
+            setPassword(savedPass);
+            setSavePassword(true);
+        }
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
             await login(username, password);
+
+            if (savePassword) {
+                localStorage.setItem('saved_username', username);
+                localStorage.setItem('saved_password', password);
+            } else {
+                localStorage.removeItem('saved_username');
+                localStorage.removeItem('saved_password');
+            }
+
             navigate('/');
         } catch (err) {
             setError(err.message || 'Failed to login');
         }
     };
+
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
@@ -59,6 +80,19 @@ export default function Login() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <div className="flex items-center">
+                            <input
+                                id="remember-me"
+                                name="remember-me"
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                checked={savePassword}
+                                onChange={(e) => setSavePassword(e.target.checked)}
+                            />
+                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 cursor-pointer">
+                                Save password
+                            </label>
+                        </div>
                         <Button
                             type="submit"
                             className="w-full"

@@ -1,5 +1,5 @@
 import { getErrorMessage } from '../utils/errors';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -15,6 +15,17 @@ export const Login: React.FC = () => {
     const location = useLocation();
     const justVerified = location.state?.verified === true;
     const [isLoading, setIsLoading] = useState(false);
+    const [savePassword, setSavePassword] = useState(false);
+
+    useEffect(() => {
+        const savedUser = localStorage.getItem('saved_username');
+        const savedPass = localStorage.getItem('saved_password');
+        if (savedUser && savedPass) {
+            setUsername(savedUser);
+            setPassword(savedPass);
+            setSavePassword(true);
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -23,6 +34,13 @@ export const Login: React.FC = () => {
             setError('');
             const data = await api.auth.login(username, password);
 
+            if (savePassword) {
+                localStorage.setItem('saved_username', username);
+                localStorage.setItem('saved_password', password);
+            } else {
+                localStorage.removeItem('saved_username');
+                localStorage.removeItem('saved_password');
+            }
 
             // Normalize role to handle potential casing/whitespace issues
             const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
@@ -48,6 +66,7 @@ export const Login: React.FC = () => {
             setIsLoading(false);
         }
     };
+
 
     return (
         <div className="auth-container">
@@ -89,7 +108,16 @@ export const Login: React.FC = () => {
                             onChange={(e) => setPassword(e.target.value)}
                             disabled={isLoading}
                         />
-                        <div style={{ textAlign: 'right', marginTop: '10px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                            <label className="remember-me-container">
+                                <input
+                                    type="checkbox"
+                                    checked={savePassword}
+                                    onChange={(e) => setSavePassword(e.target.checked)}
+                                    disabled={isLoading}
+                                />
+                                Save password
+                            </label>
                             <Link to="/forgot-password" className="auth-link" style={{ fontSize: '0.9rem' }}>Forgot Password?</Link>
                         </div>
                     </div>
