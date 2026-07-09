@@ -1,6 +1,5 @@
 import { storage } from '../utils/storage';
 import { isNative } from '../utils/platform';
-import { CapacitorHttp } from '@capacitor/core';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -44,7 +43,7 @@ const getCsrfToken = (): string | null => {
 
 /** Native-aware fetch wrapper to bypass CORS */
 const customFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
-    const { method = 'GET', headers: originalHeaders = {}, body } = options;
+    const { method = 'GET', headers: originalHeaders = {} } = options;
 
     // Add CSRF token for state-changing methods
     const headers = new Headers(originalHeaders);
@@ -59,30 +58,12 @@ const customFetch = async (url: string, options: RequestInit = {}): Promise<Resp
         return fetch(url, { ...options, headers, credentials: 'include' });
     }
 
-    try {
-        // Convert headers to simple object
-        const capHeaders: Record<string, string> = {};
-        headers.forEach((v, k) => capHeaders[k] = v);
-
-        const response = await CapacitorHttp.request({
-            url,
-            method,
-            headers: capHeaders,
-            data: body ? JSON.parse(body as string) : undefined, // CapacitorHttp expects object for JSON body
-        });
-
-        // Adapt Capacitor response to Fetch API Response
-        return new Response(
-            typeof response.data === 'object' ? JSON.stringify(response.data) : response.data,
-            {
-                status: response.status,
-                headers: response.headers as HeadersInit,
-            }
-        );
-    } catch (error) {
-        console.error('Native fetch error:', error);
-        throw error;
-    }
+    // On native, capacitor.config.ts enables CapacitorHttp, which patches the
+    // global fetch to route through the native HTTP client (bypassing CORS)
+    // while correctly handling FormData/JSON bodies. Calling CapacitorHttp.request
+    // directly here used to double-handle bodies and broke on FormData (e.g. login,
+    // file uploads), since it force-JSON.parsed whatever body was passed in.
+    return fetch(url, { ...options, headers });
 };
 
 const handleResponse = async (response: Response, defaultError: string) => {

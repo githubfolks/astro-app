@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AOS from 'aos';
 import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
 import AstrologerCard from './AstrologerCard';
 import type { Astrologer, AstrologerListItem, SeekerProfile } from '../types';
@@ -133,6 +134,16 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     useEffect(() => {
         fetchAstrologers();
     }, [topRankingOnly, limit]); // Refetch if these props change
+
+    // Cards mount asynchronously after the fetch resolves, i.e. after the page's
+    // initial AOS.init() already ran. Re-running it picks up these late `data-aos`
+    // nodes; without it they're permanently stuck at the library's opacity:0 default,
+    // since disable:'mobile' skips setting up an observer for later DOM changes.
+    useEffect(() => {
+        if (!loading) {
+            AOS.init({ duration: 1000, once: true, disable: 'mobile', offset: 50 });
+        }
+    }, [loading, astrologers]);
 
     useRealtime((event) => {
         if (event.type === 'ASTRO_ONLINE' && event.astrologer_id) {

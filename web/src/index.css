@@ -101,6 +101,12 @@ a {
   padding-top: var(--safe-area-top);
 }
 
+/* The Login/Signup/etc "Back to Home" pill is absolutely positioned from the
+   top of its container, which starts under the status bar on native. */
+.native-app .back-to-home-link {
+  top: calc(16px + var(--safe-area-top));
+}
+
 /* Bottom nav safe area */
 .native-app .mobile-bottom-nav {
   padding-bottom: var(--safe-area-bottom);
