@@ -64,6 +64,8 @@ export const cms = {
         create: (data) => api.post('/cms/posts', data),
         update: (id, data) => api.put(`/cms/posts/${id}`, data),
         delete: (id) => api.delete(`/cms/posts/${id}`),
+        generateSocial: (data) => api.post('/cms/posts/generate-social', data),
+        shareSocial: (id, data) => api.post(`/cms/posts/${id}/share-social`, data),
     },
     inquiries: {
         list: (params) => api.get('/cms/contact-inquiries', { params }),

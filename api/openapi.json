@@ -2303,6 +2303,33 @@
         "title": "GenderType",
         "type": "string"
       },
+      "GenerateSocialRequest": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "platform": {
+            "enum": [
+              "facebook",
+              "instagram"
+            ],
+            "title": "Platform",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "content",
+          "platform"
+        ],
+        "title": "GenerateSocialRequest",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -3274,6 +3301,28 @@
         ],
         "title": "SessionStatus",
         "type": "string"
+      },
+      "ShareSocialRequest": {
+        "properties": {
+          "platform": {
+            "enum": [
+              "facebook",
+              "instagram"
+            ],
+            "title": "Platform",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform",
+          "text"
+        ],
+        "title": "ShareSocialRequest",
+        "type": "object"
       },
       "Token": {
         "properties": {
@@ -6562,6 +6611,50 @@
         ]
       }
     },
+    "/cms/posts/generate-social": {
+      "post": {
+        "operationId": "generate_social_post_cms_posts_generate_social_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSocialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Social Post",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
     "/cms/posts/{post_id}": {
       "delete": {
         "operationId": "delete_post_cms_posts__post_id__delete",
@@ -6702,6 +6795,61 @@
           }
         ],
         "summary": "Update Post",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
+    "/cms/posts/{post_id}/share-social": {
+      "post": {
+        "operationId": "share_social_post_cms_posts__post_id__share_social_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "post_id",
+            "required": true,
+            "schema": {
+              "title": "Post Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareSocialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Share Social Post",
         "tags": [
           "CMS"
         ]

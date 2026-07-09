@@ -23,10 +23,14 @@ DEFAULTS: dict[str, str] = {
     "request_stale_minutes": "5",
     "presence_ttl_seconds": "60",
     "promo_first_chat_amount": "49",  # flat ₹ charged for a seeker's first 5 minutes of their very first chat
+    "facebook_page_id": "",
+    "facebook_access_token": "",
+    "instagram_business_account_id": "",
+    "instagram_access_token": "",
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.
-SECRET_KEYS = {"waplex_api_key"}
+SECRET_KEYS = {"waplex_api_key", "facebook_access_token", "instagram_access_token"}
 
 _CACHE: dict[str, str] = {}
 _CACHE_TS: float = 0.0

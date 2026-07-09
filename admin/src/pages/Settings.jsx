@@ -27,6 +27,16 @@ const GROUPS = [
             { key: 'promo_first_chat_amount', label: 'First Chat Promotional Rate (₹ for first 5 minutes)' },
         ],
     },
+    {
+        title: 'Facebook & Instagram Integration',
+        desc: 'Configure Facebook Page ID and Instagram Business Account details for automated post sharing.',
+        fields: [
+            { key: 'facebook_page_id', label: 'Facebook Page ID' },
+            { key: 'facebook_access_token', label: 'Facebook Page Access Token', secret: true },
+            { key: 'instagram_business_account_id', label: 'Instagram Business Account ID' },
+            { key: 'instagram_access_token', label: 'Instagram Access Token', secret: true },
+        ],
+    },
 ];
 
 function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop, error }) {
@@ -304,51 +314,89 @@ export default function Settings() {
     const isWaplexConfigured = waStatus?.is_configured;
 
     return (
-        <div className="p-6 max-w-3xl">
+        <div className="p-6 max-w-6xl w-full">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Platform Settings</h1>
             <p className="text-gray-500 mb-6 text-sm">Configure WhatsApp notification gateway, moderation alerts, and system tunables.</p>
 
-            <WhatsAppPanel
-                isConfigured={isWaplexConfigured}
-                waStatus={waStatus}
-                isConnecting={isConnecting}
-                isStopping={isStopping}
-                phone={waPhone}
-                onPhoneChange={setWaPhone}
-                onConnect={handleWaConnect}
-                onStop={handleWaStop}
-                error={waError}
-            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-6">
+                {/* Left Column */}
+                <div className="space-y-6">
+                    <WhatsAppPanel
+                        isConfigured={isWaplexConfigured}
+                        waStatus={waStatus}
+                        isConnecting={isConnecting}
+                        isStopping={isStopping}
+                        phone={waPhone}
+                        onPhoneChange={setWaPhone}
+                        onConnect={handleWaConnect}
+                        onStop={handleWaStop}
+                        error={waError}
+                    />
 
-            {GROUPS.map(group => (
-                <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 mb-6 shadow-sm">
-                    <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
-                    {group.desc && <p className="text-xs text-gray-500 mb-4">{group.desc}</p>}
-                    <div className="space-y-4">
-                        {group.fields.map(f => (
-                            <div key={f.key}>
-                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{f.label}</label>
-                                {f.textarea ? (
-                                    <textarea
-                                        rows={2}
-                                        value={values[f.key] ?? ''}
-                                        onChange={e => onChange(f.key, e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    />
-                                ) : (
-                                    <input
-                                        type={f.secret ? 'text' : 'text'}
-                                        value={values[f.key] ?? ''}
-                                        onChange={e => onChange(f.key, e.target.value)}
-                                        placeholder={f.secret ? '******** (leave to keep current)' : ''}
-                                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    />
-                                )}
+                    {GROUPS.filter(g => ['Tunables', 'Promotions'].includes(g.title)).map(group => (
+                        <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                            <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
+                            {group.desc && <p className="text-xs text-gray-500 mb-4">{group.desc}</p>}
+                            <div className="space-y-4">
+                                {group.fields.map(f => (
+                                    <div key={f.key}>
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{f.label}</label>
+                                        {f.textarea ? (
+                                            <textarea
+                                                rows={2}
+                                                value={values[f.key] ?? ''}
+                                                onChange={e => onChange(f.key, e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            />
+                                        ) : (
+                                            <input
+                                                type={f.secret ? 'password' : 'text'}
+                                                value={values[f.key] ?? ''}
+                                                onChange={e => onChange(f.key, e.target.value)}
+                                                placeholder={f.secret ? '******** (leave to keep current)' : ''}
+                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            />
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    ))}
                 </div>
-            ))}
+
+                {/* Right Column */}
+                <div className="space-y-6">
+                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration'].includes(g.title)).map(group => (
+                        <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                            <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
+                            {group.desc && <p className="text-xs text-gray-500 mb-4">{group.desc}</p>}
+                            <div className="space-y-4">
+                                {group.fields.map(f => (
+                                    <div key={f.key}>
+                                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{f.label}</label>
+                                        {f.textarea ? (
+                                            <textarea
+                                                rows={2}
+                                                value={values[f.key] ?? ''}
+                                                onChange={e => onChange(f.key, e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            />
+                                        ) : (
+                                            <input
+                                                type={f.secret ? 'password' : 'text'}
+                                                value={values[f.key] ?? ''}
+                                                onChange={e => onChange(f.key, e.target.value)}
+                                                placeholder={f.secret ? '******** (leave to keep current)' : ''}
+                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
             <div className="flex items-center gap-4">
                 <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save Settings'}</Button>
