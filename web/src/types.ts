@@ -151,6 +151,18 @@ export interface ChatHistoryItem {
     timestamp: string;
 }
 
+/** An astrologer payout record as returned by the payout history endpoint. */
+export interface PayoutHistoryItem {
+    id: number;
+    processed_at?: string | null;
+    created_at: string;
+    transaction_reference?: string | null;
+    status: string;
+    tds_deducted?: number | null;
+    amount?: number | null;
+    admin_comments?: string | null;
+}
+
 // --- Kundli / FreeAstroAPI chart structures ---
 // Shape matches FreeAstroAPI's POST /api/v2/vedic/calculate response.
 

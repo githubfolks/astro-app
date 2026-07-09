@@ -41,12 +41,12 @@ export const useChat = (consultationId: string) => {
     const pongTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastPongReceived = useRef(true);
 
-    const clearHeartbeat = () => {
+    const clearHeartbeat = useCallback(() => {
         if (heartbeatTimer.current) { clearInterval(heartbeatTimer.current); heartbeatTimer.current = null; }
         if (pongTimer.current) { clearTimeout(pongTimer.current); pongTimer.current = null; }
-    };
+    }, []);
 
-    const startHeartbeat = (socket: WebSocket) => {
+    const startHeartbeat = useCallback((socket: WebSocket) => {
         clearHeartbeat();
         heartbeatTimer.current = setInterval(() => {
             if (socket.readyState !== WebSocket.OPEN) return;
@@ -59,7 +59,7 @@ export const useChat = (consultationId: string) => {
                 }
             }, PONG_TIMEOUT_MS);
         }, HEARTBEAT_INTERVAL_MS);
-    };
+    }, [clearHeartbeat]);
 
     const connect = useCallback(() => {
         if (!token || !consultationId || !shouldReconnect.current) return;
@@ -163,7 +163,7 @@ export const useChat = (consultationId: string) => {
         socket.onerror = () => {
             // onclose fires immediately after, which handles reconnect
         };
-    }, [consultationId, token]);
+    }, [consultationId, token, startHeartbeat, clearHeartbeat]);
 
     // Tick the talk-time clock locally between server duration syncs
     useEffect(() => {
@@ -197,7 +197,7 @@ export const useChat = (consultationId: string) => {
             if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
             ws.current?.close(1000, 'component_unmount');
         };
-    }, [connect]);
+    }, [connect, consultationId, token, clearHeartbeat]);
 
     // Backgrounding a tab/screen freezes the heartbeat timer and the OS often drops
     // the underlying socket outright, so by the time the tab is foregrounded again

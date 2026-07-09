@@ -7,7 +7,7 @@ import LoginModal from '../components/LoginModal';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { useRealtime } from '../hooks/useRealtime';
+import { useRealtime } from '../context/RealtimeContext';
 import {
     Star,
     MessageCircle,
@@ -35,6 +35,10 @@ const AstrologerProfile: React.FC = () => {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
     const [notified, setNotified] = useState(false);
+    // Only seekers can subscribe to availability alerts (backend rejects everyone
+    // else) — gate the Knock button on this instead of showing it to everyone and
+    // letting the request fail.
+    const canNotify = isAuthenticated && user?.role === 'SEEKER';
 
     const getStructuredData = (ast: AstrologerProfile) => ({
         "@context": "https://schema.org",
@@ -78,7 +82,7 @@ const AstrologerProfile: React.FC = () => {
                     setLoading(false);
                 });
         }
-    }, [id]);
+    }, [id, navigate]);
 
     useEffect(() => {
         if (isAuthenticated && user?.role === 'SEEKER') {
@@ -126,8 +130,9 @@ const AstrologerProfile: React.FC = () => {
         try {
             await api.astrologers.notifyWhenOnline(id);
             setNotified(true);
-        } catch {
-            alert('Please log in as a seeker to get availability alerts.');
+        } catch (err) {
+            console.error('Failed to subscribe to availability alerts', err);
+            alert('Failed to set up the alert. Please try again.');
         }
     };
 
@@ -226,7 +231,7 @@ const AstrologerProfile: React.FC = () => {
                                     <CheckCircle size={20} className="text-blue-400" />
                                     <span className="text-sm text-blue-300 font-medium">Verified Expert</span>
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-bold mb-3">{astrologer.full_name}</h1>
+                                <h1 className="text-3xl md:text-4xl font-normal mb-3">{astrologer.full_name}</h1>
 
                                 {/* Rating & Stats */}
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
@@ -269,21 +274,27 @@ const AstrologerProfile: React.FC = () => {
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[280px]">
                                 <div className="text-center mb-4">
                                     <div className="text-sm text-gray-300 mb-1">Consultation Fee</div>
-                                    <div className="text-4xl font-bold text-white">
+                                    <div className="text-4xl text-white">
                                         ₹{astrologer.consultation_fee_per_min}
                                         <span className="text-lg font-normal text-gray-300">/min</span>
                                     </div>
                                 </div>
 
                                 {status === 'OFFLINE' ? (
-                                    <button
-                                        onClick={handleNotify}
-                                        disabled={notified}
-                                        className="w-full bg-white/15 border border-white/30 text-white font-bold py-4 rounded-xl hover:bg-white/25 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-default"
-                                    >
-                                        <Bell size={20} />
-                                        {notified ? "Knocked" : 'Knock'}
-                                    </button>
+                                    canNotify ? (
+                                        <button
+                                            onClick={handleNotify}
+                                            disabled={notified}
+                                            className="w-full bg-white/15 border border-white/30 text-white font-bold py-4 rounded-xl hover:bg-white/25 transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-default"
+                                        >
+                                            <Bell size={20} />
+                                            {notified ? "Knocked" : 'Knock'}
+                                        </button>
+                                    ) : (
+                                        <div className="w-full text-center py-4 text-white/70 font-medium">
+                                            Currently Offline
+                                        </div>
+                                    )
                                 ) : (
                                     <button
                                         onClick={handleStartChat}
@@ -323,7 +334,7 @@ const AstrologerProfile: React.FC = () => {
                         <div className="lg:col-span-2 space-y-8">
                             {/* About Section */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <h2 className="text-xl font-normal text-gray-900 mb-4 flex items-center gap-2">
                                     <Award className="text-[#E91E63]" size={24} />
                                     About Me
                                 </h2>
@@ -334,7 +345,7 @@ const AstrologerProfile: React.FC = () => {
 
                             {/* Expertise Section */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                                <h2 className="text-xl font-normal text-gray-900 mb-4">
                                     Areas of Expertise
                                 </h2>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -349,14 +360,14 @@ const AstrologerProfile: React.FC = () => {
 
                             {/* Why Consult Section */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-4">Why Consult {astrologer.full_name}?</h2>
+                                <h2 className="text-xl font-normal text-gray-900 mb-4">Why Consult {astrologer.full_name}?</h2>
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                                             <CheckCircle size={20} className="text-green-600" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900">Accurate Predictions</h3>
+                                            <h3 className="font-normal text-gray-900">Accurate Predictions</h3>
                                             <p className="text-gray-600 text-sm">Highly precise predictions based on detailed chart analysis</p>
                                         </div>
                                     </div>
@@ -365,7 +376,7 @@ const AstrologerProfile: React.FC = () => {
                                             <Clock size={20} className="text-blue-600" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900">Timely Guidance</h3>
+                                            <h3 className="font-normal text-gray-900">Timely Guidance</h3>
                                             <p className="text-gray-600 text-sm">Quick and responsive consultations when you need them</p>
                                         </div>
                                     </div>
@@ -374,7 +385,7 @@ const AstrologerProfile: React.FC = () => {
                                             <Heart size={20} className="text-purple-600" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900">Compassionate Approach</h3>
+                                            <h3 className="font-normal text-gray-900">Compassionate Approach</h3>
                                             <p className="text-gray-600 text-sm">Understanding and empathetic guidance for your concerns</p>
                                         </div>
                                     </div>
@@ -386,7 +397,7 @@ const AstrologerProfile: React.FC = () => {
                         <div className="space-y-6">
                             {/* Quick Stats */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="font-bold text-gray-900 mb-4">Quick Stats</h3>
+                                <h3 className="font-normal text-gray-900 mb-4">Quick Stats</h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Experience</span>
@@ -412,21 +423,25 @@ const AstrologerProfile: React.FC = () => {
 
                             {/* CTA Card */}
                             <div className="bg-gradient-to-br from-[#E91E63] to-[#FF5722] rounded-2xl p-6 text-white">
-                                <h3 className="font-bold text-lg mb-2">Ready to get insights?</h3>
+                                <h3 className="font-normal text-lg mb-2">Ready to get insights?</h3>
                                 <p className="text-white/80 text-sm mb-4">
                                     {status === 'OFFLINE'
-                                        ? "This astrologer is offline. Get notified the moment they're back online."
+                                        ? (canNotify
+                                            ? "This astrologer is offline. Get notified the moment they're back online."
+                                            : "This astrologer is currently offline.")
                                         : 'Start your consultation now and get personalized guidance.'}
                                 </p>
                                 {status === 'OFFLINE' ? (
-                                    <button
-                                        onClick={handleNotify}
-                                        disabled={notified}
-                                        className="w-full bg-white text-[#E91E63] font-bold py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-default"
-                                    >
-                                        <Bell size={18} />
-                                        {notified ? "Knocked" : 'Knock'}
-                                    </button>
+                                    canNotify && (
+                                        <button
+                                            onClick={handleNotify}
+                                            disabled={notified}
+                                            className="w-full bg-white text-[#E91E63] font-bold py-3 rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-default"
+                                        >
+                                            <Bell size={18} />
+                                            {notified ? "Knocked" : 'Knock'}
+                                        </button>
+                                    )
                                 ) : (
                                     <button
                                         onClick={handleStartChat}

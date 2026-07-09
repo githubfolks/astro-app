@@ -5,6 +5,17 @@ Seeker	seeker@test.com	TestPass123
 Astrologer	astro@test.com	TestPass123
 
 
+server:
+
+Seeker:
+astroshiv2005.sk@gmail.com
+G&cnRe9jr$z(
+
+Astrologer:
+raman.bharadwaj@aadikarta.org
+8cSV!DsTbqWYU4q
+
+
 # Local
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 

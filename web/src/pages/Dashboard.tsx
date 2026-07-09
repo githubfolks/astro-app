@@ -1,10 +1,10 @@
 import { getErrorMessage } from '../utils/errors';
-import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile } from '../types';
+import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile, PayoutHistoryItem } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useRealtime } from '../hooks/useRealtime';
+import { useRealtime } from '../context/RealtimeContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
@@ -22,7 +22,7 @@ export const Dashboard: React.FC = () => {
     const [isOnline, setIsOnline] = useState(false);
     const [availabilityText, setAvailabilityText] = useState('');
     const [updatingProfile, setUpdatingProfile] = useState(false);
-    const [payoutHistory, setPayoutHistory] = useState<any[]>([]);
+    const [payoutHistory, setPayoutHistory] = useState<PayoutHistoryItem[]>([]);
 
     // Seeker specific state
     const [walletBalance, setWalletBalance] = useState<number>(0);
@@ -353,7 +353,7 @@ export const Dashboard: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
-                                                {payoutHistory.map((p: any) => (
+                                                {payoutHistory.map((p: PayoutHistoryItem) => (
                                                     <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="p-4 text-sm text-gray-600 font-medium">
                                                             {new Date(p.processed_at || p.created_at).toLocaleDateString()}

@@ -172,7 +172,7 @@ const HoroscopeSign: React.FC = () => {
             })
             .catch(() => setPrediction(null))
             .finally(() => setPredLoading(false));
-    }, [sign]);
+    }, [sign, data]);
 
     if (!data) return <Navigate to="/astrologers" replace />;
 

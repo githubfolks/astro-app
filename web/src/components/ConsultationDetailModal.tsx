@@ -1,6 +1,6 @@
 import React from 'react';
 import { Star, X, Clock, MessageSquare, User } from 'lucide-react';
-import type { Consultation } from '../types';
+import type { Consultation, ChatHistoryItem } from '../types';
 import { api } from '../services/api';
 
 interface Props {
@@ -16,7 +16,7 @@ const formatDuration = (totalSeconds?: number) => {
 };
 
 const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => {
-    const [messages, setMessages] = React.useState<any[]>([]);
+    const [messages, setMessages] = React.useState<ChatHistoryItem[]>([]);
     const [loading, setLoading] = React.useState(false);
 
     React.useEffect(() => {
@@ -24,11 +24,11 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
             setLoading(true);
             setMessages([]);
             api.consultations.getChatHistory(consultation.id)
-                .then((data: any) => {
+                .then((data: ChatHistoryItem[]) => {
                     setMessages(data);
                     setLoading(false);
                 })
-                .catch((err: any) => {
+                .catch((err: unknown) => {
                     console.error('Failed to load chat history', err);
                     setLoading(false);
                 });

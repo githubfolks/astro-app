@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { getBrowserLocation, getIpBasedLocation } from '../utils/location';
 import type { UserCoords } from '../utils/location';
 import { api } from '../services/api';
@@ -37,7 +37,7 @@ const PanchangSection: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [refreshing, setRefreshing] = useState(false);
 
-    const loadPanchang = async (userCoords: UserCoords) => {
+    const loadPanchang = useCallback(async (userCoords: UserCoords) => {
         setLoading(true);
         setError(null);
         try {
@@ -49,9 +49,9 @@ const PanchangSection: React.FC = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, []);
 
-    const detectLocationAndLoad = async (forceBrowser = false) => {
+    const detectLocationAndLoad = useCallback(async (forceBrowser = false) => {
         setRefreshing(true);
         setError(null);
         try {
@@ -79,11 +79,11 @@ const PanchangSection: React.FC = () => {
             setCoords(fallback);
             await loadPanchang(fallback);
         }
-    };
+    }, [loadPanchang]);
 
     useEffect(() => {
         detectLocationAndLoad();
-    }, []);
+    }, [detectLocationAndLoad]);
 
     const formatTime = (isoString: string) => {
         if (!isoString) return "--:--";

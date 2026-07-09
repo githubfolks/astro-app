@@ -9,9 +9,13 @@ import './AstrologerCard.css';
 interface Props {
     astro: Astrologer;
     onChatClick: (astroId: number) => void;
+    // Only seekers can subscribe to availability alerts (backend rejects everyone
+    // else) — gate the Knock button on this instead of showing it to everyone and
+    // letting the request fail.
+    canNotify: boolean;
 }
 
-const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
+const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
     const status = astro.availability_status || (astro.is_online ? 'ONLINE' : 'OFFLINE');
     const [notified, setNotified] = useState(false);
 
@@ -19,8 +23,9 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
         try {
             await api.astrologers.notifyWhenOnline(astro.id);
             setNotified(true);
-        } catch {
-            alert('Please log in as a seeker to get availability alerts.');
+        } catch (err) {
+            console.error('Failed to subscribe to availability alerts', err);
+            alert('Failed to set up the alert. Please try again.');
         }
     };
 
@@ -109,10 +114,12 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick }) => {
                         </button>
                     ) : notified ? (
                         <span className="offline-badge">Knocked</span>
-                    ) : (
+                    ) : canNotify ? (
                         <button className="notify-btn" onClick={handleNotify}>
                             <Bell size={14} /> Knock
                         </button>
+                    ) : (
+                        <span className="offline-badge">Offline</span>
                     )}
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AOS from 'aos';
 import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
@@ -8,7 +8,7 @@ import LoginModal from './LoginModal';
 import ProfileCompletionModal from './ProfileCompletionModal';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { useRealtime } from '../hooks/useRealtime';
+import { useRealtime } from '../context/RealtimeContext';
 import './AstrologerList.css';
 
 interface AstrologerListProps {
@@ -87,12 +87,15 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const [hasMore, setHasMore] = useState(true);
     const PAGE_SIZE = limit || 20;
 
-    const fetchAstrologers = async (isLoadMore = false) => {
+    // Takes `skip` explicitly (rather than closing over `page`) so this can be
+    // safely memoized on PAGE_SIZE alone — closing over `page` would give the
+    // reset-fetch effect below a new callback identity on every "Load More"
+    // click and re-trigger it, wiping the accumulated list back to page 1.
+    const fetchAstrologers = useCallback(async (skip: number, append: boolean) => {
         try {
             setLoading(true);
-            const currentSkip = isLoadMore ? page * PAGE_SIZE : 0;
             // Always sort by rating as per requirements
-            const data = await api.astrologers.list(currentSkip, PAGE_SIZE, 'rating');
+            const data = await api.astrologers.list(skip, PAGE_SIZE, 'rating');
 
             if (!Array.isArray(data)) throw new Error("Invalid response format");
 
@@ -117,7 +120,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 setHasMore(false);
             }
 
-            if (isLoadMore) {
+            if (append) {
                 setAstrologers(prev => [...prev, ...astros]);
                 setPage(prev => prev + 1);
             } else {
@@ -129,11 +132,11 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
         } finally {
             setLoading(false);
         }
-    };
+    }, [PAGE_SIZE]);
 
     useEffect(() => {
-        fetchAstrologers();
-    }, [topRankingOnly, limit]); // Refetch if these props change
+        fetchAstrologers(0, false);
+    }, [topRankingOnly, limit, fetchAstrologers]); // Refetch if these props change
 
     // Cards mount asynchronously after the fetch resolves, i.e. after the page's
     // initial AOS.init() already ran. Re-running it picks up these late `data-aos`
@@ -236,6 +239,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                                 <AstrologerCard
                                     astro={astro}
                                     onChatClick={handleChatClick}
+                                    canNotify={isAuthenticated && user?.role === 'SEEKER'}
                                 />
                             </div>
                         ))
@@ -248,7 +252,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                     <div className="load-more-container" style={{ textAlign: 'center', marginTop: '2rem' }}>
                         <button
                             className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
-                            onClick={() => fetchAstrologers(true)}
+                            onClick={() => fetchAstrologers(page * PAGE_SIZE, true)}
                         >
                             Load More
                         </button>
