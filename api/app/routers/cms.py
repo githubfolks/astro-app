@@ -247,6 +247,27 @@ def share_social_post(post_id: int, payload: ShareSocialRequest, db: Session = D
             if not creation_id:
                 raise HTTPException(status_code=500, detail="Instagram did not return a creation_id.")
 
+            # Step 1.5: Wait for media processing to complete (FINISHED)
+            import time
+            status_url = f"https://graph.facebook.com/v19.0/{creation_id}"
+            status_params = {
+                "fields": "status_code",
+                "access_token": access_token
+            }
+            
+            for _ in range(6):  # Poll up to 12 seconds
+                try:
+                    res_s = httpx.get(status_url, params=status_params, timeout=10.0)
+                    if res_s.status_code == 200:
+                        status_code = res_s.json().get("status_code")
+                        if status_code == "FINISHED":
+                            break
+                        elif status_code in ["ERROR", "EXPIRED"]:
+                            raise HTTPException(status_code=400, detail=f"Instagram media processing failed: {res_s.text}")
+                except httpx.HTTPError:
+                    pass
+                time.sleep(2.0)
+
             # Step 2: Publish media container
             publish_url = f"https://graph.facebook.com/v19.0/{ig_acct_id}/media_publish"
             publish_data = {
