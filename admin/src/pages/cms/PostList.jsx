@@ -87,7 +87,7 @@ export default function PostList() {
                         ))}
                         {posts.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                                <TableCell colSpan={4} className="text-center py-8 text-gray-900">
                                     No posts found
                                 </TableCell>
                             </TableRow>
@@ -98,7 +98,7 @@ export default function PostList() {
                 {/* Simple Pagination */}
                 {Math.ceil(total / limit) > 1 && (
                     <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-900">
                             Page {page} of {Math.ceil(total / limit)}
                         </div>
                         <div className="space-x-2">

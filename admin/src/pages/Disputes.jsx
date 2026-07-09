@@ -86,7 +86,7 @@ export default function Disputes() {
             </div>
 
             {loading ? (
-                <div className="text-center py-12 text-gray-500">Loading...</div>
+                <div className="text-center py-12 text-gray-900">Loading...</div>
             ) : items.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">No disputes found.</div>
             ) : (
@@ -107,7 +107,7 @@ export default function Disputes() {
                         <tbody className="divide-y divide-gray-100">
                             {items.map(item => (
                                 <tr key={item.id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 font-mono text-xs text-gray-500">{item.id}</td>
+                                    <td className="px-4 py-3 font-mono text-xs text-gray-900">{item.id}</td>
                                     <td className="px-4 py-3">{item.consultation_id}</td>
                                     <td className="px-4 py-3">{item.raised_by_id}</td>
                                     <td className="px-4 py-3 max-w-xs truncate text-gray-700">{item.reason}</td>
@@ -119,7 +119,7 @@ export default function Disputes() {
                                     <td className="px-4 py-3 text-gray-600">
                                         {item.resolution_amount ? `₹${item.resolution_amount}` : '—'}
                                     </td>
-                                    <td className="px-4 py-3 text-gray-500 text-xs">
+                                    <td className="px-4 py-3 text-gray-900 text-xs">
                                         {new Date(item.created_at).toLocaleDateString('en-IN')}
                                     </td>
                                     <td className="px-4 py-3">
@@ -145,11 +145,11 @@ export default function Disputes() {
                         </div>
                         <div className="p-6 space-y-4">
                             <div>
-                                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Reason</p>
+                                <p className="text-xs text-gray-900 uppercase tracking-wider mb-1">Reason</p>
                                 <p className="text-sm text-gray-800 bg-gray-50 rounded p-3">{selected.reason}</p>
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Update Status</label>
+                                <label className="block text-xs text-gray-900 uppercase tracking-wider mb-1">Update Status</label>
                                 <select
                                     value={form.status}
                                     onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
@@ -162,7 +162,7 @@ export default function Disputes() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Admin Notes</label>
+                                <label className="block text-xs text-gray-900 uppercase tracking-wider mb-1">Admin Notes</label>
                                 <textarea
                                     value={form.admin_notes}
                                     onChange={e => setForm(f => ({ ...f, admin_notes: e.target.value }))}
@@ -173,7 +173,7 @@ export default function Disputes() {
                             </div>
                             {form.status === 'RESOLVED' && (
                                 <div>
-                                    <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1">Refund Amount (₹)</label>
+                                    <label className="block text-xs text-gray-900 uppercase tracking-wider mb-1">Refund Amount (₹)</label>
                                     <input
                                         type="number"
                                         min="0"

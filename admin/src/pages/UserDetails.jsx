@@ -67,7 +67,7 @@ export default function UserDetails() {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading details...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-900">Loading details...</div>;
     if (!data) return <div className="p-8 text-center">User not found</div>;
 
     const { user, profile, wallet_balance, stats } = data;
@@ -92,7 +92,7 @@ export default function UserDetails() {
                                 {profile.full_name || user.email || "Unknown User"}
                                 {user.is_verified ? <CheckCircle size={18} className="text-blue-500" /> : <XCircle size={18} className="text-gray-300" />}
                             </h1>
-                            <div className="flex flex-col text-sm text-gray-500 mt-1">
+                            <div className="flex flex-col text-sm text-gray-900 mt-1">
                                 <span>ID: #{user.id} • {user.role}</span>
                                 <span>{user.email} • {user.phone_number}</span>
                             </div>
@@ -117,7 +117,7 @@ export default function UserDetails() {
                             <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                                 <Wallet size={20} />
                             </div>
-                            <h3 className="text-sm font-medium text-gray-500">Wallet Balance</h3>
+                            <h3 className="text-sm font-medium text-gray-900">Wallet Balance</h3>
                         </div>
                         <button onClick={() => setWalletModal(true)} className="text-xs text-purple-600 hover:underline font-medium">Adjust</button>
                     </div>
@@ -129,7 +129,7 @@ export default function UserDetails() {
                         <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                             <IndianRupee size={20} />
                         </div>
-                        <h3 className="text-sm font-medium text-gray-500">Total Spent</h3>
+                        <h3 className="text-sm font-medium text-gray-900">Total Spent</h3>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">₹{parseFloat(stats.total_spent).toFixed(2)}</p>
                 </div>
@@ -139,7 +139,7 @@ export default function UserDetails() {
                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                             <MessageSquare size={20} />
                         </div>
-                        <h3 className="text-sm font-medium text-gray-500">Total Consultations</h3>
+                        <h3 className="text-sm font-medium text-gray-900">Total Consultations</h3>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">{stats.total_consultations}</p>
                 </div>
@@ -154,26 +154,26 @@ export default function UserDetails() {
 
                         <div className="space-y-4">
                             <div>
-                                <span className="text-gray-500 text-xs uppercase tracking-wide block">Full Name</span>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Full Name</span>
                                 <span className="font-medium text-gray-900">{profile.full_name || "-"}</span>
                             </div>
 
                             {user?.role === 'SEEKER' && (
                                 <>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Date of Birth</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Date of Birth</span>
                                         <span className="font-medium text-gray-900">{profile.date_of_birth || "-"}</span>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Time of Birth</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Time of Birth</span>
                                         <span className="font-medium text-gray-900">{profile.time_of_birth || "-"}</span>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Place of Birth</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Place of Birth</span>
                                         <span className="font-medium text-gray-900">{profile.place_of_birth || "-"}</span>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Gender</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Gender</span>
                                         <span className="font-medium text-gray-900">{profile.gender || "-"}</span>
                                     </div>
                                 </>
@@ -182,15 +182,15 @@ export default function UserDetails() {
                             {user?.role === 'ASTROLOGER' && (
                                 <>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Experience (Years)</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Experience (Years)</span>
                                         <span className="font-medium text-gray-900">{profile.experience_years !== undefined ? `${profile.experience_years} years` : "-"}</span>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Languages</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Languages</span>
                                         <span className="font-medium text-gray-900">{profile.languages || "-"}</span>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500 text-xs uppercase tracking-wide block">Specialties</span>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Specialties</span>
                                         <span className="font-medium text-gray-900">{profile.specialties || "-"}</span>
                                     </div>
                                 </>
@@ -207,7 +207,7 @@ export default function UserDetails() {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-500 font-medium">
+                                <thead className="bg-gray-50 text-gray-900 font-medium">
                                     <tr>
                                         <th className="px-4 py-3">Date</th>
                                         <th className="px-4 py-3">Type</th>
@@ -220,7 +220,7 @@ export default function UserDetails() {
                                 <tbody className="divide-y divide-gray-100">
                                     {consultations.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="px-4 py-8 text-center text-gray-500">No consultations found.</td>
+                                            <td colSpan="6" className="px-4 py-8 text-center text-gray-900">No consultations found.</td>
                                         </tr>
                                     ) : (
                                         consultations.map((c) => (
@@ -260,7 +260,7 @@ export default function UserDetails() {
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-500 font-medium">
+                                <thead className="bg-gray-50 text-gray-900 font-medium">
                                     <tr>
                                         <th className="px-4 py-3">Date</th>
                                         <th className="px-4 py-3">Type</th>
@@ -271,7 +271,7 @@ export default function UserDetails() {
                                 <tbody className="divide-y divide-gray-100">
                                     {transactions.length === 0 ? (
                                         <tr>
-                                            <td colSpan="4" className="px-4 py-8 text-center text-gray-500">No transactions found.</td>
+                                            <td colSpan="4" className="px-4 py-8 text-center text-gray-900">No transactions found.</td>
                                         </tr>
                                     ) : (
                                         transactions.map((t) => (
@@ -282,7 +282,7 @@ export default function UserDetails() {
                                                 <td className="px-4 py-3">
                                                     <TransactionBadge type={t.transaction_type} />
                                                 </td>
-                                                <td className="px-4 py-3 text-gray-500">
+                                                <td className="px-4 py-3 text-gray-900">
                                                     <div className="text-xs font-medium text-gray-700">{t.reference_id || "-"}</div>
                                                     <div className="text-[10px] text-gray-400 max-w-[250px] truncate" title={t.description}>{t.description}</div>
                                                 </td>
@@ -321,7 +321,7 @@ export default function UserDetails() {
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm space-y-4">
                         <h2 className="text-lg font-bold text-gray-900">Adjust Wallet Balance</h2>
-                        <p className="text-sm text-gray-500">Use a positive number to credit, negative to debit.</p>
+                        <p className="text-sm text-gray-900">Use a positive number to credit, negative to debit.</p>
                         <div>
                             <label className="block text-xs font-medium text-gray-600 mb-1">Amount (₹)</label>
                             <input

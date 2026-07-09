@@ -81,7 +81,7 @@ export default function EduReports() {
                         <Users size={24} />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Total Enrollments</p>
+                        <p className="text-sm font-medium text-gray-900">Total Enrollments</p>
                         <h3 className="text-2xl font-bold text-gray-900">{stats.total_enrollments}</h3>
                     </div>
                 </Card>
@@ -91,7 +91,7 @@ export default function EduReports() {
                         <DollarSign size={24} />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-gray-500">Total Earnings</p>
+                        <p className="text-sm font-medium text-gray-900">Total Earnings</p>
                         <h3 className="text-2xl font-bold text-gray-900">{formatCurrency(stats.total_earnings)}</h3>
                     </div>
                 </Card>
@@ -101,7 +101,7 @@ export default function EduReports() {
             <Card className="overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
                     <h3 className="font-semibold text-gray-700">Recent Enrollments</h3>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-gray-900">
                         <Calendar size={14} className="mr-1" />
                         Showing activity for last {days || 'all'} days
                     </div>
@@ -127,7 +127,7 @@ export default function EduReports() {
                                         {item.batch_name}
                                     </span>
                                 </TableCell>
-                                <TableCell className="text-gray-500">{formatDate(item.enrolled_at)}</TableCell>
+                                <TableCell className="text-gray-900">{formatDate(item.enrolled_at)}</TableCell>
                                 <TableCell className="text-right font-semibold text-gray-900">
                                     {formatCurrency(item.price)}
                                 </TableCell>
@@ -145,7 +145,7 @@ export default function EduReports() {
                         ))}
                         {stats.enrollments.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-12 text-gray-500 italic">
+                                <TableCell colSpan={6} className="text-center py-12 text-gray-900 italic">
                                     No enrollments found for this period.
                                 </TableCell>
                             </TableRow>

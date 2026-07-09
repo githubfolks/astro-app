@@ -171,7 +171,7 @@ const Book: React.FC = () => {
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20">
                                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mb-4"></div>
-                                <p className="text-gray-500 font-medium">Loading courses...</p>
+                                <p className="text-gray-900 font-medium">Loading courses...</p>
                             </div>
                         ) : courses.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200" data-aos="fade-up">
@@ -213,11 +213,11 @@ const Book: React.FC = () => {
                                             </p>
 
                                             <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-100 mt-auto">
-                                                <div className="flex items-center gap-2 text-gray-500">
+                                                <div className="flex items-center gap-2 text-gray-900">
                                                     <Users size={16} />
                                                     <span className="text-sm font-medium">1.2k+ Students</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-gray-500">
+                                                <div className="flex items-center gap-2 text-gray-900">
                                                     <Clock size={16} />
                                                     <span className="text-sm font-medium">12+ Hours</span>
                                                 </div>

@@ -180,7 +180,7 @@ export default function AstrologerForm() {
                     <h1 className="text-2xl font-bold text-gray-900">
                         {isEditMode ? 'Edit Astrologer' : 'Add New Astrologer'}
                     </h1>
-                    <p className="text-gray-500 text-sm">
+                    <p className="text-gray-900 text-sm">
                         {isEditMode ? 'Update astrologer profile and details' : 'Onboard a new astrologer to the platform'}
                     </p>
                 </div>
@@ -270,7 +270,7 @@ export default function AstrologerForm() {
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        className="block w-full text-sm text-gray-500
+                                        className="block w-full text-sm text-gray-900
                                         file:mr-4 file:py-2 file:px-4
                                         file:rounded-full file:border-0
                                         file:text-xs file:font-semibold

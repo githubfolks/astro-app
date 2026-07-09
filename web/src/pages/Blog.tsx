@@ -85,7 +85,7 @@ const Blog: React.FC = () => {
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
                     </div>
                 ) : posts.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">
+                    <div className="text-center py-20 text-gray-900">
                         No articles found. Check back soon!
                     </div>
                 ) : (

@@ -49,7 +49,7 @@ export default function Login() {
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center space-y-2">
                     <CardTitle className="text-2xl font-bold text-gray-900">Admin Sign in</CardTitle>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-900">
                         Enter your credentials to access the dashboard
                     </p>
                 </CardHeader>

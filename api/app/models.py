@@ -456,3 +456,32 @@ class KundliReport(Base):
     seeker = relationship("User", foreign_keys=[seeker_id])
     astrologer = relationship("User", foreign_keys=[generated_by])
 
+
+class ContentType(str, enum.Enum):
+    SHORT_VIDEO = "SHORT_VIDEO"
+    VOICE_OVER_IMAGE = "VOICE_OVER_IMAGE"
+
+
+class ContentJobStatus(str, enum.Enum):
+    SCENES_GENERATED = "SCENES_GENERATED"
+    RENDERING = "RENDERING"
+    DONE = "DONE"
+    FAILED = "FAILED"
+
+
+class ContentStudioJob(Base):
+    __tablename__ = "content_studio_jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    topic = Column(String, nullable=False)
+    content_type = Column(Enum(ContentType), nullable=False)
+    status = Column(Enum(ContentJobStatus), default=ContentJobStatus.SCENES_GENERATED, nullable=False)
+    scenes = Column(JSON, nullable=False)  # [{index, narration_hi, image_prompt_en, image_url, audio_url, duration_sec, error}]
+    output_video_url = Column(String, nullable=True)
+    error_message = Column(Text, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    creator = relationship("User", foreign_keys=[created_by])
+

@@ -15,7 +15,7 @@ const PrivacyPolicy: React.FC = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-8 text-center">Privacy Policy</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-500">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
 
                     <p>
                         At AadiKarta (accessible at aadikarta.org), protecting the privacy of our seekers and astrologers is our highest priority. This Privacy Policy explains how we collect, use, store, and protect your information. By accessing or using our platform, you accept the practices described in this policy.

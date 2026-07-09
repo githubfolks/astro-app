@@ -56,13 +56,13 @@ export default function ModerationFlags() {
             </div>
 
             {loading ? (
-                <p className="text-gray-500">Loading…</p>
+                <p className="text-gray-900">Loading…</p>
             ) : items.length === 0 ? (
-                <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">No flags found.</div>
+                <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-900">No flags found.</div>
             ) : (
                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500">
+                        <thead className="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-900">
                             <tr>
                                 <th className="p-3">When</th>
                                 <th className="p-3">Consultation</th>
@@ -76,7 +76,7 @@ export default function ModerationFlags() {
                         <tbody className="divide-y divide-gray-100">
                             {items.map(f => (
                                 <tr key={f.id} className="hover:bg-gray-50">
-                                    <td className="p-3 text-gray-500">{f.created_at ? new Date(f.created_at).toLocaleString() : '-'}</td>
+                                    <td className="p-3 text-gray-900">{f.created_at ? new Date(f.created_at).toLocaleString() : '-'}</td>
                                     <td className="p-3">#{f.consultation_id}</td>
                                     <td className="p-3">#{f.flagged_user_id}</td>
                                     <td className="p-3"><span className="font-mono text-xs text-red-600">{f.reason}</span></td>
@@ -88,7 +88,7 @@ export default function ModerationFlags() {
                                         {f.status === 'OPEN' && (
                                             <div className="flex gap-2 justify-end">
                                                 <Button onClick={() => resolve(f.id, 'REVIEWED')} className="text-xs">Mark Reviewed</Button>
-                                                <button onClick={() => resolve(f.id, 'DISMISSED')} className="text-xs text-gray-500 hover:text-gray-700">Dismiss</button>
+                                                <button onClick={() => resolve(f.id, 'DISMISSED')} className="text-xs text-gray-900 hover:text-gray-700">Dismiss</button>
                                             </div>
                                         )}
                                     </td>

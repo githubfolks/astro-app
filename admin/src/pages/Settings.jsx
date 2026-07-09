@@ -37,6 +37,15 @@ const GROUPS = [
             { key: 'instagram_access_token', label: 'Instagram Access Token', secret: true },
         ],
     },
+    {
+        title: 'Content Studio (Bhashini Hindi Voice)',
+        desc: 'Credentials from bhashini.gov.in (My Profile) used to generate Hindi narration audio when rendering Content Studio videos.',
+        fields: [
+            { key: 'bhashini_user_id', label: 'Bhashini User ID' },
+            { key: 'bhashini_api_key', label: 'Bhashini API Key', secret: true },
+            { key: 'bhashini_pipeline_id', label: 'Bhashini Pipeline ID' },
+        ],
+    },
 ];
 
 function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop, error }) {
@@ -53,7 +62,7 @@ function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone
                 </div>
                 <div>
                     <h2 className="text-base font-bold text-gray-800">WhatsApp Notification Device</h2>
-                    <p className="text-xs text-gray-500">Pair your platform WhatsApp account to send alerts and notifications.</p>
+                    <p className="text-xs text-gray-900">Pair your platform WhatsApp account to send alerts and notifications.</p>
                 </div>
                 <div className="ml-auto">
                     {!isConfigured ? (
@@ -69,7 +78,7 @@ function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone
                             <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Pairing…
                         </span>
                     ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-500 border border-gray-100">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-900 border border-gray-100">
                             <WifiOff className="w-3.5 h-3.5" /> Disconnected
                         </span>
                     )}
@@ -115,7 +124,7 @@ function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone
                     )}
                     {!isPairing && (
                         <div>
-                            <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">
+                            <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">
                                 WhatsApp Phone Number
                             </label>
                             <input
@@ -309,14 +318,14 @@ export default function Settings() {
         }
     };
 
-    if (loading) return <div className="p-6 text-gray-500">Loading settings…</div>;
+    if (loading) return <div className="p-6 text-gray-900">Loading settings…</div>;
 
     const isWaplexConfigured = waStatus?.is_configured;
 
     return (
         <div className="p-6 max-w-6xl w-full">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">Platform Settings</h1>
-            <p className="text-gray-500 mb-6 text-sm">Configure WhatsApp notification gateway, moderation alerts, and system tunables.</p>
+            <p className="text-gray-900 mb-6 text-sm">Configure WhatsApp notification gateway, moderation alerts, and system tunables.</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-6">
                 {/* Left Column */}
@@ -336,11 +345,11 @@ export default function Settings() {
                     {GROUPS.filter(g => ['Tunables', 'Promotions'].includes(g.title)).map(group => (
                         <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                             <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
-                            {group.desc && <p className="text-xs text-gray-500 mb-4">{group.desc}</p>}
+                            {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}
                             <div className="space-y-4">
                                 {group.fields.map(f => (
                                     <div key={f.key}>
-                                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{f.label}</label>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">{f.label}</label>
                                         {f.textarea ? (
                                             <textarea
                                                 rows={2}
@@ -366,14 +375,14 @@ export default function Settings() {
 
                 {/* Right Column */}
                 <div className="space-y-6">
-                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration'].includes(g.title)).map(group => (
+                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration', 'Content Studio (Bhashini Hindi Voice)'].includes(g.title)).map(group => (
                         <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                             <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
-                            {group.desc && <p className="text-xs text-gray-500 mb-4">{group.desc}</p>}
+                            {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}
                             <div className="space-y-4">
                                 {group.fields.map(f => (
                                     <div key={f.key}>
-                                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">{f.label}</label>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">{f.label}</label>
                                         {f.textarea ? (
                                             <textarea
                                                 rows={2}

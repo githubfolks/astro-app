@@ -144,7 +144,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                 <div className="p-4 space-y-4">
                     {/* Amount Selection */}
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-2">Select Amount</label>
+                        <label className="block text-xs font-medium text-gray-900 mb-2">Select Amount</label>
                         <div className="flex flex-wrap gap-1.5 mb-2">
                             {presetAmounts.map(preset => (
                                 <button
@@ -160,7 +160,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                             ))}
                         </div>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">₹</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-900 font-bold text-sm">₹</span>
                             <input
                                 type="number"
                                 value={amount}
@@ -173,7 +173,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
 
                     {/* Payment Method */}
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-2">Payment Method</label>
+                        <label className="block text-xs font-medium text-gray-900 mb-2">Payment Method</label>
                         <div className="space-y-1.5">
                             <button
                                 onClick={() => setPaymentMethod('upi')}
@@ -185,7 +185,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                                 </div>
                                 <div className="text-left">
                                     <div className="font-semibold text-sm text-gray-900">UPI</div>
-                                    <div className="text-[10px] text-gray-500">Google Pay, PhonePe, BHIM, etc.</div>
+                                    <div className="text-[10px] text-gray-900">Google Pay, PhonePe, BHIM, etc.</div>
                                 </div>
                             </button>
 
@@ -199,7 +199,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                                 </div>
                                 <div className="text-left">
                                     <div className="font-semibold text-sm text-gray-900">Credit / Debit Card</div>
-                                    <div className="text-[10px] text-gray-500">Visa, Mastercard, RuPay</div>
+                                    <div className="text-[10px] text-gray-900">Visa, Mastercard, RuPay</div>
                                 </div>
                             </button>
 
@@ -213,7 +213,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                                 </div>
                                 <div className="text-left">
                                     <div className="font-semibold text-sm text-gray-900">Paytm Wallet</div>
-                                    <div className="text-[10px] text-gray-500">Pay using Paytm balance</div>
+                                    <div className="text-[10px] text-gray-900">Pay using Paytm balance</div>
                                 </div>
                             </button>
                         </div>

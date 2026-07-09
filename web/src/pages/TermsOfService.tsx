@@ -15,7 +15,7 @@ const TermsOfService: React.FC = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-8 text-center">Terms of Service</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-500">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
 
                     <p>
                         Welcome to AadiKarta. By registering an account, topping up your wallet, or using our live chat, call, or report consultation services, you agree to comply with the following terms and conditions. AadiKarta reserves the right to modify, update, or amend these terms at any time, and it is your responsibility to review this page periodically; continued use of the platform after changes are posted constitutes acceptance of the revised terms.

@@ -213,7 +213,7 @@ export default function Users() {
                         ))}
                         {users.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                                <TableCell colSpan={8} className="text-center py-8 text-gray-900">
                                     No users found
                                 </TableCell>
                             </TableRow>
@@ -223,7 +223,7 @@ export default function Users() {
 
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-                    <div className="flex items-center text-sm text-gray-500">
+                    <div className="flex items-center text-sm text-gray-900">
                         Showing {page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, totalUsers)} of {totalUsers} entries
                     </div>
                     <div className="flex items-center space-x-2">

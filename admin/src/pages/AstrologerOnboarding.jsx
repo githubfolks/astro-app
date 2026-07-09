@@ -125,7 +125,7 @@ const AstrologerOnboarding = () => {
             .catch(err => { console.error(err); alert('Rejection failed'); });
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading onboarding pipeline…</div>;
+    if (loading) return <div className="p-8 text-center text-gray-900">Loading onboarding pipeline…</div>;
 
     const targetCfg = transition ? STAGE_CONFIG[transition.target] : null;
 
@@ -163,10 +163,10 @@ const AstrologerOnboarding = () => {
                                                 <Avatar src={astro.profile?.profile_picture_url} className="w-9 h-9" iconSize={18} />
                                                 <div className="min-w-0">
                                                     <div className="font-medium text-sm text-gray-900 truncate">{astro.profile?.full_name}</div>
-                                                    <div className="text-xs text-gray-500 truncate">{astro.email}</div>
+                                                    <div className="text-xs text-gray-900 truncate">{astro.email}</div>
                                                 </div>
                                             </div>
-                                            <div className="text-xs text-gray-500 mb-3">
+                                            <div className="text-xs text-gray-900 mb-3">
                                                 {astro.profile?.experience_years ? `${astro.profile.experience_years} yrs experience` : 'Experience N/A'}
                                                 {astro.profile?.city ? ` · ${astro.profile.city}` : ''}
                                             </div>
@@ -211,7 +211,7 @@ const AstrologerOnboarding = () => {
                             <Avatar src={transition.astro.profile?.profile_picture_url} className="w-10 h-10" iconSize={20} />
                             <div>
                                 <div className="font-medium text-gray-900">{transition.astro.profile?.full_name}</div>
-                                <div className="text-xs text-gray-500">{transition.astro.email}</div>
+                                <div className="text-xs text-gray-900">{transition.astro.email}</div>
                             </div>
                         </div>
 
@@ -221,7 +221,7 @@ const AstrologerOnboarding = () => {
                                 <span>An email will be sent on confirm: <strong>{targetCfg.email}</strong></span>
                             </div>
                         ) : (
-                            <div className="text-sm text-gray-500 bg-gray-50 rounded-lg p-3">
+                            <div className="text-sm text-gray-900 bg-gray-50 rounded-lg p-3">
                                 No email is sent for this stage.
                             </div>
                         )}

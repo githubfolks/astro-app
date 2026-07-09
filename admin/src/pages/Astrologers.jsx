@@ -73,7 +73,7 @@ export default function Astrologers() {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Astrologers</h1>
-                    <p className="text-gray-500 mt-1">Manage your astrologer verification and profiles</p>
+                    <p className="text-gray-900 mt-1">Manage your astrologer verification and profiles</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     {/* Search Field */}
@@ -122,7 +122,7 @@ export default function Astrologers() {
                                 <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider truncate mb-1">
                                     {item.profile?.specialties || 'Astrology'}
                                 </p>
-                                <p className="text-xs text-gray-500 line-clamp-1 mb-1">{item.profile?.short_bio || 'No bio provided'}</p>
+                                <p className="text-xs text-gray-900 line-clamp-1 mb-1">{item.profile?.short_bio || 'No bio provided'}</p>
                             </div>
                         </div>
 
@@ -138,7 +138,7 @@ export default function Astrologers() {
                             </div>
 
                             <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] font-semibold text-gray-500">Premium</span>
+                                <span className="text-[10px] font-semibold text-gray-900">Premium</span>
                                 <Switch
                                     checked={!!item.profile?.is_premium}
                                     onCheckedChange={(checked) => handleTogglePremium(item, checked)}
@@ -151,7 +151,7 @@ export default function Astrologers() {
                         <div className="flex justify-between items-center border-t border-gray-50 mt-3 pt-3">
                             <div className="flex items-center gap-1.5">
                                 <span className={`w-1.5 h-1.5 rounded-full ${item.is_active !== false ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-                                <span className="text-[10px] font-bold text-gray-500">Active</span>
+                                <span className="text-[10px] font-bold text-gray-900">Active</span>
                                 <Switch
                                     checked={item.is_active !== false}
                                     onCheckedChange={(checked) => handleToggleStatus(item, checked)}

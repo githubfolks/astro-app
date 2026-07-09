@@ -163,7 +163,7 @@ export default function PostEditor() {
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={() => navigate('/cms/posts')}
-                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-600 cursor-pointer"
+                        className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-slate-900 cursor-pointer"
                         title="Back to posts"
                         type="button"
                     >
@@ -267,7 +267,7 @@ export default function PostEditor() {
                         {/* Facebook Section */}
                         <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Facebook Page</span>
+                                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Facebook Page</span>
                                 <button
                                     type="button"
                                     onClick={handleGenerateFb}
@@ -297,7 +297,7 @@ export default function PostEditor() {
                         {/* Instagram Section */}
                         <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Instagram Business</span>
+                                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Instagram Business</span>
                                 <button
                                     type="button"
                                     onClick={handleGenerateIg}

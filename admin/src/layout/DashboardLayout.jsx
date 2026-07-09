@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video } from 'lucide-react';
 
 import { Button } from '../components/ui/Button';
 import clsx from 'clsx';
@@ -25,6 +25,7 @@ export default function DashboardLayout() {
         { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
         { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
+        { text: 'Content Studio', icon: <Video size={20} />, path: '/content-studio' },
         { text: 'Edu Reports', icon: <GraduationCap size={20} />, path: '/edu-reports' },
 
         { text: 'Disputes', icon: <AlertCircle size={20} />, path: '/disputes' },
@@ -35,7 +36,7 @@ export default function DashboardLayout() {
     ];
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen">
             {/* Sidebar */}
             <aside
                 className={clsx(
@@ -60,7 +61,7 @@ export default function DashboardLayout() {
                                 "flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
                                 location.pathname === item.path
                                     ? "bg-indigo-600 text-white shadow-sm"
-                                    : "text-slate-600 hover:bg-slate-200 hover:text-slate-900",
+                                    : "text-slate-900 hover:bg-slate-200 hover:text-slate-900",
                                 !sidebarOpen && "justify-center"
                             )}
                             title={!sidebarOpen ? item.text : undefined}
@@ -96,12 +97,12 @@ export default function DashboardLayout() {
                 <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 rounded-md text-gray-500 hover:bg-gray-100 focus:outline-none"
+                        className="p-2 rounded-md text-gray-900 hover:bg-gray-100 focus:outline-none"
                     >
                         <Menu size={20} />
                     </button>
                     <div className="flex items-center">
-                        <span className="text-sm text-gray-500 mr-4">Admin</span>
+                        <span className="text-sm text-gray-900 mr-4">Admin</span>
                         <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
                             A
                         </div>

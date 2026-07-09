@@ -245,7 +245,7 @@ export const CourseManager: React.FC = () => {
                                         <h4 className="font-semibold text-gray-900 line-clamp-1">{course.title}</h4>
                                         {!course.is_active && <span className="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded font-bold uppercase">Inactive</span>}
                                     </div>
-                                    <p className="text-xs text-gray-500 line-clamp-1">{course.description}</p>
+                                    <p className="text-xs text-gray-900 line-clamp-1">{course.description}</p>
                                 </div>
                             ))}
                             {courses.length === 0 && !showCourseForm && (
@@ -374,7 +374,7 @@ export const CourseManager: React.FC = () => {
                                     )}
 
                                     {batches.length === 0 ? (
-                                        <p className="text-sm text-gray-500 text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">No batches created for this course yet.</p>
+                                        <p className="text-sm text-gray-900 text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">No batches created for this course yet.</p>
                                     ) : (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {batches.map(b => (
@@ -383,7 +383,7 @@ export const CourseManager: React.FC = () => {
                                                         <h5 className="font-bold text-gray-900">{b.name}</h5>
                                                         <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full uppercase">ID: {b.id}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-4 text-xs text-gray-500 mb-4">
+                                                    <div className="flex items-center gap-4 text-xs text-gray-900 mb-4">
                                                         <div className="flex items-center gap-1">
                                                             <Users size={14} /> {b.max_students} Max
                                                         </div>
@@ -421,11 +421,11 @@ export const CourseManager: React.FC = () => {
                                                                 <form onSubmit={(e) => handleScheduleSession(e, b.id)} className="bg-white p-3 rounded-lg border border-indigo-100 mb-3 space-y-2">
                                                                     <div className="grid grid-cols-2 gap-2">
                                                                         <div>
-                                                                            <label className="text-[8px] text-gray-500 block">Start</label>
+                                                                            <label className="text-[8px] text-gray-900 block">Start</label>
                                                                             <input required type="datetime-local" value={sessionForm.scheduled_start} onChange={e => setSessionForm({...sessionForm, scheduled_start: e.target.value})} className="w-full text-[10px] border p-1 rounded" />
                                                                         </div>
                                                                         <div>
-                                                                            <label className="text-[8px] text-gray-500 block">End</label>
+                                                                            <label className="text-[8px] text-gray-900 block">End</label>
                                                                             <input required type="datetime-local" value={sessionForm.scheduled_end} onChange={e => setSessionForm({...sessionForm, scheduled_end: e.target.value})} className="w-full text-[10px] border p-1 rounded" />
                                                                         </div>
                                                                     </div>
@@ -456,7 +456,7 @@ export const CourseManager: React.FC = () => {
                                                                                 <div className="font-bold text-gray-800">{s.title}</div>
                                                                                 {!s.is_active && <span className="text-[8px] bg-gray-200 text-gray-600 px-1 rounded font-bold uppercase">Inactive</span>}
                                                                             </div>
-                                                                            <div className="text-gray-500">
+                                                                            <div className="text-gray-900">
                                                                                 {new Date(s.scheduled_start).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
                                                                             </div>
                                                                         </div>
@@ -523,7 +523,7 @@ export const CourseManager: React.FC = () => {
                                     )}
 
                                     {materials.length === 0 ? (
-                                        <p className="text-sm text-gray-500 text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">No materials uploaded yet.</p>
+                                        <p className="text-sm text-gray-900 text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">No materials uploaded yet.</p>
                                     ) : (
                                         <div className="grid gap-3">
                                             {materials.map(m => (
@@ -534,7 +534,7 @@ export const CourseManager: React.FC = () => {
                                                         </div>
                                                         <div>
                                                             <a href={m.url} target="_blank" rel="noopener noreferrer" className="font-medium text-gray-900 hover:text-indigo-600 block">{m.title}</a>
-                                                            <span className="text-xs font-semibold text-gray-500">{m.material_type}</span>
+                                                            <span className="text-xs font-semibold text-gray-900">{m.material_type}</span>
                                                         </div>
                                                     </div>
                                                     <button onClick={() => handleDeleteMaterial(m.id)} className="text-gray-400 hover:text-red-500 p-2 opacity-0 group-hover:opacity-100 transition-opacity">

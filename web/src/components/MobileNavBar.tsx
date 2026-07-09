@@ -37,7 +37,7 @@ export const MobileNavBar: React.FC = () => {
                         className={({ isActive }) =>
                             `flex flex-col items-center gap-1 p-2 rounded-lg transition-all duration-200 ${isActive
                                 ? 'text-purple-600 scale-105'
-                                : 'text-gray-500 hover:text-gray-900 active:scale-95'
+                                : 'text-gray-900 hover:text-gray-900 active:scale-95'
                             }`
                         }
                     >

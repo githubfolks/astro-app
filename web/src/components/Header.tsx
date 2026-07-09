@@ -130,7 +130,7 @@ const Header: React.FC = () => {
                                     {getDisplayName()[0]?.toUpperCase()}
                                 </div>
                                 <span className="font-medium text-gray-700 hidden md:inline">Hi, {getDisplayName()}</span>
-                                <ChevronDown size={16} className={`text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown size={16} className={`text-gray-900 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {/* Dropdown Menu */}
@@ -138,7 +138,7 @@ const Header: React.FC = () => {
                                 <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in">
                                     <div className="px-4 py-2 border-b border-gray-100">
                                         <p className="text-sm font-semibold text-gray-900">{getDisplayName()}</p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-gray-900">
                                             {user.role === 'SEEKER' ? 'Seeker' : user.role === 'TUTOR' ? 'Tutor' : 'Astrologer'}
                                         </p>
                                     </div>

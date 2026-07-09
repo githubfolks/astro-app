@@ -38,7 +38,7 @@ export default function AstrologerDetails() {
         fetchData();
     }, [fetchData]);
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading details...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-900">Loading details...</div>;
     if (!profile) return <div className="p-8 text-center">Astrologer not found</div>;
 
     return (
@@ -68,7 +68,7 @@ export default function AstrologerDetails() {
                                     </span>
                                 )}
                             </h1>
-                            <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                            <div className="flex items-center gap-3 text-sm text-gray-900 mt-1">
                                 <span className="flex items-center gap-1"><Mail size={14} /> {profile.email}</span>
                                 <span className="flex items-center gap-1"><Phone size={14} /> {profile.phone_number}</span>
                             </div>
@@ -87,7 +87,7 @@ export default function AstrologerDetails() {
                         <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
                             <DollarSign size={20} />
                         </div>
-                        <h3 className="text-sm font-medium text-gray-500">Total Earnings</h3>
+                        <h3 className="text-sm font-medium text-gray-900">Total Earnings</h3>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">₹{(earnings?.total_earned || 0).toLocaleString()}</p>
                 </div>
@@ -96,7 +96,7 @@ export default function AstrologerDetails() {
                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                             <MessageCircle size={20} />
                         </div>
-                        <h3 className="text-sm font-medium text-gray-500">Total Consultations</h3>
+                        <h3 className="text-sm font-medium text-gray-900">Total Consultations</h3>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">{profile.profile.total_consultations || consultations.length}</p>
                 </div>
@@ -105,7 +105,7 @@ export default function AstrologerDetails() {
                         <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
                             <Clock size={20} />
                         </div>
-                        <h3 className="text-sm font-medium text-gray-500">Experience</h3>
+                        <h3 className="text-sm font-medium text-gray-900">Experience</h3>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">{profile.profile.experience_years} Years</p>
                 </div>
@@ -121,10 +121,10 @@ export default function AstrologerDetails() {
                         </div>
                         <div className="p-0">
                             {(!earnings?.monthly_earnings || earnings.monthly_earnings.length === 0) ? (
-                                <p className="p-4 text-sm text-gray-500">No earnings yet.</p>
+                                <p className="p-4 text-sm text-gray-900">No earnings yet.</p>
                             ) : (
                                 <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 text-gray-500 text-left">
+                                    <thead className="bg-gray-50 text-gray-900 text-left">
                                         <tr>
                                             <th className="px-4 py-2 font-medium">Month</th>
                                             <th className="px-4 py-2 font-medium text-right">Amount</th>
@@ -151,11 +151,11 @@ export default function AstrologerDetails() {
 
                         <div className="mt-6 space-y-3">
                             <div className="text-sm">
-                                <span className="text-gray-500 block text-xs uppercase tracking-wide">Languages</span>
+                                <span className="text-gray-900 block text-xs uppercase tracking-wide">Languages</span>
                                 <span className="font-medium text-gray-900">{profile.profile.languages}</span>
                             </div>
                             <div className="text-sm">
-                                <span className="text-gray-500 block text-xs uppercase tracking-wide">Specialties</span>
+                                <span className="text-gray-900 block text-xs uppercase tracking-wide">Specialties</span>
                                 <span className="font-medium text-gray-900">{profile.profile.specialties}</span>
                             </div>
                         </div>
@@ -167,11 +167,11 @@ export default function AstrologerDetails() {
                     <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                         <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
                             <h3 className="font-semibold text-gray-900">Consultation History</h3>
-                            <span className="text-xs text-gray-500">Last 50 records</span>
+                            <span className="text-xs text-gray-900">Last 50 records</span>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-500 font-medium">
+                                <thead className="bg-gray-50 text-gray-900 font-medium">
                                     <tr>
                                         <th className="px-4 py-3">Date</th>
                                         <th className="px-4 py-3">Type</th>
@@ -184,7 +184,7 @@ export default function AstrologerDetails() {
                                 <tbody className="divide-y divide-gray-100">
                                     {consultations.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="px-4 py-8 text-center text-gray-500">No consultations found.</td>
+                                            <td colSpan="6" className="px-4 py-8 text-center text-gray-900">No consultations found.</td>
                                         </tr>
                                     ) : (
                                         consultations.map((c) => (

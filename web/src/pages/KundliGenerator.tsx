@@ -106,7 +106,7 @@ const KundliGenerator: React.FC = () => {
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">🔮 Kundli Generator</h1>
-                        <p className="text-gray-500 mt-2">Generate Vedic birth charts for seekers</p>
+                        <p className="text-gray-900 mt-2">Generate Vedic birth charts for seekers</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
@@ -116,7 +116,7 @@ const KundliGenerator: React.FC = () => {
 
                             <form onSubmit={handleGenerate} className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
                                         Full Name
                                     </label>
                                     <input
@@ -129,7 +129,7 @@ const KundliGenerator: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
                                         Date of Birth *
                                     </label>
                                     <input
@@ -142,7 +142,7 @@ const KundliGenerator: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
                                         Time of Birth *
                                     </label>
                                     <input
@@ -156,7 +156,7 @@ const KundliGenerator: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
                                         Place of Birth *
                                     </label>
                                     <input
@@ -216,7 +216,7 @@ const KundliGenerator: React.FC = () => {
                                             <div className="font-semibold text-gray-800 text-sm">
                                                 {report.full_name || 'Unknown'}
                                             </div>
-                                            <div className="text-xs text-gray-500 mt-1">
+                                            <div className="text-xs text-gray-900 mt-1">
                                                 {new Date(report.date_of_birth || "").toLocaleDateString()} • {report.place_of_birth}
                                             </div>
                                             <div className="text-[10px] text-gray-400 mt-0.5">

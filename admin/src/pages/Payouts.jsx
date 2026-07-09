@@ -147,7 +147,7 @@ export default function Payouts() {
                     className={`pb-2 px-1 text-sm font-semibold border-b-2 transition-all ${
                         activeTab === 'pending'
                             ? 'border-[#E91E63] text-[#E91E63]'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-gray-900 hover:text-gray-700'
                     }`}
                 >
                     Pending Settlements
@@ -157,7 +157,7 @@ export default function Payouts() {
                     className={`pb-2 px-1 text-sm font-semibold border-b-2 transition-all ${
                         activeTab === 'history'
                             ? 'border-[#E91E63] text-[#E91E63]'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                            : 'border-transparent text-gray-900 hover:text-gray-700'
                     }`}
                 >
                     Payout History
@@ -167,7 +167,7 @@ export default function Payouts() {
             {activeTab === 'pending' ? (
                 <div className="grid gap-6">
                     {stats.length === 0 ? (
-                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-center text-gray-500">
+                        <div className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 text-center text-gray-900">
                             No pending payouts found. All settled!
                         </div>
                     ) : (
@@ -175,7 +175,7 @@ export default function Payouts() {
                             <div key={stat.astrologer_id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">{stat.astrologer_name}</h3>
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-gray-900">
                                         {stat.phone_number && <span className="mr-3 font-semibold text-gray-700">{stat.phone_number}</span>}
                                         Share: {stat.commission_percentage}%
                                     </p>
@@ -234,9 +234,9 @@ export default function Payouts() {
 
                     <div className="space-y-4">
                         {loadingHistory ? (
-                            <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100 text-gray-500">Loading payout history...</div>
+                            <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100 text-gray-900">Loading payout history...</div>
                         ) : groupedHistory.length === 0 ? (
-                            <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100 text-gray-500">No payout history found.</div>
+                            <div className="p-8 text-center bg-white rounded-xl shadow-sm border border-gray-100 text-gray-900">No payout history found.</div>
                         ) : (
                             groupedHistory.map(group => {
                                 const isExpanded = expandedAstroIds.includes(group.astrologer_id);
@@ -250,7 +250,7 @@ export default function Payouts() {
                                             <div className="flex items-center gap-3">
                                                 <div>
                                                     <h3 className="text-lg font-bold text-gray-900">{group.astrologer_name}</h3>
-                                                    <p className="text-sm text-gray-500 font-medium">
+                                                    <p className="text-sm text-gray-900 font-medium">
                                                         {group.phone_number && <span className="mr-3">{group.phone_number}</span>}
                                                         {group.payouts.length} payout{group.payouts.length > 1 ? 's' : ''} processed
                                                     </p>
@@ -280,7 +280,7 @@ export default function Payouts() {
                                             <div className="border-t border-gray-100 overflow-x-auto bg-gray-50/30">
                                                 <table className="w-full text-left text-xs border-collapse">
                                                     <thead>
-                                                        <tr className="bg-gray-50 text-gray-500 border-b border-gray-100 font-semibold uppercase tracking-wider">
+                                                        <tr className="bg-gray-50 text-gray-900 border-b border-gray-100 font-semibold uppercase tracking-wider">
                                                             <th className="p-3 pl-5">Payment Date</th>
                                                             <th className="p-3">Transaction Ref</th>
                                                             <th className="p-3">Status</th>
@@ -303,13 +303,13 @@ export default function Payouts() {
                                                                         {p.status}
                                                                     </span>
                                                                 </td>
-                                                                <td className="p-3 text-right font-mono text-gray-500">
+                                                                <td className="p-3 text-right font-mono text-gray-900">
                                                                     ₹{p.tds_deducted.toFixed(2)}
                                                                 </td>
                                                                 <td className="p-3 text-right font-mono font-bold text-green-600">
                                                                     ₹{p.amount.toFixed(2)}
                                                                 </td>
-                                                                <td className="p-3 pr-5 text-gray-500 max-w-[200px] truncate" title={p.admin_comments || ''}>
+                                                                <td className="p-3 pr-5 text-gray-900 max-w-[200px] truncate" title={p.admin_comments || ''}>
                                                                     {p.admin_comments || '—'}
                                                                 </td>
                                                             </tr>

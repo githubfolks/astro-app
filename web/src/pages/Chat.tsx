@@ -460,11 +460,11 @@ export const Chat: React.FC = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-100">
                                             <span className="block text-2xl font-bold text-gray-900">{astrologer.rating_avg}</span>
-                                            <span className="text-xs text-gray-500 uppercase font-semibold">Rating</span>
+                                            <span className="text-xs text-gray-900 uppercase font-semibold">Rating</span>
                                         </div>
                                         <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-100">
                                             <span className="block text-2xl font-bold text-gray-900">{astrologer.experience_years}+</span>
-                                            <span className="text-xs text-gray-500 uppercase font-semibold">Years Exp.</span>
+                                            <span className="text-xs text-gray-900 uppercase font-semibold">Years Exp.</span>
                                         </div>
                                     </div>
 
@@ -489,7 +489,7 @@ export const Chat: React.FC = () => {
 
                                         <div>
                                             <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Consultation Rate</h3>
-                                            <p className="text-gray-900 font-bold text-lg">₹{astrologer.consultation_fee_per_min}<span className="text-sm text-gray-500 font-normal">/min</span></p>
+                                            <p className="text-gray-900 font-bold text-lg">₹{astrologer.consultation_fee_per_min}<span className="text-sm text-gray-900 font-normal">/min</span></p>
                                         </div>
                                     </div>
                                 </div>
@@ -508,21 +508,21 @@ export const Chat: React.FC = () => {
                                             <User size={64} />
                                         </div>
                                         <h2 className="text-2xl font-bold text-gray-900">{seeker.full_name || "Seeker"}</h2>
-                                        <span className="text-sm text-gray-500 font-medium">Client Details</span>
+                                        <span className="text-sm text-gray-900 font-medium">Client Details</span>
                                     </div>
 
                                     {/* Toggle: Profile <-> Kundli (kept in the same panel so the chart never disappears once loaded) */}
                                     <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
                                         <button
                                             onClick={() => setShowKundli(false)}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${!showKundli ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${!showKundli ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                         >
                                             Profile
                                         </button>
                                         <button
                                             onClick={handleViewKundli}
                                             disabled={!(seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth)}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${showKundli ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'} disabled:opacity-40 disabled:cursor-not-allowed`}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${showKundli ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-900 hover:text-gray-700'} disabled:opacity-40 disabled:cursor-not-allowed`}
                                         >
                                             🔮 Kundli
                                         </button>
@@ -673,13 +673,13 @@ export const Chat: React.FC = () => {
                                     <div className="hidden sm:flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold flex-shrink-0" title="Translate the seeker's messages">
                                         <button
                                             onClick={() => setChatLanguage('en')}
-                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                         >
                                             EN
                                         </button>
                                         <button
                                             onClick={() => setChatLanguage('hi')}
-                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                         >
                                             हिं
                                         </button>
@@ -688,7 +688,7 @@ export const Chat: React.FC = () => {
 
                                 <button
                                     onClick={() => setShowSidebarMobile(true)}
-                                    className="md:hidden p-2 text-gray-500 hover:text-[#E91E63] bg-gray-50 rounded-full border border-gray-200 transition-colors flex-shrink-0"
+                                    className="md:hidden p-2 text-gray-900 hover:text-[#E91E63] bg-gray-50 rounded-full border border-gray-200 transition-colors flex-shrink-0"
                                     aria-label="View Profile Info"
                                 >
                                     <Info size={18} />
@@ -741,13 +741,13 @@ export const Chat: React.FC = () => {
                                 <div className="flex items-center bg-gray-200 rounded-full p-0.5 text-[10px] font-bold flex-shrink-0 ml-auto" title="Translate the seeker's messages">
                                     <button
                                         onClick={() => setChatLanguage('en')}
-                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}
+                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900'}`}
                                     >
                                         EN
                                     </button>
                                     <button
                                         onClick={() => setChatLanguage('hi')}
-                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500'}`}
+                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900'}`}
                                     >
                                         हिं
                                     </button>
@@ -842,7 +842,7 @@ export const Chat: React.FC = () => {
                                 <div className="text-center">
                                     <div className="text-4xl mb-3">⏸️</div>
                                     <h3 className="text-lg font-bold text-gray-800">Chat Paused</h3>
-                                    <p className="text-sm text-gray-500 mt-1">
+                                    <p className="text-sm text-gray-900 mt-1">
                                         {pauseReason === 'astrologer_disconnected' && 'Astrologer disconnected. Waiting for them to rejoin.'}
                                         {pauseReason === 'seeker_disconnected' && 'You were disconnected. Ready to resume?'}
                                         {pauseReason === 'insufficient_balance' && 'Your wallet balance ran out.'}
@@ -960,7 +960,7 @@ export const Chat: React.FC = () => {
                                     title="Speak in Hindi — converted to Hinglish text"
                                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${speech.isListening
                                         ? 'bg-red-500 text-white animate-pulse'
-                                        : 'bg-gray-50 text-gray-500 border border-gray-200 hover:text-[#E91E63] hover:border-[#E91E63]'
+                                        : 'bg-gray-50 text-gray-900 border border-gray-200 hover:text-[#E91E63] hover:border-[#E91E63]'
                                         }`}
                                 >
                                     {speech.isListening ? <MicOff size={20} /> : <Mic size={20} />}

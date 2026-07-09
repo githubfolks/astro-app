@@ -121,7 +121,7 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
                             <MessageSquare size={12} /> Chat Transcript
                         </p>
                         {loading ? (
-                            <p className="text-sm text-gray-500">Loading transcript...</p>
+                            <p className="text-sm text-gray-900">Loading transcript...</p>
                         ) : messages.length === 0 ? (
                             <p className="text-sm text-gray-400 italic">No messages sent in this session.</p>
                         ) : (

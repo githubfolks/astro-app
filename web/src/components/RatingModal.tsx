@@ -75,7 +75,7 @@ const RatingModal: React.FC<RatingModalProps> = ({
                             ))}
                         </div>
                         {rating > 0 && (
-                            <p className="text-sm text-gray-500 mt-2">
+                            <p className="text-sm text-gray-900 mt-2">
                                 {rating === 5 && '⭐ Excellent!'}
                                 {rating === 4 && '👍 Very Good'}
                                 {rating === 3 && '👌 Good'}

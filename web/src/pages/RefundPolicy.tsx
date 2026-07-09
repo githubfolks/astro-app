@@ -15,7 +15,7 @@ const RefundPolicy: React.FC = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-8 text-center">Refund Policy</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-500">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
 
                     <p>
                         AadiKarta is committed to a transparent, fair, and automated billing process. Because our platform runs on a real-time, server-side wallet deduction engine, we've set out clear rules below for when a refund or wallet credit applies.

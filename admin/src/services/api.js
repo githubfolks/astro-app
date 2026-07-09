@@ -127,5 +127,13 @@ export const moderation = {
     resolve: (id, status = 'REVIEWED') => api.post(`/admin/moderation-flags/${id}/resolve`, null, { params: { status } }),
 };
 
+export const contentStudio = {
+    generateScenes: (data) => api.post('/content-studio/jobs', data),
+    updateScenes: (jobId, scenes) => api.put(`/content-studio/jobs/${jobId}/scenes`, { scenes }),
+    renderVideo: (jobId) => api.post(`/content-studio/jobs/${jobId}/render`),
+    getJob: (jobId) => api.get(`/content-studio/jobs/${jobId}`),
+    listJobs: (params) => api.get('/content-studio/jobs', { params }),
+};
+
 
 export default api;

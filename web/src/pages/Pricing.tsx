@@ -117,7 +117,7 @@ const Pricing: React.FC = () => {
                                 <div className={`text-3xl font-black mb-4 ${tier.highlight ? 'text-white' : 'text-slate-800'}`}>
                                     {tier.range}
                                 </div>
-                                <p className={`text-sm leading-relaxed ${tier.highlight ? 'text-indigo-100' : 'text-slate-600'}`}>
+                                <p className={`text-sm leading-relaxed ${tier.highlight ? 'text-indigo-100' : 'text-slate-900'}`}>
                                     {tier.desc}
                                 </p>
                                 <Link
@@ -149,7 +149,7 @@ const Pricing: React.FC = () => {
                                     <span className="text-3xl flex-shrink-0">{item.icon}</span>
                                     <div>
                                         <h3 className="font-bold text-slate-800 mb-1">{item.title}</h3>
-                                        <p className="text-slate-600 text-sm leading-relaxed">{item.body}</p>
+                                        <p className="text-slate-900 text-sm leading-relaxed">{item.body}</p>
                                     </div>
                                 </div>
                             ))}
@@ -164,7 +164,7 @@ const Pricing: React.FC = () => {
                         {faqs.map(({ q, a }, i) => (
                             <div key={i} className="border border-slate-100 rounded-2xl p-6 bg-white shadow-sm">
                                 <h3 className="font-bold text-slate-800 mb-2">{q}</h3>
-                                <p className="text-slate-600 text-sm leading-relaxed">{a}</p>
+                                <p className="text-slate-900 text-sm leading-relaxed">{a}</p>
                             </div>
                         ))}
                     </div>

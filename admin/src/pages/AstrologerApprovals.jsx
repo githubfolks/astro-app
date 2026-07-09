@@ -53,7 +53,7 @@ const AstrologerApprovals = () => {
         }
     };
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Loading applications...</div>;
+    if (loading) return <div className="p-8 text-center text-gray-900">Loading applications...</div>;
 
     return (
         <div className="p-6">
@@ -71,9 +71,9 @@ const AstrologerApprovals = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Astrologer</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Experience</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Action</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-900 uppercase">Astrologer</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-900 uppercase">Experience</th>
+                                <th className="px-6 py-4 text-xs font-semibold text-gray-900 uppercase">Action</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -93,7 +93,7 @@ const AstrologerApprovals = () => {
                                                 />
                                                 <div>
                                                     <div className="font-medium text-gray-900">{astro.profile?.full_name}</div>
-                                                    <div className="text-xs text-gray-500">{astro.email}</div>
+                                                    <div className="text-xs text-gray-900">{astro.email}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -132,7 +132,7 @@ const AstrologerApprovals = () => {
                                 />
                                 <div>
                                     <h3 className="text-lg font-bold text-gray-900">{selectedAstro.profile?.full_name}</h3>
-                                    <p className="text-gray-500 text-sm mb-2">{selectedAstro.email} | {selectedAstro.phone_number}</p>
+                                    <p className="text-gray-900 text-sm mb-2">{selectedAstro.email} | {selectedAstro.phone_number}</p>
                                     <div className="flex flex-wrap gap-2">
                                         {selectedAstro.profile?.astrology_types?.map(type => (
                                             <span key={type} className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">{type}</span>
@@ -143,19 +143,19 @@ const AstrologerApprovals = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><Award size={12} /> Experience</div>
+                                    <div className="text-xs text-gray-900 mb-1 flex items-center gap-1"><Award size={12} /> Experience</div>
                                     <div className="font-medium text-sm">{selectedAstro.profile?.experience_years} Years</div>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><Languages size={12} /> Languages</div>
+                                    <div className="text-xs text-gray-900 mb-1 flex items-center gap-1"><Languages size={12} /> Languages</div>
                                     <div className="font-medium text-sm">{selectedAstro.profile?.languages}</div>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><User size={12} /> City</div>
+                                    <div className="text-xs text-gray-900 mb-1 flex items-center gap-1"><User size={12} /> City</div>
                                     <div className="font-medium text-sm">{selectedAstro.profile?.city || 'N/A'}</div>
                                 </div>
                                 <div className="bg-gray-50 p-3 rounded-lg">
-                                    <div className="text-xs text-gray-500 mb-1 flex items-center gap-1"><Calendar size={12} /> Agreement</div>
+                                    <div className="text-xs text-gray-900 mb-1 flex items-center gap-1"><Calendar size={12} /> Agreement</div>
                                     <div className="font-medium text-sm text-green-600">{selectedAstro.profile?.legal_agreement_accepted ? 'Accepted' : 'Pending'}</div>
                                 </div>
                             </div>

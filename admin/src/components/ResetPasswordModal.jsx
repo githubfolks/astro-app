@@ -70,7 +70,7 @@ export const ResetPasswordModal = ({ isOpen, onClose, userId, userEmail }) => {
     return (
         <Modal isOpen={isOpen} onClose={handleClose} title="Reset Password">
             <div className="space-y-4">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-900">
                     Enter a new password for <strong>{userEmail || `User #${userId}`}</strong>. 
                     An automated email will be sent after the reset.
                 </p>
@@ -94,7 +94,7 @@ export const ResetPasswordModal = ({ isOpen, onClose, userId, userEmail }) => {
                     />
                     
                     <div className="flex justify-between items-start gap-4 -mt-2">
-                        <p className="text-xs text-gray-500 max-w-[70%]">{PASSWORD_REQUIREMENTS}</p>
+                        <p className="text-xs text-gray-900 max-w-[70%]">{PASSWORD_REQUIREMENTS}</p>
                         <button
                             type="button"
                             onClick={generatePassword}

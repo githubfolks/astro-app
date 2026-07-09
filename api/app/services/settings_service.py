@@ -27,10 +27,13 @@ DEFAULTS: dict[str, str] = {
     "facebook_access_token": "",
     "instagram_business_account_id": "",
     "instagram_access_token": "",
+    "bhashini_user_id": "",
+    "bhashini_api_key": "",
+    "bhashini_pipeline_id": "",
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.
-SECRET_KEYS = {"waplex_api_key", "facebook_access_token", "instagram_access_token"}
+SECRET_KEYS = {"waplex_api_key", "facebook_access_token", "instagram_access_token", "bhashini_api_key"}
 
 _CACHE: dict[str, str] = {}
 _CACHE_TS: float = 0.0

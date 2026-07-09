@@ -15,7 +15,7 @@ const Disclaimer: React.FC = () => {
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-8 text-center">Disclaimer</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-500">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
 
                     <p>
                         AadiKarta (aadikarta.org) operates as an intermediary marketplace platform that facilitates real-time astrological consultations, Kundli matching, and related readings between independent astrologers and seekers. All content, consultations, predictions, and advice provided on this platform are based on personal beliefs, traditional practices, and the experience of individual astrologers.

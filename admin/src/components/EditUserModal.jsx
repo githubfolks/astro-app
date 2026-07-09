@@ -87,7 +87,7 @@ export const EditUserModal = ({ isOpen, onClose, user, profile, onSuccess }) => 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Read-Only Email Field */}
                     <div className="flex flex-col gap-1.5 w-full">
-                        <label className="text-sm font-medium leading-none text-gray-500">
+                        <label className="text-sm font-medium leading-none text-gray-900">
                             Email Address (Read-only)
                         </label>
                         <input

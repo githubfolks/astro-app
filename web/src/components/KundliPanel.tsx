@@ -62,7 +62,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
         <>
             {/* Loading State */}
             {loading && (
-                    <div className="flex-1 flex flex-col items-center justify-center text-gray-500 gap-3">
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-900 gap-3">
                         <Loader2 size={40} className="animate-spin text-purple-600" />
                         <p className="font-medium">{lang === 'hi' ? UI_HI.generatingKundli : 'Generating Kundli...'}</p>
                         <p className="text-sm text-gray-400">{lang === 'hi' ? UI_HI.calculatingPositions : 'Calculating planetary positions...'}</p>
@@ -92,7 +92,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                         onClick={() => setActiveTab(tab.key)}
                                         className={`flex-1 py-3 px-4 text-xs font-semibold transition-all ${activeTab === tab.key
                                                 ? 'text-purple-700 border-b-2 border-purple-700 bg-white'
-                                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                                : 'text-gray-900 hover:text-gray-700 hover:bg-gray-100'
                                             }`}
                                     >
                                         {lang === 'hi' ? tab.labelHi : tab.label}
@@ -102,13 +102,13 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                             <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 mx-3 text-xs font-semibold">
                                 <button
                                     onClick={() => setLang('en')}
-                                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                 >
                                     EN
                                 </button>
                                 <button
                                     onClick={() => setLang('hi')}
-                                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                 >
                                     हि
                                 </button>
@@ -127,14 +127,14 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                     vargottamaSet={vargottamaSet}
                                 />
                                 {ascendant && (
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-gray-900">
                                         {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id})</span>
                                         {ascendant.nakshatra && (
                                             <> · {hi(NAKSHATRA_HI, ascendant.nakshatra.name, lang)} {lang === 'hi' ? UI_HI.pada : 'Pada'} {ascendant.nakshatra.pada} ({lang === 'hi' ? UI_HI.lord : 'lord'} {hi(PLANET_NAME_HI, ascendant.nakshatra.lord, lang)})</>
                                         )}
                                     </p>
                                 )}
-                                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-gray-500 max-w-[340px]">
+                                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-gray-900 max-w-[340px]">
                                     <span><span className="text-red-600 font-bold">*</span> {lang === 'hi' ? UI_HI.legendRetrograde : 'Retrograde'}</span>
                                     <span><span className="text-amber-600 font-bold">^</span> {lang === 'hi' ? UI_HI.legendCombust : 'Combust'}</span>
                                     <span><span className="text-purple-700 font-bold">□</span> {lang === 'hi' ? UI_HI.legendVargottama : 'Vargottama'}</span>
@@ -172,7 +172,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm">
                                             <thead>
-                                                <tr className="bg-gray-50 text-gray-500 uppercase text-xs">
+                                                <tr className="bg-gray-50 text-gray-900 uppercase text-xs">
                                                     <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.planet : 'Planet'}</th>
                                                     <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.signHouse : 'Sign / House'}</th>
                                                     <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.nakshatra : 'Nakshatra'}</th>

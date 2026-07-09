@@ -65,7 +65,7 @@ const MemoryGuruBanner: React.FC = () => {
                                 to="/memory-guru"
                                 className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-8 py-4 rounded-xl font-bold text-lg transition-transform hover:scale-105 flex items-center justify-center gap-2 shadow-sm"
                             >
-                                <FileText size={20} className="text-gray-500" /> About Guru
+                                <FileText size={20} className="text-gray-900" /> About Guru
                             </Link>
                         </div>
                     </div>
@@ -91,7 +91,7 @@ const MemoryGuruBanner: React.FC = () => {
                                 </div>
                                 <div>
                                     <p className="font-bold text-gray-900 text-lg">10,000+</p>
-                                    <p className="text-gray-500 text-sm font-medium">Students Trained</p>
+                                    <p className="text-gray-900 text-sm font-medium">Students Trained</p>
                                 </div>
                             </div>
                         </div>

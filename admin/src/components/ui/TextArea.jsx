@@ -20,7 +20,7 @@ export const TextArea = React.forwardRef(({ className, label, error, helperText,
                 {...props}
             />
             {helperText && (
-                <p className={clsx("text-xs", error ? "text-red-500" : "text-gray-500")}>
+                <p className={clsx("text-xs", error ? "text-red-500" : "text-gray-900")}>
                     {helperText}
                 </p>
             )}

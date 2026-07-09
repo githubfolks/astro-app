@@ -27,7 +27,7 @@ export default function Dashboard() {
     };
 
     if (loading) {
-        return <div className="p-8 text-center text-gray-500">Loading dashboard...</div>;
+        return <div className="p-8 text-center text-gray-900">Loading dashboard...</div>;
     }
 
     if (!stats) {
@@ -41,7 +41,7 @@ export default function Dashboard() {
         <div className="p-6 max-w-[1600px] mx-auto space-y-8">
             <div className="mb-4">
                 <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-500 mt-1">Overview of your platform's performance</p>
+                <p className="text-gray-900 mt-1">Overview of your platform's performance</p>
             </div>
 
             {/* Summary Cards */}
@@ -163,10 +163,10 @@ export default function Dashboard() {
                 </div>
                 <div className="p-0">
                     {recent_activity.length === 0 ? (
-                        <p className="p-6 text-gray-500 text-sm">No recent activity found.</p>
+                        <p className="p-6 text-gray-900 text-sm">No recent activity found.</p>
                     ) : (
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50 text-gray-500 font-medium">
+                            <thead className="bg-gray-50 text-gray-900 font-medium">
                                 <tr>
                                     <th className="px-6 py-3">Time</th>
                                     <th className="px-6 py-3">Activity</th>
@@ -178,7 +178,7 @@ export default function Dashboard() {
                             <tbody className="divide-y divide-gray-100">
                                 {recent_activity.map((activity) => (
                                     <tr key={activity.id} className="hover:bg-gray-50/50">
-                                        <td className="px-6 py-3 text-gray-500">
+                                        <td className="px-6 py-3 text-gray-900">
                                             {new Date(activity.created_at).toLocaleString()}
                                         </td>
                                         <td className="px-6 py-3 text-gray-900 font-medium">
@@ -213,7 +213,7 @@ function StatCard({ title, value, icon, color }) {
     return (
         <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-start justify-between">
             <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">{title}</p>
+                <p className="text-sm font-medium text-gray-900 mb-1">{title}</p>
                 <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
             </div>
             <div className={`p-3 rounded-lg ${color}`}>

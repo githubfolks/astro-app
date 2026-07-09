@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     git \
+    ffmpeg \
+    fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies

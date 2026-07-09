@@ -203,7 +203,7 @@ export const Dashboard: React.FC = () => {
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <span className="bg-[#E91E63] text-white p-1 rounded-md"><MessageCircle size={20} /></span>
                                     Requests Queue
-                                    <span className="ml-2 text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                                    <span className="ml-2 text-sm font-normal text-gray-900 bg-gray-100 px-2 py-0.5 rounded-full">
                                         {history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length}
                                     </span>
                                 </h3>
@@ -214,7 +214,7 @@ export const Dashboard: React.FC = () => {
                                     </div>
                                 ) : history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 ? (
                                     <div className="bg-white rounded-xl p-8 text-center border border-gray-100 shadow-sm">
-                                        <p className="text-gray-500">No active requests in queue.</p>
+                                        <p className="text-gray-900">No active requests in queue.</p>
                                     </div>
                                 ) : (
                                     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-0 overflow-hidden">
@@ -231,7 +231,7 @@ export const Dashboard: React.FC = () => {
                                                         </div>
                                                         <div>
                                                             <h4 className="font-bold text-gray-900">{c.seeker_profile?.full_name || `User #${c.seeker_id}`}</h4>
-                                                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                                                            <div className="text-xs text-gray-900 flex items-center gap-1 mt-1">
                                                                 <Calendar size={12} />
                                                                 {new Date(c.created_at).toLocaleString('en-IN', {
                                                                     day: '2-digit', month: 'short',
@@ -276,7 +276,7 @@ export const Dashboard: React.FC = () => {
 
                             {/* Past History Section */}
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-500">History</h3>
+                                <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-900">History</h3>
                                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left">
@@ -292,7 +292,7 @@ export const Dashboard: React.FC = () => {
                                             <tbody className="divide-y divide-gray-50">
                                                 {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: Consultation) => (
                                                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                                                        <td className="p-4 text-sm text-gray-500">
+                                                        <td className="p-4 text-sm text-gray-900">
                                                             {new Date(c.created_at).toLocaleDateString()}
                                                         </td>
                                                         <td className="p-4 text-gray-600">
@@ -366,7 +366,7 @@ export const Dashboard: React.FC = () => {
                                                                 {p.status}
                                                             </span>
                                                         </td>
-                                                        <td className="p-4 text-sm font-mono text-gray-500 font-semibold">
+                                                        <td className="p-4 text-sm font-mono text-gray-900 font-semibold">
                                                             ₹{Number(p.tds_deducted || 0).toFixed(2)}
                                                         </td>
                                                         <td className="p-4 text-sm font-mono font-bold text-green-600">
@@ -409,15 +409,15 @@ export const Dashboard: React.FC = () => {
                                         </h3>
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-500">Total Earned</span>
+                                                <span className="text-sm text-gray-900">Total Earned</span>
                                                 <span className="font-bold text-gray-900">₹{total.toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-500">This Month</span>
+                                                <span className="text-sm text-gray-900">This Month</span>
                                                 <span className="font-bold text-green-600">₹{monthly.toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-500">Completed Sessions</span>
+                                                <span className="text-sm text-gray-900">Completed Sessions</span>
                                                 <span className="font-bold text-gray-900">{completed.length}</span>
                                             </div>
                                         </div>
@@ -433,7 +433,7 @@ export const Dashboard: React.FC = () => {
 
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Status</label>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Status</label>
                                         <div className={`p-3 rounded-lg border flex items-center gap-3 ${isOnline ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
                                             <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                                             <span className={`font-bold ${isOnline ? 'text-green-700' : 'text-gray-600'}`}>
@@ -443,7 +443,7 @@ export const Dashboard: React.FC = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Availability Hours</label>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Availability Hours</label>
                                         <textarea
                                             value={availabilityText}
                                             onChange={(e) => setAvailabilityText(e.target.value)}
@@ -502,7 +502,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                             {sessions.length === 0 ? (
-                                <p className="text-gray-500 text-center">No live classes scheduled.</p>
+                                <p className="text-gray-900 text-center">No live classes scheduled.</p>
                             ) : (
                                 <div className="space-y-4">
                                     {sessions.map((s: EduSession) => {
@@ -615,7 +615,7 @@ export const Dashboard: React.FC = () => {
                             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <MessageCircle className="text-[#E91E63]" size={24} />
                                 My Consultations
-                                <span className="text-sm font-normal text-gray-500">({seekerHistory.length})</span>
+                                <span className="text-sm font-normal text-gray-900">({seekerHistory.length})</span>
                             </h3>
 
                             {/* Live Classes for Student */}
@@ -626,7 +626,7 @@ export const Dashboard: React.FC = () => {
                                 </h3>
                                 <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                                     {sessions.length === 0 ? (
-                                        <p className="text-sm text-gray-500">No active classes to join.</p>
+                                        <p className="text-sm text-gray-900">No active classes to join.</p>
                                     ) : (
                                         <div className="space-y-3">
                                             {sessions.map((s: EduSession) => {
@@ -667,7 +667,7 @@ export const Dashboard: React.FC = () => {
                                 <div className="space-y-4">
                                     {myCourses.length === 0 ? (
                                         <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-                                            <p className="text-sm text-gray-500">You are not enrolled in any courses.</p>
+                                            <p className="text-sm text-gray-900">You are not enrolled in any courses.</p>
                                         </div>
                                     ) : (
                                         myCourses.map(course => (
@@ -685,9 +685,9 @@ export const Dashboard: React.FC = () => {
                                                 {courseMaterials[course.id] && (
                                                     <div className="p-4 border-t border-gray-100">
                                                         {loadingMaterials[course.id] ? (
-                                                            <p className="text-sm text-gray-500 text-center">Loading materials...</p>
+                                                            <p className="text-sm text-gray-900 text-center">Loading materials...</p>
                                                         ) : courseMaterials[course.id].length === 0 ? (
-                                                            <p className="text-sm text-gray-500 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">No materials uploaded yet for this course.</p>
+                                                            <p className="text-sm text-gray-900 text-center py-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">No materials uploaded yet for this course.</p>
                                                         ) : (
                                                             <div className="grid gap-3">
                                                                 {courseMaterials[course.id].map((m: CourseMaterial) => (
@@ -703,7 +703,7 @@ export const Dashboard: React.FC = () => {
                                                                         </div>
                                                                         <div>
                                                                             <p className="font-medium text-gray-900 group-hover:text-indigo-600">{m.title}</p>
-                                                                            <p className="text-xs font-semibold text-gray-500">{m.material_type}</p>
+                                                                            <p className="text-xs font-semibold text-gray-900">{m.material_type}</p>
                                                                         </div>
                                                                     </a>
                                                                 ))}
@@ -737,7 +737,7 @@ export const Dashboard: React.FC = () => {
                                 </div>
                             ) : seekerHistory.length === 0 ? (
                                 <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
-                                    <p className="text-gray-500 mb-4">No consultations yet.</p>
+                                    <p className="text-gray-900 mb-4">No consultations yet.</p>
                                     <button
                                         onClick={() => navigate('/astrologers')}
                                         className="bg-[#E91E63] text-white px-6 py-2 rounded-lg font-semibold hover:bg-pink-700"
@@ -760,7 +760,7 @@ export const Dashboard: React.FC = () => {
                                 if (filtered.length === 0) {
                                     return (
                                         <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
-                                            <p className="text-gray-500">No consultations match your search.</p>
+                                            <p className="text-gray-900">No consultations match your search.</p>
                                         </div>
                                     );
                                 }
@@ -781,7 +781,7 @@ export const Dashboard: React.FC = () => {
                                                             </div>
                                                             <div>
                                                                 <h4 className="font-bold text-gray-900">{c.astrologer_profile?.full_name || `Astrologer #${c.astrologer_id}`}</h4>
-                                                                <div className="flex flex-wrap gap-2 mt-1 text-sm text-gray-500">
+                                                                <div className="flex flex-wrap gap-2 mt-1 text-sm text-gray-900">
                                                                     <span className="flex items-center gap-1">
                                                                         <Calendar size={14} />
                                                                         {new Date(c.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -805,7 +805,7 @@ export const Dashboard: React.FC = () => {
                                                         <div className="flex flex-col items-end justify-between">
                                                             <div className="text-right">
                                                                 <div className="text-lg font-bold text-gray-900">₹{Number(c.total_cost || 0).toFixed(2)}</div>
-                                                                <div className="text-xs text-gray-500">@₹{Number(c.rate_per_min || 0)}/min</div>
+                                                                <div className="text-xs text-gray-900">@₹{Number(c.rate_per_min || 0)}/min</div>
                                                             </div>
 
                                                             {c.status === 'COMPLETED' && (
@@ -899,7 +899,7 @@ export const Dashboard: React.FC = () => {
                             </h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Full Name</label>
+                                    <label className="block text-xs font-bold text-gray-900 mb-1">Full Name</label>
                                     <input
                                         type="text"
                                         value={seekerProfile.full_name || ''}
@@ -910,7 +910,7 @@ export const Dashboard: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Date of Birth</label>
+                                        <label className="block text-xs font-bold text-gray-900 mb-1">Date of Birth</label>
                                         <input
                                             type="date"
                                             value={seekerProfile.date_of_birth || ''}
@@ -919,7 +919,7 @@ export const Dashboard: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-500 mb-1">Time of Birth</label>
+                                        <label className="block text-xs font-bold text-gray-900 mb-1">Time of Birth</label>
                                         <input
                                             type="time"
                                             value={seekerProfile.time_of_birth || ''}
@@ -929,7 +929,7 @@ export const Dashboard: React.FC = () => {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Place of Birth</label>
+                                    <label className="block text-xs font-bold text-gray-900 mb-1">Place of Birth</label>
                                     <input
                                         type="text"
                                         value={seekerProfile.place_of_birth || ''}
@@ -939,7 +939,7 @@ export const Dashboard: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">Gender</label>
+                                    <label className="block text-xs font-bold text-gray-900 mb-1">Gender</label>
                                     <select
                                         value={seekerProfile.gender || ''}
                                         onChange={(e) => setSeekerProfile({ ...seekerProfile, gender: e.target.value })}

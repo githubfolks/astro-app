@@ -18,6 +18,7 @@ const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
 const PostList = lazy(() => import('./pages/cms/PostList'));
 const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
 const ContactInquiries = lazy(() => import('./pages/cms/ContactInquiries'));
+const ContentStudio = lazy(() => import('./pages/cms/ContentStudio'));
 const EduReports = lazy(() => import('./pages/EduReports'));
 const Disputes = lazy(() => import('./pages/Disputes'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -62,6 +63,7 @@ function App() {
             <Route path="/cms/posts/edit/:id" element={<PostEditor />} />
 
             <Route path="/cms/contact-inquiries" element={<ContactInquiries />} />
+            <Route path="/content-studio" element={<ContentStudio />} />
 
             <Route path="/edu-reports" element={<EduReports />} />
             <Route path="/disputes" element={<Disputes />} />

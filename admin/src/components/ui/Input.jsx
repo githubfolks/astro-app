@@ -20,7 +20,7 @@ export const Input = React.forwardRef(({ className, label, error, helperText, fu
                 {...props}
             />
             {helperText && (
-                <p className={clsx("text-xs", error ? "text-red-500" : "text-gray-500")}>
+                <p className={clsx("text-xs", error ? "text-red-500" : "text-gray-900")}>
                     {helperText}
                 </p>
             )}
