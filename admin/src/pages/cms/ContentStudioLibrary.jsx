@@ -20,7 +20,7 @@ const toAbsoluteUrl = (path) => {
 const PLATFORMS = [
     { key: 'facebook', label: 'Facebook', icon: Facebook, postedField: 'posted_facebook_at', action: 'postFacebook', needsCaption: true },
     { key: 'instagram', label: 'Instagram', icon: Instagram, postedField: 'posted_instagram_at', action: 'postInstagram', needsCaption: true },
-    { key: 'youtube', label: 'YouTube', icon: Youtube, postedField: 'posted_youtube_at', action: 'postYoutube', needsCaption: false, sendLabel: 'Mark as Sent' },
+    { key: 'youtube', label: 'YouTube', icon: Youtube, postedField: 'posted_youtube_at', action: 'postYoutube', needsCaption: true },
 ];
 
 function CaptionModal({ job, platform, onClose, onPosted }) {

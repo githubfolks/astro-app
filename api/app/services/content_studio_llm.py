@@ -5,6 +5,7 @@ cms.py's generate_social_post), configured via the existing GROQ_API_KEY env var
 """
 import json
 import os
+import random
 import re
 
 import httpx
@@ -26,9 +27,13 @@ SYSTEM_PROMPT = """You are a scriptwriter for Aadikarta, India's trusted marketp
 
 Given a topic, break it into exactly {scene_count} scenes that together form one coherent, engaging short video. Ground everything in authentic Vedic astrology terms (rashi, nakshatra, bhava, dasha, grahas like Shani, Guru, Shukra, Mangal, Rahu-Ketu) — never Western tropical sun-sign astrology.
 
-For each scene produce "narration_hi": 1-3 short spoken sentences in natural, conversational Hindi (Devanagari script) that a voiceover artist would read aloud. Keep each scene's narration around 10-20 seconds of speech.
+Only SCENE 1 may be a general/introductory angle (setting up the topic as a whole). EVERY scene after the first MUST cover its own distinct, specific life-theme angle — e.g. career, relationships/marriage, money/wealth, health, remedies/puja — never a second general/introductory scene, and never two non-intro scenes sharing the same angle. If there are only 2 scenes total, scene 1 is the general intro and scene 2 must be one specific angle (pick whichever the topic most naturally leads to).
 
-Respond with ONLY a raw JSON array of exactly {scene_count} objects, each with key "narration_hi", in narration order. No markdown, no code fences, no commentary."""
+For each scene produce:
+- "narration_hi": 1-3 short spoken sentences in natural, conversational Hindi (Devanagari script) that a voiceover artist would read aloud. Keep each scene's narration around 10-20 seconds of speech.
+- "scene_theme_en": a short 3-6 word English phrase naming THIS scene's specific angle (e.g. "career and job growth", "marriage and relationships", "financial gain", "health and wellbeing", "remedies and puja"), or "general introduction to the topic" for scene 1 only. This is used to keep each scene's illustration visually distinct even when scenes share the same graha/rashi — never repeat the same phrase across two different scenes.
+
+Respond with ONLY a raw JSON array of exactly {scene_count} objects, each with keys "narration_hi" and "scene_theme_en", in narration order. No markdown, no code fences, no commentary."""
 
 _UPSTREAM_ERROR = HTTPException(
     status_code=502,
@@ -37,9 +42,27 @@ _UPSTREAM_ERROR = HTTPException(
 
 TOPIC_SYSTEM_PROMPT = """You are a content strategist for Aadikarta, India's trusted marketplace for verified Vedic astrologers, brainstorming topics for short vertical videos (Facebook/Instagram Reels and YouTube Shorts) about Vedic astrology (Jyotish).
 
-Suggest ONE specific, engaging topic idea grounded in authentic Vedic astrology terms (rashi, nakshatra, bhava, dasha, grahas like Shani, Guru, Shukra, Mangal, Rahu-Ketu) — never Western tropical sun-sign astrology. The topic should be something a general audience would be curious to tap and watch (a transit's effect, a common life question, a myth to bust, a remedy explained), phrased as a short plain-English sentence.
+You will be given a specific graha or rashi and a content angle to build the topic around -- use exactly that subject and angle, don't substitute a different one (e.g. don't default to Shani/Saturn if a different graha or rashi was given). Ground the topic in authentic Vedic astrology terms (rashi, nakshatra, bhava, dasha) — never Western tropical sun-sign astrology. Phrase it as a short, specific, plain-English sentence a general audience would be curious to tap and watch.
 
 Respond with ONLY the topic sentence. No quotes, no markdown, no commentary, no numbering."""
+
+# Groq's suggestions collapsed onto "Shani transit affecting career" almost
+# every time even at temperature=1.0 -- each call is stateless with no memory
+# of prior suggestions, so the model just kept re-sampling the single most
+# statistically typical astrology topic. Picking the subject and angle here in
+# code and forcing the model to use exactly that pick guarantees variety
+# instead of hoping the model's own sampling provides it.
+TOPIC_SUBJECTS = [
+    "Surya (Sun)", "Chandra (Moon)", "Mangal (Mars)", "Budha (Mercury)", "Guru (Jupiter)",
+    "Shukra (Venus)", "Shani (Saturn)", "Rahu", "Ketu",
+    "Mesha rashi", "Vrishabha rashi", "Mithuna rashi", "Karka rashi", "Simha rashi", "Kanya rashi",
+    "Tula rashi", "Vrishchika rashi", "Dhanu rashi", "Makara rashi", "Kumbha rashi", "Meena rashi",
+]
+TOPIC_ANGLES = [
+    "a current transit's effect", "a common life question", "a myth to bust", "a remedy explained",
+    "a dasha period's influence", "a nakshatra's characteristics", "a compatibility question",
+    "a festival or muhurat's astrological significance", "a bhava (house) placement's significance",
+]
 
 
 def suggest_topic() -> str:
@@ -47,9 +70,15 @@ def suggest_topic() -> str:
     if not api_key:
         raise HTTPException(status_code=503, detail="Content Studio is unavailable. GROQ_API_KEY is not set.")
 
+    subject = random.choice(TOPIC_SUBJECTS)
+    angle = random.choice(TOPIC_ANGLES)
+
     body = {
         "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
-        "messages": [{"role": "system", "content": TOPIC_SYSTEM_PROMPT}],
+        "messages": [
+            {"role": "system", "content": TOPIC_SYSTEM_PROMPT},
+            {"role": "user", "content": f"Subject: {subject}\nAngle: {angle}"},
+        ],
         "max_tokens": 100,
         "temperature": 1.0,
     }
@@ -192,9 +221,15 @@ def generate_scenes(topic: str, content_type: "models.ContentType", scene_count:
         narration = (scene.get("narration_hi") or "").strip()
         if not narration:
             raise _UPSTREAM_ERROR
+        scene_theme = (scene.get("scene_theme_en") or "").strip()
         # Groq writes the Hindi narration above; Claude writes the matching
-        # image prompt sent to Pollinations (content_studio_claude.py).
-        image_prompt = content_studio_claude.generate_image_prompt(narration)
+        # image prompt sent to the image provider (content_studio_claude.py).
+        # Passing the topic + this scene's theme (not just the narration) is
+        # what keeps scenes visually distinct -- without it, every scene in
+        # e.g. a Shani-transit video names Shani, so Claude drew the same
+        # generic Shani portrait for every single scene regardless of whether
+        # that scene was actually about career, relationships, or remedies.
+        image_prompt = content_studio_claude.generate_image_prompt(narration, topic=topic, scene_theme=scene_theme)
         result.append({
             "index": i,
             "narration_hi": narration,

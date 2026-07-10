@@ -139,7 +139,7 @@ export const contentStudio = {
     generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
     postFacebook: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption }),
     postInstagram: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption }),
-    postYoutube: (jobId) => api.post(`/content-studio/jobs/${jobId}/post/youtube`),
+    postYoutube: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/youtube`, { caption }),
 };
 
 

@@ -14,7 +14,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from .. import models, schemas_content_studio, database
 from ..database import SessionLocal
 from ..limiter import limiter
-from ..services import content_studio_llm, content_studio_tts, content_studio_images, content_studio_video, content_studio_social
+from ..services import content_studio_llm, content_studio_tts, content_studio_images, content_studio_video, content_studio_social, content_studio_youtube
 from .auth import get_current_admin
 
 router = APIRouter(
@@ -216,11 +216,15 @@ async def post_instagram(
 
 
 @router.post("/jobs/{job_id}/post/youtube", response_model=schemas_content_studio.Job)
-def post_youtube(job_id: int, db: Session = Depends(database.get_db)):
-    """No YouTube API integration yet (uploading requires a separate OAuth2
-    setup) — this just records a manual "already posted" flag so the Content
-    Studio library page can track it like the other platforms."""
+@limiter.limit("5/minute")
+async def post_youtube(
+    request: Request,
+    job_id: int,
+    payload: schemas_content_studio.PostSocialRequest,
+    db: Session = Depends(database.get_db),
+):
     job = _get_ready_job(job_id, db)
+    await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, payload.caption)
     job.posted_youtube_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(job)

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import { Button, Card, TextArea } from '../../components/ui';
 
@@ -11,6 +12,13 @@ const toAbsoluteUrl = (path) => {
 
 const POLL_INTERVAL_MS = 4000;
 const POLL_TIMEOUT_MS = 10 * 60_000;
+// Scene images take ~20-25s each (FLUX.2 Max). Running them fully sequential
+// made a 5-scene job take ~2 minutes; the backend's read-modify-write on the
+// shared scenes JSON is safe for concurrent scenes (single Uvicorn worker, no
+// await between refresh and commit -- see content_studio.py), so a bounded
+// number of lanes cuts wall-clock time substantially. Kept bounded (not
+// unlimited) so the free Pollinations fallback doesn't get rate-limited.
+const IMAGE_GENERATION_LANES = 5;
 
 export default function ContentStudio() {
     const [topic, setTopic] = useState('');
@@ -21,6 +29,7 @@ export default function ContentStudio() {
     const [job, setJob] = useState(null);
     const [scenes, setScenes] = useState([]);
     const [imageBusy, setImageBusy] = useState({}); // sceneIndex -> true while generating
+    const [enlargedScene, setEnlargedScene] = useState(null); // scene | null, shown in the image lightbox
 
     const [suggesting, setSuggesting] = useState(false);
     const [generating, setGenerating] = useState(false);
@@ -30,11 +39,12 @@ export default function ContentStudio() {
 
     const pollRef = useRef(null);
     const pollTimeoutRef = useRef(null);
-    // Serializes every generate-image call (auto-loop and manual "Regenerate"
-    // clicks alike) so only one is ever in flight for this job at a time --
-    // overlapping calls raced on the shared scenes JSON and clobbered each
-    // other's image_url updates.
-    const imageQueueRef = useRef(Promise.resolve());
+    // Every generate-image call (auto-loop and manual "Regenerate" clicks
+    // alike) is assigned round-robin to one of a fixed number of lanes, each
+    // of which serializes its own calls -- bounds how many image requests are
+    // in flight at once without forcing everything fully sequential.
+    const imageLanesRef = useRef(Array.from({ length: IMAGE_GENERATION_LANES }, () => Promise.resolve()));
+    const nextImageLaneRef = useRef(0);
 
     useEffect(() => {
         return () => {
@@ -42,6 +52,15 @@ export default function ContentStudio() {
             if (pollTimeoutRef.current) clearTimeout(pollTimeoutRef.current);
         };
     }, []);
+
+    useEffect(() => {
+        if (!enlargedScene) return;
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') setEnlargedScene(null);
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [enlargedScene]);
 
     const stopPolling = () => {
         if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
@@ -96,10 +115,13 @@ export default function ContentStudio() {
                 setImageBusy(prev => ({ ...prev, [scene.index]: false }));
             }
         };
-        // Chain onto the shared queue regardless of outcome so one failure
-        // doesn't permanently block later scenes from generating.
-        imageQueueRef.current = imageQueueRef.current.then(run, run);
-        return imageQueueRef.current;
+        // Chain onto this call's lane regardless of outcome so one failure
+        // doesn't permanently block later scenes queued behind it in the
+        // same lane.
+        const lane = nextImageLaneRef.current;
+        nextImageLaneRef.current = (nextImageLaneRef.current + 1) % IMAGE_GENERATION_LANES;
+        imageLanesRef.current[lane] = imageLanesRef.current[lane].then(run, run);
+        return imageLanesRef.current[lane];
     };
 
     const handleGenerateScenes = async () => {
@@ -119,14 +141,10 @@ export default function ContentStudio() {
             setJob(res.data);
             const newScenes = res.data.scenes || [];
             setScenes(newScenes);
-            // Kick off preview image generation for every scene right away, one at
-            // a time -- firing them all in parallel reliably triggers Pollinations'
-            // rate limit once there are 3+ scenes.
-            (async () => {
-                for (const scene of newScenes) {
-                    await generateSceneImage(res.data.id, scene);
-                }
-            })();
+            // Kick off preview image generation for every scene right away --
+            // generateSceneImage spreads these across a bounded number of lanes,
+            // so this fires them concurrently without overwhelming the image API.
+            newScenes.forEach((scene) => generateSceneImage(res.data.id, scene));
         } catch (e) {
             alert(e.message || 'Failed to generate scenes.');
         } finally {
@@ -255,7 +273,14 @@ export default function ContentStudio() {
                                         {imageBusy[scene.index] ? (
                                             <span className="text-xs text-slate-500 px-2 text-center">Generating image...</span>
                                         ) : scene.image_url ? (
-                                            <img src={toAbsoluteUrl(scene.image_url)} alt={`Scene ${scene.index + 1}`} className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => setEnlargedScene(scene)}
+                                                className="w-full h-full cursor-zoom-in"
+                                                title="Click to enlarge"
+                                            >
+                                                <img src={toAbsoluteUrl(scene.image_url)} alt={`Scene ${scene.index + 1}`} className="w-full h-full object-cover" />
+                                            </button>
                                         ) : (
                                             <span className="text-xs text-slate-400 px-2 text-center">No image yet</span>
                                         )}
@@ -330,6 +355,30 @@ export default function ContentStudio() {
             )}
 
             {error && <p className="text-sm text-red-500">{error}</p>}
+
+            {enlargedScene && (
+                <div
+                    className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+                    onClick={() => setEnlargedScene(null)}
+                >
+                    <div className="relative max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            onClick={() => setEnlargedScene(null)}
+                            className="absolute -top-10 right-0 text-white/80 hover:text-white cursor-pointer"
+                            title="Close"
+                        >
+                            <X size={28} />
+                        </button>
+                        <img
+                            src={toAbsoluteUrl(enlargedScene.image_url)}
+                            alt={`Scene ${enlargedScene.index + 1}`}
+                            className="w-full max-h-[85vh] object-contain rounded-lg"
+                        />
+                        <p className="text-center text-white/80 text-xs mt-2">Scene {enlargedScene.index + 1}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

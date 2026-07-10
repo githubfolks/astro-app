@@ -1,4 +1,7 @@
-"""Scene image generation via Pollinations.ai (free, no API key required)."""
+"""Scene image generation. Uses Replicate's FLUX.2 [max] (best quality, paid)
+when REPLICATE_API_TOKEN is set, otherwise falls back to Pollinations.ai
+(free, no API key required)."""
+import os
 import time
 from urllib.parse import quote
 
@@ -6,6 +9,8 @@ import httpx
 from fastapi import HTTPException
 
 IMAGE_BASE_URL = "https://image.pollinations.ai/prompt"
+
+REPLICATE_PREDICTIONS_URL = "https://api.replicate.com/v1/models/black-forest-labs/flux-2-max/predictions"
 
 # Requesting a directly-vertical resolution (e.g. 1080x1920) produced visibly
 # stretched/warped content -- Flux (Pollinations' backend) generates best at
@@ -36,6 +41,85 @@ def build_prompt(prompt: str) -> str:
 
 def generate_image(prompt: str, width: int = IMAGE_SIZE, height: int = IMAGE_SIZE) -> bytes:
     full_prompt = build_prompt(prompt)
+    api_token = os.getenv("REPLICATE_API_TOKEN")
+    if api_token:
+        return _generate_image_replicate(full_prompt, api_token, width, height)
+    return _generate_image_pollinations(full_prompt, width, height)
+
+
+def _generate_image_replicate(full_prompt: str, api_token: str, width: int, height: int) -> bytes:
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json",
+        # Blocks the request on Replicate's side for up to 60s so we usually
+        # get the finished prediction in one round trip instead of polling.
+        "Prefer": "wait=60",
+    }
+    body = {
+        "input": {
+            "prompt": full_prompt,
+            # aspect_ratio="custom" + explicit width/height, not the "1 MP"
+            # shorthand -- that shorthand did not reliably return the
+            # documented 1024x1024 for a 1:1 request in testing.
+            "aspect_ratio": "custom",
+            "width": width,
+            "height": height,
+            "output_format": "jpg",
+            "output_quality": 90,
+        }
+    }
+
+    try:
+        response = httpx.post(REPLICATE_PREDICTIONS_URL, headers=headers, json=body, timeout=90.0)
+    except httpx.HTTPError as e:
+        print(f"Content Studio images: Replicate request failed: {e}")
+        raise _UPSTREAM_ERROR
+
+    if response.status_code not in (200, 201):
+        print(f"Content Studio images: Replicate request failed: status {response.status_code} {response.text}")
+        raise _UPSTREAM_ERROR
+
+    prediction = response.json()
+    get_url = prediction["urls"]["get"]
+
+    # The 60s "Prefer: wait" above covers most runs, but FLUX.2 [max] can take
+    # longer -- poll the rest of the way rather than give up.
+    for _ in range(30):
+        status = prediction.get("status")
+        if status == "succeeded":
+            break
+        if status in ("failed", "canceled"):
+            print(f"Content Studio images: Replicate prediction {status}: {prediction.get('error')}")
+            raise _UPSTREAM_ERROR
+        time.sleep(2.0)
+        try:
+            poll = httpx.get(get_url, headers=headers, timeout=30.0)
+            prediction = poll.json()
+        except httpx.HTTPError as e:
+            print(f"Content Studio images: Replicate poll failed: {e}")
+            raise _UPSTREAM_ERROR
+    else:
+        print("Content Studio images: Replicate prediction timed out")
+        raise _UPSTREAM_ERROR
+
+    output = prediction.get("output")
+    image_url = output[0] if isinstance(output, list) else output
+    if not image_url:
+        print(f"Content Studio images: Replicate returned no output: {prediction}")
+        raise _UPSTREAM_ERROR
+
+    try:
+        image_response = httpx.get(image_url, timeout=60.0)
+    except httpx.HTTPError as e:
+        print(f"Content Studio images: Replicate image download failed: {e}")
+        raise _UPSTREAM_ERROR
+    if image_response.status_code != 200 or not image_response.content:
+        print(f"Content Studio images: Replicate image download failed: status {image_response.status_code}")
+        raise _UPSTREAM_ERROR
+    return image_response.content
+
+
+def _generate_image_pollinations(full_prompt: str, width: int, height: int) -> bytes:
     url = f"{IMAGE_BASE_URL}/{quote(full_prompt)}"
     # enhance=false: Pollinations' `enhance` option runs its own LLM rewrite of
     # the prompt before generating, which we have no visibility into -- keeping
