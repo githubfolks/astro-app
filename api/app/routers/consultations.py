@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisco
 from sqlalchemy.orm import Session
 from typing import List
 from decimal import Decimal
+from datetime import datetime
 import asyncio
-from .. import models, schemas, database
+from .. import models, schemas, database, audit
 from .auth import get_current_user
 
 router = APIRouter(
@@ -218,6 +219,45 @@ async def resume_consultation(
     })
 
     return {"status": "resumed", "consultation_id": consultation_id}
+
+
+@router.post("/end-active-on-logout")
+async def end_active_consultation_on_logout(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    """Called by the client right before logout completes. Unlike a dropped
+    connection (which pauses the session so it can be resumed), a seeker who
+    deliberately logs out isn't coming back — end the session outright so it
+    doesn't sit unresolved and blocking the astrologer's queue."""
+    if current_user.role != models.UserRole.SEEKER:
+        return {"status": "noop"}
+
+    consultation = db.query(models.Consultation).filter(
+        models.Consultation.seeker_id == current_user.id,
+        models.Consultation.status.in_([
+            models.ConsultationStatus.ACTIVE,
+            models.ConsultationStatus.PAUSED,
+        ])
+    ).first()
+    if not consultation:
+        return {"status": "noop"}
+
+    from .chat import manager, promote_next_in_queue
+
+    consultation.status = models.ConsultationStatus.COMPLETED
+    consultation.end_time = datetime.utcnow()
+    audit.log(db, "CHAT_ENDED_BY_USER", actor_id=current_user.id,
+              resource_type="consultation", resource_id=consultation.id,
+              details={"reason": "seeker_logged_out",
+                       "total_cost": float(consultation.total_cost or 0),
+                       "duration_seconds": consultation.duration_seconds or 0})
+    db.commit()
+
+    await manager.broadcast(consultation.id, {"type": "CHAT_ENDED", "reason": "seeker_logged_out"})
+    promote_next_in_queue(db, consultation.astrologer_id)
+
+    return {"status": "ended", "consultation_id": consultation.id}
 
 
 # --- Reviews ---

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
+import { api } from '../services/api';
 
 interface User {
     id: number;
@@ -52,6 +53,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = async () => {
+        // Best-effort: a seeker walking away mid-chat should end the session
+        // outright rather than leave it PAUSED (recoverable but stuck) once
+        // the token clears below and the socket drops. Must run before the
+        // token is cleared, since it needs a valid auth header.
+        if (user?.role === 'SEEKER') {
+            try {
+                await api.consultations.endActiveOnLogout();
+            } catch (e) {
+                console.error('Failed to end active consultation on logout:', e);
+            }
+        }
+
         setToken(null);
         setUser(null);
         await storage.removeItem('token');

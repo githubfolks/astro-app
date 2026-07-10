@@ -349,6 +349,13 @@ export const api = {
                 headers: await authHeaders()
             });
             return handleResponse(response, 'Failed to resume consultation');
+        },
+        endActiveOnLogout: async () => {
+            const response = await customFetch(`${API_URL}/consultations/end-active-on-logout`, {
+                method: 'POST',
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to end active consultation');
         }
     },
 

@@ -613,7 +613,6 @@ export const Chat: React.FC = () => {
                                 {/* Desktop Header Title */}
                                 <div className="hidden md:block">
                                     <h2 className="font-bold text-lg text-gray-800">Chat Session</h2>
-                                    <span className="text-xs text-gray-400">ID: {consultationId}</span>
                                 </div>
                             </div>
 
@@ -810,6 +809,7 @@ export const Chat: React.FC = () => {
                                 <span>
                                     {endedReason === 'insufficient_balance' && "Chat ended — seeker's balance ran out."}
                                     {endedReason === 'package_time_exhausted' && 'Chat ended — package time exhausted.'}
+                                    {endedReason === 'seeker_logged_out' && 'Chat ended — seeker logged out.'}
                                     {(endedReason === 'user_ended' || !endedReason) && 'This chat has ended.'}
                                     {user?.role === 'ASTROLOGER' && ' Returning to dashboard…'}
                                 </span>
