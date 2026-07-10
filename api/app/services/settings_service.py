@@ -30,10 +30,13 @@ DEFAULTS: dict[str, str] = {
     "bhashini_user_id": "",
     "bhashini_api_key": "",
     "bhashini_pipeline_id": "",
+    "google_tts_api_key": "",
+    "content_studio_public_base_url": "",  # e.g. https://api.aadikarta.org — where /static video files are publicly reachable, needed for Facebook/Instagram to fetch them when posting
+    "content_studio_caption_cta": "Chat with a certified astrologer on Aadikarta - just ₹10/min ✨\n\nLink in bio | Book your reading now",
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.
-SECRET_KEYS = {"waplex_api_key", "facebook_access_token", "instagram_access_token", "bhashini_api_key"}
+SECRET_KEYS = {"waplex_api_key", "facebook_access_token", "instagram_access_token", "bhashini_api_key", "google_tts_api_key"}
 
 _CACHE: dict[str, str] = {}
 _CACHE_TS: float = 0.0

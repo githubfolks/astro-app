@@ -19,6 +19,7 @@ const PostList = lazy(() => import('./pages/cms/PostList'));
 const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
 const ContactInquiries = lazy(() => import('./pages/cms/ContactInquiries'));
 const ContentStudio = lazy(() => import('./pages/cms/ContentStudio'));
+const ContentStudioLibrary = lazy(() => import('./pages/cms/ContentStudioLibrary'));
 const EduReports = lazy(() => import('./pages/EduReports'));
 const Disputes = lazy(() => import('./pages/Disputes'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -64,6 +65,7 @@ function App() {
 
             <Route path="/cms/contact-inquiries" element={<ContactInquiries />} />
             <Route path="/content-studio" element={<ContentStudio />} />
+            <Route path="/content-studio/library" element={<ContentStudioLibrary />} />
 
             <Route path="/edu-reports" element={<EduReports />} />
             <Route path="/disputes" element={<Disputes />} />

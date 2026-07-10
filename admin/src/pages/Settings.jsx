@@ -46,6 +46,21 @@ const GROUPS = [
             { key: 'bhashini_pipeline_id', label: 'Bhashini Pipeline ID' },
         ],
     },
+    {
+        title: 'Content Studio (Google TTS Fallback)',
+        desc: 'Google Cloud Text-to-Speech API key, used to generate Hindi narration when Bhashini is unconfigured or fails.',
+        fields: [
+            { key: 'google_tts_api_key', label: 'Google Cloud TTS API Key', secret: true },
+        ],
+    },
+    {
+        title: 'Content Studio (Social Posting)',
+        desc: 'The public URL where this API\'s /static files are reachable (e.g. https://api.aadikarta.org). Required for Facebook/Instagram to fetch Content Studio videos when posting — they cannot reach localhost or private URLs.',
+        fields: [
+            { key: 'content_studio_public_base_url', label: 'Public API Base URL' },
+            { key: 'content_studio_caption_cta', label: 'Caption Call-to-Action (appended to every AI-generated caption)', textarea: true },
+        ],
+    },
 ];
 
 function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop, error }) {
@@ -375,7 +390,7 @@ export default function Settings() {
 
                 {/* Right Column */}
                 <div className="space-y-6">
-                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration', 'Content Studio (Bhashini Hindi Voice)'].includes(g.title)).map(group => (
+                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration', 'Content Studio (Bhashini Hindi Voice)', 'Content Studio (Google TTS Fallback)', 'Content Studio (Social Posting)'].includes(g.title)).map(group => (
                         <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                             <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
                             {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}

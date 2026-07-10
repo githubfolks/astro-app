@@ -128,11 +128,18 @@ export const moderation = {
 };
 
 export const contentStudio = {
+    suggestTopic: () => api.post('/content-studio/suggest-topic'),
     generateScenes: (data) => api.post('/content-studio/jobs', data),
     updateScenes: (jobId, scenes) => api.put(`/content-studio/jobs/${jobId}/scenes`, { scenes }),
+    generateSceneImage: (jobId, sceneIndex, imagePromptEn) =>
+        api.post(`/content-studio/jobs/${jobId}/scenes/${sceneIndex}/generate-image`, { image_prompt_en: imagePromptEn }),
     renderVideo: (jobId) => api.post(`/content-studio/jobs/${jobId}/render`),
     getJob: (jobId) => api.get(`/content-studio/jobs/${jobId}`),
     listJobs: (params) => api.get('/content-studio/jobs', { params }),
+    generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
+    postFacebook: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption }),
+    postInstagram: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption }),
+    postYoutube: (jobId) => api.post(`/content-studio/jobs/${jobId}/post/youtube`),
 };
 
 

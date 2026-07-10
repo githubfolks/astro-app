@@ -462,6 +462,11 @@ class ContentType(str, enum.Enum):
     VOICE_OVER_IMAGE = "VOICE_OVER_IMAGE"
 
 
+class VoiceGender(str, enum.Enum):
+    MALE = "MALE"
+    FEMALE = "FEMALE"
+
+
 class ContentJobStatus(str, enum.Enum):
     SCENES_GENERATED = "SCENES_GENERATED"
     RENDERING = "RENDERING"
@@ -475,10 +480,14 @@ class ContentStudioJob(Base):
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, nullable=False)
     content_type = Column(Enum(ContentType), nullable=False)
+    voice_gender = Column(Enum(VoiceGender), default=VoiceGender.FEMALE, nullable=False)
     status = Column(Enum(ContentJobStatus), default=ContentJobStatus.SCENES_GENERATED, nullable=False)
     scenes = Column(JSON, nullable=False)  # [{index, narration_hi, image_prompt_en, image_url, audio_url, duration_sec, error}]
     output_video_url = Column(String, nullable=True)
     error_message = Column(Text, nullable=True)
+    posted_facebook_at = Column(DateTime(timezone=True), nullable=True)
+    posted_instagram_at = Column(DateTime(timezone=True), nullable=True)
+    posted_youtube_at = Column(DateTime(timezone=True), nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

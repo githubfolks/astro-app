@@ -15,6 +15,7 @@ import base64
 import httpx
 from fastapi import HTTPException
 
+from . import content_studio_tts_google
 from .settings_service import get_setting
 
 PIPELINE_CONFIG_URL = "https://meity-auth.ulcacontrib.org/ulca/apis/v0/model/getModelsPipeline"
@@ -38,7 +39,7 @@ def _credentials() -> tuple[str, str, str]:
     return user_id, api_key, pipeline_id
 
 
-def text_to_speech(text_hi: str) -> bytes:
+def text_to_speech(text_hi: str, gender: str = "FEMALE") -> bytes:
     """Returns WAV audio bytes for the given Hindi text."""
     user_id, api_key, pipeline_id = _credentials()
 
@@ -87,7 +88,7 @@ def text_to_speech(text_hi: str) -> bytes:
                         "config": {
                             "language": {"sourceLanguage": "hi"},
                             "serviceId": service_id,
-                            "gender": "female",
+                            "gender": gender.lower(),
                         },
                     }
                 ],
@@ -113,3 +114,22 @@ def text_to_speech(text_hi: str) -> bytes:
     except (KeyError, IndexError, ValueError) as e:
         print(f"Content Studio TTS: unexpected inference response shape: {e}")
         raise _UPSTREAM_ERROR
+
+
+def _bhashini_configured() -> bool:
+    return bool(get_setting("bhashini_user_id") and get_setting("bhashini_api_key") and get_setting("bhashini_pipeline_id"))
+
+
+def get_narration_audio(text_hi: str, gender: str = "FEMALE") -> bytes:
+    """Returns WAV audio bytes for the given Hindi text, preferring Bhashini and
+    falling back to Google Cloud TTS (content_studio_tts_google.py) when
+    Bhashini is unconfigured or fails.
+    """
+    if not _bhashini_configured():
+        return content_studio_tts_google.text_to_speech(text_hi, gender)
+
+    try:
+        return text_to_speech(text_hi, gender)
+    except HTTPException as e:
+        print(f"Content Studio TTS: Bhashini failed ({e.detail}), falling back to Google TTS")
+        return content_studio_tts_google.text_to_speech(text_hi, gender)

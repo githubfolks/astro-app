@@ -15,4 +15,5 @@ firebase-admin
 bcrypt
 httpx
 slowapi
+Pillow
 git+https://github.com/AavyaLabTech/waplex.git@main
