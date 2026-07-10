@@ -69,14 +69,36 @@ def _generate_image_replicate(full_prompt: str, api_token: str, width: int, heig
         }
     }
 
-    try:
-        response = httpx.post(REPLICATE_PREDICTIONS_URL, headers=headers, json=body, timeout=90.0)
-    except httpx.HTTPError as e:
-        print(f"Content Studio images: Replicate request failed: {e}")
-        raise _UPSTREAM_ERROR
+    # Replicate throttles accounts with under $5 credit to a burst of just 1
+    # request -- with several scenes generating concurrently (see the admin
+    # UI's image-generation lanes), that burst limit gets hit immediately.
+    # Retry using the retry_after seconds Replicate itself returns, rather
+    # than failing the whole scene on the first 429.
+    last_error = None
+    response = None
+    attempts = 4
+    for attempt in range(attempts):
+        try:
+            response = httpx.post(REPLICATE_PREDICTIONS_URL, headers=headers, json=body, timeout=90.0)
+        except httpx.HTTPError as e:
+            print(f"Content Studio images: Replicate request failed: {e}")
+            raise _UPSTREAM_ERROR
 
-    if response.status_code not in (200, 201):
-        print(f"Content Studio images: Replicate request failed: status {response.status_code} {response.text}")
+        if response.status_code in (200, 201):
+            break
+
+        last_error = f"status {response.status_code} {response.text}"
+        if response.status_code == 429 and attempt < attempts - 1:
+            try:
+                retry_after = float(response.json().get("retry_after", 5.0))
+            except (ValueError, TypeError):
+                retry_after = 5.0
+            time.sleep(retry_after + 1.0)
+        else:
+            break
+
+    if response is None or response.status_code not in (200, 201):
+        print(f"Content Studio images: Replicate request failed after retries: {last_error}")
         raise _UPSTREAM_ERROR
 
     prediction = response.json()
