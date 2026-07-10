@@ -81,7 +81,9 @@ def post_to_instagram(output_video_url: str, caption: str):
 
         # Step 2: poll until the video finishes processing (videos take longer than images)
         status_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{creation_id}"
-        status_params = {"fields": "status_code", "access_token": access_token}
+        # status_code alone (IN_PROGRESS/FINISHED/ERROR/EXPIRED) gives no reason
+        # on failure -- status carries the actual human-readable explanation.
+        status_params = {"fields": "status_code,status", "access_token": access_token}
 
         for _ in range(30):  # poll up to ~2.5 minutes
             try:

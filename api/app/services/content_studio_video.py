@@ -28,8 +28,11 @@ class VideoAssemblyError(RuntimeError):
     pass
 
 
-def _run(cmd: list[str]):
-    result = subprocess.run(cmd, capture_output=True, text=True)
+def _run(cmd: list[str], timeout: float = 300.0):
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise VideoAssemblyError(f"ffmpeg command timed out after {timeout:.0f}s: {' '.join(cmd)}")
     if result.returncode != 0:
         raise VideoAssemblyError(f"ffmpeg command failed: {' '.join(cmd)}\n{result.stderr[-2000:]}")
 
@@ -92,8 +95,12 @@ def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work
 
     # Pre-upscale modestly (not to some huge absolute size — that OOMs zoompan,
     # which materializes a full upscaled frame per output frame) just enough
-    # to avoid zoompan's jittery-zoom artifact on a static source image.
-    upscale_width = WIDTH * 3
+    # to avoid zoompan's jittery-zoom artifact on a static source image. 2x
+    # (not the original 3x) -- on the VPS this filter chain was observed
+    # pegging ~2.8 CPU cores and taking a long time per scene; halving the
+    # pixel count per frame (2x width = ~44% the pixels of 3x) cuts that
+    # substantially while still being enough headroom to avoid the jitter.
+    upscale_width = WIDTH * 2
     # Source images come back roughly square (Pollinations/Flux's native, best-quality
     # aspect ratio) — center-crop to 9:16 here instead of requesting a vertical image
     # directly, which was producing visibly stretched/warped content from the generator.
@@ -118,12 +125,22 @@ def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work
         "-filter_complex", filter_complex,
         "-map", "[v]", "-map", "1:a",
         "-c:v", "libx264", "-threads", "1", "-x264-params", "threads=1",
+        # medium (ffmpeg's default) was a large share of the per-scene time on
+        # the VPS's constrained CPU -- veryfast trades some compression
+        # efficiency for substantially faster encoding, which is a fine trade
+        # for short vertical clips that get re-compressed by Facebook/
+        # Instagram/YouTube on upload anyway.
+        "-preset", "veryfast",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         # Explicit trim instead of -shortest: with a looped image input, -shortest
         # was observed to overrun past zoompan's own frame count (e.g. 342 frames
         # instead of the requested 302) rather than cutting cleanly.
         "-t", f"{duration_sec:.3f}",
+        # Without faststart the moov atom lands at the end of the file --
+        # plays fine locally/in ffprobe, but Facebook's Graph API video
+        # ingestion rejects such files outright as "corrupt"/"unreadable".
+        "-movflags", "+faststart",
         out_path,
     ])
 
@@ -134,4 +151,4 @@ def concat_clips(clip_paths: list[str], work_dir: str, out_path: str):
         for path in clip_paths:
             f.write(f"file '{os.path.abspath(path)}'\n")
 
-    _run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", out_path])
+    _run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", "-movflags", "+faststart", out_path])
