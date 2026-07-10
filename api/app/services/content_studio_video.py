@@ -106,10 +106,18 @@ def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work
     # directly, which was producing visibly stretched/warped content from the generator.
     filter_complex = (
         f"[0:v]crop=w='min(iw\\,ih*9/16)':h='min(ih\\,iw*16/9)',"
-        f"scale={upscale_width}:-2,"
+        # out_range=tv -- the source is a JPEG, whose decoder reports full-range
+        # (PC) color, and that range tag survives the filter chain and overrides
+        # -pix_fmt at encode time even with a plain format=yuv420p filter (which
+        # only fixes chroma subsampling, not range), silently producing the
+        # deprecated yuvj420p instead of yuv420p. Facebook and Instagram both
+        # reject yuvj420p outright as "corrupt"/"unreadable". out_range=tv forces
+        # an actual full->limited range conversion, not just a relabel -- verified
+        # locally this is what actually flips the output to real yuv420p/tv range.
+        f"scale={upscale_width}:-2:out_range=tv,"
         f"zoompan=z='min(zoom+0.0015,1.5)':d={frames}:s={WIDTH}x{HEIGHT}:fps={FPS}:"
         f"x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[bg];"
-        f"[bg][2:v]overlay=0:0[v]"
+        f"[bg][2:v]overlay=0:0,format=yuv420p[v]"
     )
 
     _run([
