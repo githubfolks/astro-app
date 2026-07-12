@@ -14,16 +14,29 @@ HARDCODED_TEMPLATES = {
 }
 
 
+def get_webhook_secret() -> str:
+    return os.getenv("WAPLEX_WEBHOOK_SECRET") or ""
+
+
 def _get_config() -> WaplexConfig:
     base_url = os.getenv("WAPLEX_BASE_URL") or ""
     admin_key = os.getenv("WAPLEX_ADMIN_KEY") or ""
     app_base_url = os.getenv("API_BASE_URL") or "https://aadikarta.org"
-    
+
+    # The waplex library has no built-in webhook authenticity check, and
+    # this is the URL *we* tell wa-platform to call back on during
+    # provisioning — so we embed our own shared secret in it and verify it
+    # on inbound (see routers/public.py:waplex_inbound).
+    inbound_path = "/public/whatsapp/waplex/inbound"
+    secret = get_webhook_secret()
+    if secret:
+        inbound_path = f"{inbound_path}?secret={secret}"
+
     return WaplexConfig(
         base_url=base_url.rstrip("/"),
         admin_key=admin_key,
         app_base_url=app_base_url,
-        inbound_path="/public/whatsapp/waplex/inbound"
+        inbound_path=inbound_path
     )
 
 

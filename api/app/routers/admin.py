@@ -43,13 +43,21 @@ async def upload_file(file: UploadFile = File(...)):
     if file.content_type not in ALLOWED_TYPES:
         raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
 
+    # Extension is client-supplied and independent of Content-Type — pin it to a
+    # fixed allow-list too, so a mismatched pair (e.g. Content-Type: image/png with
+    # filename "x.html") can't get an executable/renderable extension onto a file
+    # served back statically from /static.
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".pdf"}
+    file_ext = os.path.splitext(file.filename or "")[1].lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"File extension {file_ext} not allowed")
+
     try:
         # Ensure directory exists
         UPLOAD_DIR = "uploads/admin_uploads"
         os.makedirs(UPLOAD_DIR, exist_ok=True)
-        
+
         # Generate unique filename
-        file_ext = os.path.splitext(file.filename)[1]
         filename = f"{uuid.uuid4().hex}{file_ext}"
         file_path = os.path.join(UPLOAD_DIR, filename)
         

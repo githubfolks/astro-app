@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 import secrets
 
 # Ensure upload directory exists
@@ -21,6 +22,11 @@ from .limiter import limiter
 app = FastAPI(title="Aadikarta API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# Enforces limiter.default_limits on every HTTP route lacking its own
+# @limiter.limit(...). Built on BaseHTTPMiddleware, which only intercepts the
+# "http" ASGI scope, so WebSocket routes (realtime + chat) pass straight
+# through untouched.
+app.add_middleware(SlowAPIMiddleware)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="uploads"), name="static")
@@ -165,6 +171,7 @@ async def csrf_middleware(request: Request, call_next):
         "/verify-otp",
         "/reset-password",
         "/payment/razorpay-webhook",
+        "/public/whatsapp/waplex/inbound",
         "/ai-astrologer/chat",
     ]
     
@@ -220,11 +227,14 @@ async def log_requests(request: Request, call_next):
         response = await call_next(request)
         return response
     except Exception as e:
+        # Log the full exception server-side only — never echo str(e) to the
+        # client, since it can contain SQL fragments, file paths, or other
+        # internals from unrelated dependencies raising here.
         print(f"ERROR processing request: {e}")
         from fastapi.responses import JSONResponse
         return JSONResponse(
             status_code=500,
-            content={"detail": "Internal Server Error", "error": str(e)}
+            content={"detail": "Internal Server Error"}
         )
 
 # Compress JSON responses when the API is reached without an nginx layer in front.

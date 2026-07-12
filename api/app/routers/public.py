@@ -86,6 +86,11 @@ def submit_contact_inquiry(
 
 @router.post("/whatsapp/waplex/inbound")
 async def waplex_inbound(request: Request):
+    from ..services.whatsapp_service import get_webhook_secret
+    expected_secret = get_webhook_secret()
+    if expected_secret and request.query_params.get("secret") != expected_secret:
+        raise HTTPException(status_code=404)
+
     from waplex import parse_connection_update
     try:
         payload = await request.json()
