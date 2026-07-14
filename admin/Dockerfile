@@ -1,10 +1,12 @@
+# syntax=docker/dockerfile:1
 # Build Stage
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN --mount=type=cache,target=/root/.npm \
+    npm install
 
 COPY . .
 ARG VITE_API_URL

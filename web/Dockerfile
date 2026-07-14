@@ -1,10 +1,12 @@
+# syntax=docker/dockerfile:1
 # Build Stage
 FROM node:20-alpine AS build
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm \
+    npm install --legacy-peer-deps
 
 COPY . .
 ARG VITE_API_URL

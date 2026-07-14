@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -11,9 +12,13 @@ RUN apt-get update && apt-get install -y \
     fonts-noto-core \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies
+# Install python dependencies. The cache mount persists pip's wheel cache across
+# builds (in the BuildKit cache store, not the image itself), so even when this
+# layer has to re-run — e.g. requirements.txt changed — it isn't re-downloading
+# every wheel from PyPI from scratch.
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
 
 # Copy application code
 COPY . .
