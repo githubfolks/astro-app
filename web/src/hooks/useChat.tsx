@@ -15,6 +15,8 @@ export interface Message {
     content: string;
     timestamp: string;
     type?: 'MESSAGE' | 'SYSTEM';
+    message_type?: 'text' | 'image';
+    media_url?: string | null;
 }
 
 export const useChat = (consultationId: string) => {
@@ -93,7 +95,10 @@ export const useChat = (consultationId: string) => {
                 case 'NEW_MESSAGE':
                     setMessages(prev => {
                         if (prev.find(m => m.id === data.id)) return prev;
-                        return [...prev, { id: data.id, sender_id: data.sender_id, content: data.content, timestamp: data.timestamp, type: 'MESSAGE' }];
+                        return [...prev, {
+                            id: data.id, sender_id: data.sender_id, content: data.content, timestamp: data.timestamp, type: 'MESSAGE',
+                            message_type: data.message_type ?? 'text', media_url: data.media_url ?? null,
+                        }];
                     });
                     break;
                 case 'TIMER_STARTED':
@@ -181,6 +186,8 @@ export const useChat = (consultationId: string) => {
                 sender_id: msg.sender_id,
                 content: msg.message,
                 timestamp: msg.timestamp,
+                message_type: msg.message_type ?? 'text',
+                media_url: msg.media_url ?? null,
                 type: 'MESSAGE' as const
             })));
         }).catch(console.error);

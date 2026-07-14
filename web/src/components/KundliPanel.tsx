@@ -1,6 +1,6 @@
 import type { ChartData, DivisionChart, PlanetPosition } from '../types';
-import React, { useState } from 'react';
-import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2 } from 'lucide-react';
 import KundliChart, { PLANET_SHORT, PLANET_COLORS } from './KundliChart';
 import {
     type Lang, hi,
@@ -29,6 +29,34 @@ interface KundliContentProps {
     chartData?: ChartData | null;
     loading?: boolean;
     error?: string | null;
+    /** When provided (astrologer chat context), a "Share to Chat" button captures the
+     * visible Rashi chart as a PNG and hands it off for upload/sending. */
+    onShareImage?: (blob: Blob) => Promise<void> | void;
+    canShare?: boolean;
+}
+
+/** Renders the given SVG node to a PNG blob at its native viewBox resolution. */
+function svgToPngBlob(svgEl: SVGSVGElement): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        const size = svgEl.viewBox.baseVal.width || 340;
+        const svgString = new XMLSerializer().serializeToString(svgEl);
+        const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) { URL.revokeObjectURL(url); reject(new Error('Canvas not supported')); return; }
+            ctx.fillStyle = '#FFFBF0';
+            ctx.fillRect(0, 0, size, size);
+            ctx.drawImage(img, 0, 0, size, size);
+            URL.revokeObjectURL(url);
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Failed to export image')), 'image/png');
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Failed to render chart image')); };
+        img.src = url;
+    });
 }
 
 function getDivisionChart(chartData: ChartData, tab: string): DivisionChart | undefined {
@@ -42,9 +70,30 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     chartData,
     loading = false,
     error = null,
+    onShareImage,
+    canShare = false,
 }) => {
     const [activeTab, setActiveTab] = useState('D1');
     const [lang, setLang] = useState<Lang>('en');
+    const chartRef = useRef<SVGSVGElement>(null);
+    const [sharing, setSharing] = useState(false);
+    const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+    const handleShareClick = async () => {
+        if (!onShareImage || sharing || !chartRef.current) return;
+        setSharing(true);
+        setShareStatus('idle');
+        try {
+            const blob = await svgToPngBlob(chartRef.current);
+            await onShareImage(blob);
+            setShareStatus('success');
+        } catch {
+            setShareStatus('error');
+        } finally {
+            setSharing(false);
+            setTimeout(() => setShareStatus('idle'), 2500);
+        }
+    };
 
     const activeChart = chartData ? getDivisionChart(chartData, activeTab) : undefined;
     const ascendant = activeChart?.ascendant;
@@ -119,6 +168,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                             {/* Chart Visualization */}
                             <div className="flex flex-col items-center gap-2">
                                 <KundliChart
+                                    ref={chartRef}
                                     chartData={activeChart}
                                     title={lang === 'hi' ? TABS.find(t => t.key === activeTab)?.labelHi || 'चार्ट' : TABS.find(t => t.key === activeTab)?.label || 'Chart'}
                                     size={340}
@@ -126,6 +176,24 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                     combustSet={combustSet}
                                     vargottamaSet={vargottamaSet}
                                 />
+                                {canShare && onShareImage && activeChart && (
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleShareClick}
+                                            disabled={sharing}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors disabled:opacity-60"
+                                        >
+                                            {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
+                                            {sharing ? (lang === 'hi' ? 'भेजा जा रहा है…' : 'Sharing…') : (lang === 'hi' ? 'चैट में भेजें' : 'Share to Chat')}
+                                        </button>
+                                        {shareStatus === 'success' && (
+                                            <span className="text-[11px] text-emerald-600 font-semibold">{lang === 'hi' ? 'भेज दिया गया ✓' : 'Shared ✓'}</span>
+                                        )}
+                                        {shareStatus === 'error' && (
+                                            <span className="text-[11px] text-red-600 font-semibold">{lang === 'hi' ? 'भेजने में विफल' : 'Failed to share'}</span>
+                                        )}
+                                    </div>
+                                )}
                                 {ascendant && (
                                     <p className="text-xs text-gray-900">
                                         {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id})</span>

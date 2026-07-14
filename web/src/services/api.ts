@@ -373,6 +373,20 @@ export const api = {
         }
     },
 
+    chatImage: {
+        shareImage: async (consultation_id: number | string, blob: Blob, caption = 'Kundli Chart') => {
+            const form = new FormData();
+            form.append('file', blob, 'kundli-chart.png');
+            form.append('caption', caption);
+            const response = await customFetch(`${API_URL}/chat/${consultation_id}/share-image`, {
+                method: 'POST',
+                headers: await authHeaders(),
+                body: form
+            });
+            return handleResponse(response, 'Failed to share image');
+        }
+    },
+
     cms: {
         getPosts: async (skip = 0, limit = 10, search = '') => {
             const params = new URLSearchParams({

@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import { KundliContent } from '../components/KundliPanel';
 import PreChatQuestionsModal from '../components/PreChatQuestionsModal';
-import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff } from 'lucide-react';
+import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
@@ -40,7 +40,7 @@ export const Chat: React.FC = () => {
     const [isPromotionalChat, setIsPromotionalChat] = useState(false);
     const [promotionalRateTotal, setPromotionalRateTotal] = useState<number | null>(null);
 
-    // Astrologer-side chat language toggle: when 'hi', the seeker's messages are shown translated
+    // Chat language toggle (both roles): when 'hi', the other party's messages are shown translated
     const [chatLanguage, setChatLanguage] = useState<'en' | 'hi'>('en');
     const [translatedText, setTranslatedText] = useState<Record<number, string>>({});
     const translatingIds = useRef<Set<number>>(new Set());
@@ -175,11 +175,11 @@ export const Chat: React.FC = () => {
 
     const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, talkTimeSeconds, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
 
-    // Translate the seeker's messages into Hindi for the astrologer when that toggle is on
+    // Translate the other party's messages into Hindi when that toggle is on
     useEffect(() => {
-        if (chatLanguage !== 'hi' || user?.role !== 'ASTROLOGER' || !activeConsultationId) return;
+        if (chatLanguage !== 'hi' || !activeConsultationId) return;
         messages.forEach(m => {
-            if (m.id === undefined || m.sender_id === user.id) return;
+            if (m.id === undefined || m.sender_id === user?.id) return;
             if (translatedText[m.id] !== undefined || translatingIds.current.has(m.id)) return;
             translatingIds.current.add(m.id);
             api.chatTranslate.translate(activeConsultationId, m.content, 'hi')
@@ -188,6 +188,19 @@ export const Chat: React.FC = () => {
                 .finally(() => translatingIds.current.delete(m.id as number));
         });
     }, [chatLanguage, messages, user, activeConsultationId, translatedText]);
+
+    // Translate the seeker's concern note into Hindi for the astrologer when that toggle is on
+    const [translatedNote, setTranslatedNote] = useState<string | null>(null);
+    const translatingNote = useRef(false);
+    useEffect(() => {
+        setTranslatedNote(null);
+        if (chatLanguage !== 'hi' || !activeConsultationId || !consultationConcernNote || translatingNote.current) return;
+        translatingNote.current = true;
+        api.chatTranslate.translate(activeConsultationId, consultationConcernNote, 'hi')
+            .then(res => setTranslatedNote(res.translated_text))
+            .catch(() => { /* keep showing the original note if translation fails */ })
+            .finally(() => { translatingNote.current = false; });
+    }, [chatLanguage, activeConsultationId, consultationConcernNote]);
 
     // React to the chat ending regardless of who ended it (self, other party, or
     // system auto-end) so both sides get feedback and are routed off the page.
@@ -326,6 +339,12 @@ export const Chat: React.FC = () => {
         // Side effects (rating modal / redirect) are handled by the status-watching
         // effect above so they fire the same way whether I ended the chat or the
         // other party did.
+    };
+
+    const handleShareKundliImage = async (blob: Blob) => {
+        if (!activeConsultationId) return;
+        await api.chatImage.shareImage(activeConsultationId, blob);
+        setShowSidebarMobile(false);
     };
 
     const handleSubmitReview = async (rating: number, comment: string) => {
@@ -563,7 +582,9 @@ export const Chat: React.FC = () => {
                                             <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
                                                 <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Notes</h3>
                                                 <p className="text-yellow-900 text-sm">
-                                                    {consultationConcernNote || 'No additional notes.'}
+                                                    {chatLanguage === 'hi' && consultationConcernNote
+                                                        ? (translatedNote || 'Translating…')
+                                                        : (consultationConcernNote || 'No additional notes.')}
                                                 </p>
                                             </div>
 
@@ -575,7 +596,13 @@ export const Chat: React.FC = () => {
                                         </div>
                                     ) : (
                                         <div className="pt-2 border-t border-gray-100">
-                                            <KundliContent chartData={kundliData} loading={kundliLoading} error={kundliError} />
+                                            <KundliContent
+                                                chartData={kundliData}
+                                                loading={kundliLoading}
+                                                error={kundliError}
+                                                canShare={user?.role === 'ASTROLOGER'}
+                                                onShareImage={handleShareKundliImage}
+                                            />
                                         </div>
                                     )}
                                 </div>
@@ -668,22 +695,20 @@ export const Chat: React.FC = () => {
                                     </div>
                                 )}
 
-                                {user?.role === 'ASTROLOGER' && (
-                                    <div className="hidden sm:flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold flex-shrink-0" title="Translate the seeker's messages">
-                                        <button
-                                            onClick={() => setChatLanguage('en')}
-                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
-                                        >
-                                            EN
-                                        </button>
-                                        <button
-                                            onClick={() => setChatLanguage('hi')}
-                                            className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
-                                        >
-                                            हिं
-                                        </button>
-                                    </div>
-                                )}
+                                <div className="hidden sm:flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold flex-shrink-0" title="Translate the other person's messages">
+                                    <button
+                                        onClick={() => setChatLanguage('en')}
+                                        className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
+                                    >
+                                        EN
+                                    </button>
+                                    <button
+                                        onClick={() => setChatLanguage('hi')}
+                                        className={`px-3 py-1 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
+                                    >
+                                        हिं
+                                    </button>
+                                </div>
 
                                 <button
                                     onClick={() => setShowSidebarMobile(true)}
@@ -696,9 +721,11 @@ export const Chat: React.FC = () => {
                                 {user?.role === 'SEEKER' && (
                                     <button
                                         onClick={handleEndChat}
-                                        className="bg-red-50 text-red-600 hover:bg-red-100 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-[11px] md:text-xs font-bold transition-colors border border-red-200 flex-shrink-0 whitespace-nowrap"
+                                        className="bg-red-50 text-red-600 hover:bg-red-100 p-2 rounded-full transition-colors border border-red-200 flex-shrink-0"
+                                        title="End Chat"
+                                        aria-label="End Chat"
                                     >
-                                        End Chat
+                                        <PhoneOff size={18} />
                                     </button>
                                 )}
                             </div>
@@ -736,22 +763,20 @@ export const Chat: React.FC = () => {
                             {isPromotionalChat && (
                                 <span className="text-[#E91E63] font-bold">Promo</span>
                             )}
-                            {user?.role === 'ASTROLOGER' && (
-                                <div className="flex items-center bg-gray-200 rounded-full p-0.5 text-[10px] font-bold flex-shrink-0 ml-auto" title="Translate the seeker's messages">
-                                    <button
-                                        onClick={() => setChatLanguage('en')}
-                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900'}`}
-                                    >
-                                        EN
-                                    </button>
-                                    <button
-                                        onClick={() => setChatLanguage('hi')}
-                                        className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900'}`}
-                                    >
-                                        हिं
-                                    </button>
-                                </div>
-                            )}
+                            <div className="flex items-center bg-gray-200 rounded-full p-0.5 text-[10px] font-bold flex-shrink-0 ml-auto" title="Translate the other person's messages">
+                                <button
+                                    onClick={() => setChatLanguage('en')}
+                                    className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900'}`}
+                                >
+                                    EN
+                                </button>
+                                <button
+                                    onClick={() => setChatLanguage('hi')}
+                                    className={`px-2.5 py-0.5 rounded-full transition-colors ${chatLanguage === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900'}`}
+                                >
+                                    हिं
+                                </button>
+                            </div>
                         </div>
 
                         {/* Low Balance Warning Banner */}
@@ -786,7 +811,9 @@ export const Chat: React.FC = () => {
                                 <Info size={15} className="flex-shrink-0 text-indigo-500 mt-0.5" />
                                 <span>
                                     <span className="font-bold">{consultationTopic}</span>
-                                    {consultationConcernNote && <span> — {consultationConcernNote}</span>}
+                                    {consultationConcernNote && (
+                                        <span> — {chatLanguage === 'hi' ? (translatedNote || consultationConcernNote) : consultationConcernNote}</span>
+                                    )}
                                 </span>
                             </div>
                         )}
@@ -912,21 +939,32 @@ export const Chat: React.FC = () => {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                             {messages.map((msg, idx) => {
                                 const isMe = msg.sender_id === user?.id;
-                                const showTranslation = !isMe && chatLanguage === 'hi' && msg.id !== undefined;
+                                const isImage = msg.message_type === 'image' && !!msg.media_url;
+                                const showTranslation = !isImage && !isMe && chatLanguage === 'hi' && msg.id !== undefined;
                                 const translation = showTranslation ? translatedText[msg.id as number] : undefined;
                                 return (
                                     <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                                        <div className={`max-w-[85%] md:max-w-[70%] p-4 rounded-2xl shadow-sm ${isMe
+                                        <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl shadow-sm ${isImage ? 'p-2' : 'p-4'} ${isMe
                                             ? 'bg-[#E91E63] text-white rounded-br-none'
                                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
                                             }`}>
-                                            <p className="text-sm md:text-base leading-relaxed">{translation || msg.content}</p>
+                                            {isImage ? (
+                                                <a href={resolveImageUrl(msg.media_url)} target="_blank" rel="noopener noreferrer">
+                                                    <img
+                                                        src={resolveImageUrl(msg.media_url)}
+                                                        alt={msg.content || 'Kundli Chart'}
+                                                        className="rounded-lg max-w-full max-h-64 object-contain bg-white"
+                                                    />
+                                                </a>
+                                            ) : (
+                                                <p className="text-sm md:text-base leading-relaxed">{translation || msg.content}</p>
+                                            )}
                                             {showTranslation && (
                                                 <p className={`text-xs italic mt-1 ${translation ? 'text-gray-400' : 'text-gray-300'}`}>
                                                     {translation ? `Original: ${msg.content}` : 'Translating…'}
                                                 </p>
                                             )}
-                                            <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-pink-100' : 'text-gray-400'}`}>
+                                            <div className={`text-[10px] mt-1 text-right ${isMe ? 'text-pink-100' : 'text-gray-400'} ${isImage ? 'px-1 pb-0.5' : ''}`}>
                                                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </div>
                                         </div>

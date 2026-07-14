@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query, Request, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -9,6 +9,7 @@ from jose import jwt, JWTError
 import asyncio
 import json
 import os
+import uuid
 import httpx
 from datetime import datetime
 from decimal import Decimal
@@ -258,6 +259,8 @@ async def send_message(
             "id": new_msg.id,
             "sender_id": current_user.id,
             "content": broadcast_content,
+            "message_type": "text",
+            "media_url": None,
             "timestamp": new_msg.timestamp.isoformat() if new_msg.timestamp else datetime.utcnow().isoformat()
         })
         
@@ -296,6 +299,87 @@ async def send_message(
         if isinstance(e, HTTPException):
             raise e
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+
+
+# --- Kundli chart image sharing (astrologer -> seeker) ---
+
+_IMAGE_CONTENT_TYPE_EXT = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp"}
+_MAX_IMAGE_SIZE = 3 * 1024 * 1024
+
+
+@router.post("/{consultation_id}/share-image")
+@limiter.limit("15/minute")
+async def share_image(
+    request: Request,
+    consultation_id: int,
+    file: UploadFile = File(...),
+    caption: str = Form("Kundli Chart"),
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    if current_user.id not in (consultation.seeker_id, consultation.astrologer_id):
+        raise HTTPException(status_code=403, detail="Not authorized to participate in this chat")
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=403, detail="Only the astrologer can share a chart image")
+
+    ext = _IMAGE_CONTENT_TYPE_EXT.get(file.content_type)
+    if not ext:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
+
+    content = await file.read()
+    if len(content) > _MAX_IMAGE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large (Max 3MB)")
+
+    UPLOAD_DIR = "uploads/chat_attachments"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}{ext}"
+    with open(os.path.join(UPLOAD_DIR, filename), "wb") as f:
+        f.write(content)
+    media_url = f"/static/chat_attachments/{filename}"
+
+    new_msg = models.ChatMessage(
+        consultation_id=consultation.id,
+        sender_id=current_user.id,
+        message=caption,
+        message_type="image",
+        media_url=media_url,
+    )
+    db.add(new_msg)
+    db.commit()
+    db.refresh(new_msg)
+
+    await manager.broadcast(consultation.id, {
+        "type": "NEW_MESSAGE",
+        "id": new_msg.id,
+        "sender_id": current_user.id,
+        "content": caption,
+        "message_type": "image",
+        "media_url": media_url,
+        "timestamp": new_msg.timestamp.isoformat() if new_msg.timestamp else datetime.utcnow().isoformat(),
+    })
+
+    try:
+        recipient_id = consultation.seeker_id
+        is_recipient_online = any(
+            conn["user_id"] == recipient_id
+            for conn in manager.active_connections.get(consultation.id, [])
+        )
+        if not is_recipient_online:
+            sender_name = (current_user.astrologer_profile.full_name if current_user.astrologer_profile else None) or "Astrologer"
+            for token_obj in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == recipient_id).all():
+                send_push_notification(
+                    token=token_obj.fcm_token,
+                    title=f"New Message from {sender_name}",
+                    body="Shared a Kundli chart",
+                    data={"consultation_id": str(consultation.id), "type": "CHAT_MESSAGE"}
+                )
+    except Exception as push_err:
+        logger.error(f"Push notification error in share_image: {push_err}")
+
+    return {"status": "sent", "message_id": int(new_msg.id), "media_url": media_url}
 
 async def get_user_from_token(token: str, db: Session):
     try:
@@ -614,6 +698,8 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                     "id": new_msg.id,
                     "sender_id": user.id,
                     "content": broadcast_content,
+                    "message_type": "text",
+                    "media_url": None,
                     "timestamp": str(new_msg.timestamp)
                 })
 

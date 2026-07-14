@@ -148,6 +148,8 @@ export interface ChatHistoryItem {
     id: number;
     sender_id: number;
     message: string;
+    message_type?: 'text' | 'image';
+    media_url?: string | null;
     timestamp: string;
 }
 

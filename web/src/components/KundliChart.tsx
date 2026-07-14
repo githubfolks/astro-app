@@ -94,10 +94,10 @@ function centroid(points: [number, number][]): [number, number] {
     return [sum[0] / n, sum[1] / n];
 }
 
-const KundliChart: React.FC<KundliChartProps> = ({
+const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
     chartData, title = 'Rashi Chart', size = 360, lang = 'en',
     combustSet, vargottamaSet,
-}) => {
+}, ref) => {
     if (!chartData || !chartData.houses || !chartData.planets) {
         return (
             <div className="flex items-center justify-center p-8 text-gray-400">
@@ -115,9 +115,9 @@ const KundliChart: React.FC<KundliChartProps> = ({
         <div className="flex flex-col items-center">
             <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">{title}</h3>
             <svg
-                width={size}
-                height={size}
+                ref={ref}
                 viewBox={`0 0 ${size} ${size}`}
+                style={{ width: '100%', maxWidth: size, height: 'auto' }}
                 className="border border-gray-300 rounded-lg bg-[#FFFBF0]"
             >
                 {/* Outer square */}
@@ -226,7 +226,8 @@ const KundliChart: React.FC<KundliChartProps> = ({
             </svg>
         </div>
     );
-};
+});
+KundliChart.displayName = 'KundliChart';
 
 export default KundliChart;
 export { RASHI_ABBR, PLANET_SHORT, PLANET_COLORS };

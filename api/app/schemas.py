@@ -219,8 +219,11 @@ class Review(ReviewCreate):
         from_attributes = True
 
 class ChatMessage(BaseModel):
+    id: int
     sender_id: int
     message: str
+    message_type: str = "text"
+    media_url: Optional[str] = None
     timestamp: datetime
     class Config:
         from_attributes = True

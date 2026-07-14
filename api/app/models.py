@@ -203,6 +203,8 @@ class ChatMessage(Base):
     consultation_id = Column(Integer, ForeignKey("consultations.id"), index=True)
     sender_id = Column(Integer, ForeignKey("users.id"))
     message = Column(Text)
+    message_type = Column(String, nullable=False, server_default="text")  # "text" | "image"
+    media_url = Column(String, nullable=True)  # set when message_type == "image"
     is_flagged = Column(Boolean, default=False)  # Set when moderation detects a violation
     flag_reason = Column(String, nullable=True)  # e.g. "phone_number,contact_intent"
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
