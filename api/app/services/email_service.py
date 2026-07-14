@@ -365,11 +365,13 @@ def build_growth_meeting_email(
 
 
 def build_payout_processed_email(
-    amount: float, transaction_reference: str, tds_amount: float, payout_date: str = None, comments: str = None
+    amount: float, transaction_reference: str, tds_amount: float, payout_date: str = None, comments: str = None,
+    pg_charge: float = 0.0
 ) -> Tuple[str, str]:
     rows = [
         ("Amount", f"&#8377;{amount:,.2f}"),
         ("TDS deducted", f"&#8377;{tds_amount:,.2f}"),
+        ("Payment gateway charge (3%)", f"&#8377;{pg_charge:,.2f}"),
         ("Transaction reference", transaction_reference or "—"),
     ]
     if payout_date:

@@ -1246,6 +1246,25 @@
         "title": "Body_login_login_post",
         "type": "object"
       },
+      "Body_share_image_chat__consultation_id__share_image_post": {
+        "properties": {
+          "caption": {
+            "default": "Kundli Chart",
+            "title": "Caption",
+            "type": "string"
+          },
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_share_image_chat__consultation_id__share_image_post",
+        "type": "object"
+      },
       "Body_upload_file_admin_upload_post": {
         "properties": {
           "file": {
@@ -1260,10 +1279,43 @@
         "title": "Body_upload_file_admin_upload_post",
         "type": "object"
       },
+      "CaptionSuggestion": {
+        "properties": {
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          }
+        },
+        "required": [
+          "caption"
+        ],
+        "title": "CaptionSuggestion",
+        "type": "object"
+      },
       "ChatMessage": {
         "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url"
+          },
           "message": {
             "title": "Message",
+            "type": "string"
+          },
+          "message_type": {
+            "default": "text",
+            "title": "Message Type",
             "type": "string"
           },
           "sender_id": {
@@ -1277,6 +1329,7 @@
           }
         },
         "required": [
+          "id",
           "sender_id",
           "message",
           "timestamp"
@@ -1844,6 +1897,24 @@
         "title": "ContactInquiryListResponse",
         "type": "object"
       },
+      "ContentJobStatus": {
+        "enum": [
+          "SCENES_GENERATED",
+          "RENDERING",
+          "DONE",
+          "FAILED"
+        ],
+        "title": "ContentJobStatus",
+        "type": "string"
+      },
+      "ContentType": {
+        "enum": [
+          "SHORT_VIDEO",
+          "VOICE_OVER_IMAGE"
+        ],
+        "title": "ContentType",
+        "type": "string"
+      },
       "CourseCreate": {
         "properties": {
           "description": {
@@ -2303,6 +2374,57 @@
         "title": "GenderType",
         "type": "string"
       },
+      "GenerateSceneImageRequest": {
+        "properties": {
+          "image_prompt_en": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Image Prompt En",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image_prompt_en"
+        ],
+        "title": "GenerateSceneImageRequest",
+        "type": "object"
+      },
+      "GenerateScenesRequest": {
+        "properties": {
+          "content_type": {
+            "$ref": "#/components/schemas/ContentType"
+          },
+          "scene_count": {
+            "anyOf": [
+              {
+                "maximum": 8.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scene Count"
+          },
+          "topic": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Topic",
+            "type": "string"
+          },
+          "voice_gender": {
+            "$ref": "#/components/schemas/VoiceGender",
+            "default": "FEMALE"
+          }
+        },
+        "required": [
+          "topic",
+          "content_type"
+        ],
+        "title": "GenerateScenesRequest",
+        "type": "object"
+      },
       "GenerateSocialRequest": {
         "properties": {
           "content": {
@@ -2414,6 +2536,142 @@
         ],
         "title": "InquiryStatus",
         "type": "string"
+      },
+      "Job": {
+        "properties": {
+          "content_type": {
+            "$ref": "#/components/schemas/ContentType"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "output_video_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Video Url"
+          },
+          "posted_facebook_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted Facebook At"
+          },
+          "posted_instagram_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted Instagram At"
+          },
+          "posted_youtube_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posted Youtube At"
+          },
+          "scenes": {
+            "items": {
+              "$ref": "#/components/schemas/Scene"
+            },
+            "title": "Scenes",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ContentJobStatus"
+          },
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "voice_gender": {
+            "$ref": "#/components/schemas/VoiceGender"
+          }
+        },
+        "required": [
+          "id",
+          "topic",
+          "content_type",
+          "voice_gender",
+          "status",
+          "scenes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "Job",
+        "type": "object"
+      },
+      "JobListResponse": {
+        "properties": {
+          "jobs": {
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            },
+            "title": "Jobs",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "jobs"
+        ],
+        "title": "JobListResponse",
+        "type": "object"
       },
       "JoinClassResponse": {
         "properties": {
@@ -2927,6 +3185,21 @@
         "title": "PostListResponse",
         "type": "object"
       },
+      "PostSocialRequest": {
+        "properties": {
+          "caption": {
+            "maxLength": 2200,
+            "minLength": 1,
+            "title": "Caption",
+            "type": "string"
+          }
+        },
+        "required": [
+          "caption"
+        ],
+        "title": "PostSocialRequest",
+        "type": "object"
+      },
       "PostStatus": {
         "enum": [
           "DRAFT",
@@ -3137,6 +3410,88 @@
           "rating"
         ],
         "title": "ReviewCreate",
+        "type": "object"
+      },
+      "Scene": {
+        "properties": {
+          "audio_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Url"
+          },
+          "duration_sec": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Sec"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "full_image_prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Image Prompt"
+          },
+          "image_prompt_en": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Image Prompt En",
+            "type": "string"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "narration_hi": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Narration Hi",
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "narration_hi",
+          "image_prompt_en"
+        ],
+        "title": "Scene",
         "type": "object"
       },
       "SeekerProfile": {
@@ -3363,7 +3718,20 @@
         "title": "Token",
         "type": "object"
       },
-      "TransactionType": {
+      "TopicSuggestion": {
+        "properties": {
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic"
+        ],
+        "title": "TopicSuggestion",
+        "type": "object"
+      },
+      "TransactionType-Output": {
         "enum": [
           "DEPOSIT",
           "WITHDRAWAL",
@@ -3415,6 +3783,22 @@
           "translated_text"
         ],
         "title": "TranslateResponse",
+        "type": "object"
+      },
+      "UpdateScenesRequest": {
+        "properties": {
+          "scenes": {
+            "items": {
+              "$ref": "#/components/schemas/Scene"
+            },
+            "title": "Scenes",
+            "type": "array"
+          }
+        },
+        "required": [
+          "scenes"
+        ],
+        "title": "UpdateScenesRequest",
         "type": "object"
       },
       "UserCreate": {
@@ -3720,6 +4104,14 @@
         "title": "VerifyOTPRequest",
         "type": "object"
       },
+      "VoiceGender": {
+        "enum": [
+          "MALE",
+          "FEMALE"
+        ],
+        "title": "VoiceGender",
+        "type": "string"
+      },
       "WalletAdjustmentRequest": {
         "properties": {
           "amount": {
@@ -3777,7 +4169,7 @@
             "title": "Reference Id"
           },
           "transaction_type": {
-            "$ref": "#/components/schemas/TransactionType"
+            "$ref": "#/components/schemas/TransactionType-Output"
           },
           "user_id": {
             "title": "User Id",
@@ -3831,7 +4223,7 @@
             "title": "Reference Id"
           },
           "transaction_type": {
-            "$ref": "#/components/schemas/TransactionType"
+            "$ref": "#/components/schemas/app__schemas__TransactionType"
           },
           "user_id": {
             "title": "User Id",
@@ -3864,6 +4256,19 @@
         "title": "ZodiacSign",
         "type": "string"
       },
+      "app__models__TransactionType": {
+        "enum": [
+          "DEPOSIT",
+          "WITHDRAWAL",
+          "CHAT_DEDUCTION",
+          "CHAT_REFUND",
+          "PAYMENT_GATEWAY",
+          "COURSE_PURCHASE",
+          "PACKAGE_PURCHASE"
+        ],
+        "title": "TransactionType",
+        "type": "string"
+      },
       "app__models__UserRole": {
         "enum": [
           "ADMIN",
@@ -3872,6 +4277,18 @@
           "TUTOR"
         ],
         "title": "UserRole",
+        "type": "string"
+      },
+      "app__schemas__TransactionType": {
+        "enum": [
+          "DEPOSIT",
+          "WITHDRAWAL",
+          "CHAT_DEDUCTION",
+          "CHAT_REFUND",
+          "PAYMENT_GATEWAY",
+          "COURSE_PURCHASE"
+        ],
+        "title": "TransactionType",
         "type": "string"
       },
       "app__schemas__UserRole": {
@@ -4434,6 +4851,52 @@
         ]
       }
     },
+    "/admin/astrologers/{user_id}/stats": {
+      "get": {
+        "description": "Performance stats for an astrologer:\n  - avg_online_hours_per_day_30d: rolling 30-day average daily online time\n  - poor_chat_percentage: % of rated consultations with rating <= 2\n  - first_user_repeat_percentage: % of \"this astrologer was the seeker's very\n    first consultation on the platform\" seekers who came back to this astrologer again\n  - loyal_user_percentage: % of this astrologer's unique seekers who returned within\n    15 days of their first consultation with this astrologer AND stayed >10 min",
+        "operationId": "get_astrologer_stats_admin_astrologers__user_id__stats_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Astrologer Stats",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/astrologers_full": {
       "get": {
         "operationId": "list_astrologers_full_admin_astrologers_full_get",
@@ -4880,7 +5343,7 @@
     },
     "/admin/payouts/generate": {
       "post": {
-        "description": "Create a Payout record. `amount` is the net amount after TDS.\n`tds_deducted` is the TDS withheld for record-keeping.",
+        "description": "Create a Payout record. `amount` is the net amount after TDS and PG charge.\n`tds_deducted` and `pg_charge_deducted` are withheld amounts for record-keeping.",
         "operationId": "generate_payout_admin_payouts_generate_post",
         "parameters": [
           {
@@ -4908,6 +5371,16 @@
             "schema": {
               "default": 0.0,
               "title": "Tds Deducted",
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pg_charge_deducted",
+            "required": false,
+            "schema": {
+              "default": 0.0,
+              "title": "Pg Charge Deducted",
               "type": "number"
             }
           },
@@ -5177,6 +5650,104 @@
           }
         ],
         "summary": "Update App Settings",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/transactions": {
+      "get": {
+        "description": "All wallet transactions for a given role (defaults to seekers), for admin auditing.",
+        "operationId": "list_all_transactions_admin_transactions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/app__models__UserRole",
+              "default": "SEEKER"
+            }
+          },
+          {
+            "in": "query",
+            "name": "transaction_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/app__models__TransactionType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Transaction Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List All Transactions",
         "tags": [
           "Admin"
         ]
@@ -6403,6 +6974,61 @@
         ]
       }
     },
+    "/chat/{consultation_id}/share-image": {
+      "post": {
+        "operationId": "share_image_chat__consultation_id__share_image_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "consultation_id",
+            "required": true,
+            "schema": {
+              "title": "Consultation Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_share_image_chat__consultation_id__share_image_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Share Image",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
     "/cms/contact-inquiries": {
       "get": {
         "operationId": "list_contact_inquiries_cms_contact_inquiries_get",
@@ -6901,6 +7527,31 @@
         ]
       }
     },
+    "/consultations/end-active-on-logout": {
+      "post": {
+        "description": "Called by the client right before logout completes. Unlike a dropped\nconnection (which pauses the session so it can be resumed), a seeker who\ndeliberately logs out isn't coming back \u2014 end the session outright so it\ndoesn't sit unresolved and blocking the astrologer's queue.",
+        "operationId": "end_active_consultation_on_logout_consultations_end_active_on_logout_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "End Active Consultation On Logout",
+        "tags": [
+          "Consultations"
+        ]
+      }
+    },
     "/consultations/history": {
       "get": {
         "operationId": "get_consultation_history_consultations_history_get",
@@ -7163,6 +7814,570 @@
         "summary": "Resume Consultation",
         "tags": [
           "Consultations"
+        ]
+      }
+    },
+    "/content-studio/jobs": {
+      "get": {
+        "operationId": "list_jobs_content_studio_jobs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Jobs",
+        "tags": [
+          "Content Studio"
+        ]
+      },
+      "post": {
+        "operationId": "create_job_content_studio_jobs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateScenesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Create Job",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}": {
+      "get": {
+        "operationId": "get_job_content_studio_jobs__job_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Job",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/generate-caption": {
+      "post": {
+        "operationId": "generate_caption_content_studio_jobs__job_id__generate_caption_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptionSuggestion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Caption",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/post/facebook": {
+      "post": {
+        "operationId": "post_facebook_content_studio_jobs__job_id__post_facebook_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostSocialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Post Facebook",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/post/instagram": {
+      "post": {
+        "operationId": "post_instagram_content_studio_jobs__job_id__post_instagram_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostSocialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Post Instagram",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/post/youtube": {
+      "post": {
+        "operationId": "post_youtube_content_studio_jobs__job_id__post_youtube_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostSocialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Post Youtube",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/render": {
+      "post": {
+        "operationId": "render_video_content_studio_jobs__job_id__render_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Render Video",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/scenes": {
+      "put": {
+        "operationId": "update_scenes_content_studio_jobs__job_id__scenes_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateScenesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Scenes",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/scenes/{scene_index}/generate-image": {
+      "post": {
+        "description": "Generates (or regenerates) just one scene's preview image, using\nwhatever image_prompt_en the admin currently has in the editor -- lets\nthem see and approve/retry each image before committing to a full render.",
+        "operationId": "generate_scene_image_content_studio_jobs__job_id__scenes__scene_index__generate_image_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "scene_index",
+            "required": true,
+            "schema": {
+              "title": "Scene Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSceneImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Scene Image",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/suggest-topic": {
+      "post": {
+        "operationId": "suggest_topic_content_studio_suggest_topic_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicSuggestion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Suggest Topic",
+        "tags": [
+          "Content Studio"
         ]
       }
     },

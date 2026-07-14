@@ -189,11 +189,20 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
 
     # If the astrologer just came online, alert seekers who asked to be notified.
     if not was_online and db_profile.is_online:
+        db.add(models.AstrologerOnlineSession(astrologer_id=current_user.id))
+        db.commit()
         _notify_waiting_seekers(db, current_user.id)
         from .realtime import broadcast_event, is_present
         if is_present(current_user.id):
             broadcast_event({"type": "ASTRO_ONLINE", "astrologer_id": current_user.id})
     elif was_online and not db_profile.is_online:
+        open_session = db.query(models.AstrologerOnlineSession).filter(
+            models.AstrologerOnlineSession.astrologer_id == current_user.id,
+            models.AstrologerOnlineSession.ended_at.is_(None)
+        ).order_by(models.AstrologerOnlineSession.started_at.desc()).first()
+        if open_session:
+            open_session.ended_at = datetime.utcnow()
+            db.commit()
         from .realtime import broadcast_event
         broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": current_user.id})
 

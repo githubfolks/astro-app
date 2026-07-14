@@ -83,7 +83,8 @@ export default function Payouts() {
             const genRes = await payouts.generate({
                 astrologer_id: selectedStat.astrologer_id,
                 amount: selectedStat.pending_amount,
-                tds_deducted: selectedStat.tds_deduction ?? 0
+                tds_deducted: selectedStat.tds_deduction ?? 0,
+                pg_charge_deducted: selectedStat.pg_charge ?? 0
             });
             const payoutId = genRes.data.id;
 
@@ -116,11 +117,13 @@ export default function Payouts() {
                     phone_number: item.phone_number,
                     total_amount: 0,
                     total_tds: 0,
+                    total_pg_charge: 0,
                     payouts: []
                 };
             }
             groups[id].total_amount += item.amount;
             groups[id].total_tds += item.tds_deducted;
+            groups[id].total_pg_charge += item.pg_charge_deducted ?? 0;
             groups[id].payouts.push(item);
         });
 
@@ -195,6 +198,10 @@ export default function Payouts() {
                                         <span className="font-mono font-medium text-orange-600">₹{stat.tds_deduction.toFixed(2)}</span>
                                     </div>
                                     <div>
+                                        <span className="block text-gray-400 text-xs uppercase font-semibold">PG Charge (3%)</span>
+                                        <span className="font-mono font-medium text-orange-600">₹{(stat.pg_charge ?? 0).toFixed(2)}</span>
+                                    </div>
+                                    <div>
                                         <span className="block text-gray-400 text-xs uppercase font-semibold">Paid So Far</span>
                                         <span className="font-mono font-medium text-green-600">₹{stat.paid_so_far.toFixed(2)}</span>
                                     </div>
@@ -263,6 +270,10 @@ export default function Payouts() {
                                                     <span className="font-mono font-medium text-orange-600">₹{group.total_tds.toFixed(2)}</span>
                                                 </div>
                                                 <div>
+                                                    <span className="block text-gray-400 text-xs uppercase font-semibold">Total PG Charge</span>
+                                                    <span className="font-mono font-medium text-orange-600">₹{group.total_pg_charge.toFixed(2)}</span>
+                                                </div>
+                                                <div>
                                                     <span className="block text-gray-400 text-xs uppercase font-semibold">Total Net Paid</span>
                                                     <span className="font-mono font-bold text-green-600">₹{group.total_amount.toFixed(2)}</span>
                                                 </div>
@@ -285,6 +296,7 @@ export default function Payouts() {
                                                             <th className="p-3">Transaction Ref</th>
                                                             <th className="p-3">Status</th>
                                                             <th className="p-3 text-right">TDS (10%)</th>
+                                                            <th className="p-3 text-right">PG Charge</th>
                                                             <th className="p-3 text-right">Net Amount</th>
                                                             <th className="p-3 pr-5">Comments</th>
                                                         </tr>
@@ -305,6 +317,9 @@ export default function Payouts() {
                                                                 </td>
                                                                 <td className="p-3 text-right font-mono text-gray-900">
                                                                     ₹{p.tds_deducted.toFixed(2)}
+                                                                </td>
+                                                                <td className="p-3 text-right font-mono text-gray-900">
+                                                                    ₹{(p.pg_charge_deducted ?? 0).toFixed(2)}
                                                                 </td>
                                                                 <td className="p-3 text-right font-mono font-bold text-green-600">
                                                                     ₹{p.amount.toFixed(2)}

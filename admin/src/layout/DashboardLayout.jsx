@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video, ListVideo } from 'lucide-react';
+import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video, ListVideo, Receipt } from 'lucide-react';
 
 import { Button } from '../components/ui/Button';
 import clsx from 'clsx';
@@ -24,6 +24,7 @@ export default function DashboardLayout() {
         { text: 'Astrologers', icon: <Star size={20} />, path: '/astrologers' },
         { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
         { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
+        { text: 'Transactions', icon: <Receipt size={20} />, path: '/transactions' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
         { text: 'Content Studio', icon: <Video size={20} />, path: '/content-studio' },
         { text: 'Content Library', icon: <ListVideo size={20} />, path: '/content-studio/library' },

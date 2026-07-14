@@ -26,6 +26,9 @@ def get_current_admin(current_user: models.User = Depends(get_current_user)):
 TDS_RATE = 0.10  # 10%
 TDS_THRESHOLD_INR = 30_000  # TDS applies only when cumulative earnings exceed this
 
+# Payment gateway cost passed through to the astrologer, applied to every payout (no threshold)
+PG_CHARGE_RATE = 0.03  # 3%
+
 
 def _compute_tds(gross_earnings: float, already_paid: float) -> float:
     """
@@ -39,6 +42,15 @@ def _compute_tds(gross_earnings: float, already_paid: float) -> float:
     prior_taxable = max(0.0, already_paid - TDS_THRESHOLD_INR)
     tds_already_borne = prior_taxable * TDS_RATE
     return max(0.0, tds_on_total - tds_already_borne)
+
+
+def _compute_pg_charge(gross_earnings: float, already_borne_pg: float) -> float:
+    """
+    Flat 3% payment-gateway charge on cumulative gross earnings, minus whatever
+    PG charge was already withheld on prior payouts.
+    """
+    pg_on_total = gross_earnings * PG_CHARGE_RATE
+    return max(0.0, pg_on_total - already_borne_pg)
 
 
 @router.get("/pending")
@@ -68,9 +80,11 @@ def get_pending_earnings(db: Session = Depends(database.get_db), current_user: m
             models.Payout.status == models.PayoutStatus.PROCESSED
         ).all()
         already_paid = sum([float(p.amount) for p in processed_payouts])
+        pg_already_borne = sum([float(p.pg_charge_deducted or 0) for p in processed_payouts])
 
         tds_amount = _compute_tds(gross_share, already_paid)
-        net_payable = gross_share - tds_amount - already_paid
+        pg_charge_amount = _compute_pg_charge(gross_share, pg_already_borne)
+        net_payable = gross_share - tds_amount - pg_charge_amount - already_paid
 
         if net_payable > 0:
             results.append({
@@ -81,6 +95,7 @@ def get_pending_earnings(db: Session = Depends(database.get_db), current_user: m
                 "commission_percentage": float(astro.commission_percentage or 70.0),
                 "gross_earnings": round(gross_share, 2),
                 "tds_deduction": round(tds_amount, 2),
+                "pg_charge": round(pg_charge_amount, 2),
                 "paid_so_far": round(already_paid, 2),
                 "pending_amount": round(net_payable, 2)
             })
@@ -92,14 +107,15 @@ def generate_payout(
     astrologer_id: int,
     amount: float,
     tds_deducted: float = 0.0,
+    pg_charge_deducted: float = 0.0,
     period_start: Optional[datetime] = None,
     period_end: Optional[datetime] = None,
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_admin)
 ):
     """
-    Create a Payout record. `amount` is the net amount after TDS.
-    `tds_deducted` is the TDS withheld for record-keeping.
+    Create a Payout record. `amount` is the net amount after TDS and PG charge.
+    `tds_deducted` and `pg_charge_deducted` are withheld amounts for record-keeping.
     """
     if amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")
@@ -108,6 +124,7 @@ def generate_payout(
         astrologer_id=astrologer_id,
         amount=decimal.Decimal(amount),
         tds_deducted=decimal.Decimal(tds_deducted),
+        pg_charge_deducted=decimal.Decimal(pg_charge_deducted),
         status=models.PayoutStatus.PENDING,
         period_start=period_start or datetime.utcnow(),
         period_end=period_end or datetime.utcnow()
@@ -115,7 +132,7 @@ def generate_payout(
     db.add(payout)
     audit.log(db, "PAYOUT_GENERATED", actor_id=current_user.id,
               resource_type="payout", resource_id=None,
-              details={"astrologer_id": astrologer_id, "net_amount": amount, "tds_deducted": tds_deducted})
+              details={"astrologer_id": astrologer_id, "net_amount": amount, "tds_deducted": tds_deducted, "pg_charge_deducted": pg_charge_deducted})
     db.commit()
     db.refresh(payout)
     return payout
@@ -141,6 +158,7 @@ def mark_payout_paid(
     astrologer_email = payout.astrologer.email if payout.astrologer else None
     payout_amount = float(payout.amount)
     tds_amount = float(payout.tds_deducted or 0)
+    pg_charge_amount = float(payout.pg_charge_deducted or 0)
 
     payout.status = models.PayoutStatus.PROCESSED
     payout.transaction_reference = transaction_reference
@@ -167,7 +185,8 @@ def mark_payout_paid(
     if astrologer_email:
         payment_date_str = payout.processed_at.strftime("%Y-%m-%d")
         subject, html_body = build_payout_processed_email(
-            float(payout_amount), transaction_reference, float(tds_amount), payment_date_str, comments
+            float(payout_amount), transaction_reference, float(tds_amount), payment_date_str, comments,
+            pg_charge=float(pg_charge_amount)
         )
         send_email(background_tasks, [astrologer_email], subject, html_body)
 
@@ -191,6 +210,7 @@ def get_all_payouts_history(
             "phone_number": p.astrologer.phone_number if p.astrologer else None,
             "amount": float(p.amount),
             "tds_deducted": float(p.tds_deducted or 0),
+            "pg_charge_deducted": float(p.pg_charge_deducted or 0),
             "status": p.status,
             "period_start": p.period_start,
             "period_end": p.period_end,

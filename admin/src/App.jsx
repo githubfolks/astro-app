@@ -14,6 +14,7 @@ const AstrologerDetails = lazy(() => import('./pages/AstrologerDetails'));
 const UserDetails = lazy(() => import('./pages/UserDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Payouts = lazy(() => import('./pages/Payouts'));
+const Transactions = lazy(() => import('./pages/Transactions'));
 const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
 const PostList = lazy(() => import('./pages/cms/PostList'));
 const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
@@ -57,6 +58,7 @@ function App() {
             <Route path="/astrologers/edit/:id" element={<AstrologerForm />} />
             <Route path="/astrologers/view/:id" element={<AstrologerDetails />} />
             <Route path="/payouts" element={<Payouts />} />
+            <Route path="/transactions" element={<Transactions />} />
 
             {/* CMS Routes */}
             <Route path="/cms/posts" element={<PostList />} />

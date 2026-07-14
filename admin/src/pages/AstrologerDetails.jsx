@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle, Wifi, ThumbsDown, Repeat, Heart } from 'lucide-react';
 import api from '../services/api';
 import { Button, Avatar } from '../components/ui';
 
@@ -11,21 +11,24 @@ export default function AstrologerDetails() {
     const [profile, setProfile] = useState(null);
     const [consultations, setConsultations] = useState([]);
     const [earnings, setEarnings] = useState({ total_earned: 0, monthly_earnings: [] });
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const [profileRes, consultRes, earningsRes] = await Promise.all([
+            const [profileRes, consultRes, earningsRes, statsRes] = await Promise.all([
                 api.get('/admin/astrologers_full'),
                 api.get(`/admin/astrologers/${id}/consultations`),
-                api.get(`/admin/astrologers/${id}/earnings`)
+                api.get(`/admin/astrologers/${id}/earnings`),
+                api.get(`/admin/astrologers/${id}/stats`)
             ]);
 
             const found = profileRes.data.astrologers.find(a => a.id === parseInt(id));
             setProfile(found);
             setConsultations(consultRes.data);
             setEarnings(earningsRes.data);
+            setStats(statsRes.data);
         } catch (error) {
             console.error("Failed to fetch details", error);
             alert("Failed to load astrologer details.");
@@ -108,6 +111,46 @@ export default function AstrologerDetails() {
                         <h3 className="text-sm font-medium text-gray-900">Experience</h3>
                     </div>
                     <p className="text-2xl font-bold text-gray-900">{profile.profile.experience_years} Years</p>
+                </div>
+            </div>
+
+            {/* Performance Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg">
+                            <Wifi size={20} />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900">Avg Online Time (30d)</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.avg_online_hours_per_day_30d ?? 0} hrs/day</p>
+                </div>
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+                            <ThumbsDown size={20} />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900">Poor Chat %</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.poor_chat_percentage ?? 0}%</p>
+                </div>
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                            <Repeat size={20} />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900">First User Repeat %</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.first_user_repeat_percentage ?? 0}%</p>
+                </div>
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 bg-pink-50 text-pink-600 rounded-lg">
+                            <Heart size={20} />
+                        </div>
+                        <h3 className="text-sm font-medium text-gray-900">Loyal User %</h3>
+                    </div>
+                    <p className="text-2xl font-bold text-gray-900">{stats?.loyal_user_percentage ?? 0}%</p>
                 </div>
             </div>
 

@@ -363,6 +363,7 @@ class Payout(Base):
     astrologer_id = Column(Integer, ForeignKey("users.id"))
     amount = Column(DECIMAL(10, 2), nullable=False)
     tds_deducted = Column(DECIMAL(10, 2), default=0.0, nullable=True)
+    pg_charge_deducted = Column(DECIMAL(10, 2), default=0.0, nullable=True)
     status = Column(Enum(PayoutStatus), default=PayoutStatus.PENDING)
     period_start = Column(DateTime(timezone=True))
     period_end = Column(DateTime(timezone=True))
@@ -372,6 +373,21 @@ class Payout(Base):
     processed_at = Column(DateTime(timezone=True), nullable=True)
 
     astrologer = relationship("User", foreign_keys=[astrologer_id])
+
+class AstrologerOnlineSession(Base):
+    """Tracks each online→offline window for an astrologer, used to compute avg online time."""
+    __tablename__ = "astrologer_online_sessions"
+    __table_args__ = (
+        Index("ix_astrologer_online_sessions_astrologer_id_ended_at", "astrologer_id", "ended_at"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    astrologer_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    ended_at = Column(DateTime(timezone=True), nullable=True)
+
+    astrologer = relationship("User", foreign_keys=[astrologer_id])
+
 
 class DeviceToken(Base):
     __tablename__ = "device_tokens"

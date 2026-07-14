@@ -495,6 +495,99 @@ def get_astrologer_earnings(user_id: int, db: Session = Depends(database.get_db)
     monthly_list.sort(key=lambda x: x["month"])
     return {"total_earned": round(total_earned, 2), "monthly_earnings": monthly_list}
 
+@router.get("/astrologers/{user_id}/stats")
+def get_astrologer_stats(user_id: int, db: Session = Depends(database.get_db)):
+    """
+    Performance stats for an astrologer:
+      - avg_online_hours_per_day_30d: rolling 30-day average daily online time
+      - poor_chat_percentage: % of rated consultations with rating <= 2
+      - first_user_repeat_percentage: % of "this astrologer was the seeker's very
+        first consultation on the platform" seekers who came back to this astrologer again
+      - loyal_user_percentage: % of this astrologer's unique seekers who returned within
+        15 days of their first consultation with this astrologer AND stayed >10 min
+    """
+    completed_statuses = [models.ConsultationStatus.COMPLETED, models.ConsultationStatus.AUTO_ENDED]
+    now = datetime.utcnow()
+    window_start = now - timedelta(days=30)
+
+    # --- Avg online time (last 30 days) ---
+    sessions = db.query(models.AstrologerOnlineSession).filter(
+        models.AstrologerOnlineSession.astrologer_id == user_id,
+        models.AstrologerOnlineSession.started_at < now,
+        (models.AstrologerOnlineSession.ended_at.is_(None)) | (models.AstrologerOnlineSession.ended_at > window_start)
+    ).all()
+    total_online_seconds = 0.0
+    for s in sessions:
+        start = max(s.started_at.replace(tzinfo=None) if s.started_at.tzinfo else s.started_at, window_start)
+        end = s.ended_at.replace(tzinfo=None) if s.ended_at and s.ended_at.tzinfo else (s.ended_at or now)
+        end = min(end, now)
+        if end > start:
+            total_online_seconds += (end - start).total_seconds()
+    avg_online_hours_per_day_30d = round((total_online_seconds / 30) / 3600, 2)
+
+    # --- Poor chat % (rating <= 2) ---
+    reviews = db.query(models.Review).filter(models.Review.astrologer_id == user_id).all()
+    total_reviews = len(reviews)
+    poor_reviews = sum(1 for r in reviews if r.rating is not None and r.rating <= 2)
+    poor_chat_percentage = round((poor_reviews / total_reviews) * 100, 2) if total_reviews else 0.0
+
+    # --- First-user repeat % ---
+    astro_consultations = db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == user_id,
+        models.Consultation.status.in_(completed_statuses)
+    ).order_by(models.Consultation.created_at.asc()).all()
+
+    seeker_ids = {c.seeker_id for c in astro_consultations}
+    first_ever_by_seeker = {}
+    if seeker_ids:
+        first_ever_rows = (
+            db.query(models.Consultation.seeker_id, func.min(models.Consultation.created_at))
+            .filter(models.Consultation.seeker_id.in_(seeker_ids))
+            .filter(models.Consultation.status.in_(completed_statuses))
+            .group_by(models.Consultation.seeker_id)
+            .all()
+        )
+        first_ever_by_seeker = dict(first_ever_rows)
+
+    consultations_by_seeker = {}
+    for c in astro_consultations:
+        consultations_by_seeker.setdefault(c.seeker_id, []).append(c)
+
+    first_user_seeker_ids = [
+        sid for sid, cons in consultations_by_seeker.items()
+        if first_ever_by_seeker.get(sid) == cons[0].created_at
+    ]
+    first_user_repeat_count = sum(
+        1 for sid in first_user_seeker_ids if len(consultations_by_seeker[sid]) >= 2
+    )
+    first_user_repeat_percentage = (
+        round((first_user_repeat_count / len(first_user_seeker_ids)) * 100, 2) if first_user_seeker_ids else 0.0
+    )
+
+    # --- Loyal user % ---
+    loyal_count = 0
+    for sid, cons in consultations_by_seeker.items():
+        if len(cons) < 2:
+            continue
+        first_time = cons[0].start_time or cons[0].created_at
+        is_loyal = any(
+            (c.start_time or c.created_at) and first_time and
+            (c.start_time or c.created_at) - first_time <= timedelta(days=15) and
+            (c.duration_seconds or 0) > 600
+            for c in cons[1:]
+        )
+        if is_loyal:
+            loyal_count += 1
+    total_unique_seekers = len(consultations_by_seeker)
+    loyal_user_percentage = round((loyal_count / total_unique_seekers) * 100, 2) if total_unique_seekers else 0.0
+
+    return {
+        "avg_online_hours_per_day_30d": avg_online_hours_per_day_30d,
+        "poor_chat_percentage": poor_chat_percentage,
+        "first_user_repeat_percentage": first_user_repeat_percentage,
+        "loyal_user_percentage": loyal_user_percentage,
+    }
+
 @router.get("/users/{user_id}/details")
 def get_user_details(user_id: int, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -655,6 +748,54 @@ def get_user_wallet_history(user_id: int, db: Session = Depends(database.get_db)
         models.WalletTransaction.user_id == user_id
     ).order_by(models.WalletTransaction.created_at.desc()).all()
     return transactions
+
+@router.get("/transactions")
+def list_all_transactions(
+    skip: int = 0,
+    limit: int = 100,
+    role: models.UserRole = models.UserRole.SEEKER,
+    transaction_type: Optional[models.TransactionType] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(database.get_db)
+):
+    """All wallet transactions for a given role (defaults to seekers), for admin auditing."""
+    query = (
+        db.query(models.WalletTransaction, models.User.email, models.User.phone_number, models.SeekerProfile.full_name)
+        .join(models.User, models.WalletTransaction.user_id == models.User.id)
+        .outerjoin(models.SeekerProfile, models.WalletTransaction.user_id == models.SeekerProfile.user_id)
+        .filter(models.User.role == role)
+    )
+
+    if transaction_type:
+        query = query.filter(models.WalletTransaction.transaction_type == transaction_type)
+
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            (models.User.email.ilike(search_term)) |
+            (models.User.phone_number.ilike(search_term)) |
+            (models.SeekerProfile.full_name.ilike(search_term))
+        )
+
+    total = query.count()
+    rows = query.order_by(models.WalletTransaction.created_at.desc()).offset(skip).limit(limit).all()
+
+    transactions = []
+    for txn, email, phone_number, full_name in rows:
+        transactions.append({
+            "id": txn.id,
+            "user_id": txn.user_id,
+            "user_name": full_name or f"User #{txn.user_id}",
+            "email": email,
+            "phone_number": phone_number,
+            "amount": float(txn.amount),
+            "transaction_type": txn.transaction_type,
+            "reference_id": txn.reference_id,
+            "description": txn.description,
+            "created_at": txn.created_at,
+        })
+
+    return {"total": total, "transactions": transactions}
 
 class WalletAdjustmentRequest(BaseModel):
     amount: float
