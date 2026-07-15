@@ -195,20 +195,20 @@ export const JoinAsAstrologer: React.FC = () => {
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Full Name</label>
-                                <input type="text" placeholder="John Doe" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} />
+                                <input type="text" placeholder="John Doe" autoComplete="off" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label>Email Address</label>
-                                <input type="email" placeholder="john@example.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                <input type="email" placeholder="john@example.com" autoComplete="off" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label>Password</label>
-                                <input type="password" placeholder="••••••••" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                                <input type="password" placeholder="••••••••" autoComplete="new-password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
                                 <p className="field-hint">{PASSWORD_REQUIREMENTS}</p>
                             </div>
                             <div className="form-group">
                                 <label>Mobile Number</label>
-                                <input type="text" placeholder="+91 00000 00000" value={formData.phone_number} onChange={e => setFormData({ ...formData, phone_number: e.target.value })} />
+                                <input type="text" placeholder="+91 00000 00000" autoComplete="off" value={formData.phone_number} onChange={e => setFormData({ ...formData, phone_number: e.target.value })} />
                                 <p className="field-hint">We'll use this to reach you during onboarding — keep it active on WhatsApp.</p>
                             </div>
                         </div>
@@ -271,7 +271,7 @@ export const JoinAsAstrologer: React.FC = () => {
                                 </div>
                                 <div className="form-group">
                                     <label><MapPin size={14} /> City</label>
-                                    <input type="text" placeholder="Mumbai" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                                    <input type="text" placeholder="Mumbai" autoComplete="address-level2" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
                                 </div>
                             </div>
                         </div>

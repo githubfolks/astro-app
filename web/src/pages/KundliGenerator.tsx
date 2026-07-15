@@ -130,6 +130,7 @@ const KundliGenerator: React.FC = () => {
                                     </label>
                                     <input
                                         type="text"
+                                        autoComplete="off"
                                         value={formData.full_name}
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
@@ -144,6 +145,7 @@ const KundliGenerator: React.FC = () => {
                                     <input
                                         type="date"
                                         required
+                                        autoComplete="off"
                                         value={formData.date_of_birth}
                                         onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
@@ -158,6 +160,7 @@ const KundliGenerator: React.FC = () => {
                                         type="time"
                                         required
                                         step="1"
+                                        autoComplete="off"
                                         value={formData.time_of_birth}
                                         onChange={(e) => setFormData({ ...formData, time_of_birth: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
@@ -171,6 +174,7 @@ const KundliGenerator: React.FC = () => {
                                     <input
                                         type="text"
                                         required
+                                        autoComplete="off"
                                         value={formData.place_of_birth}
                                         onChange={(e) => setFormData({ ...formData, place_of_birth: e.target.value })}
                                         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"

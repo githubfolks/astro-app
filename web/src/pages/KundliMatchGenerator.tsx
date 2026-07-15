@@ -25,6 +25,7 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
             <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Full Name</label>
             <input
                 type="text"
+                autoComplete="off"
                 value={value.full_name}
                 onChange={(e) => onChange({ ...value, full_name: e.target.value })}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
@@ -36,6 +37,7 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
             <input
                 type="date"
                 required
+                autoComplete="off"
                 value={value.date_of_birth}
                 onChange={(e) => onChange({ ...value, date_of_birth: e.target.value })}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
@@ -47,6 +49,7 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
                 type="time"
                 required
                 step="1"
+                autoComplete="off"
                 value={value.time_of_birth}
                 onChange={(e) => onChange({ ...value, time_of_birth: e.target.value })}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
@@ -57,6 +60,7 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
             <input
                 type="text"
                 required
+                autoComplete="off"
                 value={value.place_of_birth}
                 onChange={(e) => onChange({ ...value, place_of_birth: e.target.value })}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"

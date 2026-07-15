@@ -79,6 +79,7 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name *</label>
                         <input
                             type="text"
+                            autoComplete="name"
                             value={profile.full_name}
                             onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -91,6 +92,7 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
                             <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Birth *</label>
                             <input
                                 type="date"
+                                autoComplete="bday"
                                 value={profile.date_of_birth}
                                 onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
                                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -100,6 +102,7 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
                             <label className="block text-sm font-semibold text-gray-700 mb-1">Time of Birth *</label>
                             <input
                                 type="time"
+                                autoComplete="off"
                                 value={profile.time_of_birth}
                                 onChange={(e) => setProfile({ ...profile, time_of_birth: e.target.value })}
                                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -111,6 +114,7 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Place of Birth *</label>
                         <input
                             type="text"
+                            autoComplete="off"
                             value={profile.place_of_birth}
                             onChange={(e) => setProfile({ ...profile, place_of_birth: e.target.value })}
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -121,6 +125,7 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Gender *</label>
                         <select
+                            autoComplete="sex"
                             value={profile.gender}
                             onChange={(e) => setProfile({ ...profile, gender: e.target.value })}
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"

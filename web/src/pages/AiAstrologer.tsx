@@ -287,6 +287,7 @@ const AiAstrologer: React.FC = () => {
                                         <label className="block text-indigo-100 text-sm font-medium mb-2">Full Name *</label>
                                         <input
                                             type="text"
+                                            autoComplete="name"
                                             value={details.name}
                                             onChange={e => setDetails({ ...details, name: e.target.value })}
                                             placeholder="e.g. Ananya Sharma"
@@ -298,6 +299,7 @@ const AiAstrologer: React.FC = () => {
                                         <label className="block text-indigo-100 text-sm font-medium mb-2">Date of Birth *</label>
                                         <input
                                             type="date"
+                                            autoComplete="bday"
                                             value={details.date_of_birth}
                                             max={new Date().toISOString().split('T')[0]}
                                             onChange={e => setDetails({ ...details, date_of_birth: e.target.value })}
@@ -308,6 +310,7 @@ const AiAstrologer: React.FC = () => {
                                         <label className="block text-indigo-100 text-sm font-medium mb-2">Time of Birth <span className="text-indigo-300/50 font-normal">(if known)</span></label>
                                         <input
                                             type="time"
+                                            autoComplete="off"
                                             value={details.time_of_birth}
                                             onChange={e => setDetails({ ...details, time_of_birth: e.target.value })}
                                             className={inputBase}
@@ -317,6 +320,7 @@ const AiAstrologer: React.FC = () => {
                                         <label className="block text-indigo-100 text-sm font-medium mb-2">Place of Birth *</label>
                                         <input
                                             type="text"
+                                            autoComplete="off"
                                             value={details.place_of_birth}
                                             onChange={e => setDetails({ ...details, place_of_birth: e.target.value })}
                                             placeholder="e.g. Jaipur, Rajasthan"

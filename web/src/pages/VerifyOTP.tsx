@@ -49,6 +49,7 @@ export const VerifyOTP: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Enter OTP"
+                            autoComplete="one-time-code"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             disabled={isLoading}

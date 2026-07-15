@@ -148,6 +148,7 @@ const ContactUs: React.FC = () => {
                                         <input
                                             type="text"
                                             name="firstName"
+                                            autoComplete="given-name"
                                             value={formData.firstName}
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-gray-50 focus:bg-white"
@@ -160,6 +161,7 @@ const ContactUs: React.FC = () => {
                                         <input
                                             type="text"
                                             name="lastName"
+                                            autoComplete="family-name"
                                             value={formData.lastName}
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-gray-50 focus:bg-white"
@@ -174,6 +176,7 @@ const ContactUs: React.FC = () => {
                                     <input
                                         type="email"
                                         name="email"
+                                        autoComplete="email"
                                         value={formData.email}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-gray-50 focus:bg-white"

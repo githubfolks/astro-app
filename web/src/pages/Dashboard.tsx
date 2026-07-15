@@ -970,6 +970,7 @@ export const Dashboard: React.FC = () => {
                                     <label className="block text-xs font-bold text-gray-900 mb-1">Full Name</label>
                                     <input
                                         type="text"
+                                        autoComplete="name"
                                         value={seekerProfile.full_name || ''}
                                         onChange={(e) => setSeekerProfile({ ...seekerProfile, full_name: e.target.value })}
                                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -981,6 +982,7 @@ export const Dashboard: React.FC = () => {
                                         <label className="block text-xs font-bold text-gray-900 mb-1">Date of Birth</label>
                                         <input
                                             type="date"
+                                            autoComplete="bday"
                                             value={seekerProfile.date_of_birth || ''}
                                             onChange={(e) => setSeekerProfile({ ...seekerProfile, date_of_birth: e.target.value })}
                                             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -990,6 +992,7 @@ export const Dashboard: React.FC = () => {
                                         <label className="block text-xs font-bold text-gray-900 mb-1">Time of Birth</label>
                                         <input
                                             type="time"
+                                            autoComplete="off"
                                             value={seekerProfile.time_of_birth || ''}
                                             onChange={(e) => setSeekerProfile({ ...seekerProfile, time_of_birth: e.target.value })}
                                             className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -1000,6 +1003,7 @@ export const Dashboard: React.FC = () => {
                                     <label className="block text-xs font-bold text-gray-900 mb-1">Place of Birth</label>
                                     <input
                                         type="text"
+                                        autoComplete="off"
                                         value={seekerProfile.place_of_birth || ''}
                                         onChange={(e) => setSeekerProfile({ ...seekerProfile, place_of_birth: e.target.value })}
                                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
@@ -1009,6 +1013,7 @@ export const Dashboard: React.FC = () => {
                                 <div>
                                     <label className="block text-xs font-bold text-gray-900 mb-1">Gender</label>
                                     <select
+                                        autoComplete="sex"
                                         value={seekerProfile.gender || ''}
                                         onChange={(e) => setSeekerProfile({ ...seekerProfile, gender: e.target.value })}
                                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"

@@ -114,6 +114,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                         <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">PAN Number</label>
                         <input
                             type="text"
+                            autoComplete="off"
                             value={panNumber}
                             onChange={(e) => setPanNumber(e.target.value.toUpperCase())}
                             placeholder="ABCDE1234F"
@@ -149,6 +150,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                         <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Aadhaar Number</label>
                         <input
                             type="text"
+                            autoComplete="off"
                             value={aadhaarNumber}
                             onChange={(e) => setAadhaarNumber(e.target.value)}
                             placeholder="XXXX XXXX XXXX"
@@ -186,6 +188,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <input
                             type="text"
+                            autoComplete="off"
                             value={accountHolderName}
                             onChange={(e) => setAccountHolderName(e.target.value)}
                             placeholder="Account Holder Name"
@@ -193,6 +196,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                         />
                         <input
                             type="text"
+                            autoComplete="off"
                             value={accountNumber}
                             onChange={(e) => setAccountNumber(e.target.value)}
                             placeholder="Account Number"
@@ -200,6 +204,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                         />
                         <input
                             type="text"
+                            autoComplete="off"
                             value={ifsc}
                             onChange={(e) => setIfsc(e.target.value.toUpperCase())}
                             placeholder="IFSC Code"
@@ -210,6 +215,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                         <input
                             type="text"
+                            autoComplete="off"
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
                             placeholder="Bank Name"
@@ -217,6 +223,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                         />
                         <input
                             type="text"
+                            autoComplete="off"
                             value={bankAddress}
                             onChange={(e) => setBankAddress(e.target.value)}
                             placeholder="Bank Branch Address"

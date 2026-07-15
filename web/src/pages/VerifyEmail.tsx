@@ -70,6 +70,7 @@ export const VerifyEmail: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Enter verification code"
+                            autoComplete="one-time-code"
                             value={otp}
                             onChange={(e) => setOtp(e.target.value)}
                             disabled={isLoading}

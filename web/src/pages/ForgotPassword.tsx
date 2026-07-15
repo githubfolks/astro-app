@@ -47,6 +47,7 @@ export const ForgotPassword: React.FC = () => {
                         <input
                             type="email"
                             placeholder="Email Address"
+                            autoComplete="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={isLoading}

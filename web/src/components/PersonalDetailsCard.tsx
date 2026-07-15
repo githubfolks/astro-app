@@ -46,6 +46,7 @@ export const PersonalDetailsCard: React.FC<Props> = ({ profile, onSaved }) => {
                     <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Alternate / WhatsApp Number</label>
                     <input
                         type="tel"
+                        autoComplete="tel"
                         value={whatsappNumber}
                         onChange={(e) => setWhatsappNumber(e.target.value)}
                         placeholder="e.g. 9876543210"

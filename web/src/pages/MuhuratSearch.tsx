@@ -187,17 +187,17 @@ const MuhuratSearchPage: React.FC = () => {
                                     <div className="space-y-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
                                         <div>
                                             <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Date of Birth *</label>
-                                            <input type="date" required={personalize} value={subjectDob} onChange={(e) => setSubjectDob(e.target.value)}
+                                            <input type="date" required={personalize} autoComplete="off" value={subjectDob} onChange={(e) => setSubjectDob(e.target.value)}
                                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Time of Birth *</label>
-                                            <input type="time" required={personalize} step="1" value={subjectTob} onChange={(e) => setSubjectTob(e.target.value)}
+                                            <input type="time" required={personalize} step="1" autoComplete="off" value={subjectTob} onChange={(e) => setSubjectTob(e.target.value)}
                                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm" />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Place of Birth *</label>
-                                            <input type="text" required={personalize} value={subjectPlace} onChange={(e) => setSubjectPlace(e.target.value)}
+                                            <input type="text" required={personalize} autoComplete="off" value={subjectPlace} onChange={(e) => setSubjectPlace(e.target.value)}
                                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm" />
                                         </div>
                                     </div>

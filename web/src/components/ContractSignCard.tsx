@@ -95,6 +95,7 @@ export const ContractSignCard: React.FC = () => {
                         <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Type your full legal name to sign</label>
                         <input
                             type="text"
+                            autoComplete="off"
                             value={signatureInput}
                             onChange={(e) => setSignatureInput(e.target.value)}
                             placeholder="e.g. Rohit Kumar Sharma"
