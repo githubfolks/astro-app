@@ -138,23 +138,7 @@ const HowItWorks: React.FC = () => {
                         ))}
                     </div>
                 </section>
-
-                {/* Trust signals */}
-                <section className="py-12 px-6">
-                    <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8 text-center">
-                        {[
-                            { stat: '500+', label: 'Verified Astrologers' },
-                            { stat: '1 Lakh+', label: 'Consultations Completed' },
-                            { stat: '4.8★', label: 'Average Rating' },
-                        ].map((item, i) => (
-                            <div key={i} className="service-glass-panel p-8">
-                                <div className="text-4xl font-normal text-amber-500 mb-2">{item.stat}</div>
-                                <div className="text-gray-300 font-light text-base">{item.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
+ 
                 {/* FAQ */}
                 <section className="max-w-3xl mx-auto px-6 py-20">
                     <h2 className="text-3xl font-normal text-white mb-12 text-center flex items-center justify-center gap-3">

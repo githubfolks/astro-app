@@ -14,8 +14,9 @@ import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
 import AiAstrologerBanner from '../components/AiAstrologerBanner';
 import PanchangSection from '../components/PanchangSection';
+import { useSupportContact } from '../hooks/useSupportContact';
 
-const homeStructuredData = {
+const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => ({
     "@context": "https://schema.org",
     "@graph": [
         {
@@ -32,8 +33,8 @@ const homeStructuredData = {
             "name": "Aadikarta",
             "url": "https://aadikarta.org",
             "logo": "https://aadikarta.org/assets/logo.png",
-            "email": "hello@aadikarta.org",
-            "telephone": "+91-86503-54783",
+            "email": supportEmail,
+            "telephone": supportPhone,
             "areaServed": "IN",
             "knowsAbout": [
                 "Vedic Astrology",
@@ -48,8 +49,8 @@ const homeStructuredData = {
             ],
             "contactPoint": {
                 "@type": "ContactPoint",
-                "telephone": "+91-86503-54783",
-                "email": "hello@aadikarta.org",
+                "telephone": supportPhone,
+                "email": supportEmail,
                 "contactType": "customer support",
                 "availableLanguage": ["English", "Hindi"],
                 "areaServed": "IN"
@@ -60,9 +61,10 @@ const homeStructuredData = {
             ]
         }
     ]
-};
+});
 
 const Home: React.FC = () => {
+    const { support_email, support_phone } = useSupportContact();
     useEffect(() => {
         AOS.init({
             duration: 1000,
@@ -79,7 +81,7 @@ const Home: React.FC = () => {
             <SEO
                 title="Talk to Verified Astrologers Online | Vedic, Kundli & Tarot"
                 description="India's top verified astrologers for live chat. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
-                structuredData={homeStructuredData}
+                structuredData={buildHomeStructuredData(support_email, support_phone)}
             />
             <Helmet>
                 <link rel="preload" href="/assets/hero_astrology.webp" as="image" fetchPriority="high" />

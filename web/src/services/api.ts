@@ -458,6 +458,10 @@ export const api = {
                 body: JSON.stringify(data)
             });
             return handleResponse(response, 'Failed to submit inquiry');
+        },
+        getSupportContact: async (): Promise<{ support_email: string, support_phone: string }> => {
+            const response = await customFetch(`${API_URL}/public/support-contact`);
+            return handleResponse(response, 'Failed to fetch support contact');
         }
     },
     payment: {

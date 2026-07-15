@@ -114,7 +114,7 @@ export const EditUserModal = ({ isOpen, onClose, user, profile, onSuccess }) => 
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="e.g. John Doe"
+                        placeholder="e.g. Shiv Sharma"
                         disabled={loading}
                         fullWidth
                     />

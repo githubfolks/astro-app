@@ -195,11 +195,11 @@ export const JoinAsAstrologer: React.FC = () => {
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Full Name</label>
-                                <input type="text" placeholder="John Doe" autoComplete="off" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} />
+                                <input type="text" placeholder="Shiv Sharma" autoComplete="off" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label>Email Address</label>
-                                <input type="email" placeholder="john@example.com" autoComplete="off" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                <input type="email" placeholder="shiv@example.com" autoComplete="off" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
                             </div>
                             <div className="form-group">
                                 <label>Password</label>

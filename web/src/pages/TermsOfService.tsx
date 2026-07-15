@@ -2,8 +2,10 @@ import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import { useSupportContact } from '../hooks/useSupportContact';
 
 const TermsOfService: React.FC = () => {
+    const { support_email, support_phone } = useSupportContact();
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
@@ -97,7 +99,7 @@ const TermsOfService: React.FC = () => {
 
                     <h2 className="text-2xl font-bold text-gray-900 pt-4">Grievance Redressal</h2>
                     <p>
-                        If you have a complaint or grievance regarding our services, please write to our Grievance Officer at support@aadikarta.org or call +91 86503 54783. We will acknowledge your complaint within 48 hours and aim to resolve it within 30 days.
+                        If you have a complaint or grievance regarding our services, please write to our Grievance Officer at {support_email}{support_phone ? ` or call ${support_phone}` : ''}. We will acknowledge your complaint within 48 hours and aim to resolve it within 30 days.
                     </p>
 
                     <h2 className="text-2xl font-bold text-gray-900 pt-4">General</h2>
@@ -113,7 +115,7 @@ const TermsOfService: React.FC = () => {
                     </p>
 
                     <p>
-                        If you do not agree to these terms, you must not use our website, wallet, or consult with astrologers on our network. For inquiries, email support@aadikarta.org.
+                        If you do not agree to these terms, you must not use our website, wallet, or consult with astrologers on our network. For inquiries, email {support_email}.
                     </p>
                 </div>
             </main>

@@ -2,8 +2,10 @@ import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import { useSupportContact } from '../hooks/useSupportContact';
 
 const RefundPolicy: React.FC = () => {
+    const { support_email } = useSupportContact();
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
@@ -58,7 +60,7 @@ const RefundPolicy: React.FC = () => {
 
                     <h2 className="text-2xl font-bold text-gray-900 pt-4">Refund Process</h2>
                     <ul className="list-disc pl-6 space-y-2">
-                        <li>Refund or dispute claims must be raised within 48 hours of the transaction by emailing support@aadikarta.org with your transaction ID and (for chats) chat ID</li>
+                        <li>Refund or dispute claims must be raised within 48 hours of the transaction by emailing {support_email} with your transaction ID and (for chats) chat ID</li>
                         <li>Verified refunds for payment gateway failures are processed within 7–10 working days to your original payment source</li>
                         <li>Wallet credit adjustments are applied immediately once approved by our support team</li>
                     </ul>

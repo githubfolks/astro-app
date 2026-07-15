@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, ArrowUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useSupportContact } from '../hooks/useSupportContact';
 import './Footer.css';
 
 const Footer: React.FC = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
+    const { support_email, support_phone } = useSupportContact();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -84,12 +86,14 @@ const Footer: React.FC = () => {
                             <ul className="contact-list">
                                 <li>
                                     <Mail size={16} className="contact-icon" />
-                                    support@aadikarta.org
+                                    {support_email}
                                 </li>
-                                <li>
-                                    <Phone size={16} className="contact-icon" />
-                                    +91 86503 54783
-                                </li>
+                                {support_phone && (
+                                    <li>
+                                        <Phone size={16} className="contact-icon" />
+                                        {support_phone}
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </div>

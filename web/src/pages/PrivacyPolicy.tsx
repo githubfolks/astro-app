@@ -2,8 +2,10 @@ import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import { useSupportContact } from '../hooks/useSupportContact';
 
 const PrivacyPolicy: React.FC = () => {
+    const { support_email, support_phone } = useSupportContact();
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
@@ -81,7 +83,7 @@ const PrivacyPolicy: React.FC = () => {
                         <li>Lodge a complaint with the relevant data protection authority</li>
                     </ul>
                     <p>
-                        You can update your profile details at any time from your account settings, or exercise any of the above rights by contacting our Grievance Officer at support@aadikarta.org or +91 86503 54783. We will acknowledge your request within 48 hours and aim to resolve it within 30 days.
+                        You can update your profile details at any time from your account settings, or exercise any of the above rights by contacting our Grievance Officer at {support_email}{support_phone ? ` or ${support_phone}` : ''}. We will acknowledge your request within 48 hours and aim to resolve it within 30 days.
                     </p>
 
                     <h2 className="text-2xl font-bold text-gray-900 pt-4">Children's Privacy</h2>
@@ -96,7 +98,7 @@ const PrivacyPolicy: React.FC = () => {
 
                     <h2 className="text-2xl font-bold text-gray-900 pt-4">Your Consent</h2>
                     <p>
-                        By registering an account and using the AadiKarta platform, you consent to the collection and processing of your information as described in this policy. For any privacy-related questions or requests, contact us at support@aadikarta.org.
+                        By registering an account and using the AadiKarta platform, you consent to the collection and processing of your information as described in this policy. For any privacy-related questions or requests, contact us at {support_email}.
                     </p>
                 </div>
             </main>

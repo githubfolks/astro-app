@@ -5,8 +5,9 @@ import Footer from '../components/Footer';
 import { Mail, Phone, Send } from 'lucide-react';
 import { api } from '../services/api';
 import SEO from '../components/SEO';
+import { useSupportContact } from '../hooks/useSupportContact';
 
-const contactStructuredData = {
+const buildContactStructuredData = (supportEmail: string) => ({
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
     '@id': 'https://aadikarta.org/contact-us#page',
@@ -18,18 +19,19 @@ const contactStructuredData = {
         '@type': 'Organization',
         '@id': 'https://aadikarta.org/#organization',
         name: 'Aadikarta',
-        email: 'hello@aadikarta.org',
+        email: supportEmail,
         contactPoint: {
             '@type': 'ContactPoint',
-            email: 'hello@aadikarta.org',
+            email: supportEmail,
             contactType: 'customer support',
             availableLanguage: ['English', 'Hindi'],
             areaServed: 'IN',
         },
     },
-};
+});
 
 const ContactUs: React.FC = () => {
+    const { support_email, support_phone } = useSupportContact();
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -71,7 +73,7 @@ const ContactUs: React.FC = () => {
             <SEO
                 title="Contact Aadikarta | Help, Support & Feedback"
                 description="Get in touch with Aadikarta's support team for help with consultations, payments, astrologer queries, or technical issues. We typically respond within 24 hours."
-                structuredData={contactStructuredData}
+                structuredData={buildContactStructuredData(support_email)}
             />
             <Header />
 
@@ -97,19 +99,21 @@ const ContactUs: React.FC = () => {
                                         </div>
                                         <div>
                                             <p className="text-indigo-200 text-sm mb-1">Email Us</p>
-                                            <p className="font-semibold">support@aadikarta.org</p>
+                                            <p className="font-semibold">{support_email}</p>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-start gap-4">
-                                        <div className="bg-white/10 p-3 rounded-lg">
-                                            <Phone className="w-6 h-6" />
+                                    {support_phone && (
+                                        <div className="flex items-start gap-4">
+                                            <div className="bg-white/10 p-3 rounded-lg">
+                                                <Phone className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <p className="text-indigo-200 text-sm mb-1">Call Us</p>
+                                                <p className="font-semibold">{support_phone}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-indigo-200 text-sm mb-1">Call Us</p>
-                                            <p className="font-semibold">+91 86503 54783</p>
-                                        </div>
-                                    </div>
+                                    )}
 
                                     {/* <div className="flex items-start gap-4">
                                         <div className="bg-white/10 p-3 rounded-lg">
@@ -152,7 +156,7 @@ const ContactUs: React.FC = () => {
                                             value={formData.firstName}
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-gray-50 focus:bg-white"
-                                            placeholder="John"
+                                            placeholder="Shiv"
                                             required
                                         />
                                     </div>
@@ -180,7 +184,7 @@ const ContactUs: React.FC = () => {
                                         value={formData.email}
                                         onChange={handleChange}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-gray-50 focus:bg-white"
-                                        placeholder="john@example.com"
+                                        placeholder="shiv@example.com"
                                         required
                                     />
                                 </div>

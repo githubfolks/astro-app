@@ -4,12 +4,23 @@ from sqlalchemy import func
 from typing import List, Optional
 from .. import models, database, schemas_cms, schemas
 from ..limiter import limiter
+from ..services import settings_service
 from fastapi import Request
 
 router = APIRouter(
     prefix="/public",
     tags=["Public Content"]
 )
+
+# --- Support Contact ---
+
+@router.get("/support-contact")
+def get_support_contact():
+    """Support email/phone as configured in Admin > Settings > Support Contact."""
+    return {
+        "support_email": settings_service.get_setting("support_email"),
+        "support_phone": settings_service.get_setting("support_phone"),
+    }
 
 # --- Posts ---
 
