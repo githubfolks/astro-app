@@ -32,6 +32,9 @@ const Disclaimer = lazy(() => import('./pages/Disclaimer'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
 const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
+const KundliMatchGenerator = lazy(() => import('./pages/KundliMatchGenerator'));
+const MuhuratSearchPage = lazy(() => import('./pages/MuhuratSearch'));
+const Panchang = lazy(() => import('./pages/Panchang'));
 const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ default: module.Classroom })));
 const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
 const MemoryGuruAbout = lazy(() => import('./pages/MemoryGuruAbout'));
@@ -158,6 +161,7 @@ function App() {
                             <Route path="/services/vastu-shastra" element={<VastuShastra />} />
                             <Route path="/memory-guru" element={<MemoryGuruAbout />} />
                             <Route path="/book" element={<Book />} />
+                            <Route path="/panchang" element={<Panchang />} />
 
                             {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
                             <Route path="/:slug" element={<PageViewer />} />
@@ -179,6 +183,16 @@ function App() {
                             <Route path="/kundli" element={
                                 <ProtectedRoute>
                                     <KundliGenerator />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/kundli/matching" element={
+                                <ProtectedRoute>
+                                    <KundliMatchGenerator />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/kundli/muhurat" element={
+                                <ProtectedRoute>
+                                    <MuhuratSearchPage />
                                 </ProtectedRoute>
                             } />
                             <Route path="/classroom/:sessionId" element={

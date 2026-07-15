@@ -5,6 +5,14 @@ import { MessageCircle, Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-rea
 
 const GROUPS = [
     {
+        title: 'Support Contact',
+        desc: 'Shown in the footer of every outgoing email and used wherever the platform surfaces a support contact.',
+        fields: [
+            { key: 'support_email', label: 'Support Email' },
+            { key: 'support_phone', label: 'Support Phone Number' },
+        ],
+    },
+    {
         title: 'Moderation Alerts',
         desc: 'Where to send alerts when spam / contact-sharing is detected in chats.',
         fields: [
@@ -357,7 +365,7 @@ export default function Settings() {
                         error={waError}
                     />
 
-                    {GROUPS.filter(g => ['Tunables', 'Promotions'].includes(g.title)).map(group => (
+                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions'].includes(g.title)).map(group => (
                         <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                             <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
                             {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}

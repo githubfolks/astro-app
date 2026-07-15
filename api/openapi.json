@@ -1279,6 +1279,20 @@
         "title": "Body_upload_file_admin_upload_post",
         "type": "object"
       },
+      "Body_upload_onboarding_photo_astrologers_onboarding_photo_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_onboarding_photo_astrologers_onboarding_photo_post",
+        "type": "object"
+      },
       "CaptionSuggestion": {
         "properties": {
           "caption": {
@@ -2760,6 +2774,18 @@
             "title": "Created At",
             "type": "string"
           },
+          "dasha_insights_data": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dasha Insights Data"
+          },
           "date_of_birth": {
             "format": "date",
             "title": "Date Of Birth",
@@ -2836,6 +2862,340 @@
           "created_at"
         ],
         "title": "KundliReportResponse",
+        "type": "object"
+      },
+      "MatchGenerateRequest": {
+        "properties": {
+          "boy": {
+            "$ref": "#/components/schemas/MatchPersonInput"
+          },
+          "girl": {
+            "$ref": "#/components/schemas/MatchPersonInput"
+          }
+        },
+        "required": [
+          "boy",
+          "girl"
+        ],
+        "title": "MatchGenerateRequest",
+        "type": "object"
+      },
+      "MatchPersonInput": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "seeker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seeker Id"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth"
+        ],
+        "title": "MatchPersonInput",
+        "type": "object"
+      },
+      "MatchReportResponse": {
+        "properties": {
+          "boy_date_of_birth": {
+            "format": "date",
+            "title": "Boy Date Of Birth",
+            "type": "string"
+          },
+          "boy_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boy Full Name"
+          },
+          "boy_place_of_birth": {
+            "title": "Boy Place Of Birth",
+            "type": "string"
+          },
+          "boy_seeker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boy Seeker Id"
+          },
+          "boy_time_of_birth": {
+            "format": "time",
+            "title": "Boy Time Of Birth",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "girl_date_of_birth": {
+            "format": "date",
+            "title": "Girl Date Of Birth",
+            "type": "string"
+          },
+          "girl_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Girl Full Name"
+          },
+          "girl_place_of_birth": {
+            "title": "Girl Place Of Birth",
+            "type": "string"
+          },
+          "girl_seeker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Girl Seeker Id"
+          },
+          "girl_time_of_birth": {
+            "format": "time",
+            "title": "Girl Time Of Birth",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "match_data": {
+            "additionalProperties": true,
+            "title": "Match Data",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "boy_seeker_id",
+          "boy_full_name",
+          "boy_date_of_birth",
+          "boy_time_of_birth",
+          "boy_place_of_birth",
+          "girl_seeker_id",
+          "girl_full_name",
+          "girl_date_of_birth",
+          "girl_time_of_birth",
+          "girl_place_of_birth",
+          "match_data",
+          "created_at"
+        ],
+        "title": "MatchReportResponse",
+        "type": "object"
+      },
+      "MuhuratSearchRequest": {
+        "properties": {
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "place": {
+            "title": "Place",
+            "type": "string"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose"
+          },
+          "seeker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seeker Id"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MuhuratSubjectInput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date",
+          "place"
+        ],
+        "title": "MuhuratSearchRequest",
+        "type": "object"
+      },
+      "MuhuratSearchResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "muhurat_data": {
+            "additionalProperties": true,
+            "title": "Muhurat Data",
+            "type": "object"
+          },
+          "personalized": {
+            "title": "Personalized",
+            "type": "boolean"
+          },
+          "place": {
+            "title": "Place",
+            "type": "string"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purpose"
+          },
+          "seeker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seeker Id"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "seeker_id",
+          "purpose",
+          "start_date",
+          "end_date",
+          "place",
+          "personalized",
+          "muhurat_data",
+          "created_at"
+        ],
+        "title": "MuhuratSearchResponse",
+        "type": "object"
+      },
+      "MuhuratSubjectInput": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "seeker_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seeker Id"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth"
+        ],
+        "title": "MuhuratSubjectInput",
         "type": "object"
       },
       "OnboardingStage": {
@@ -3015,6 +3375,48 @@
           "updated_at"
         ],
         "title": "Page",
+        "type": "object"
+      },
+      "PanchangResponse": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "latitude": {
+            "title": "Latitude",
+            "type": "number"
+          },
+          "longitude": {
+            "title": "Longitude",
+            "type": "number"
+          },
+          "panchang_data": {
+            "additionalProperties": true,
+            "title": "Panchang Data",
+            "type": "object"
+          },
+          "place_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Label"
+          }
+        },
+        "required": [
+          "date",
+          "place_label",
+          "latitude",
+          "longitude",
+          "panchang_data"
+        ],
+        "title": "PanchangResponse",
         "type": "object"
       },
       "PaymentVerification": {
@@ -6649,6 +7051,46 @@
         ]
       }
     },
+    "/astrologers/onboarding/photo": {
+      "post": {
+        "description": "Public, unauthenticated upload for the applicant's profile photo during\nastrologer onboarding (applicant has no account/token yet at this point).\nRate-limited and restricted to images only \u2014 separate from the admin-only\n/admin/upload endpoint used elsewhere for documents.",
+        "operationId": "upload_onboarding_photo_astrologers_onboarding_photo_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_onboarding_photo_astrologers_onboarding_photo_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Onboarding Photo",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
     "/astrologers/payouts/history": {
       "get": {
         "description": "Get payout history for the logged-in astrologer.",
@@ -9381,6 +9823,54 @@
         ]
       }
     },
+    "/kundli/{report_id}/dasha-insights": {
+      "get": {
+        "description": "Get (and lazily compute) narrative Dasha Insights for a Kundli report.\nCached on the report row per calendar day \u2014 repeat requests on the same\nday return the cached data without re-hitting FreeAstroAPI.",
+        "operationId": "get_dasha_insights_kundli__report_id__dasha_insights_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KundliReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Dasha Insights",
+        "tags": [
+          "Kundli"
+        ]
+      }
+    },
     "/login": {
       "post": {
         "operationId": "login_login_post",
@@ -9417,6 +9907,310 @@
           }
         },
         "summary": "Login"
+      }
+    },
+    "/matching/generate": {
+      "post": {
+        "description": "Generate a Kuta (Guna Milan) compatibility report for a boy/girl pair.\nCaches the result in kundli_match_reports, keyed by both birth-detail tuples.",
+        "operationId": "generate_match_report_matching_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Match Report",
+        "tags": [
+          "Matching"
+        ]
+      }
+    },
+    "/matching/history/all": {
+      "get": {
+        "description": "Get all Match reports generated by the current astrologer.",
+        "operationId": "get_astrologer_match_history_matching_history_all_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MatchReportResponse"
+                  },
+                  "title": "Response Get Astrologer Match History Matching History All Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Astrologer Match History",
+        "tags": [
+          "Matching"
+        ]
+      }
+    },
+    "/matching/seeker/{seeker_id}": {
+      "get": {
+        "description": "Get all Match reports involving a specific seeker (as boy or girl).",
+        "operationId": "get_seeker_match_reports_matching_seeker__seeker_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "seeker_id",
+            "required": true,
+            "schema": {
+              "title": "Seeker Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MatchReportResponse"
+                  },
+                  "title": "Response Get Seeker Match Reports Matching Seeker  Seeker Id  Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Seeker Match Reports",
+        "tags": [
+          "Matching"
+        ]
+      }
+    },
+    "/matching/{report_id}": {
+      "get": {
+        "description": "Get a specific Match report by ID.",
+        "operationId": "get_match_report_matching__report_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Match Report",
+        "tags": [
+          "Matching"
+        ]
+      }
+    },
+    "/muhurat/history/all": {
+      "get": {
+        "description": "Get all Muhurat searches performed by the current astrologer.",
+        "operationId": "get_astrologer_muhurat_history_muhurat_history_all_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MuhuratSearchResponse"
+                  },
+                  "title": "Response Get Astrologer Muhurat History Muhurat History All Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Astrologer Muhurat History",
+        "tags": [
+          "Muhurat"
+        ]
+      }
+    },
+    "/muhurat/search": {
+      "post": {
+        "description": "Search for auspicious muhurat windows in a date range, optionally personalized\nto a seeker's birth chart. Caches the result in muhurat_searches, keyed by the\nsearch parameters, so repeat lookups don't re-hit FreeAstroAPI.",
+        "operationId": "search_muhurat_windows_muhurat_search_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MuhuratSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MuhuratSearchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Search Muhurat Windows",
+        "tags": [
+          "Muhurat"
+        ]
+      }
+    },
+    "/muhurat/{search_id}": {
+      "get": {
+        "description": "Get a specific Muhurat search by ID.",
+        "operationId": "get_muhurat_search_muhurat__search_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "search_id",
+            "required": true,
+            "schema": {
+              "title": "Search Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MuhuratSearchResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Muhurat Search",
+        "tags": [
+          "Muhurat"
+        ]
       }
     },
     "/packages/": {
@@ -9575,6 +10369,113 @@
         "summary": "Deactivate Package",
         "tags": [
           "Packages"
+        ]
+      }
+    },
+    "/panchang/daily": {
+      "get": {
+        "description": "Get today's (or a given date's) Panchang for a location. Public, no auth required.\nCallers that already know the visitor's coordinates (e.g. browser geolocation)\nshould pass lat/lon directly to skip an extra geocoding round-trip.",
+        "operationId": "get_daily_panchang_panchang_daily_get",
+        "parameters": [
+          {
+            "description": "Defaults to today (Asia/Kolkata)",
+            "in": "query",
+            "name": "date",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Defaults to today (Asia/Kolkata)",
+              "title": "Date"
+            }
+          },
+          {
+            "description": "Latitude \u2014 when provided with lon, skips geocoding",
+            "in": "query",
+            "name": "lat",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Latitude \u2014 when provided with lon, skips geocoding",
+              "title": "Lat"
+            }
+          },
+          {
+            "description": "Longitude \u2014 when provided with lat, skips geocoding",
+            "in": "query",
+            "name": "lon",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Longitude \u2014 when provided with lat, skips geocoding",
+              "title": "Lon"
+            }
+          },
+          {
+            "description": "Display label for the location; also used to geocode when lat/lon aren't provided",
+            "in": "query",
+            "name": "place",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Display label for the location; also used to geocode when lat/lon aren't provided",
+              "title": "Place"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanchangResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Daily Panchang",
+        "tags": [
+          "Panchang"
         ]
       }
     },
@@ -9851,76 +10752,6 @@
           }
         },
         "summary": "Get Public Page",
-        "tags": [
-          "Public Content"
-        ]
-      }
-    },
-    "/public/panchang": {
-      "get": {
-        "operationId": "get_public_panchang_public_panchang_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "lat",
-            "required": true,
-            "schema": {
-              "title": "Lat",
-              "type": "number"
-            }
-          },
-          {
-            "in": "query",
-            "name": "lon",
-            "required": true,
-            "schema": {
-              "title": "Lon",
-              "type": "number"
-            }
-          },
-          {
-            "in": "query",
-            "name": "place",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": "",
-              "title": "Place"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Public Panchang Public Panchang Get",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Public Panchang",
         "tags": [
           "Public Content"
         ]

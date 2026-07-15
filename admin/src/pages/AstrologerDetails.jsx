@@ -1,8 +1,30 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle, Wifi, ThumbsDown, Repeat, Heart } from 'lucide-react';
+import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle, Wifi, ThumbsDown, Repeat, Heart, CreditCard, Landmark, FileSignature, Award, ShieldCheck, ExternalLink } from 'lucide-react';
 import api from '../services/api';
 import { Button, Avatar } from '../components/ui';
+import clsx from 'clsx';
+
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const resolveDocUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${API_URL}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
+function DocLink({ url, label }) {
+    if (!url) return <span className="text-gray-400 text-xs">Not uploaded</span>;
+    return (
+        <a
+            href={resolveDocUrl(url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline"
+        >
+            <ExternalLink size={11} /> {label}
+        </a>
+    );
+}
 
 export default function AstrologerDetails() {
     const { id } = useParams();
@@ -13,6 +35,7 @@ export default function AstrologerDetails() {
     const [earnings, setEarnings] = useState({ total_earned: 0, monthly_earnings: [] });
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [kycUpdating, setKycUpdating] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -40,6 +63,18 @@ export default function AstrologerDetails() {
     useEffect(() => {
         fetchData();
     }, [fetchData]);
+
+    const handleKycVerify = async (verified) => {
+        setKycUpdating(true);
+        try {
+            await api.put(`/admin/astrologers/${id}/kyc`, { kyc_verified: verified });
+            fetchData();
+        } catch (err) {
+            alert(err.response?.data?.detail || 'Failed to update KYC verification status');
+        } finally {
+            setKycUpdating(false);
+        }
+    };
 
     if (loading) return <div className="p-8 text-center text-gray-900">Loading details...</div>;
     if (!profile) return <div className="p-8 text-center">Astrologer not found</div>;
@@ -114,6 +149,35 @@ export default function AstrologerDetails() {
                 </div>
             </div>
 
+            {/* Monthly Earnings */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-50 bg-gray-50/50">
+                    <h3 className="font-semibold text-gray-900">Monthly Earnings</h3>
+                </div>
+                <div className="p-0">
+                    {(!earnings?.monthly_earnings || earnings.monthly_earnings.length === 0) ? (
+                        <p className="p-4 text-sm text-gray-900">No earnings yet.</p>
+                    ) : (
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-50 text-gray-900 text-left">
+                                <tr>
+                                    <th className="px-4 py-2 font-medium">Month</th>
+                                    <th className="px-4 py-2 font-medium text-right">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {earnings.monthly_earnings.map((m) => (
+                                    <tr key={m.month}>
+                                        <td className="px-4 py-2 text-gray-700">{m.month}</td>
+                                        <td className="px-4 py-2 text-right font-medium text-emerald-600">₹{m.amount.toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+
             {/* Performance Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
@@ -154,65 +218,117 @@ export default function AstrologerDetails() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Earnings & Bio */}
-                <div className="lg:col-span-1 space-y-6">
-                    {/* Earnings Summary */}
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-4 border-b border-gray-50 bg-gray-50/50">
-                            <h3 className="font-semibold text-gray-900">Monthly Earnings</h3>
+            {/* About + KYC & Documents, side by side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="font-semibold text-gray-900 mb-4">About</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                        {profile.profile.about_me || "No bio provided."}
+                    </p>
+
+                    <div className="mt-6 space-y-3">
+                        <div className="text-sm">
+                            <span className="text-gray-900 block text-xs uppercase tracking-wide">Languages</span>
+                            <span className="font-medium text-gray-900">{profile.profile.languages}</span>
                         </div>
-                        <div className="p-0">
-                            {(!earnings?.monthly_earnings || earnings.monthly_earnings.length === 0) ? (
-                                <p className="p-4 text-sm text-gray-900">No earnings yet.</p>
-                            ) : (
-                                <table className="w-full text-sm">
-                                    <thead className="bg-gray-50 text-gray-900 text-left">
-                                        <tr>
-                                            <th className="px-4 py-2 font-medium">Month</th>
-                                            <th className="px-4 py-2 font-medium text-right">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {earnings.monthly_earnings.map((m) => (
-                                            <tr key={m.month}>
-                                                <td className="px-4 py-2 text-gray-700">{m.month}</td>
-                                                <td className="px-4 py-2 text-right font-medium text-emerald-600">₹{m.amount.toLocaleString()}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
+                        <div className="text-sm">
+                            <span className="text-gray-900 block text-xs uppercase tracking-wide">Specialties</span>
+                            <span className="font-medium text-gray-900">{profile.profile.specialties}</span>
                         </div>
                     </div>
+                </div>
 
-                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                        <h3 className="font-semibold text-gray-900 mb-4">About</h3>
-                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                            {profile.profile.about_me || "No bio provided."}
-                        </p>
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+                            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                <CreditCard size={16} className="text-indigo-600" /> KYC &amp; Documents
+                            </h3>
+                            {profile.profile.kyc_verified ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
+                                    <ShieldCheck size={11} /> Verified
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-200">
+                                    Not Verified
+                                </span>
+                            )}
+                        </div>
 
-                        <div className="mt-6 space-y-3">
-                            <div className="text-sm">
-                                <span className="text-gray-900 block text-xs uppercase tracking-wide">Languages</span>
-                                <span className="font-medium text-gray-900">{profile.profile.languages}</span>
+                        <div className="space-y-3 text-sm">
+                            <div className="flex items-center gap-2 text-xs text-gray-900">
+                                <FileSignature size={14} className="text-gray-400 flex-shrink-0" />
+                                {profile.profile.contract_signed_at ? (
+                                    <span>Contract signed by <strong>{profile.profile.contract_signature_name}</strong> on {new Date(profile.profile.contract_signed_at).toLocaleDateString()}</span>
+                                ) : (
+                                    <span className="text-gray-400">Contract not signed yet</span>
+                                )}
                             </div>
-                            <div className="text-sm">
-                                <span className="text-gray-900 block text-xs uppercase tracking-wide">Specialties</span>
-                                <span className="font-medium text-gray-900">{profile.profile.specialties}</span>
+
+                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50">
+                                <div>
+                                    <span className="text-gray-900 text-xs uppercase tracking-wide block">PAN Number</span>
+                                    <span className="font-medium text-gray-900 text-sm">{profile.profile.pan_number || '-'}</span>
+                                    <div className="mt-0.5"><DocLink url={profile.profile.pan_doc_url} label="View PAN doc" /></div>
+                                </div>
+                                <div>
+                                    <span className="text-gray-900 text-xs uppercase tracking-wide block">Aadhaar Number</span>
+                                    <span className="font-medium text-gray-900 text-sm">{profile.profile.aadhaar_number || '-'}</span>
+                                    <div className="mt-0.5"><DocLink url={profile.profile.aadhaar_doc_url} label="View Aadhaar doc" /></div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50">
+                                <div>
+                                    <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
+                                        <Landmark size={12} /> Bank Details
+                                    </span>
+                                    <span className="text-gray-700 text-xs block">{profile.profile.bank_account_holder_name || '-'}</span>
+                                    <span className="text-gray-700 text-xs block">Bank: {profile.profile.bank_name || '-'}</span>
+                                    <span className="text-gray-700 text-xs block">A/C: {profile.profile.bank_account_number || '-'}</span>
+                                    <span className="text-gray-700 text-xs block">IFSC: {profile.profile.bank_ifsc || '-'}</span>
+                                    <span className="text-gray-700 text-xs block">Branch: {profile.profile.bank_address || '-'}</span>
+                                </div>
+                                <div>
+                                    <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
+                                        <Award size={12} /> Certificates
+                                    </span>
+                                    {profile.profile.certificate_urls?.length > 0 ? (
+                                        <div className="flex flex-col gap-1">
+                                            {profile.profile.certificate_urls.map((url, i) => (
+                                                <DocLink key={url} url={url} label={`Certificate ${i + 1}`} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span className="text-gray-400 text-xs">None uploaded</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-gray-50">
+                                <button
+                                    onClick={() => handleKycVerify(!profile.profile.kyc_verified)}
+                                    disabled={kycUpdating}
+                                    className={clsx(
+                                        "w-full text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50",
+                                        profile.profile.kyc_verified
+                                            ? "bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200"
+                                            : "bg-green-600 hover:bg-green-700 text-white"
+                                    )}
+                                >
+                                    {kycUpdating ? 'Updating…' : profile.profile.kyc_verified ? 'Mark Unverified' : 'Mark KYC Verified'}
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column: Consultations */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                            <h3 className="font-semibold text-gray-900">Consultation History</h3>
-                            <span className="text-xs text-gray-900">Last 50 records</span>
-                        </div>
-                        <div className="overflow-x-auto">
+            {/* Consultation History — last */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                    <h3 className="font-semibold text-gray-900">Consultation History</h3>
+                    <span className="text-xs text-gray-900">Last 50 records</span>
+                </div>
+                <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="bg-gray-50 text-gray-900 font-medium">
                                     <tr>
@@ -259,8 +375,6 @@ export default function AstrologerDetails() {
                             </table>
                         </div>
                     </div>
-                </div>
-            </div>
         </div>
     );
 }

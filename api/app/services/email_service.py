@@ -9,6 +9,7 @@ notifications). Routers should import the ``build_*`` helpers and
 """
 import os
 import logging
+from datetime import datetime
 from typing import List, Tuple
 
 import httpx
@@ -20,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 APP_NAME = os.getenv("APP_NAME", "Aadikarta")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://aadikarta.org").rstrip("/")
-SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL") or os.getenv("MAIL_FROM", "support@aadikarta.org")
 OTP_VALIDITY_MINUTES = 10
 
 # Resend (https://resend.com) transactional email API.
@@ -38,7 +38,13 @@ _ACCENT_COLOR = "#f59e0b"  # saffron
 
 def _layout(heading: str, content_html: str, preheader: str = "") -> str:
     """Wrap inner content in a branded, responsive, inline-styled shell."""
+    from .settings_service import get_setting
     year = __import__("datetime").datetime.utcnow().year
+    support_email = get_setting("support_email")
+    support_phone = get_setting("support_phone")
+    contact_line = f'<a href="mailto:{support_email}" style="color:{_BRAND_COLOR};text-decoration:none;">{support_email}</a>'
+    if support_phone:
+        contact_line += f' or call <a href="tel:{support_phone}" style="color:{_BRAND_COLOR};text-decoration:none;">{support_phone}</a>'
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -53,8 +59,9 @@ def _layout(heading: str, content_html: str, preheader: str = "") -> str:
       <td align="center">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
           <tr>
-            <td style="background-color:{_BRAND_COLOR};padding:28px 32px;text-align:center;">
-              <span style="font-size:24px;font-weight:700;color:#ffffff;letter-spacing:0.5px;">{APP_NAME}</span>
+            <td style="background-color:{_BRAND_COLOR};padding:24px 32px;text-align:center;">
+              <img src="{FRONTEND_URL}/assets/logo.png" alt="{APP_NAME}" width="48" height="48" style="display:block;margin:0 auto 8px;border:0;outline:none;text-decoration:none;">
+              <span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:0.5px;">{APP_NAME}</span>
             </td>
           </tr>
           <tr>
@@ -67,7 +74,7 @@ def _layout(heading: str, content_html: str, preheader: str = "") -> str:
             <td style="padding:24px 32px 32px 32px;border-top:1px solid #eeeeee;">
               <p style="margin:0;font-size:12px;color:#9ca3af;line-height:18px;">
                 Need help? Contact us at
-                <a href="mailto:{SUPPORT_EMAIL}" style="color:{_BRAND_COLOR};text-decoration:none;">{SUPPORT_EMAIL}</a>.<br>
+                {contact_line}.<br>
                 &copy; {year} {APP_NAME}. All rights reserved.
               </p>
             </td>
@@ -198,6 +205,26 @@ def _detail_rows(pairs: List[Tuple[str, str]]) -> str:
     )
 
 
+def _format_date(value: str) -> str:
+    """Best-effort ISO date ('2026-06-25') -> '25 June 2026'. Leaves anything else unchanged."""
+    if not value:
+        return value
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime("%d %B %Y")
+    except ValueError:
+        return value
+
+
+def _format_time(value: str) -> str:
+    """Best-effort 24h time ('16:00') -> '4:00 PM'. Leaves anything else unchanged."""
+    if not value:
+        return value
+    try:
+        return datetime.strptime(value, "%H:%M").strftime("%I:%M %p").lstrip("0")
+    except ValueError:
+        return value
+
+
 def _greeting(name: str = None, word: str = "Dear") -> str:
     who = name if name else "there"
     return f'<p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">{word} {who},</p>'
@@ -207,6 +234,28 @@ def _signoff(regards: str = "Warm regards,") -> str:
     return (
         f'<p style="margin:24px 0 0 0;font-size:15px;line-height:24px;">'
         f'{regards}<br>Team {APP_NAME}</p>'
+    )
+
+
+def build_profile_submitted_email(name: str) -> Tuple[str, str]:
+    """Step 0 - sent immediately after an astrologer submits their onboarding application."""
+    website = FRONTEND_URL.replace("https://", "").replace("http://", "")
+    content = f"""
+      {_greeting(name)}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We have received your profile details. Our admin team will review your application and
+        send you an interview invite very soon.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        If you have any questions in the meantime, feel free to reach out to our team by replying
+        to this email.
+      </p>
+      {_signoff()}
+      <p style="margin:4px 0 0 0;font-size:14px;line-height:24px;">
+        <a href="{FRONTEND_URL}" style="color:{_BRAND_COLOR};text-decoration:none;">www.{website}</a>
+      </p>"""
+    return f"{APP_NAME} - We've received your profile", _layout(
+        "Profile received", content, preheader=f"{APP_NAME} will review your application shortly"
     )
 
 
@@ -220,8 +269,8 @@ def build_interview_scheduled_email(
         We are pleased to inform you that your interview with {APP_NAME} has been scheduled as per the details below:
       </p>
       {_detail_rows([
-        ("Date", date or "—"),
-        ("Time", time or "—"),
+        ("Date", _format_date(date) or "—"),
+        ("Time", _format_time(time) or "—"),
         ("Interviewer", interviewer or "—"),
       ])}
       {_button("Join the meeting", meeting_link) if meeting_link else ""}
@@ -299,7 +348,7 @@ def build_onboarding_welcome_email(name: str) -> Tuple[str, str]:
 def build_onboarding_started_email(name: str) -> Tuple[str, str]:
     """Step 4 - astrologer welcome onboard (onboarding checklist)."""
     steps = [
-        f"<strong>Login to the {APP_NAME} Astrologer App:</strong> Use your registered mobile number and the OTP sent to you.",
+        f"<strong>Login to the {APP_NAME} Astrologer App:</strong> Use your registered email and password to log in.",
         "<strong>Fill in Personal Details:</strong> Add your alternate/WhatsApp number.",
         "<strong>Sign the Contract:</strong> You'll be prompted to sign it digitally after login.",
         "<strong>Upload Your Documents:</strong> Complete KYC by uploading valid ID proof (PAN, Aadhaar, Bank details).",
@@ -339,8 +388,13 @@ def build_growth_meeting_email(
     name: str, day: str, date: str, time: str, timezone: str, meeting_link: str
 ) -> Tuple[str, str]:
     """Step 5 - astrologers growth meeting / training."""
-    when = " ".join(p for p in [day, date] if p) or "—"
-    at = " ".join(p for p in [time, timezone] if p) or "—"
+    formatted_date = _format_date(date)
+    formatted_time = _format_time(time)
+    # Dropdown now stores the full label, e.g. "IST (India Standard Time)" — keep
+    # the email's "Time" row short by using just the abbreviation.
+    tz_short = (timezone or "").split(" (")[0] or None
+    when = ", ".join(p for p in [day, formatted_date] if p) or "—"
+    at = " ".join(p for p in [formatted_time, tz_short] if p) or "—"
     content = f"""
       {_greeting(name, word="Hello")}
       <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;">
@@ -353,6 +407,11 @@ def build_growth_meeting_email(
       <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
         In this meeting, we will discuss Astrologer Performance Growth &amp; Training on how to effectively
         use the application.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        You should also receive a separate Google Calendar invite for this meeting — please
+        <strong>accept</strong> it so the session is added to your calendar and you get a reminder
+        before it starts.
       </p>
       {_button("Join the meeting", meeting_link) if meeting_link else ""}
       {_signoff(regards="Regards,")}"""

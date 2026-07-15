@@ -5,9 +5,10 @@ Astrologer-only endpoints that use FreeAstroAPI for chart calculation.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
+from datetime import date as date_cls
 from .. import models, schemas, database
 from ..vedic_rishi_service import geocode_place
-from ..free_astro_service import generate_full_kundli
+from ..free_astro_service import generate_full_kundli, generate_dasha_insights
 from .auth import get_current_user
 import asyncio
 
@@ -126,6 +127,58 @@ async def generate_kundli_report(
         chart_data=chart_data,
     )
     db.add(report)
+    db.commit()
+    db.refresh(report)
+
+    return report
+
+
+@router.get("/{report_id}/dasha-insights", response_model=schemas.KundliReportResponse)
+async def get_dasha_insights(
+    report_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    """
+    Get (and lazily compute) narrative Dasha Insights for a Kundli report.
+    Cached on the report row per calendar day — repeat requests on the same
+    day return the cached data without re-hitting FreeAstroAPI.
+    """
+    _require_astrologer(current_user)
+
+    report = db.query(models.KundliReport).filter(
+        models.KundliReport.id == report_id
+    ).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Kundli report not found")
+
+    today = date_cls.today()
+    if report.dasha_insights_data and report.dasha_insights_date == today:
+        return report
+
+    if report.latitude is None or report.longitude is None:
+        raise HTTPException(status_code=400, detail="Report is missing geocoded birth coordinates")
+
+    try:
+        insights = await generate_dasha_insights(
+            year=report.date_of_birth.year,
+            month=report.date_of_birth.month,
+            day=report.date_of_birth.day,
+            hour=report.time_of_birth.hour,
+            minute=report.time_of_birth.minute,
+            latitude=float(report.latitude),
+            longitude=float(report.longitude),
+            timezone=report.timezone or "Asia/Kolkata",
+            reference_date=today.isoformat(),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+    report.dasha_insights_data = insights
+    report.dasha_insights_date = today
     db.commit()
     db.refresh(report)
 

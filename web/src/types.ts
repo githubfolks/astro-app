@@ -15,12 +15,28 @@ export interface Astrologer {
     queue_length?: number;
     about_me?: string;
     availability_hours?: string | null;
+    whatsapp_number?: string | null;
     is_premium?: boolean;
 }
 
 export interface AstrologerProfile extends Astrologer {
     user_id?: number;
     total_consultations?: number;
+    // Post-login onboarding checklist
+    contract_signed_at?: string | null;
+    contract_signature_name?: string | null;
+    pan_number?: string | null;
+    pan_doc_url?: string | null;
+    aadhaar_number?: string | null;
+    aadhaar_doc_url?: string | null;
+    bank_account_holder_name?: string | null;
+    bank_account_number?: string | null;
+    bank_ifsc?: string | null;
+    bank_name?: string | null;
+    bank_address?: string | null;
+    kyc_verified?: boolean;
+    kyc_verified_at?: string | null;
+    certificate_urls?: string[] | null;
 }
 
 /** Raw astrologer item as returned by the public list endpoint (keyed by user_id). */
@@ -165,6 +181,13 @@ export interface PayoutHistoryItem {
     admin_comments?: string | null;
 }
 
+export interface PerformanceStats {
+    avg_online_hours_per_day_30d: number;
+    poor_chat_percentage: number;
+    first_user_repeat_percentage: number;
+    loyal_user_percentage: number;
+}
+
 // --- Kundli / FreeAstroAPI chart structures ---
 // Shape matches FreeAstroAPI's POST /api/v2/vedic/calculate response.
 
@@ -174,6 +197,15 @@ export interface NakshatraRef {
     name: string;
     pada: number;
     lord: string;
+}
+
+/** Baladi Avastha (planet age state), present on chart.planets[] when include_avastha=true. */
+export interface Avastha {
+    type: string; // "baladi"
+    state: string; // "Bala" | "Kumara" | "Yuva" | "Vriddha" | "Mrita"
+    quality: string; // "infant" | "child" | "youth" | "old" | "dead"
+    degree_range?: { start: number; end: number };
+    scheme?: string;
 }
 
 export interface PlanetPosition {
@@ -188,6 +220,7 @@ export interface PlanetPosition {
     nakshatra_id?: number;
     pada?: number;
     nakshatra_lord?: string;
+    avastha?: Avastha;
 }
 
 export interface HousePosition {
@@ -216,10 +249,17 @@ export interface DivisionChart {
 
 export interface SadeSati {
     active: boolean;
-    phase?: string;
+    phase?: string | null;
     description?: string;
+    reference_date?: string;
+    timezone?: string;
     moon_sign?: string;
+    moon_sign_id?: number;
     saturn_sign?: string;
+    saturn_sign_id?: number;
+    saturn_degree_in_sign?: number;
+    saturn_absolute_degree?: number;
+    saturn_is_retrograde?: boolean;
 }
 
 export interface DashaPeriod {
@@ -313,6 +353,128 @@ export interface KundliReport {
     place_of_birth?: string;
     created_at?: string;
     chart_data?: ChartData;
+    dasha_insights_data?: DashaInsightsData;
+}
+
+/** A single ranked, explained fact from FreeAstroAPI's Dasha Insights endpoint. */
+export interface DashaInsightFact {
+    rank: number;
+    score: number;
+    fact_id: string;
+    kind: string;
+    category: string;
+    detector: string;
+    title: string;
+    summary: string;
+}
+
+export interface DashaInsightsData {
+    meta?: { moon_nakshatra?: string; generated_at?: string };
+    summary?: { by_category?: Record<string, number>; by_kind?: Record<string, number> };
+    importance: DashaInsightFact[];
+}
+
+// --- Kuta Matching (Guna Milan) / FreeAstroAPI /vedic/compatibility response ---
+
+export interface MatchPersonSummary {
+    label: string;
+    moon_sign: { id: number; name: string; degree: number };
+    moon_nakshatra: { id: number; name: string; pada: number; lord: string };
+}
+
+export interface MatchKoota {
+    id: string;
+    name: string;
+    score: number;
+    max_score: number;
+    status: 'strong' | 'weak' | 'dosha' | string;
+    evidence?: { kind: string; message: string }[];
+}
+
+export interface MatchAshtakoota {
+    score: number;
+    max_score: number;
+    percentage: number;
+    recommendation: string;
+    kootas: MatchKoota[];
+}
+
+export interface ManglikAssessment {
+    available: boolean;
+    active: boolean;
+    severity?: string;
+    severity_score?: number;
+    message: string;
+}
+
+export interface MatchDoshas {
+    manglik: {
+        person1: ManglikAssessment;
+        person2: ManglikAssessment;
+        compatibility: { available: boolean; status: string; message: string };
+    };
+    nadi: { active: boolean; score: number; max_score: number; message: string };
+    bhakoot: { active: boolean; score: number; max_score: number; message: string };
+}
+
+export interface MatchSummary {
+    total_score: number;
+    max_score: number;
+    minimum_traditional_threshold: number;
+    passes_minimum_threshold: boolean;
+    risk_flags: string[];
+}
+
+export interface MatchData {
+    persons: MatchPersonSummary[];
+    ashtakoota: MatchAshtakoota;
+    doshas: MatchDoshas;
+    summary: MatchSummary;
+}
+
+export interface MatchReport {
+    id: number;
+    boy_full_name?: string;
+    boy_date_of_birth?: string;
+    boy_place_of_birth?: string;
+    girl_full_name?: string;
+    girl_date_of_birth?: string;
+    girl_place_of_birth?: string;
+    match_data: MatchData;
+    created_at?: string;
+}
+
+// --- Muhurat Search / FreeAstroAPI /vedic/muhurat response ---
+
+export interface MuhuratWindow {
+    score: number;
+    quality: string;
+    date: string;
+    start: string; // ISO datetime
+    end: string; // ISO datetime
+    start_time?: string; // "HH:MM:SS" local
+    end_time?: string; // "HH:MM:SS" local
+    duration_minutes: number;
+    reasons?: string[];
+    warnings?: string[];
+}
+
+export interface MuhuratData {
+    purpose?: string;
+    range?: { start_date: string; end_date: string; days: number };
+    best_windows: MuhuratWindow[];
+    best_moment?: (MuhuratWindow & { explanation?: string }) | null;
+}
+
+export interface MuhuratSearchRecord {
+    id: number;
+    purpose?: string;
+    start_date: string;
+    end_date: string;
+    place: string;
+    personalized: boolean;
+    muhurat_data: MuhuratData;
+    created_at?: string;
 }
 
 // --- Razorpay checkout (loaded via external script) ---

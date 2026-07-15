@@ -4,10 +4,30 @@ import { Plus, Edit2, Trash2, Crown, Search } from 'lucide-react';
 import api from '../services/api';
 import { Button, Switch, Avatar } from '../components/ui';
 
+// Mirrors the STAGES list in AstrologerOnboarding.jsx so the badge shown here
+// matches the Kanban column the astrologer currently sits in.
+const STAGE_INFO = {
+    APPLIED: { label: 'Applied', classes: 'bg-gray-100 text-gray-700' },
+    INTERVIEW_SCHEDULED: { label: 'Interview Scheduled', classes: 'bg-blue-50 text-blue-700' },
+    PROFILE_ACTIVATED: { label: 'Profile Activated', classes: 'bg-indigo-50 text-indigo-700' },
+    ONBOARDING_INTIMATED: { label: 'Onboarding Intimated', classes: 'bg-violet-50 text-violet-700' },
+    ONBOARDING_STARTED: { label: 'Onboarding Started', classes: 'bg-purple-50 text-purple-700' },
+    TRAINING_SCHEDULED: { label: 'Training Scheduled', classes: 'bg-fuchsia-50 text-fuchsia-700' },
+    COMPLETED: { label: 'Completed', classes: 'bg-green-50 text-green-700' },
+    REJECTED: { label: 'Rejected', classes: 'bg-red-50 text-red-700' },
+};
+
+const STAGE_FILTERS = [
+    { key: 'ALL', label: 'All Statuses' },
+    { key: 'UNDER_ONBOARDING', label: 'Under Onboarding' },
+    ...Object.entries(STAGE_INFO).map(([key, { label }]) => ({ key, label })),
+];
+
 export default function Astrologers() {
     const navigate = useNavigate();
     const [astrologers, setAstrologers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [stageFilter, setStageFilter] = useState('ALL');
 
     const fetchAstrologers = useCallback(async () => {
         try {
@@ -61,11 +81,17 @@ export default function Astrologers() {
         const email = (item.email || '').toLowerCase();
         const phone = (item.phone_number || '').toLowerCase();
 
-        return fullName.includes(query) || 
-               bio.includes(query) || 
-               specialties.includes(query) || 
-               email.includes(query) || 
-               phone.includes(query);
+        const matchesSearch = fullName.includes(query) ||
+            bio.includes(query) ||
+            specialties.includes(query) ||
+            email.includes(query) ||
+            phone.includes(query);
+
+        const stage = item.profile?.onboarding_stage || 'APPLIED';
+        const matchesStage = stageFilter === 'ALL'
+            || (stageFilter === 'UNDER_ONBOARDING' ? !['COMPLETED', 'REJECTED'].includes(stage) : stage === stageFilter);
+
+        return matchesSearch && matchesStage;
     });
 
     return (
@@ -89,6 +115,16 @@ export default function Astrologers() {
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E91E63] text-sm text-gray-900 shadow-sm"
                         />
                     </div>
+                    {/* Onboarding Status Filter */}
+                    <select
+                        value={stageFilter}
+                        onChange={(e) => setStageFilter(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E91E63] text-sm text-gray-900 shadow-sm bg-white"
+                    >
+                        {STAGE_FILTERS.map((f) => (
+                            <option key={f.key} value={f.key}>{f.label}</option>
+                        ))}
+                    </select>
                     <Button onClick={() => navigate('/astrologers/add')} className="gap-2 shadow-sm whitespace-nowrap">
                         <Plus size={20} />
                         Add Astrologer
@@ -147,17 +183,23 @@ export default function Astrologers() {
                             </div>
                         </div>
 
-                        {/* Footer Section: Active Switch & Action Buttons */}
+                        {/* Footer Section: Onboarding Status / Active Switch & Action Buttons */}
                         <div className="flex justify-between items-center border-t border-gray-50 mt-3 pt-3">
-                            <div className="flex items-center gap-1.5">
-                                <span className={`w-1.5 h-1.5 rounded-full ${item.is_active !== false ? 'bg-green-500' : 'bg-gray-300'}`}></span>
-                                <span className="text-[10px] font-bold text-gray-900">Active</span>
-                                <Switch
-                                    checked={item.is_active !== false}
-                                    onCheckedChange={(checked) => handleToggleStatus(item, checked)}
-                                    size="sm"
-                                />
-                            </div>
+                            {item.profile?.onboarding_stage === 'COMPLETED' ? (
+                                <div className="flex items-center gap-1.5">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${item.is_active !== false ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                    <span className="text-[10px] font-bold text-gray-900">Active</span>
+                                    <Switch
+                                        checked={item.is_active !== false}
+                                        onCheckedChange={(checked) => handleToggleStatus(item, checked)}
+                                        size="sm"
+                                    />
+                                </div>
+                            ) : (
+                                <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${STAGE_INFO[item.profile?.onboarding_stage]?.classes || 'bg-gray-100 text-gray-700'}`}>
+                                    {STAGE_INFO[item.profile?.onboarding_stage]?.label || 'Applied'}
+                                </span>
+                            )}
 
                             <div className="flex gap-1.5">
                                 <button

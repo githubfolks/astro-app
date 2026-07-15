@@ -1,12 +1,14 @@
-import type { ChartData, DivisionChart, PlanetPosition } from '../types';
+import type { ChartData, DivisionChart, PlanetPosition, DashaInsightsData } from '../types';
 import React, { useRef, useState } from 'react';
-import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2 } from 'lucide-react';
+import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon, Lightbulb } from 'lucide-react';
 import KundliChart, { PLANET_SHORT, PLANET_COLORS } from './KundliChart';
+import { api } from '../services/api';
+import { getErrorMessage } from '../utils/errors';
 import {
     type Lang, hi,
     PLANET_NAME_HI, RASHI_HI, NAKSHATRA_HI, TITHI_HI, PANCHANG_YOGA_HI,
     WEEKDAY_HI, PAKSHA_HI, LUNAR_MONTH_HI, YOGA_NAME_HI, STRENGTH_HI,
-    DASHA_LEVEL_HI, UI_HI,
+    DASHA_LEVEL_HI, SADE_SATI_PHASE_HI, AVASTHA_STATE_HI, UI_HI,
 } from '../utils/kundliHindi';
 import { isExalted, isDebilitated, computeCombustSet, computeVargottamaSet } from '../utils/planetDignity';
 
@@ -14,6 +16,7 @@ interface KundliPanelProps {
     isOpen: boolean;
     onClose: () => void;
     chartData?: ChartData | null; // Full FreeAstroAPI /vedic/calculate response
+    reportId?: number; // Kundli report id — enables the on-demand Dasha Insights section
     seekerName?: string;
     loading?: boolean;
     error?: string | null;
@@ -27,6 +30,7 @@ const TABS = [
 
 interface KundliContentProps {
     chartData?: ChartData | null;
+    reportId?: number; // Kundli report id — enables the on-demand Dasha Insights section
     loading?: boolean;
     error?: string | null;
     /** When provided (astrologer chat context), a "Share to Chat" button captures the
@@ -68,6 +72,7 @@ function getDivisionChart(chartData: ChartData, tab: string): DivisionChart | un
  * embedded inline (e.g. in the astrologer chat sidebar) as well as inside KundliPanel. */
 export const KundliContent: React.FC<KundliContentProps> = ({
     chartData,
+    reportId,
     loading = false,
     error = null,
     onShareImage,
@@ -78,6 +83,23 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     const chartRef = useRef<SVGSVGElement>(null);
     const [sharing, setSharing] = useState(false);
     const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [dashaInsights, setDashaInsights] = useState<DashaInsightsData | null>(null);
+    const [dashaInsightsLoading, setDashaInsightsLoading] = useState(false);
+    const [dashaInsightsError, setDashaInsightsError] = useState<string | null>(null);
+
+    const handleLoadDashaInsights = async () => {
+        if (!reportId || dashaInsightsLoading) return;
+        setDashaInsightsLoading(true);
+        setDashaInsightsError(null);
+        try {
+            const report = await api.kundli.getDashaInsights(reportId);
+            setDashaInsights(report.dasha_insights_data ?? null);
+        } catch (err) {
+            setDashaInsightsError(getErrorMessage(err) || 'Failed to load Dasha Insights');
+        } finally {
+            setDashaInsightsLoading(false);
+        }
+    };
 
     const handleShareClick = async () => {
         if (!onShareImage || sharing || !chartRef.current) return;
@@ -103,6 +125,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     const combustSet = computeCombustSet(chartData?.chart);
     const vargottamaSet = computeVargottamaSet(chartData?.chart, chartData?.vargas?.vargas?.D9);
     const activePeriods = chartData?.vimshottari_dasha?.active_periods;
+    const sadeSati = chartData?.chart?.sade_sati;
     const yogas = chartData?.yogas;
     const shadbala = chartData?.shadbala;
     const ashtakavarga = chartData?.ashtakavarga;
@@ -245,6 +268,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                                     <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.signHouse : 'Sign / House'}</th>
                                                     <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.nakshatra : 'Nakshatra'}</th>
                                                     <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.retrogradeAbbr : 'R'}</th>
+                                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.avasthaAbbr : 'Avastha'}</th>
                                                     <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.status : 'Status'}</th>
                                                 </tr>
                                             </thead>
@@ -271,6 +295,18 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                                             <td className="p-3 text-center">
                                                                 {planet.is_retrograde ? (
                                                                     <span className="text-red-600 font-bold text-xs">{lang === 'hi' ? UI_HI.retrogradeAbbr : 'R'}</span>
+                                                                ) : (
+                                                                    <span className="text-gray-300">—</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="p-3 text-center text-xs">
+                                                                {planet.avastha ? (
+                                                                    <span
+                                                                        className="font-semibold text-indigo-700"
+                                                                        title={planet.avastha.quality}
+                                                                    >
+                                                                        {hi(AVASTHA_STATE_HI, planet.avastha.state, lang)}
+                                                                    </span>
                                                                 ) : (
                                                                     <span className="text-gray-300">—</span>
                                                                 )}
@@ -364,6 +400,70 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                             </div>
                                         ))}
                                     </div>
+                                </div>
+                            )}
+
+                            {/* Dasha Insights */}
+                            {reportId && (
+                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <Lightbulb size={14} className="text-amber-600" />
+                                            Dasha Insights
+                                        </span>
+                                        {!dashaInsights && (
+                                            <button
+                                                onClick={handleLoadDashaInsights}
+                                                disabled={dashaInsightsLoading}
+                                                className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-60"
+                                            >
+                                                {dashaInsightsLoading ? 'Loading…' : 'Load Insights'}
+                                            </button>
+                                        )}
+                                    </h3>
+                                    {dashaInsightsError && (
+                                        <p className="text-xs text-red-600 px-4 pb-3">{dashaInsightsError}</p>
+                                    )}
+                                    {dashaInsights && (
+                                        <div className="p-4 pt-1 space-y-2">
+                                            {dashaInsights.importance.slice(0, 8).map(fact => (
+                                                <div key={fact.fact_id} className="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <span className="text-xs font-semibold text-gray-800">{fact.title}</span>
+                                                        <span className="text-[9px] font-bold uppercase tracking-wide text-amber-600 shrink-0">{fact.category}</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-500 mt-0.5">{fact.summary}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Sade Sati */}
+                            {sadeSati && (
+                                <div className={`rounded-xl p-4 border ${sadeSati.active ? 'bg-gradient-to-br from-red-50 to-orange-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <Moon size={14} className={sadeSati.active ? 'text-red-600' : 'text-gray-400'} />
+                                            {lang === 'hi' ? UI_HI.sadeSati : 'Sade Sati'}
+                                        </span>
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${sadeSati.active ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-500'}`}>
+                                            {sadeSati.active
+                                                ? (lang === 'hi' ? UI_HI.sadeSatiActive : 'Active')
+                                                : (lang === 'hi' ? UI_HI.sadeSatiNotActive : 'Not Active')}
+                                        </span>
+                                    </h3>
+                                    {sadeSati.active && (
+                                        <div className="grid grid-cols-2 gap-3 mt-2">
+                                            {sadeSati.phase && <DetailItem label={lang === 'hi' ? UI_HI.yoga : 'Phase'} value={hi(SADE_SATI_PHASE_HI, sadeSati.phase, lang)} />}
+                                            {sadeSati.moon_sign && <DetailItem label="Moon Sign" value={hi(RASHI_HI, sadeSati.moon_sign, lang)} />}
+                                            {sadeSati.saturn_sign && <DetailItem label="Saturn Sign" value={hi(RASHI_HI, sadeSati.saturn_sign, lang)} />}
+                                        </div>
+                                    )}
+                                    {sadeSati.description && (
+                                        <p className="text-xs text-gray-600 mt-2">{sadeSati.description}</p>
+                                    )}
                                 </div>
                             )}
 
@@ -468,6 +568,7 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
     isOpen,
     onClose,
     chartData,
+    reportId,
     seekerName = 'Seeker',
     loading = false,
     error = null,
@@ -500,7 +601,7 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
                     </button>
                 </div>
 
-                <KundliContent chartData={chartData} loading={loading} error={error} />
+                <KundliContent chartData={chartData} reportId={reportId} loading={loading} error={error} />
             </div>
 
             <style>{`

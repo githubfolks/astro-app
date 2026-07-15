@@ -1,0 +1,7 @@
+Dear ##name##,
+
+We have received your profile details. ##companyName## admin will review and send an interview invite very soon.
+
+Warm regards,
+Team ##companyName##
+www.##website##.com

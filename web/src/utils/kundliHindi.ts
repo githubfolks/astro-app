@@ -124,6 +124,16 @@ export const DASHA_LEVEL_HI: Record<string, string> = {
     Mahadasha: 'महादशा', Antardasha: 'अंतर्दशा', Pratyantardasha: 'प्रत्यंतर्दशा',
 };
 
+export const SADE_SATI_PHASE_HI: Record<string, string> = {
+    'Rising (1st)': 'आरंभिक (प्रथम ढैया)',
+    'Peak (2nd)': 'चरम (द्वितीय ढैया)',
+    'Setting (3rd)': 'समाप्ति (तृतीय ढैया)',
+};
+
+export const AVASTHA_STATE_HI: Record<string, string> = {
+    Bala: 'बाल', Kumara: 'कुमार', Yuva: 'युवा', Vriddha: 'वृद्ध', Mrita: 'मृत',
+};
+
 /** Static UI chrome (section headings, field labels, states) — not API data. */
 export const UI_HI = {
     lagna: 'लग्न',
@@ -162,4 +172,8 @@ export const UI_HI = {
     legendExalted: 'उच्च',
     legendDebilitated: 'नीच',
     status: 'स्थिति',
+    sadeSati: 'साढ़े साती',
+    sadeSatiActive: 'साढ़े साती सक्रिय',
+    sadeSatiNotActive: 'साढ़े साती सक्रिय नहीं है',
+    avasthaAbbr: 'अव',
 };

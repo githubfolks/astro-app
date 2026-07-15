@@ -61,3 +61,11 @@ degree, retrogate, debilated, combust, exaulted
 auto-post-to-social
 job history/list page
 Keep male and female voice both
+
+
+we have focused only on the chat feature in our application. I don't want to make the portal crowdy with lots of contents. compare below websites and prepare gap analysis to make us different from others:
+https://www.anytimeastro.com/chat-with-astrologer/
+https://www.astroyogi.com/astrologer/free-astrology-chat
+https://astrotalk.com/chat-with-astrologer
+
+Check other websites as well for chat features

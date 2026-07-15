@@ -1,7 +1,7 @@
 import type { ChartData, KundliReport } from '../types';
 import { getErrorMessage } from '../utils/errors';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import KundliPanel from '../components/KundliPanel';
@@ -22,6 +22,7 @@ const KundliGenerator: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [chartData, setChartData] = useState<ChartData | null>(null);
+    const [reportId, setReportId] = useState<number | null>(null);
     const [showPanel, setShowPanel] = useState(false);
 
     // History
@@ -71,6 +72,7 @@ const KundliGenerator: React.FC = () => {
                 place_of_birth: formData.place_of_birth,
             });
             setChartData(result.chart_data);
+            setReportId(result.id);
             setShowPanel(true);
             loadHistory(); // Refresh history
         } catch (err) {
@@ -82,6 +84,7 @@ const KundliGenerator: React.FC = () => {
 
     const handleViewHistoryReport = async (report: KundliReport) => {
         setChartData(report.chart_data ?? null);
+        setReportId(report.id);
         setShowPanel(true);
     };
 
@@ -102,6 +105,12 @@ const KundliGenerator: React.FC = () => {
                     <ArrowLeft size={20} />
                     Back to Dashboard
                 </button>
+
+                <div className="max-w-4xl mx-auto flex gap-2 mb-2 text-xs font-semibold">
+                    <span className="px-3 py-1.5 rounded-full bg-purple-100 text-purple-700">Kundli Generator</span>
+                    <Link to="/kundli/matching" className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Kundli Matching</Link>
+                    <Link to="/kundli/muhurat" className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Muhurat Search</Link>
+                </div>
 
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-8">
@@ -237,6 +246,7 @@ const KundliGenerator: React.FC = () => {
                 isOpen={showPanel}
                 onClose={() => setShowPanel(false)}
                 chartData={chartData}
+                reportId={reportId ?? undefined}
                 seekerName={formData.full_name || 'Seeker'}
                 loading={loading}
                 error={error}

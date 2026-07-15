@@ -100,6 +100,7 @@ class AstrologerProfile(Base):
     rating_avg = Column(DECIMAL(3, 2), default=0.0)
     total_consultations = Column(Integer, default=0)
     availability_hours = Column(String, nullable=True)
+    whatsapp_number = Column(String, nullable=True)  # Alternate contact number, entered post-login during onboarding
     city = Column(String, nullable=True)
     id_proof_url = Column(String, nullable=True)
     slug = Column(String, unique=True, index=True, nullable=True)
@@ -110,6 +111,27 @@ class AstrologerProfile(Base):
     onboarding_meta = Column(JSON, nullable=True)  # Last-entered email fields per step, for card re-display
     legal_agreement_accepted = Column(Boolean, default=False)
     legal_agreement_accepted_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Post-login onboarding checklist (see onboarding-tasks.md) --------------
+    # Digital contract — set server-side only by POST /astrologers/contract/sign,
+    # never through the generic profile-update endpoint, so it can't be forged.
+    contract_signed_at = Column(DateTime(timezone=True), nullable=True)
+    contract_signature_name = Column(String, nullable=True)  # Typed full name used as the e-signature
+    # KYC
+    pan_number = Column(String, nullable=True)
+    pan_doc_url = Column(String, nullable=True)
+    aadhaar_number = Column(String, nullable=True)
+    aadhaar_doc_url = Column(String, nullable=True)
+    bank_account_holder_name = Column(String, nullable=True)
+    bank_account_number = Column(String, nullable=True)
+    bank_ifsc = Column(String, nullable=True)
+    bank_name = Column(String, nullable=True)
+    bank_address = Column(String, nullable=True)
+    # Set by admin after manually reviewing the KYC docs/certificates below.
+    kyc_verified = Column(Boolean, default=False, nullable=False)
+    kyc_verified_at = Column(DateTime(timezone=True), nullable=True)
+    # Certificates — optional, for internal verification only (never shown publicly)
+    certificate_urls = Column(JSON, nullable=True)
 
     user = relationship("User", back_populates="astrologer_profile")
 
@@ -471,8 +493,106 @@ class KundliReport(Base):
     chart_data = Column(JSON, nullable=False)  # Full AstroAPI JSON response
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    # Dasha Insights are cached here (1:1 with the report) rather than a separate
+    # table, keyed by the reference date used — insights are re-fetched at most
+    # once per calendar day since some facts are relative to "today".
+    dasha_insights_data = Column(JSON, nullable=True)
+    dasha_insights_date = Column(Date, nullable=True)
+
     seeker = relationship("User", foreign_keys=[seeker_id])
     astrologer = relationship("User", foreign_keys=[generated_by])
+
+
+class PanchangCache(Base):
+    """Cached standalone daily Panchang lookups, keyed by date + rounded location,
+    so repeat requests for the same day/city don't re-hit FreeAstroAPI."""
+    __tablename__ = "panchang_cache"
+    __table_args__ = (
+        Index("ix_panchang_cache_lookup", "date", "latitude", "longitude", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False)
+    latitude = Column(DECIMAL(6, 2), nullable=False)  # rounded to 2dp so nearby queries hit cache
+    longitude = Column(DECIMAL(6, 2), nullable=False)
+    place_label = Column(String, nullable=True)
+    timezone = Column(String, default="Asia/Kolkata")
+    panchang_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class KundliMatchReport(Base):
+    """Cached Kuta (Guna Milan) compatibility report between two birth charts."""
+    __tablename__ = "kundli_match_reports"
+    __table_args__ = (
+        Index(
+            "ix_kundli_match_reports_lookup",
+            "boy_date_of_birth", "boy_time_of_birth", "boy_place_of_birth",
+            "girl_date_of_birth", "girl_time_of_birth", "girl_place_of_birth",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    generated_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    boy_seeker_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    girl_seeker_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    boy_full_name = Column(String, nullable=True)
+    boy_date_of_birth = Column(Date, nullable=False)
+    boy_time_of_birth = Column(Time, nullable=False)
+    boy_place_of_birth = Column(String, nullable=False)
+    boy_latitude = Column(DECIMAL(10, 6), nullable=True)
+    boy_longitude = Column(DECIMAL(10, 6), nullable=True)
+
+    girl_full_name = Column(String, nullable=True)
+    girl_date_of_birth = Column(Date, nullable=False)
+    girl_time_of_birth = Column(Time, nullable=False)
+    girl_place_of_birth = Column(String, nullable=False)
+    girl_latitude = Column(DECIMAL(10, 6), nullable=True)
+    girl_longitude = Column(DECIMAL(10, 6), nullable=True)
+
+    match_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    astrologer = relationship("User", foreign_keys=[generated_by])
+    boy_seeker = relationship("User", foreign_keys=[boy_seeker_id])
+    girl_seeker = relationship("User", foreign_keys=[girl_seeker_id])
+
+
+class MuhuratSearch(Base):
+    """Cached auspicious-timing (Muhurat) search results, generic or personalized
+    to a birth chart, keyed by the search parameters so repeat lookups don't
+    re-hit FreeAstroAPI."""
+    __tablename__ = "muhurat_searches"
+    __table_args__ = (
+        Index(
+            "ix_muhurat_searches_lookup",
+            "purpose", "start_date", "end_date", "latitude", "longitude",
+            "personalized", "subject_date_of_birth", "subject_time_of_birth", "subject_place_of_birth",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    generated_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    seeker_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    purpose = Column(String, nullable=True)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    place = Column(String, nullable=False)
+    latitude = Column(DECIMAL(6, 2), nullable=False)
+    longitude = Column(DECIMAL(6, 2), nullable=False)
+
+    personalized = Column(Boolean, default=False, nullable=False)
+    subject_date_of_birth = Column(Date, nullable=True)
+    subject_time_of_birth = Column(Time, nullable=True)
+    subject_place_of_birth = Column(String, nullable=True)
+
+    muhurat_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    astrologer = relationship("User", foreign_keys=[generated_by])
+    seeker = relationship("User", foreign_keys=[seeker_id])
 
 
 class ContentType(str, enum.Enum):

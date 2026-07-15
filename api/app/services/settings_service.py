@@ -3,6 +3,7 @@
 Super admin edits these via /admin/settings; the rest of the app reads them
 through get_setting(). A short in-process cache avoids a DB hit on every call
 (e.g. the per-message moderation path)."""
+import os
 import time
 import logging
 from typing import Optional
@@ -14,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 # Default values seeded/returned when a key has not been configured yet.
 DEFAULTS: dict[str, str] = {
+    # Shown in every outgoing email footer and available to other support-facing UI.
+    "support_email": os.getenv("SUPPORT_EMAIL") or os.getenv("MAIL_FROM", "support@aadikarta.org"),
+    "support_phone": os.getenv("SUPPORT_PHONE", ""),
     "waplex_tenant_id": "",
     "waplex_api_key": "",
     "waplex_phone_number": "",

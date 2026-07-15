@@ -1,11 +1,45 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle, Key } from 'lucide-react';
+import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle, Key, CreditCard, Landmark, FileSignature, Award, ShieldCheck, ExternalLink } from 'lucide-react';
 import api from '../services/api';
 import { Button, Avatar } from '../components/ui';
 import clsx from 'clsx';
 import { ResetPasswordModal } from '../components/ResetPasswordModal';
 import { EditUserModal } from '../components/EditUserModal';
+
+// Mirrors the STAGES list in AstrologerOnboarding.jsx / Astrologers.jsx so the
+// badge shown here matches the Kanban column the astrologer currently sits in.
+const STAGE_INFO = {
+    APPLIED: { label: 'Applied', classes: 'bg-gray-100 text-gray-700 border-gray-200' },
+    INTERVIEW_SCHEDULED: { label: 'Interview Scheduled', classes: 'bg-blue-50 text-blue-700 border-blue-200' },
+    PROFILE_ACTIVATED: { label: 'Profile Activated', classes: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+    ONBOARDING_INTIMATED: { label: 'Onboarding Intimated', classes: 'bg-violet-50 text-violet-700 border-violet-200' },
+    ONBOARDING_STARTED: { label: 'Onboarding Started', classes: 'bg-purple-50 text-purple-700 border-purple-200' },
+    TRAINING_SCHEDULED: { label: 'Training Scheduled', classes: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200' },
+    COMPLETED: { label: 'Completed', classes: 'bg-green-50 text-green-700 border-green-200' },
+    REJECTED: { label: 'Rejected', classes: 'bg-red-50 text-red-700 border-red-200' },
+};
+
+const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const resolveDocUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${API_URL}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
+function DocLink({ url, label }) {
+    if (!url) return <span className="text-gray-400 text-xs">Not uploaded</span>;
+    return (
+        <a
+            href={resolveDocUrl(url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline"
+        >
+            <ExternalLink size={11} /> {label}
+        </a>
+    );
+}
 
 export default function UserDetails() {
     const { id } = useParams();
@@ -22,6 +56,7 @@ export default function UserDetails() {
     const [walletAmount, setWalletAmount] = useState('');
     const [walletDesc, setWalletDesc] = useState('Admin adjustment');
     const [walletLoading, setWalletLoading] = useState(false);
+    const [kycUpdating, setKycUpdating] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -48,6 +83,18 @@ export default function UserDetails() {
 
     const handleResetPassword = () => {
         setIsResetModalOpen(true);
+    };
+
+    const handleKycVerify = async (verified) => {
+        setKycUpdating(true);
+        try {
+            await api.put(`/admin/astrologers/${id}/kyc`, { kyc_verified: verified });
+            fetchData();
+        } catch (err) {
+            alert(err.response?.data?.detail || 'Failed to update KYC verification status');
+        } finally {
+            setKycUpdating(false);
+        }
     };
 
     const handleWalletAdjust = async () => {
@@ -91,6 +138,11 @@ export default function UserDetails() {
                             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                                 {profile.full_name || user.email || "Unknown User"}
                                 {user.is_verified ? <CheckCircle size={18} className="text-blue-500" /> : <XCircle size={18} className="text-gray-300" />}
+                                {user.role === 'ASTROLOGER' && (
+                                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${STAGE_INFO[profile.onboarding_stage]?.classes || 'bg-gray-100 text-gray-700 border-gray-200'}`}>
+                                        {STAGE_INFO[profile.onboarding_stage]?.label || 'Applied'}
+                                    </span>
+                                )}
                             </h1>
                             <div className="flex flex-col text-sm text-gray-900 mt-1">
                                 <span>ID: #{user.id} • {user.role}</span>
@@ -197,6 +249,91 @@ export default function UserDetails() {
                             )}
                         </div>
                     </div>
+
+                    {user?.role === 'ASTROLOGER' && (
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                                    <CreditCard size={16} className="text-indigo-600" /> KYC &amp; Documents
+                                </h3>
+                                {profile.kyc_verified ? (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
+                                        <ShieldCheck size={11} /> Verified
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-200">
+                                        Not Verified
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="space-y-3 text-sm">
+                                <div className="flex items-center gap-2 text-xs text-gray-900">
+                                    <FileSignature size={14} className="text-gray-400 flex-shrink-0" />
+                                    {profile.contract_signed_at ? (
+                                        <span>Contract signed by <strong>{profile.contract_signature_name}</strong> on {new Date(profile.contract_signed_at).toLocaleDateString()}</span>
+                                    ) : (
+                                        <span className="text-gray-400">Contract not signed yet</span>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50">
+                                    <div>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">PAN Number</span>
+                                        <span className="font-medium text-gray-900 text-sm">{profile.pan_number || '-'}</span>
+                                        <div className="mt-0.5"><DocLink url={profile.pan_doc_url} label="View PAN doc" /></div>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Aadhaar Number</span>
+                                        <span className="font-medium text-gray-900 text-sm">{profile.aadhaar_number || '-'}</span>
+                                        <div className="mt-0.5"><DocLink url={profile.aadhaar_doc_url} label="View Aadhaar doc" /></div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50">
+                                    <div>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
+                                            <Landmark size={12} /> Bank Details
+                                        </span>
+                                        <span className="text-gray-700 text-xs block">{profile.bank_account_holder_name || '-'}</span>
+                                        <span className="text-gray-700 text-xs block">Bank: {profile.bank_name || '-'}</span>
+                                        <span className="text-gray-700 text-xs block">A/C: {profile.bank_account_number || '-'}</span>
+                                        <span className="text-gray-700 text-xs block">IFSC: {profile.bank_ifsc || '-'}</span>
+                                        <span className="text-gray-700 text-xs block">Branch: {profile.bank_address || '-'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
+                                            <Award size={12} /> Certificates
+                                        </span>
+                                        {profile.certificate_urls?.length > 0 ? (
+                                            <div className="flex flex-col gap-1">
+                                                {profile.certificate_urls.map((url, i) => (
+                                                    <DocLink key={url} url={url} label={`Certificate ${i + 1}`} />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs">None uploaded</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="pt-3 border-t border-gray-50">
+                                    <button
+                                        onClick={() => handleKycVerify(!profile.kyc_verified)}
+                                        disabled={kycUpdating}
+                                        className={clsx(
+                                            "w-full text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50",
+                                            profile.kyc_verified
+                                                ? "bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200"
+                                                : "bg-green-600 hover:bg-green-700 text-white"
+                                        )}
+                                    >
+                                        {kycUpdating ? 'Updating…' : profile.kyc_verified ? 'Mark Unverified' : 'Mark KYC Verified'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Column: consultations and wallet */}

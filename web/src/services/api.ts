@@ -202,9 +202,11 @@ export const api = {
             return handleResponse(response, 'Onboarding failed');
         },
         uploadFile: async (file: File) => {
+            // Public, unauthenticated endpoint — used during onboarding before
+            // the applicant has an account/token.
             const formData = new FormData();
             formData.append('file', file);
-            const response = await customFetch(`${API_URL}/admin/upload`, {
+            const response = await customFetch(`${API_URL}/astrologers/onboarding/photo`, {
                 method: 'POST',
                 body: formData
             });
@@ -215,6 +217,41 @@ export const api = {
                 headers: await authHeaders()
             });
             return handleResponse(response, 'Failed to fetch payout history');
+        },
+        getPerformanceStats: async () => {
+            const response = await customFetch(`${API_URL}/astrologers/stats/performance`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to fetch performance stats');
+        },
+        uploadDocument: async (file: File) => {
+            // Authenticated endpoint for KYC docs, gallery photos, certificates —
+            // accepts images and PDFs, unlike the public onboarding photo upload.
+            const formData = new FormData();
+            formData.append('file', file);
+            const response = await customFetch(`${API_URL}/astrologers/documents/upload`, {
+                method: 'POST',
+                headers: await authHeaders(),
+                body: formData
+            });
+            return handleResponse(response, 'File upload failed');
+        },
+        getContract: async () => {
+            const response = await customFetch(`${API_URL}/astrologers/contract`, {
+                headers: await authHeaders()
+            });
+            return handleResponse(response, 'Failed to fetch contract');
+        },
+        signContract: async (signatureName: string) => {
+            const response = await customFetch(`${API_URL}/astrologers/contract/sign`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ signature_name: signatureName })
+            });
+            return handleResponse(response, 'Failed to sign contract');
         }
     },
 
@@ -414,15 +451,6 @@ export const api = {
             const response = await customFetch(`${API_URL}/public/horoscopes?${params}`);
             return handleResponse(response, 'Failed to fetch horoscopes');
         },
-        getPanchangNow: async (lat: number, lon: number, place = '') => {
-            const params = new URLSearchParams({
-                lat: lat.toString(),
-                lon: lon.toString(),
-                ...(place && { place })
-            });
-            const response = await customFetch(`${API_URL}/public/panchang?${params}`);
-            return handleResponse(response, 'Failed to fetch daily panchang');
-        },
         contact: async (data: { name: string, email: string, message: string }) => {
             const response = await customFetch(`${API_URL}/public/contact`, {
                 method: 'POST',
@@ -501,6 +529,97 @@ export const api = {
                 credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch Kundli history');
+        },
+        getDashaInsights: async (id: number) => {
+            const response = await fetch(`${API_URL}/kundli/${id}/dasha-insights`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch Dasha Insights');
+        }
+    },
+    matching: {
+        generate: async (data: {
+            boy: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+            girl: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+        }) => {
+            const response = await fetch(`${API_URL}/matching/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to generate Match report');
+        },
+        getById: async (id: number) => {
+            const response = await fetch(`${API_URL}/matching/${id}`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch Match report');
+        },
+        getBySeeker: async (seekerId: number) => {
+            const response = await fetch(`${API_URL}/matching/seeker/${seekerId}`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch seeker Match reports');
+        },
+        getHistory: async () => {
+            const response = await fetch(`${API_URL}/matching/history/all`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch Match history');
+        }
+    },
+    muhurat: {
+        search: async (data: {
+            purpose?: string;
+            start_date: string;
+            end_date: string;
+            place: string;
+            seeker_id?: number;
+            subject?: { seeker_id?: number; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+        }) => {
+            const response = await fetch(`${API_URL}/muhurat/search`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to search Muhurat');
+        },
+        getById: async (id: number) => {
+            const response = await fetch(`${API_URL}/muhurat/${id}`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch Muhurat search');
+        },
+        getHistory: async () => {
+            const response = await fetch(`${API_URL}/muhurat/history/all`, {
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to fetch Muhurat history');
+        }
+    },
+    panchang: {
+        getDaily: async (opts: { date?: string; lat?: number; lon?: number; place?: string } = {}) => {
+            const params = new URLSearchParams();
+            if (opts.date) params.append('date', opts.date);
+            if (opts.lat !== undefined) params.append('lat', opts.lat.toString());
+            if (opts.lon !== undefined) params.append('lon', opts.lon.toString());
+            if (opts.place) params.append('place', opts.place);
+            const response = await customFetch(`${API_URL}/panchang/daily?${params}`);
+            return handleResponse(response, 'Failed to fetch daily panchang');
         }
     },
     edu: {

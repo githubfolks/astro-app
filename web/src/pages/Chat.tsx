@@ -29,6 +29,7 @@ export const Chat: React.FC = () => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showKundli, setShowKundli] = useState(false);
     const [kundliData, setKundliData] = useState<ChartData | null>(null);
+    const [kundliReportId, setKundliReportId] = useState<number | null>(null);
     const [kundliLoading, setKundliLoading] = useState(false);
     const [kundliError, setKundliError] = useState<string | null>(null);
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
@@ -385,6 +386,7 @@ export const Chat: React.FC = () => {
                 place_of_birth: seeker.place_of_birth || '',
             });
             setKundliData(data.chart_data);
+            setKundliReportId(data.id);
         } catch (err) {
             setKundliError(getErrorMessage(err) || 'Failed to generate Kundli. Please try again.');
         } finally {
@@ -598,6 +600,7 @@ export const Chat: React.FC = () => {
                                         <div className="pt-2 border-t border-gray-100">
                                             <KundliContent
                                                 chartData={kundliData}
+                                                reportId={kundliReportId ?? undefined}
                                                 loading={kundliLoading}
                                                 error={kundliError}
                                                 canShare={user?.role === 'ASTROLOGER'}

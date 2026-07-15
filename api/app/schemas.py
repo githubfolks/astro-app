@@ -111,6 +111,7 @@ class AstrologerProfileBase(BaseModel):
     specialties: Optional[str] = None
     consultation_fee_per_min: Decimal
     availability_hours: Optional[str] = None
+    whatsapp_number: Optional[str] = None
     city: Optional[str] = None
     id_proof_url: Optional[str] = None
     astrology_types: Optional[List[str]] = None
@@ -118,6 +119,21 @@ class AstrologerProfileBase(BaseModel):
     is_premium: bool = False
     legal_agreement_accepted: bool = False
     legal_agreement_accepted_at: Optional[datetime] = None
+    # Post-login onboarding checklist (read-only display fields)
+    contract_signed_at: Optional[datetime] = None
+    contract_signature_name: Optional[str] = None
+    pan_number: Optional[str] = None
+    pan_doc_url: Optional[str] = None
+    aadhaar_number: Optional[str] = None
+    aadhaar_doc_url: Optional[str] = None
+    bank_account_holder_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_address: Optional[str] = None
+    kyc_verified: bool = False
+    kyc_verified_at: Optional[datetime] = None
+    certificate_urls: Optional[List[str]] = None
 
 class AstrologerProfileCreate(AstrologerProfileBase):
     pass
@@ -133,11 +149,30 @@ class AstrologerProfileUPDATE(BaseModel):
     specialties: Optional[str] = None
     consultation_fee_per_min: Optional[Decimal] = None
     availability_hours: Optional[str] = None
+    whatsapp_number: Optional[str] = None
     is_online: Optional[bool] = None
     city: Optional[str] = None
     id_proof_url: Optional[str] = None
     astrology_types: Optional[List[str]] = None
     # is_approved, legal_agreement_accepted, legal_agreement_accepted_at are admin-only — never expose here
+    # KYC
+    pan_number: Optional[str] = None
+    pan_doc_url: Optional[str] = None
+    aadhaar_number: Optional[str] = None
+    aadhaar_doc_url: Optional[str] = None
+    bank_account_holder_name: Optional[str] = None
+    bank_account_number: Optional[str] = None
+    bank_ifsc: Optional[str] = None
+    bank_name: Optional[str] = None
+    bank_address: Optional[str] = None
+    certificate_urls: Optional[List[str]] = None
+    # contract_signed_at / contract_signature_name are NOT here — only settable via
+    # POST /astrologers/contract/sign, so the signature timestamp can't be forged.
+    # kyc_verified / kyc_verified_at are NOT here — admin-only, set via
+    # POST /admin/astrologers/{user_id}/kyc/verify.
+
+class ContractSignRequest(BaseModel):
+    signature_name: str = Field(..., min_length=2, max_length=150)
 
 class AstrologerProfile(AstrologerProfileBase):
     user_id: int
@@ -323,6 +358,77 @@ class KundliReportResponse(BaseModel):
     latitude: Optional[float]
     longitude: Optional[float]
     chart_data: dict
+    dasha_insights_data: Optional[dict] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# Panchang Schemas
+class PanchangResponse(BaseModel):
+    date: date
+    place_label: Optional[str]
+    latitude: float
+    longitude: float
+    panchang_data: dict
+    class Config:
+        from_attributes = True
+
+
+# Kundli Matching (Kuta / Guna Milan) Schemas
+class MatchPersonInput(BaseModel):
+    seeker_id: Optional[int] = None
+    full_name: Optional[str] = None
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+
+class MatchGenerateRequest(BaseModel):
+    boy: MatchPersonInput
+    girl: MatchPersonInput
+
+class MatchReportResponse(BaseModel):
+    id: int
+    boy_seeker_id: Optional[int]
+    boy_full_name: Optional[str]
+    boy_date_of_birth: date
+    boy_time_of_birth: time
+    boy_place_of_birth: str
+    girl_seeker_id: Optional[int]
+    girl_full_name: Optional[str]
+    girl_date_of_birth: date
+    girl_time_of_birth: time
+    girl_place_of_birth: str
+    match_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# Muhurat Search Schemas
+class MuhuratSubjectInput(BaseModel):
+    seeker_id: Optional[int] = None
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+
+class MuhuratSearchRequest(BaseModel):
+    purpose: Optional[str] = None
+    start_date: date
+    end_date: date
+    place: str
+    seeker_id: Optional[int] = None  # if set (with no inline subject), autofills a personalized search
+    subject: Optional[MuhuratSubjectInput] = None
+
+class MuhuratSearchResponse(BaseModel):
+    id: int
+    seeker_id: Optional[int]
+    purpose: Optional[str]
+    start_date: date
+    end_date: date
+    place: str
+    personalized: bool
+    muhurat_data: dict
     created_at: datetime
     class Config:
         from_attributes = True

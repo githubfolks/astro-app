@@ -1,11 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List
 from .. import models, schemas, database
+from ..services import email_service
+from ..limiter import limiter
 from .auth import get_current_user, get_password_hash, create_access_token
-import re, unicodedata
+import re, unicodedata, uuid, os, io
 from datetime import datetime, timedelta
+from PIL import Image
+import pillow_heif
+
+# Lets Pillow open HEIC/HEIF (the default photo format on iPhones) so we can
+# convert it to JPEG on upload — browsers can't render HEIC in <img> tags.
+pillow_heif.register_heif_opener()
 
 router = APIRouter(
     prefix="/astrologers",
@@ -99,8 +107,67 @@ def _decorate_availability_bulk(db: Session, profiles: List[models.AstrologerPro
     return profiles
 
 
+@router.post("/onboarding/photo")
+@limiter.limit("10/minute")
+async def upload_onboarding_photo(request: Request, file: UploadFile = File(...)):
+    """
+    Public, unauthenticated upload for the applicant's profile photo during
+    astrologer onboarding (applicant has no account/token yet at this point).
+    Rate-limited and restricted to images only — separate from the admin-only
+    /admin/upload endpoint used elsewhere for documents.
+    """
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large (Max 5MB)")
+    await file.seek(0)
+
+    # Content-Type is only a sanity check here (browsers/OSes emit inconsistent
+    # values for the same file — e.g. "image/jpg" instead of "image/jpeg"); the
+    # extension allow-list below is the strict gate on what actually gets stored
+    # and served back.
+    if not (file.content_type or "").startswith("image/"):
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
+
+    # HEIC/HEIF (the default iPhone camera format) is accepted but converted to
+    # JPEG below, since most browsers can't render HEIC in an <img> tag.
+    HEIF_EXTENSIONS = {".heic", ".heif"}
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"} | HEIF_EXTENSIONS
+    file_ext = os.path.splitext(file.filename or "")[1].lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"File extension {file_ext} not allowed. Please upload a JPG, PNG, or WEBP image.")
+
+    try:
+        UPLOAD_DIR = "uploads/astrologer_onboarding"
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+        if file_ext in HEIF_EXTENSIONS:
+            try:
+                image = Image.open(io.BytesIO(content)).convert("RGB")
+            except Exception:
+                raise HTTPException(status_code=400, detail="Could not read this HEIC/HEIF photo. Please try a JPG or PNG instead.")
+            filename = f"{uuid.uuid4().hex}.jpg"
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            image.save(file_path, format="JPEG", quality=88)
+        else:
+            filename = f"{uuid.uuid4().hex}{file_ext}"
+            file_path = os.path.join(UPLOAD_DIR, filename)
+            with open(file_path, "wb") as buffer:
+                buffer.write(content)
+
+        return {"url": f"/static/astrologer_onboarding/{filename}"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"File upload failed: {str(e)}")
+
+
 @router.post("/onboarding")
-def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Session = Depends(database.get_db)):
+def astrologer_onboarding(
+    request: schemas.AstrologerOnboardingRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db)
+):
     # 1. Check if user already exists
     db_user = db.query(models.User).filter((models.User.email == request.email) | (models.User.phone_number == request.phone_number)).first()
     if db_user:
@@ -145,12 +212,17 @@ def astrologer_onboarding(request: schemas.AstrologerOnboardingRequest, db: Sess
     db.add(wallet)
 
     db.commit()
+
+    subject, html = email_service.build_profile_submitted_email(request.full_name)
+    email_service.send_email(background_tasks, [request.email], subject, html)
+
     return {"message": "Onboarding request submitted successfully. Please wait for admin approval."}
 
 @router.get("/", response_model=List[schemas.AstrologerProfile])
 def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Session = Depends(database.get_db)):
     query = db.query(models.AstrologerProfile).join(models.User).filter(
         models.AstrologerProfile.is_approved == True,
+        models.AstrologerProfile.onboarding_stage == models.OnboardingStage.COMPLETED,
         models.User.is_active == True,
         models.User.is_verified == True
     )
@@ -180,8 +252,18 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
     db_profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == current_user.id).first()
 
     was_online = bool(db_profile.is_online)
+    update_fields = profile_update.dict(exclude_unset=True)
 
-    for key, value in profile_update.dict(exclude_unset=True).items():
+    # Editing any KYC field invalidates a prior admin verification — force re-review.
+    KYC_FIELDS = {
+        "pan_number", "pan_doc_url", "aadhaar_number", "aadhaar_doc_url",
+        "bank_account_holder_name", "bank_account_number", "bank_ifsc",
+    }
+    if db_profile.kyc_verified and KYC_FIELDS & update_fields.keys():
+        db_profile.kyc_verified = False
+        db_profile.kyc_verified_at = None
+
+    for key, value in update_fields.items():
         setattr(db_profile, key, value)
 
     db.commit()
@@ -207,6 +289,126 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
         broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": current_user.id})
 
     return db_profile
+
+
+# --- Post-login onboarding checklist: KYC docs, gallery, certificates -------
+# Shared authenticated upload used for KYC ID proofs, gallery photos, and
+# certificates — images and PDFs, unlike the public/image-only onboarding
+# photo endpoint above.
+@router.post("/documents/upload")
+def upload_astrologer_document(
+    file: UploadFile = File(...),
+    current_user: models.User = Depends(get_current_user),
+):
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=400, detail="Not an astrologer account")
+
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+    content = file.file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large (Max 5MB)")
+
+    ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "application/pdf"}
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed")
+
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".pdf"}
+    file_ext = os.path.splitext(file.filename or "")[1].lower()
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"File extension {file_ext} not allowed")
+
+    UPLOAD_DIR = "uploads/astrologer_documents"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}{file_ext}"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    with open(file_path, "wb") as buffer:
+        buffer.write(content)
+
+    return {"url": f"/static/astrologer_documents/{filename}"}
+
+
+# Static contract text — see docs/email-contents for the tone/policy source of
+# truth (the same points listed in the Dashboard "Important Policies" panel).
+_CONTRACT_VERSION = "v1"
+_CONTRACT_TEXT = """ASTROLOGER PARTNER AGREEMENT
+
+This Agreement is between Aadikarta ("the Platform") and the astrologer partner
+identified by the account signing below ("the Astrologer").
+
+1. ENGAGEMENT
+   The Astrologer is engaged as an independent consultant to provide astrology,
+   tarot, numerology, or related consultations to seekers through the Platform.
+   This Agreement does not create an employer-employee relationship.
+
+2. EARNINGS & COMMISSION
+   The Astrologer sets their own per-minute consultation rate, subject to
+   Platform review. The Platform retains a commission on each completed,
+   billable consultation; the remainder is credited to the Astrologer's payout
+   balance. No earning accrues for consultations shorter than 1 minute.
+
+3. CONDUCT
+   - The Astrologer must never share or request personal contact details
+     (phone number, email, social media) with or from a seeker.
+   - The Astrologer must be available for a minimum of 6 hours per day while
+     marked online, and must accept incoming calls/chats promptly — a missed
+     session may result in a deduction as described in Platform policy.
+   - The Astrologer must greet seekers warmly and remain respectful at all
+     times, even with difficult seekers; disputes should be reported to
+     Platform support rather than handled directly.
+   - Practices such as black magic, vashikaran, or yantra-based poojas are
+     strictly forbidden on the Platform.
+
+4. CONFIDENTIALITY
+   The Astrologer agrees to keep all seeker information shared during a
+   consultation confidential and will not use it outside the Platform.
+
+5. VERIFICATION
+   The Astrologer agrees to provide accurate KYC information (identity and
+   bank details) for verification and payout purposes, and to keep this
+   information current.
+
+6. TERM & TERMINATION
+   This Agreement remains in effect while the Astrologer is active on the
+   Platform. Either party may terminate this engagement at any time; the
+   Platform may suspend or remove an Astrologer immediately for a violation
+   of the conduct terms above.
+
+By typing your full legal name below and clicking "Sign Contract", you
+acknowledge that you have read, understood, and agree to be bound by this
+Agreement."""
+
+
+@router.get("/contract")
+def get_astrologer_contract(current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=400, detail="Not an astrologer account")
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == current_user.id).first()
+    return {
+        "version": _CONTRACT_VERSION,
+        "text": _CONTRACT_TEXT,
+        "signed_at": profile.contract_signed_at,
+        "signature_name": profile.contract_signature_name,
+    }
+
+
+@router.post("/contract/sign")
+def sign_astrologer_contract(
+    request: schemas.ContractSignRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=400, detail="Not an astrologer account")
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == current_user.id).first()
+    profile.contract_signed_at = datetime.utcnow()
+    profile.contract_signature_name = request.signature_name
+    db.commit()
+    db.refresh(profile)
+    return {
+        "version": _CONTRACT_VERSION,
+        "signed_at": profile.contract_signed_at,
+        "signature_name": profile.contract_signature_name,
+    }
 
 
 def _notify_waiting_seekers(db: Session, astrologer_id: int):
@@ -289,6 +491,7 @@ def get_astrologer_by_identifier(identifier: str, db: Session = Depends(database
     """Fetch an astrologer profile by numeric user_id (legacy) or slug."""
     base_query = db.query(models.AstrologerProfile).join(models.User).filter(
         models.AstrologerProfile.is_approved == True,
+        models.AstrologerProfile.onboarding_stage == models.OnboardingStage.COMPLETED,
         models.User.is_active == True,
         models.User.is_verified == True
     )
@@ -300,6 +503,20 @@ def get_astrologer_by_identifier(identifier: str, db: Session = Depends(database
         raise HTTPException(status_code=404, detail="Astrologer not found or not approved")
     _decorate_availability(db, profile)
     return profile
+
+
+@router.get("/stats/performance")
+def get_my_performance_stats(
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """Performance stats for the logged-in astrologer's own dashboard (same metrics
+    the admin sees on the astrologer detail page)."""
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=403, detail="Only astrologers can view their performance stats")
+
+    from ..services.astrologer_stats_service import compute_performance_stats
+    return compute_performance_stats(db, current_user.id)
 
 
 @router.get("/payouts/history")

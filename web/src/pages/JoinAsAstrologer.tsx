@@ -3,7 +3,7 @@ import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, GraduationCap, FileText, Camera, ShieldCheck, ArrowLeft } from 'lucide-react';
+import { User, GraduationCap, Camera, ShieldCheck, ArrowLeft, Sparkles, Award, Globe2, Clock, MapPin, MessageSquareText } from 'lucide-react';
 import './Auth.css';
 import SEO from '../components/SEO';
 
@@ -24,7 +24,7 @@ const joinStructuredData = {
                 { '@type': 'Question', name: 'Who can join Aadikarta as an astrologer?', acceptedAnswer: { '@type': 'Answer', text: 'Any verified Vedic astrologer, tarot card reader, numerologist, or Vastu consultant with genuine expertise can apply. You will go through a verification process before being listed on the platform.' } },
                 { '@type': 'Question', name: 'How much can I earn as an astrologer on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'You set your own consultation rate (₹10–₹150 per minute). Your earnings depend on the number of consultations you complete and your hourly rate. Top astrologers on the platform earn over ₹1 lakh per month.' } },
                 { '@type': 'Question', name: 'Is there a fee to join Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'No, joining Aadikarta as an astrologer is completely free. Aadikarta takes a platform commission from your earnings only when you complete a paid consultation.' } },
-                { '@type': 'Question', name: 'How long does the verification process take?', acceptedAnswer: { '@type': 'Answer', text: 'The verification process typically takes 2–3 business days after you submit your application, credentials, and ID proof.' } },
+                { '@type': 'Question', name: 'How long does the verification process take?', acceptedAnswer: { '@type': 'Answer', text: 'The verification process typically takes 2–3 business days after you submit your application and credentials.' } },
             ],
         },
     ],
@@ -42,7 +42,6 @@ interface AstrologerForm {
     city: string;
     short_bio: string;
     profile_photo_url: string;
-    id_proof_url: string;
     legal_agreement_accepted: boolean;
     // Allows dynamic field updates (e.g. file-upload result) by key.
     [key: string]: string | string[] | boolean;
@@ -62,14 +61,17 @@ export const JoinAsAstrologer: React.FC = () => {
         city: '',
         short_bio: '',
         profile_photo_url: '',
-        id_proof_url: '',
-        legal_agreement_accepted: false
+        // No standalone agreement step anymore — terms are covered in the
+        // onboarding contract signed later; the backend field defaults to
+        // true when omitted, this just makes that explicit.
+        legal_agreement_accepted: true
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const astrologyOptions = ['Vedic', 'Lal Kitab', 'Numerology', 'Tarot Reader', 'Vastu', 'Palmistry', 'Western Astrology'];
+    const languageOptions = ['Hindi', 'English', 'Marathi', 'Gujarati', 'Punjabi', 'Bengali', 'Tamil', 'Telugu', 'Kannada'];
 
     const handleAstrologyTypeChange = (type: string) => {
         const types = [...formData.astrology_types];
@@ -80,15 +82,31 @@ export const JoinAsAstrologer: React.FC = () => {
         }
     };
 
+    const selectedLanguages = formData.languages ? formData.languages.split(',').map(l => l.trim()).filter(Boolean) : [];
+
+    const handleLanguageChange = (lang: string) => {
+        const languages = selectedLanguages.includes(lang)
+            ? selectedLanguages.filter(l => l !== lang)
+            : [...selectedLanguages, lang];
+        setFormData({ ...formData, languages: languages.join(', ') });
+    };
+
+    const MAX_PHOTO_SIZE_MB = 5;
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+            setError(`File too large — max ${MAX_PHOTO_SIZE_MB}MB`);
+            e.target.value = '';
+            return;
+        }
         setIsLoading(true);
         try {
             const result = await api.astrologers.uploadFile(file);
             setFormData({ ...formData, [field]: result.url });
-        } catch {
-            setError('File upload failed');
+        } catch (err) {
+            setError(getErrorMessage(err) || 'File upload failed');
         } finally {
             setIsLoading(false);
         }
@@ -118,7 +136,7 @@ export const JoinAsAstrologer: React.FC = () => {
         setError('');
     };
 
-    const handleNextStep2 = () => {
+    const handleSubmit = async () => {
         // Step 2 Validation
         if (formData.astrology_types.length === 0) {
             setError('Please select at least one astrology type');
@@ -128,24 +146,15 @@ export const JoinAsAstrologer: React.FC = () => {
             setError('All professional details are mandatory');
             return;
         }
-        setStep(3);
-        setError('');
-    };
-
-    const handleSubmit = async () => {
-        // Step 3 Validation
         if (!formData.profile_photo_url) {
             setError('Please upload your profile photo');
             return;
         }
-        if (!formData.legal_agreement_accepted) {
-            setError('Please accept the legal agreement');
-            return;
-        }
+        setError('');
         setIsLoading(true);
         try {
             await api.astrologers.onboarding(formData);
-            setStep(4); // Success step
+            setStep(3); // Success step
         } catch (err) {
             setError(getErrorMessage(err) || 'Onboarding failed');
         } finally {
@@ -175,15 +184,13 @@ export const JoinAsAstrologer: React.FC = () => {
                         <div className={`step-dot ${step >= 1 ? 'active' : ''}`}>1</div>
                         <div className="step-line"></div>
                         <div className={`step-dot ${step >= 2 ? 'active' : ''}`}>2</div>
-                        <div className="step-line"></div>
-                        <div className={`step-dot ${step >= 3 ? 'active' : ''}`}>3</div>
                     </div>
                 </div>
 
                 {error && <div className="error-banner">{error}</div>}
 
                 {step === 1 && (
-                    <div className="onboarding-step">
+                    <div className="onboarding-step auth-form">
                         <h3 className="step-title"><User size={20} /> Account Details</h3>
                         <div className="form-grid">
                             <div className="form-group">
@@ -202,6 +209,7 @@ export const JoinAsAstrologer: React.FC = () => {
                             <div className="form-group">
                                 <label>Mobile Number</label>
                                 <input type="text" placeholder="+91 00000 00000" value={formData.phone_number} onChange={e => setFormData({ ...formData, phone_number: e.target.value })} />
+                                <p className="field-hint">We'll use this to reach you during onboarding — keep it active on WhatsApp.</p>
                             </div>
                         </div>
                         <button className="auth-btn next-btn" onClick={handleNextStep1} disabled={isLoading}>Next</button>
@@ -209,92 +217,98 @@ export const JoinAsAstrologer: React.FC = () => {
                 )}
 
                 {step === 2 && (
-                    <div className="onboarding-step">
+                    <div className="onboarding-step auth-form">
                         <h3 className="step-title"><GraduationCap size={20} /> Professional Details</h3>
-                        <div className="form-grid">
-                            <div className="form-group full-width">
-                                <label>Astrology Type</label>
-                                <div className="checkbox-grid">
-                                    {astrologyOptions.map(type => (
-                                        <label key={type} className="checkbox-item">
-                                            <input type="checkbox" checked={formData.astrology_types.includes(type)} onChange={() => handleAstrologyTypeChange(type)} />
-                                            <span>{type}</span>
-                                        </label>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label>Years of Experience</label>
-                                <input type="number" placeholder="5" value={formData.experience_years} onChange={e => setFormData({ ...formData, experience_years: e.target.value })} />
-                            </div>
-                            <div className="form-group">
-                                <label>Languages</label>
-                                <input type="text" placeholder="Hindi, English, Marathi" value={formData.languages} onChange={e => setFormData({ ...formData, languages: e.target.value })} />
-                            </div>
-                            <div className="form-group">
-                                <label>Preferred Working Hours</label>
-                                <input type="text" placeholder="9 AM - 6 PM" value={formData.preferred_working_hours} onChange={e => setFormData({ ...formData, preferred_working_hours: e.target.value })} />
-                            </div>
-                            <div className="form-group">
-                                <label>City (Optional)</label>
-                                <input type="text" placeholder="Mumbai" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
-                            </div>
-                            <div className="form-group full-width">
-                                <label>Short Bio</label>
-                                <textarea placeholder="Tell us about yourself..." value={formData.short_bio} onChange={e => setFormData({ ...formData, short_bio: e.target.value })} rows={3}></textarea>
+
+                        <div className="pro-section">
+                            <label className="section-label"><Sparkles size={15} /> Areas of Expertise</label>
+                            <div className="chip-grid">
+                                {astrologyOptions.map(type => {
+                                    const selected = formData.astrology_types.includes(type);
+                                    return (
+                                        <button
+                                            type="button"
+                                            key={type}
+                                            className={`chip ${selected ? 'chip-selected' : ''}`}
+                                            onClick={() => handleAstrologyTypeChange(type)}
+                                        >
+                                            {type}
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
+
+                        <div className="pro-section">
+                            <label className="section-label"><Globe2 size={15} /> Languages Spoken</label>
+                            <div className="chip-grid">
+                                {languageOptions.map(lang => {
+                                    const selected = selectedLanguages.includes(lang);
+                                    return (
+                                        <button
+                                            type="button"
+                                            key={lang}
+                                            className={`chip ${selected ? 'chip-selected' : ''}`}
+                                            onClick={() => handleLanguageChange(lang)}
+                                        >
+                                            {lang}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="pro-section">
+                            <label className="section-label"><Award size={15} /> Experience &amp; Availability</label>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <label><Award size={14} /> Years of Experience</label>
+                                    <input type="number" placeholder="5" value={formData.experience_years} onChange={e => setFormData({ ...formData, experience_years: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label><Clock size={14} /> Preferred Working Hours</label>
+                                    <input type="text" placeholder="9 AM - 6 PM" value={formData.preferred_working_hours} onChange={e => setFormData({ ...formData, preferred_working_hours: e.target.value })} />
+                                </div>
+                                <div className="form-group">
+                                    <label><MapPin size={14} /> City</label>
+                                    <input type="text" placeholder="Mumbai" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pro-section">
+                            <label className="section-label"><MessageSquareText size={15} /> About You</label>
+                            <div className="form-grid">
+                                <div className="form-group full-width">
+                                    <label>Short Bio</label>
+                                    <textarea placeholder="Tell us about yourself..." value={formData.short_bio} onChange={e => setFormData({ ...formData, short_bio: e.target.value })} rows={3}></textarea>
+                                    <p className="field-hint">This is what seekers see first on your profile card — a couple of sentences is enough.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="pro-section">
+                            <label className="section-label"><Camera size={15} /> Profile Photo (Max {MAX_PHOTO_SIZE_MB}MB)</label>
+                            <div className="form-grid">
+                                <div className="form-group">
+                                    <div className="file-upload-box">
+                                        <Camera size={24} />
+                                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'profile_photo_url')} />
+                                        {formData.profile_photo_url ? <span className="file-name">Uploaded!</span> : <span>Click to upload photo</span>}
+                                    </div>
+                                    <p className="field-hint">JPG, PNG, WEBP or HEIC — max {MAX_PHOTO_SIZE_MB}MB. A clear, front-facing photo helps seekers recognize you.</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="btn-row">
                             <button className="back-btn" onClick={() => setStep(1)}>Back</button>
-                            <button className="auth-btn next-btn" onClick={handleNextStep2}>Next</button>
-                        </div>
-                    </div>
-                )}
-
-                {step === 3 && (
-                    <div className="onboarding-step">
-                        <h3 className="step-title"><Camera size={20} /> Documents & Agreement</h3>
-                        <div className="form-grid">
-                            <div className="form-group">
-                                <label>Profile Photo</label>
-                                <div className="file-upload-box">
-                                    <Camera size={24} />
-                                    <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'profile_photo_url')} />
-                                    {formData.profile_photo_url ? <span className="file-name">Uploaded!</span> : <span>Click to upload photo</span>}
-                                </div>
-                            </div>
-                            <div className="form-group">
-                                <label>ID Proof (Recommended)</label>
-                                <div className="file-upload-box">
-                                    <FileText size={24} />
-                                    <input type="file" accept=".pdf,image/*" onChange={e => handleFileUpload(e, 'id_proof_url')} />
-                                    {formData.id_proof_url ? <span className="file-name">Uploaded!</span> : <span>Aadhar / PAN Card</span>}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="legal-agreement">
-                            <h4>Legal Agreement</h4>
-                            <div className="agreement-content">
-                                <p><strong>1. Commission Terms:</strong> 30% platform fee applies to all consultations.</p>
-                                <p><strong>2. Payout Schedule:</strong> Weekly payouts on every Monday.</p>
-                                <p><strong>3. Code of Conduct:</strong> Professional behavior is mandatory. No exchange of personal contact info.</p>
-                                <p><strong>4. Termination Clause:</strong> Either party can terminate with 7 days notice.</p>
-                            </div>
-                            <label className="checkbox-item agreement-checkbox">
-                                <input type="checkbox" checked={formData.legal_agreement_accepted} onChange={e => setFormData({ ...formData, legal_agreement_accepted: e.target.checked })} />
-                                <span>I agree to the terms and conditions</span>
-                            </label>
-                        </div>
-
-                        <div className="btn-row">
-                            <button className="back-btn" onClick={() => setStep(2)}>Back</button>
                             <button className="auth-btn submit-btn" onClick={handleSubmit} disabled={isLoading}>Submit Application</button>
                         </div>
                     </div>
                 )}
 
-                {step === 4 && (
+                {step === 3 && (
                     <div className="success-step">
                         <div className="success-icon"><ShieldCheck size={64} /></div>
                         <h3>Application Submitted!</h3>
@@ -311,21 +325,23 @@ export const JoinAsAstrologer: React.FC = () => {
                 .step-dot.active { background: var(--primary-color, #7c3aed); color: white; }
                 .step-line { width: 50px; height: 2px; background: #eee; }
                 .step-title { display: flex; align-items: center; gap: 10px; margin: 30px 0 20px; font-size: 20px; color: #1f2937; }
+                .pro-section { margin-bottom: 28px; }
+                .pro-section:last-of-type { margin-bottom: 0; }
+                .section-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: #6d28d9; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 12px; }
+                .form-group label { display: flex; align-items: center; gap: 6px; }
+                .chip-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+                .chip { padding: 9px 18px; border-radius: 999px; border: 1.5px solid #e5e7eb; background: #fff; color: #4b5563; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s; }
+                .chip:hover { border-color: #c4b5fd; color: #7c3aed; }
+                .chip-selected { background: #7c3aed; border-color: #7c3aed; color: #fff; }
+                .chip-selected:hover { color: #fff; }
                 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
                 .full-width { grid-column: span 2; }
-                .input-with-button { display: flex; gap: 10px; }
-                .input-with-button button { padding: 0 15px; background: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer; }
-                .verified-badge { display: flex; align-items: center; gap: 4px; color: #10b981; font-size: 14px; font-weight: 500; }
-                .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
-                .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+                .onboarding-step textarea { width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; font-family: inherit; background-color: #fcfcfc; resize: vertical; transition: border-color 0.3s; }
+                .onboarding-step textarea:focus { outline: none; border-color: var(--primary); background-color: white; }
                 .file-upload-box { border: 2px dashed #e5e7eb; border-radius: 12px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; cursor: pointer; color: #9ca3af; transition: 0.3s; }
                 .file-upload-box:hover { border-color: #7c3aed; color: #7c3aed; }
                 .file-upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
                 .file-name { color: #7c3aed; font-weight: 500; font-size: 12px; margin-top: 5px; }
-                .legal-agreement { margin-top: 30px; padding: 20px; background: #f9fafb; border-radius: 12px; }
-                .legal-agreement h4 { margin-bottom: 15px; font-size: 16px; color: #111827; }
-                .agreement-content { height: 150px; overflow-y: auto; font-size: 13px; color: #4b5563; line-height: 1.6; padding-right: 10px; margin-bottom: 15px; }
-                .agreement-checkbox { margin-top: 15px; }
                 .btn-row { display: flex; gap: 15px; margin-top: 30px; }
                 .back-btn { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 10px; cursor: pointer; font-weight: 500; }
                 .next-btn, .submit-btn { flex: 2; height: 48px; }
@@ -336,7 +352,6 @@ export const JoinAsAstrologer: React.FC = () => {
                 @media (max-width: 640px) {
                     .form-grid { grid-template-columns: 1fr; }
                     .full-width { grid-column: span 1; }
-                    .checkbox-grid { grid-template-columns: 1fr 1fr; }
                 }
             `}</style>
         </div >

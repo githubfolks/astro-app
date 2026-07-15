@@ -6,6 +6,7 @@ import { Button, Input, TextArea } from '../components/ui';
 import { getPasswordError } from '../utils/password';
 
 const NICKNAME_PREFIXES = ['Acharya', 'Pandit', 'Guruji', 'Astro'];
+const MAX_UPLOAD_SIZE_MB = 5;
 
 /** Client-side nickname suggestions — first name + a common Vedic-astrologer
  * honorific, so seekers never see the astrologer's real full name. */
@@ -97,6 +98,11 @@ export default function AstrologerForm() {
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+        if (file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
+            alert(`File too large — max ${MAX_UPLOAD_SIZE_MB}MB`);
+            e.target.value = '';
+            return;
+        }
 
         setUploading(true);
         const uploadData = new FormData();
@@ -230,6 +236,7 @@ export default function AstrologerForm() {
                         label="Phone Number" name="phone_number"
                         value={formData.phone_number} onChange={handleChange}
                         error={errors.phone_number}
+                        helperText="10-15 digits, no spaces or country code prefix"
                     />
 
                     {!isEditMode && (
@@ -248,7 +255,7 @@ export default function AstrologerForm() {
 
                     <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 items-start">
                         <div className="flex flex-col gap-2">
-                            <span className="text-sm font-medium text-gray-700">Profile Picture</span>
+                            <span className="text-sm font-medium text-gray-700">Profile Picture (Max {MAX_UPLOAD_SIZE_MB}MB)</span>
                             <div className="relative group">
                                 <div className="w-40 h-40 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                                     {formData.profile_picture_url ? (
@@ -280,6 +287,7 @@ export default function AstrologerForm() {
                                         disabled={uploading}
                                     />
                                 </label>
+                                <p className="text-xs text-gray-400 mt-1">JPG, PNG or WEBP — max {MAX_UPLOAD_SIZE_MB}MB.</p>
                             </div>
                         </div>
 
@@ -289,6 +297,7 @@ export default function AstrologerForm() {
                                 label="Short Bio (Title)" name="short_bio"
                                 value={formData.short_bio} onChange={handleChange}
                                 placeholder="e.g. Vedic Expert"
+                                helperText="Shown under the astrologer's name on cards — keep it under ~40 characters"
                             />
                             <Input
                                 label="Experience (Years)" name="experience_years" type="number"
@@ -299,11 +308,13 @@ export default function AstrologerForm() {
                                 label="Consultation Fee (₹/min)" name="consultation_fee_per_min" type="number"
                                 value={formData.consultation_fee_per_min} onChange={handleChange}
                                 error={errors.consultation_fee_per_min}
+                                helperText="Rate charged to seekers per minute of consultation"
                             />
                             <Input
                                 label="Commission % (Astrologer's share)" name="commission_percentage" type="number"
                                 value={formData.commission_percentage} onChange={handleChange}
                                 placeholder="e.g. 70"
+                                helperText="% of the consultation fee the astrologer keeps; the rest is platform revenue"
                             />
                             <Input
                                 label="Languages" name="languages"

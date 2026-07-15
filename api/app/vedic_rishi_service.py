@@ -114,39 +114,5 @@ async def generate_kundli(
         return response.json()
 
 
-async def get_panchang_now(lat: float, lon: float, place: str = "") -> dict:
-    """
-    Get current Panchang details using Vedic Rishi AstroAPI.
-    """
-    if not ASTROAPI_TOKEN:
-        raise ValueError(
-            "ASTROAPI_TOKEN is not configured. "
-            "Please set it in your .env file."
-        )
-
-    payload = {
-        "lat": lat,
-        "lon": lon,
-        "place": place,
-    }
-
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(
-            f"{ASTROAPI_BASE_URL}/vedic/v0/now/",
-            json=payload,
-            headers={
-                "Authorization": f"Token {ASTROAPI_TOKEN}",
-                "Content-Type": "application/json",
-            }
-        )
-        if response.status_code == 401:
-            raise ValueError("Invalid AstroAPI token. Please check your ASTROAPI_TOKEN.")
-        elif response.status_code == 402:
-            raise ValueError("AstroAPI quota exceeded. Please upgrade your plan.")
-
-        response.raise_for_status()
-        return response.json()
-
-
 
 

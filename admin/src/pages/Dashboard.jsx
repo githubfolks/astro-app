@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Users, DollarSign, MessageCircle, TrendingUp, Calendar, UserPlus, Star
+    Users, DollarSign, MessageCircle, TrendingUp, Calendar, UserPlus, Star, Clock
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend
@@ -45,7 +45,7 @@ export default function Dashboard() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <StatCard
                     title="Total Revenue"
                     value={`₹${summary.total_revenue.toLocaleString()}`}
@@ -69,6 +69,12 @@ export default function Dashboard() {
                     value={summary.total_active_astrologers}
                     icon={<Star className="text-amber-600" size={24} />}
                     color="bg-amber-50"
+                />
+                <StatCard
+                    title="Astrologers Under Onboarding"
+                    value={summary.astrologers_under_onboarding}
+                    icon={<Clock className="text-purple-600" size={24} />}
+                    color="bg-purple-50"
                 />
             </div>
 

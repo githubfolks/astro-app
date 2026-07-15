@@ -1,5 +1,5 @@
 import { getErrorMessage } from '../utils/errors';
-import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile, PayoutHistoryItem } from '../types';
+import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile, PayoutHistoryItem, PerformanceStats, AstrologerProfile as AstrologerProfileType } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -10,8 +10,10 @@ import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
 import RatingModal from '../components/RatingModal';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
+import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
+import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl } from '../utils/url';
-import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, ShieldAlert } from 'lucide-react';
+import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<Consultation[]>([]);
@@ -22,7 +24,9 @@ export const Dashboard: React.FC = () => {
     const [isOnline, setIsOnline] = useState(false);
     const [availabilityText, setAvailabilityText] = useState('');
     const [updatingProfile, setUpdatingProfile] = useState(false);
+    const [astrologerProfile, setAstrologerProfile] = useState<AstrologerProfileType | null>(null);
     const [payoutHistory, setPayoutHistory] = useState<PayoutHistoryItem[]>([]);
+    const [performanceStats, setPerformanceStats] = useState<PerformanceStats | null>(null);
 
     // Seeker specific state
     const [walletBalance, setWalletBalance] = useState<number>(0);
@@ -86,6 +90,7 @@ export const Dashboard: React.FC = () => {
 
                     setIsOnline(profile.is_online);
                     setAvailabilityText(profile.availability_hours || '');
+                    setAstrologerProfile(profile);
 
                     // Load payout history
                     try {
@@ -93,6 +98,14 @@ export const Dashboard: React.FC = () => {
                         setPayoutHistory(payoutsData);
                     } catch (err) {
                         console.error('Failed to load payout history', err);
+                    }
+
+                    // Load performance stats
+                    try {
+                        const statsData = await api.astrologers.getPerformanceStats();
+                        setPerformanceStats(statsData);
+                    } catch (err) {
+                        console.error('Failed to load performance stats', err);
                     }
 
                     // Load live classes
@@ -196,10 +209,10 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Main Content - Left Column */}
-                        <div className="lg:col-span-2 space-y-8">
+                        {/* Requests Queue Column */}
+                        <div>
                             {/* Requests Queue Section */}
-                            <div>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full flex flex-col">
                                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <span className="bg-[#E91E63] text-white p-1 rounded-md"><MessageCircle size={20} /></span>
                                     Requests Queue
@@ -213,11 +226,11 @@ export const Dashboard: React.FC = () => {
                                         <div className="animate-spin h-8 w-8 border-4 border-[#E91E63] rounded-full border-t-transparent"></div>
                                     </div>
                                 ) : history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 ? (
-                                    <div className="bg-white rounded-xl p-8 text-center border border-gray-100 shadow-sm">
+                                    <div className="flex-1 flex items-center justify-center text-center bg-gray-50 rounded-lg p-8">
                                         <p className="text-gray-900">No active requests in queue.</p>
                                     </div>
                                 ) : (
-                                    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-0 overflow-hidden">
+                                    <div className="-mx-6 -mb-6 flex-1 overflow-y-auto">
                                         <div className="grid gap-4 p-4">
                                             {history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: Consultation) => (
                                                 <div key={c.id} className="bg-orange-50/50 border border-orange-100 rounded-xl p-4 flex flex-col md:flex-row justify-between items-center gap-4 hover:shadow-md transition-all">
@@ -271,12 +284,135 @@ export const Dashboard: React.FC = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
 
-                            {/* Live Classes (Moved to Tutoring section or conditional) */}
+                        {/* Earnings Column */}
+                        <div>
+                            {/* Earnings Summary Card */}
+                            {(() => {
+                                const completed = history.filter((c: Consultation) => ['COMPLETED', 'AUTO_ENDED'].includes(c.status));
+                                const total = completed.reduce((sum: number, c: Consultation) => sum + (Number(c.total_cost) || 0), 0);
+                                const thisMonth = new Date().toISOString().slice(0, 7);
+                                const monthly = completed
+                                    .filter((c: Consultation) => c.created_at?.slice(0, 7) === thisMonth)
+                                    .reduce((sum: number, c: Consultation) => sum + (Number(c.total_cost) || 0), 0);
+                                return (
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full">
+                                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                            <Wallet size={20} className="text-[#E91E63]" />
+                                            Earnings
+                                        </h3>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-900">Total Earned</span>
+                                                <span className="font-bold text-gray-900">₹{total.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-900">This Month</span>
+                                                <span className="font-bold text-green-600">₹{monthly.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-900">Completed Sessions</span>
+                                                <span className="font-bold text-gray-900">{completed.length}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
 
-                            {/* Past History Section */}
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-900">History</h3>
+                        {/* Availability Settings Column */}
+                        <div>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 h-full">
+                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <Clock size={20} className="text-[#E91E63]" />
+                                    Availability Settings
+                                </h3>
+
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Status</label>
+                                        <div className={`p-3 rounded-lg border flex items-center gap-3 ${isOnline ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                                            <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                            <span className={`font-bold ${isOnline ? 'text-green-700' : 'text-gray-600'}`}>
+                                                {isOnline ? 'Online - Receiving Calls' : 'Offline - Not Visible'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Availability Hours</label>
+                                        <textarea
+                                            value={availabilityText}
+                                            onChange={(e) => setAvailabilityText(e.target.value)}
+                                            placeholder="e.g. Mon-Fri: 2pm - 6pm"
+                                            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                            rows={3}
+                                        />
+                                        <p className="text-xs text-gray-400 mt-1">Seekers will see this text on your profile.</p>
+                                    </div>
+
+                                    <button
+                                        onClick={saveAvailability}
+                                        disabled={updatingProfile}
+                                        className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                    >
+                                        Update Availability Limit
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-8">
+                        <ImportantPoliciesCard />
+                    </div>
+
+                    {/* Performance Stats */}
+                    {performanceStats && (
+                        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg">
+                                        <Wifi size={20} />
+                                    </div>
+                                    <h3 className="text-sm font-medium text-gray-900">Avg Online Time (30d)</h3>
+                                </div>
+                                <p className="text-2xl font-bold text-gray-900">{performanceStats.avg_online_hours_per_day_30d} hrs/day</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+                                        <ThumbsDown size={20} />
+                                    </div>
+                                    <h3 className="text-sm font-medium text-gray-900">Poor Chat %</h3>
+                                </div>
+                                <p className="text-2xl font-bold text-gray-900">{performanceStats.poor_chat_percentage}%</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                        <Repeat size={20} />
+                                    </div>
+                                    <h3 className="text-sm font-medium text-gray-900">First User Repeat %</h3>
+                                </div>
+                                <p className="text-2xl font-bold text-gray-900">{performanceStats.first_user_repeat_percentage}%</p>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 bg-pink-50 text-pink-600 rounded-lg">
+                                        <Heart size={20} />
+                                    </div>
+                                    <h3 className="text-sm font-medium text-gray-900">Loyal User %</h3>
+                                </div>
+                                <p className="text-2xl font-bold text-gray-900">{performanceStats.loyal_user_percentage}%</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Past History Section */}
+                    <div className="mt-8">
+                        <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-900">History</h3>
                                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left">
@@ -389,101 +525,14 @@ export const Dashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Sidebar - Earnings + Availability Settings */}
-                        <div className="lg:col-span-1 space-y-6">
-                            {/* Earnings Summary Card */}
-                            {(() => {
-                                const completed = history.filter((c: Consultation) => ['COMPLETED', 'AUTO_ENDED'].includes(c.status));
-                                const total = completed.reduce((sum: number, c: Consultation) => sum + (Number(c.total_cost) || 0), 0);
-                                const thisMonth = new Date().toISOString().slice(0, 7);
-                                const monthly = completed
-                                    .filter((c: Consultation) => c.created_at?.slice(0, 7) === thisMonth)
-                                    .reduce((sum: number, c: Consultation) => sum + (Number(c.total_cost) || 0), 0);
-                                return (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                            <Wallet size={20} className="text-[#E91E63]" />
-                                            Earnings
-                                        </h3>
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-900">Total Earned</span>
-                                                <span className="font-bold text-gray-900">₹{total.toFixed(2)}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-900">This Month</span>
-                                                <span className="font-bold text-green-600">₹{monthly.toFixed(2)}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-900">Completed Sessions</span>
-                                                <span className="font-bold text-gray-900">{completed.length}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })()}
-
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sticky top-6">
-                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <Clock size={20} className="text-[#E91E63]" />
-                                    Availability Settings
-                                </h3>
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Status</label>
-                                        <div className={`p-3 rounded-lg border flex items-center gap-3 ${isOnline ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
-                                            <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                                            <span className={`font-bold ${isOnline ? 'text-green-700' : 'text-gray-600'}`}>
-                                                {isOnline ? 'Online - Receiving Calls' : 'Offline - Not Visible'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Availability Hours</label>
-                                        <textarea
-                                            value={availabilityText}
-                                            onChange={(e) => setAvailabilityText(e.target.value)}
-                                            placeholder="e.g. Mon-Fri: 2pm - 6pm"
-                                            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
-                                            rows={3}
-                                        />
-                                        <p className="text-xs text-gray-400 mt-1">Seekers will see this text on your profile.</p>
-                                    </div>
-
-                                    <button
-                                        onClick={saveAvailability}
-                                        disabled={updatingProfile}
-                                        className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
-                                    >
-                                        Update Availability Limit
-                                    </button>
-                                </div>
+                            {/* Onboarding & Profile Management — full width, not squeezed into a sidebar column */}
+                            <div className="mt-8">
+                                <AstrologerOnboardingTabs
+                                    astrologerProfile={astrologerProfile}
+                                    onProfileSaved={setAstrologerProfile}
+                                />
                             </div>
-
-                            {/* Important Policies */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <ShieldAlert size={20} className="text-[#E91E63]" />
-                                    Important Policies
-                                </h3>
-                                <ol className="space-y-3 text-sm text-gray-700 list-decimal list-inside">
-                                    <li>No earning for consultations that are less than 1 minute.</li>
-                                    <li>Do not share your personal details such as contact number, email, or social media username with any seeker.</li>
-                                    <li>Never ask for or accept personal details from a seeker.</li>
-                                    <li>You need to be available for a minimum of 6 hours every day.</li>
-                                    <li>Always accept calls or chats while you are online. A missed call or chat may result in a &#8377;5 deduction.</li>
-                                    <li>Greet seekers with a warm welcome, e.g. &ldquo;Welcome to Aadikarta&rdquo; or &ldquo;Namaste, aapka swagat hai&rdquo;.</li>
-                                    <li>Be respectful and polite to every seeker.</li>
-                                    <li>Do not respond rudely to any seeker, even if they are being difficult &mdash; report the issue instead.</li>
-                                    <li>Practices like black magic, vashikaran, and suggesting yantra-based poojas are strictly forbidden on Aadikarta.</li>
-                                </ol>
-                            </div>
-                        </div>
-                    </div>
                 </main>
                 <Footer />
 
