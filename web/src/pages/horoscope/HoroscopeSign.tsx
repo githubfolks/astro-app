@@ -229,7 +229,7 @@ const HoroscopeSign: React.FC = () => {
     return (
         <div className="horoscope-sign-page min-h-screen">
             <SEO
-                title={`${data.name} Horoscope (${data.hindi}) | Aadikarta`}
+                title={`${data.name} Horoscope (${data.hindi})`}
                 description={`${data.name} horoscope today — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. ${data.strengths.slice(0, 80)}. Get your personalised ${data.name} reading.`}
                 structuredData={structuredData}
             />

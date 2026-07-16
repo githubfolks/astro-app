@@ -58,3 +58,5 @@ ${URLS.map(({ loc, changefreq, priority }) => `  <url>
 
 writeFileSync(OUT, xml, 'utf8');
 console.log(`Sitemap written to ${OUT} (${URLS.length} URLs)`);
+
+export { URLS };

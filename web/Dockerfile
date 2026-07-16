@@ -1,6 +1,10 @@
 # syntax=docker/dockerfile:1
-# Build Stage
-FROM node:20-alpine AS build
+# Build Stage — official Playwright image, not node:20-slim + apt-get: `npm run
+# build` now includes a build-time prerender step (scripts/prerender.js) that
+# needs a real Chromium, and this image ships it (and its OS deps) preinstalled,
+# so there's no per-build apt-get/download cost. Keep the version tag in sync
+# with the `playwright-core` version in package.json.
+FROM mcr.microsoft.com/playwright:v1.61.0-noble AS build
 
 WORKDIR /app
 

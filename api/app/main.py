@@ -151,6 +151,7 @@ origins = [
     "http://localhost:4001",
     "http://localhost:4002",
     "http://localhost:9000",
+    "http://127.0.0.1:4321",  # web/scripts/prerender.js — build-time SSG preview server
 ]
 
 @app.middleware("http")
