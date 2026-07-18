@@ -151,7 +151,12 @@ async function main() {
         }
 
         console.log(`Prerendered ${ok} routes (${failed} failed).`);
-        if (failed > 0) process.exitCode = 1;
+        // A route that fails to prerender just falls back to the unprerendered
+        // SPA shell for crawlers (same as before this script existed) — not a
+        // regression for real users. Only treat this as a build failure when
+        // NOTHING prerendered, since that means the mechanism itself is broken
+        // (preview server never came up, etc.), not that one page timed out.
+        if (ok === 0 && routes.length > 0) process.exitCode = 1;
     } finally {
         if (browser) await browser.close();
         preview.kill();

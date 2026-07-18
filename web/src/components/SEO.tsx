@@ -19,7 +19,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
     title,
     description,
-    image = `${BASE_URL}/assets/og-image.jpg`,
+    image = `${BASE_URL}/assets/og-image.png`,
     imageAlt,
     type = 'website',
     structuredData,
