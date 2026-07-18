@@ -63,8 +63,8 @@ const DailyHoroscope: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Daily Horoscope | Personalized Zodiac Predictions"
-                description="Personalized daily horoscope readings from expert astrologers. Love, career, health & finance predictions for all 12 zodiac signs. From ₹10/min."
+                title="Today's Horoscope | Personalized Zodiac Predictions"
+                description="Get today's horoscope for all 12 zodiac signs, plus personalized readings from expert astrologers — love, career, health & finance. From ₹10/min."
                 structuredData={horoscopeStructuredData}
             />
             <Header />
