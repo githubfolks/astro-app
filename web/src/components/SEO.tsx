@@ -2,7 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 
-const BASE_URL = 'https://aadikarta.org';
+const BASE_URL = import.meta.env.VITE_SITE_URL || 'https://aadikarta.org';
 
 interface SEOProps {
     title: string;

@@ -79,7 +79,7 @@ const Home: React.FC = () => {
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Talk to Verified Astrologers Online | Vedic Astrology & Love Guidance"
+                title="Talk to Verified Astrologers Online | Vedic & Tarot"
                 description="India's top verified astrologers for live chat. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
                 structuredData={buildHomeStructuredData(support_email, support_phone)}
             />

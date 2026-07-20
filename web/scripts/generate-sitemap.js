@@ -6,7 +6,8 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/sitemap.xml');
-const BASE = 'https://aadikarta.org';
+const BASE = process.env.VITE_SITE_URL || 'https://aadikarta.org';
+const API_URL = process.env.VITE_API_URL || 'https://api.aadikarta.org';
 const today = new Date().toISOString().slice(0, 10);
 
 const URLS = [
@@ -46,9 +47,42 @@ const URLS = [
     { loc: '/disclaimer',                changefreq: 'yearly',  priority: '0.3' },
 ];
 
+async function fetchAllPages(path, mapItem, getItems = (d) => d) {
+    const out = [];
+    let skip = 0;
+    const limit = 100;
+    for (;;) {
+        const sep = path.includes('?') ? '&' : '?';
+        const res = await fetch(`${API_URL}${path}${sep}skip=${skip}&limit=${limit}`);
+        if (!res.ok) {
+            console.warn(`  ! ${path} fetch failed (HTTP ${res.status})`);
+            break;
+        }
+        const items = getItems(await res.json());
+        if (!Array.isArray(items) || items.length === 0) break;
+        for (const item of items) out.push(mapItem(item));
+        skip += limit;
+        if (items.length < limit) break;
+    }
+    return out;
+}
+
+const fetchBlogRoutes = () => fetchAllPages('/public/posts', (p) => `/blog/${p.slug}`, (d) => d.posts);
+const fetchAstrologerRoutes = () => fetchAllPages('/astrologers/', (a) => `/astrologers/${a.slug || a.user_id}`);
+
+const blogRoutes = await fetchBlogRoutes().catch(() => []);
+const astrologerRoutes = await fetchAstrologerRoutes().catch(() => []);
+
+const dynamicUrls = [
+    ...blogRoutes.map(loc => ({ loc, changefreq: 'monthly', priority: '0.7' })),
+    ...astrologerRoutes.map(loc => ({ loc, changefreq: 'weekly', priority: '0.8' }))
+];
+
+const allUrls = [...URLS, ...dynamicUrls];
+
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${URLS.map(({ loc, changefreq, priority }) => `  <url>
+${allUrls.map(({ loc, changefreq, priority }) => `  <url>
     <loc>${BASE}${loc}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${changefreq}</changefreq>
@@ -56,7 +90,8 @@ ${URLS.map(({ loc, changefreq, priority }) => `  <url>
   </url>`).join('\n')}
 </urlset>`;
 
+// Ensure this writes to the correct location synchronously or asynchronously
 writeFileSync(OUT, xml, 'utf8');
-console.log(`Sitemap written to ${OUT} (${URLS.length} URLs)`);
+console.log(`Sitemap written to ${OUT} (${allUrls.length} URLs)`);
 
 export { URLS };
