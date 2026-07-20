@@ -5,8 +5,16 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import FAQSection from '../../components/FAQSection';
 import { Home, Compass, Shield, Sun, Activity } from 'lucide-react';
 import './ServicesDetail.css';
+
+const faqs = [
+    { question: 'What is Vastu Shastra?', answer: 'Vastu Shastra is an ancient Indian science of architecture and spatial arrangement that aligns buildings with natural forces, the five elements (Pancha Bhuta), and cardinal directions to promote well-being and prosperity.' },
+    { question: 'Can Vastu remedies be done without demolition?', answer: 'Yes, many Vastu doshas can be corrected without structural changes using remedies like mirrors, crystals, plants, color schemes, furniture placement, and yantras.' },
+    { question: 'Which direction should the main door face according to Vastu?', answer: 'North, northeast, or east-facing main doors are generally considered auspicious in Vastu Shastra. South and southwest-facing doors may require specific remedies.' },
+    { question: 'How much does a Vastu consultation cost on Aadikarta?', answer: 'Vastu consultations on Aadikarta start from ₹10 per minute. A full home or office Vastu analysis typically takes 30–60 minutes depending on the property size.' },
+];
 
 const vastuStructuredData = {
     '@context': 'https://schema.org',
@@ -22,12 +30,11 @@ const vastuStructuredData = {
         },
         {
             '@type': 'FAQPage',
-            mainEntity: [
-                { '@type': 'Question', name: 'What is Vastu Shastra?', acceptedAnswer: { '@type': 'Answer', text: 'Vastu Shastra is an ancient Indian science of architecture and spatial arrangement that aligns buildings with natural forces, the five elements (Pancha Bhuta), and cardinal directions to promote well-being and prosperity.' } },
-                { '@type': 'Question', name: 'Can Vastu remedies be done without demolition?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, many Vastu doshas can be corrected without structural changes using remedies like mirrors, crystals, plants, color schemes, furniture placement, and yantras.' } },
-                { '@type': 'Question', name: 'Which direction should the main door face according to Vastu?', acceptedAnswer: { '@type': 'Answer', text: 'North, northeast, or east-facing main doors are generally considered auspicious in Vastu Shastra. South and southwest-facing doors may require specific remedies.' } },
-                { '@type': 'Question', name: 'How much does a Vastu consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Vastu consultations on Aadikarta start from ₹10 per minute. A full home or office Vastu analysis typically takes 30–60 minutes depending on the property size.' } },
-            ],
+            mainEntity: faqs.map(faq => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+            }))
         },
         {
             '@type': 'BreadcrumbList',
@@ -176,6 +183,8 @@ const VastuShastra: React.FC = () => {
                         Consult a Vastu Expert
                     </Link>
                 </section>
+
+                <FAQSection faqs={faqs} />
             </main>
             <Footer />
         </div>

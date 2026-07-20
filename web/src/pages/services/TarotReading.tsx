@@ -5,8 +5,16 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import FAQSection from '../../components/FAQSection';
 import { Sparkles, Layers, Eye, Compass, Clock } from 'lucide-react';
 import './ServicesDetail.css';
+
+const faqs = [
+    { question: 'How accurate is tarot card reading?', answer: 'Tarot accuracy depends on the reader\'s intuition, experience, and the clarity of the question asked. Skilled readers use the cards as a tool for insight and reflection, not literal prediction.' },
+    { question: 'What questions can I ask in a tarot reading?', answer: 'You can ask about love, relationships, career, finances, health, decisions, and personal growth. Open-ended questions like "What do I need to know about X?" tend to yield the most insightful readings.' },
+    { question: 'Is online tarot reading as accurate as in-person?', answer: 'Yes, online tarot readings can be just as accurate as in-person sessions. The energy and intention of the question, not physical proximity, are what matter to experienced tarot readers.' },
+    { question: 'How much does a tarot reading cost on Aadikarta?', answer: 'Tarot readings on Aadikarta start from ₹10 per minute. A standard 3-card reading session takes about 10–15 minutes; a full Celtic Cross spread typically runs 30–45 minutes.' },
+];
 
 const tarotStructuredData = {
     '@context': 'https://schema.org',
@@ -22,12 +30,11 @@ const tarotStructuredData = {
         },
         {
             '@type': 'FAQPage',
-            mainEntity: [
-                { '@type': 'Question', name: 'How accurate is tarot card reading?', acceptedAnswer: { '@type': 'Answer', text: 'Tarot accuracy depends on the reader\'s intuition, experience, and the clarity of the question asked. Skilled readers use the cards as a tool for insight and reflection, not literal prediction.' } },
-                { '@type': 'Question', name: 'What questions can I ask in a tarot reading?', acceptedAnswer: { '@type': 'Answer', text: 'You can ask about love, relationships, career, finances, health, decisions, and personal growth. Open-ended questions like "What do I need to know about X?" tend to yield the most insightful readings.' } },
-                { '@type': 'Question', name: 'Is online tarot reading as accurate as in-person?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, online tarot readings can be just as accurate as in-person sessions. The energy and intention of the question, not physical proximity, are what matter to experienced tarot readers.' } },
-                { '@type': 'Question', name: 'How much does a tarot reading cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Tarot readings on Aadikarta start from ₹10 per minute. A standard 3-card reading session takes about 10–15 minutes; a full Celtic Cross spread typically runs 30–45 minutes.' } },
-            ],
+            mainEntity: faqs.map(faq => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+            }))
         },
         {
             '@type': 'BreadcrumbList',
@@ -138,6 +145,8 @@ const TarotReading: React.FC = () => {
                         Start Your Reading
                     </Link>
                 </section>
+
+                <FAQSection faqs={faqs} />
             </main>
             <Footer />
         </div>

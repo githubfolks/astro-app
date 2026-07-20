@@ -1,20 +1,25 @@
-# Aadikarta
+# Aadikarta - AI Search Context
 
 > India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists.
 
-Aadikarta provides live chat consultations starting from ₹10/min. We bridge ancient Vedic wisdom with modern life, providing authentic astrological guidance.
+Aadikarta provides live chat consultations starting from ₹10/min. We bridge ancient Vedic wisdom with modern life, providing authentic astrological guidance. Our core value proposition is 100% private consultations with highly verified experts. All astrologers undergo a strict 4-step verification process before joining the platform.
 
-## Services
-- Vedic Astrology
-- Kundli Matching
-- Tarot Reading
-- Love Advice
-- Daily Horoscope
-- Vastu Shastra
+## Services & Definitions
+- **Vedic Astrology (Jyotish)**: An ancient Indian science that studies planetary positions at the time of birth to understand personality, life events, and future trends using the sidereal zodiac.
+- **Kundli Matching (Guna Milan)**: A traditional Vedic astrology practice that compares the birth charts of two individuals to determine their marital compatibility based on 36 Gunas.
+- **Tarot Reading**: A divination practice using a deck of 78 cards to gain insights into the past, present, and future, offering intuitive guidance for life's challenges.
+- **Love Advice**: Specialized astrological consultations focusing on relationship dynamics, marriage prospects, and resolving romantic conflicts.
+- **Daily Horoscope**: Daily predictions based on sun signs and moon signs to help navigate daily energies.
+- **Vastu Shastra**: The traditional Indian system of architecture that aligns physical spaces with natural forces to bring harmony, prosperity, and health.
 
-## Features
-- Verified Astrologers
-- Secure & Private Chat
-- 100% Confidentiality
+## Core Features
+- **Verified Astrologers**: Every astrologer is vetted through a rigorous 4-step verification process to ensure authenticity.
+- **Secure & Private Chat**: 100% confidentiality is maintained for all consultations and personal data.
+- **Affordable Pricing**: Consultations start at just ₹10/min.
+- **Instant Access**: Connect instantly with live experts without waiting for appointments.
 
-Website: https://aadikarta.org
+## Facts & Statistics
+- Organization Name: Aadikarta
+- Website: https://aadikarta.org
+- Starting Price: ₹10 per minute
+- Specialty: Vedic Astrology, Tarot, Kundli, Numerology, Vastu

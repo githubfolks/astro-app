@@ -5,8 +5,16 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import FAQSection from '../../components/FAQSection';
 import { Sun, Sparkles, ShieldAlert, Eye, Compass, Heart } from 'lucide-react';
 import './ServicesDetail.css';
+
+const faqs = [
+    { question: 'What is the difference between a sun sign and moon sign horoscope?', answer: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' },
+    { question: 'How is a personalized horoscope different from a generic one?', answer: 'A personalized horoscope is based on your exact birth date, time, and location, giving predictions tailored to your unique planetary positions. Generic sun-sign horoscopes apply to everyone born in the same month.' },
+    { question: 'Which zodiac sign has the best horoscope today?', answer: 'Daily planetary transits affect each sign differently. Rather than a "best" sign, each sign has favorable days based on its ruling planet\'s position. An astrologer can identify your power days each week.' },
+    { question: 'How much does a daily horoscope consultation cost on Aadikarta?', answer: 'Daily horoscope consultations on Aadikarta start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' },
+];
 
 const horoscopeStructuredData = {
     '@context': 'https://schema.org',
@@ -22,12 +30,11 @@ const horoscopeStructuredData = {
         },
         {
             '@type': 'FAQPage',
-            mainEntity: [
-                { '@type': 'Question', name: 'What is the difference between a sun sign and moon sign horoscope?', acceptedAnswer: { '@type': 'Answer', text: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' } },
-                { '@type': 'Question', name: 'How is a personalized horoscope different from a generic one?', acceptedAnswer: { '@type': 'Answer', text: 'A personalized horoscope is based on your exact birth date, time, and location, giving predictions tailored to your unique planetary positions. Generic sun-sign horoscopes apply to everyone born in the same month.' } },
-                { '@type': 'Question', name: 'Which zodiac sign has the best horoscope today?', acceptedAnswer: { '@type': 'Answer', text: 'Daily planetary transits affect each sign differently. Rather than a "best" sign, each sign has favorable days based on its ruling planet\'s position. An astrologer can identify your power days each week.' } },
-                { '@type': 'Question', name: 'How much does a daily horoscope consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Daily horoscope consultations on Aadikarta start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' } },
-            ],
+            mainEntity: faqs.map(faq => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+            }))
         },
         {
             '@type': 'BreadcrumbList',
@@ -163,6 +170,8 @@ const DailyHoroscope: React.FC = () => {
                         Get Your Full Reading
                     </Link>
                 </section>
+
+                <FAQSection faqs={faqs} />
             </main>
             <Footer />
         </div>

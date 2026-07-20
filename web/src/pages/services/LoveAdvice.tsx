@@ -5,8 +5,16 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import FAQSection from '../../components/FAQSection';
 import { Heart, HeartHandshake, Flame, Activity, Sparkles, CheckCircle } from 'lucide-react';
 import './ServicesDetail.css';
+
+const faqs = [
+    { question: 'Can astrology predict when I will get married?', answer: 'Yes, Vedic astrology uses the 7th house (house of marriage), its lord, and planetary periods (dashas) to predict marriage timing. Jupiter and Venus transits also play a key role.' },
+    { question: 'Which zodiac signs are most compatible in love?', answer: 'Generally, signs of the same element are highly compatible: Fire signs (Aries, Leo, Sagittarius), Earth signs (Taurus, Virgo, Capricorn), Air signs (Gemini, Libra, Aquarius), and Water signs (Cancer, Scorpio, Pisces).' },
+    { question: 'Can an astrologer help fix my relationship problems?', answer: 'An astrologer can identify planetary influences causing relationship stress, suggest remedies (gemstones, mantras, timing), and guide you on the best periods for reconciliation or moving forward.' },
+    { question: 'How much does a love astrology consultation cost on Aadikarta?', answer: 'Love astrology consultations on Aadikarta start from ₹10 per minute. Most relationship readings take 15–30 minutes.' },
+];
 
 const loveStructuredData = {
     '@context': 'https://schema.org',
@@ -22,12 +30,11 @@ const loveStructuredData = {
         },
         {
             '@type': 'FAQPage',
-            mainEntity: [
-                { '@type': 'Question', name: 'Can astrology predict when I will get married?', acceptedAnswer: { '@type': 'Answer', text: 'Yes, Vedic astrology uses the 7th house (house of marriage), its lord, and planetary periods (dashas) to predict marriage timing. Jupiter and Venus transits also play a key role.' } },
-                { '@type': 'Question', name: 'Which zodiac signs are most compatible in love?', acceptedAnswer: { '@type': 'Answer', text: 'Generally, signs of the same element are highly compatible: Fire signs (Aries, Leo, Sagittarius), Earth signs (Taurus, Virgo, Capricorn), Air signs (Gemini, Libra, Aquarius), and Water signs (Cancer, Scorpio, Pisces).' } },
-                { '@type': 'Question', name: 'Can an astrologer help fix my relationship problems?', acceptedAnswer: { '@type': 'Answer', text: 'An astrologer can identify planetary influences causing relationship stress, suggest remedies (gemstones, mantras, timing), and guide you on the best periods for reconciliation or moving forward.' } },
-                { '@type': 'Question', name: 'How much does a love astrology consultation cost on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'Love astrology consultations on Aadikarta start from ₹10 per minute. Most relationship readings take 15–30 minutes.' } },
-            ],
+            mainEntity: faqs.map(faq => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+            }))
         },
         {
             '@type': 'BreadcrumbList',
@@ -140,6 +147,8 @@ const LoveAdvice: React.FC = () => {
                         Connect with Love Expert
                     </Link>
                 </section>
+
+                <FAQSection faqs={faqs} />
             </main>
             <Footer />
         </div>
