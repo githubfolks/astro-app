@@ -18,3 +18,5 @@ slowapi
 Pillow
 pillow-heif
 git+https://github.com/AavyaLabTech/waplex.git@main
+google-api-python-client
+google-auth

@@ -1284,3 +1284,11 @@ async def disconnect_whatsapp(db: Session = Depends(database.get_db)):
         return {"status": "DISCONNECTED"}
     except WAPlexError as e:
         raise HTTPException(status_code=502, detail=f"WAPlex disconnection failed: {e}")
+
+@router.get("/seo/analytics")
+def get_seo_analytics(current_admin: models.User = Depends(get_current_admin)):
+    from ..services.gsc_service import fetch_seo_analytics
+    data = fetch_seo_analytics()
+    if not data.get("configured"):
+        raise HTTPException(status_code=503, detail=data.get("error", "GSC not configured"))
+    return data
