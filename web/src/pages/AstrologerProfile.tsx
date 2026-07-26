@@ -188,8 +188,9 @@ const AstrologerProfile: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <SEO
-                title={`${astrologer.full_name} | Expert Astrologer`}
-                description={`Consult with ${astrologer.full_name}, a verified expert with ${astrologer.experience_years}+ years of experience in ${specialtiesArray.slice(0, 3).join(', ')}.`}
+                title={`${astrologer.full_name} | Expert Astrologer | Aadikarta Vedic Astrology`}
+                description={`Consult with ${astrologer.full_name} on Aadikarta Vedic Astrology, a verified expert with ${astrologer.experience_years}+ years of experience in ${specialtiesArray.slice(0, 3).join(', ')}.`}
+                keywords={`Aadikarta Vedic Astrology, ${astrologer.full_name}, talk to ${astrologer.full_name}, ${specialtiesArray.slice(0, 3).join(', ')}`}
                 image={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
                 structuredData={getStructuredData(astrologer)}
             />

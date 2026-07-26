@@ -9,8 +9,9 @@ const RefundPolicy: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="Refund Policy"
-                description="Understand Aadikarta's refund policy, eligibility criteria, and process for requesting refunds."
+                title="Refund Policy | Aadikarta Vedic Astrology"
+                description="Understand Aadikarta Vedic Astrology's refund policy, eligibility criteria, and transparent process for requesting wallet refunds."
+                keywords="Aadikarta Vedic Astrology refund policy, wallet refund Aadikarta, consultation refund"
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl mb-4">

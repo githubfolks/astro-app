@@ -10,14 +10,14 @@ const panchangStructuredData = {
         {
             '@type': 'WebPage',
             '@id': 'https://aadikarta.org/panchang#webpage',
-            name: "Today's Panchang | Daily Vedic Almanac",
-            description: 'Real-time daily Panchang — Tithi, Nakshatra, Yoga, Sunrise, Sunset and Rahu Kalam for your location.',
+            name: "Today's Panchang & Hindu Almanac — Aadikarta Vedic Astrology",
+            description: 'Real-time daily Panchang on Aadikarta Vedic Astrology — Tithi, Nakshatra, Yoga, Sunrise, Sunset and Rahu Kalam for your location.',
         },
         {
             '@type': 'FAQPage',
             mainEntity: [
                 { '@type': 'Question', name: 'What is Panchang?', acceptedAnswer: { '@type': 'Answer', text: 'Panchang is the traditional Vedic almanac that describes five key elements of a day: Tithi (lunar day), Nakshatra (constellation), Yoga, Karana, and Vaara (weekday), used to determine auspicious timings.' } },
-                { '@type': 'Question', name: "How is today's Panchang calculated?", acceptedAnswer: { '@type': 'Answer', text: "Today's Panchang is calculated using precise Vedic astronomical calculations for your detected location, including sunrise, sunset, and planetary positions." } },
+                { '@type': 'Question', name: "How is today's Panchang calculated on Aadikarta Vedic Astrology?", acceptedAnswer: { '@type': 'Answer', text: "Today's Panchang on Aadikarta Vedic Astrology is calculated using precise Vedic astronomical calculations for your detected location, including sunrise, sunset, and planetary positions." } },
             ],
         },
         {
@@ -34,8 +34,9 @@ const Panchang: React.FC = () => {
     return (
         <div className="min-h-screen bg-[#03010b]">
             <SEO
-                title="Today's Panchang | Daily Vedic Almanac"
-                description="Real-time daily Panchang for your location — Tithi, Nakshatra, Yoga, Sunrise, Sunset and Rahu Kalam, calculated using accurate Vedic astronomy."
+                title="Today's Panchang & Hindu Almanac | Aadikarta Vedic Astrology"
+                description="Real-time daily Panchang on Aadikarta Vedic Astrology — Tithi, Nakshatra, Yoga, Rahu Kalam & Abhijit Muhurat calculated with accurate Vedic astronomy."
+                keywords="Aadikarta Vedic Astrology, today Panchang, daily Hindu calendar, today Tithi, Rahu Kalam today, Abhijit Muhurat Aadikarta"
                 structuredData={panchangStructuredData}
             />
             <Header />

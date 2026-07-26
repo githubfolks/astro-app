@@ -54,8 +54,8 @@ const structuredData = {
         {
             '@type': 'WebPage',
             '@id': 'https://aadikarta.org/pricing#page',
-            name: 'Astrology Consultation Pricing – Aadikarta',
-            description: 'Transparent per-minute astrology consultation pricing on Aadikarta. No subscriptions, no hidden fees. Pay only for the time you use.',
+            name: 'Astrology Consultation Pricing – Aadikarta Vedic Astrology',
+            description: 'Transparent per-minute astrology consultation pricing on Aadikarta Vedic Astrology. No subscriptions, no hidden fees. Pay only for the time you use.',
             url: 'https://aadikarta.org/pricing',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
             breadcrumb: {
@@ -81,8 +81,9 @@ const Pricing: React.FC = () => {
     return (
         <div className="bg-white text-slate-900 min-h-screen">
             <SEO
-                title="Astrology Consultation Pricing"
-                description="Transparent astrology consultation pricing from ₹10/min. No subscriptions, no hidden fees — pay only for the minutes you use."
+                title="Astrology Consultation Pricing & Rates | Aadikarta Vedic Astrology"
+                description="Transparent per-minute astrology consultation rates on Aadikarta Vedic Astrology from ₹10/min. Wallet recharge with no hidden fees."
+                keywords="Aadikarta Vedic Astrology pricing, astrology consultation rates, cheap astrologer per minute, talk to astrologer price Aadikarta"
                 structuredData={structuredData}
             />
             <Header />

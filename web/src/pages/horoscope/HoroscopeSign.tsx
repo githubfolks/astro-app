@@ -181,8 +181,8 @@ const HoroscopeSign: React.FC = () => {
         '@graph': [
             {
                 '@type': 'WebPage',
-                name: `${data.name} Horoscope (${data.hindi}) – Daily, Monthly & Yearly | Aadikarta`,
-                description: `${data.name} horoscope — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. Get personalised ${data.name} predictions from expert Vedic astrologers on Aadikarta.`,
+                name: `${data.name} Horoscope (${data.hindi}) – Daily, Monthly & Yearly | Aadikarta Vedic Astrology`,
+                description: `${data.name} horoscope — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. Get personalized ${data.name} predictions from expert Vedic astrologers on Aadikarta Vedic Astrology.`,
                 url: `https://aadikarta.org/horoscope/${sign}`,
             },
             {
@@ -229,8 +229,9 @@ const HoroscopeSign: React.FC = () => {
     return (
         <div className="horoscope-sign-page min-h-screen">
             <SEO
-                title={`${data.name} Horoscope (${data.hindi})`}
-                description={`${data.name} horoscope today — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. ${data.strengths.slice(0, 80)}. Get your personalised ${data.name} reading.`}
+                title={`${data.name} Horoscope (${data.hindi}) | Aadikarta Vedic Astrology`}
+                description={`${data.name} horoscope today — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. Get your personalized ${data.name} reading on Aadikarta Vedic Astrology.`}
+                keywords={`Aadikarta Vedic Astrology, ${data.name} horoscope today, ${data.hindi} rashiphal, ${data.name} astrology reading, talk to astrologer for ${data.name}`}
                 structuredData={structuredData}
             />
             <Header />

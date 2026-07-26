@@ -13,7 +13,7 @@ const faqs = [
     { question: 'Can astrology predict when I will get married?', answer: 'Yes, Vedic astrology uses the 7th house (house of marriage), its lord, and planetary periods (dashas) to predict marriage timing. Jupiter and Venus transits also play a key role.' },
     { question: 'Which zodiac signs are most compatible in love?', answer: 'Generally, signs of the same element are highly compatible: Fire signs (Aries, Leo, Sagittarius), Earth signs (Taurus, Virgo, Capricorn), Air signs (Gemini, Libra, Aquarius), and Water signs (Cancer, Scorpio, Pisces).' },
     { question: 'Can an astrologer help fix my relationship problems?', answer: 'An astrologer can identify planetary influences causing relationship stress, suggest remedies (gemstones, mantras, timing), and guide you on the best periods for reconciliation or moving forward.' },
-    { question: 'How much does a love astrology consultation cost on Aadikarta?', answer: 'Love astrology consultations on Aadikarta start from ₹10 per minute. Most relationship readings take 15–30 minutes.' },
+    { question: 'How much does a love astrology consultation cost on Aadikarta Vedic Astrology?', answer: 'Love astrology consultations on Aadikarta Vedic Astrology start from ₹10 per minute. Most relationship readings take 15–30 minutes.' },
 ];
 
 const loveStructuredData = {
@@ -22,9 +22,9 @@ const loveStructuredData = {
         {
             '@type': 'Service',
             '@id': 'https://aadikarta.org/services/love-advice#service',
-            name: 'Love & Relationship Astrology',
+            name: 'Love & Relationship Astrology on Aadikarta Vedic Astrology',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Personalized love and relationship astrology consultations covering compatibility, marriage timing, breakup recovery, and finding your soulmate from expert Vedic and Western astrologers.',
+            description: 'Personalized love and relationship astrology consultations on Aadikarta Vedic Astrology covering compatibility, marriage timing, breakup recovery, and finding your soulmate.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
         },
@@ -55,8 +55,9 @@ const LoveAdvice: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Love & Relationship Astrology | Expert Advice Online"
-                description="Personalized love & relationship astrology consultations. Compatibility analysis, marriage timing & predictions from expert Vedic astrologers. From ₹10/min."
+                title="Love & Relationship Astrology | Expert Advice | Aadikarta Vedic Astrology"
+                description="Personalized love & relationship astrology consultations on Aadikarta Vedic Astrology. Compatibility analysis, marriage timing & predictions from expert astrologers. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, love astrology online, relationship compatibility Aadikarta, marriage prediction, love astrologer chat"
                 structuredData={loveStructuredData}
             />
             <Header />

@@ -20,8 +20,8 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ onEnter }) => {
     return (
         <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center text-white bg-[#0f172a]">
             <SEO
-                title="Coming Soon | Aadikarta - Ancient Wisdom for Modern Life"
-                description="We are bringing something sacred and transformative. Aadikarta is coming soon to guide your spiritual journey."
+                title="Coming Soon | Aadikarta Vedic Astrology - Ancient Wisdom for Modern Life"
+                description="We are bringing something sacred and transformative. Aadikarta Vedic Astrology is coming soon to guide your spiritual journey."
                 noindex={true}
             />
 

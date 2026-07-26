@@ -17,13 +17,13 @@ const Blog: React.FC = () => {
             {
                 "@type": "Blog",
                 "@id": "https://aadikarta.org/blog#blog",
-                "name": "Aadikarta Blog",
-                "description": "Discover the ancient wisdom of the stars and how they influence your daily life.",
+                "name": "Aadikarta Vedic Astrology Blog",
+                "description": "Discover the ancient wisdom of Vedic astrology, horoscopes, and planetary insights on Aadikarta Vedic Astrology.",
                 "url": "https://aadikarta.org/blog",
                 "publisher": {
                     "@type": "Organization",
                     "@id": "https://aadikarta.org/#organization",
-                    "name": "Aadikarta",
+                    "name": "Aadikarta Vedic Astrology",
                     "logo": "https://aadikarta.org/assets/logo.png"
                 }
             },
@@ -67,8 +67,9 @@ const Blog: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <SEO
-                title="Astrology Blog | Vedic Wisdom, Horoscopes & Guidance"
-                description="Expert articles on Vedic astrology, horoscopes, kundli, tarot & spiritual guidance from India's top astrologers."
+                title="Astrology Blog | Vedic Wisdom & Guidance | Aadikarta Vedic Astrology"
+                description="Read expert articles on Vedic astrology, horoscopes, kundli, tarot & spiritual guidance on Aadikarta Vedic Astrology."
+                keywords="Aadikarta Vedic Astrology blog, Vedic astrology articles, daily horoscope blog, astrology tips Aadikarta"
                 structuredData={structuredData}
             />
             <Header />

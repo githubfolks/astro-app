@@ -118,8 +118,9 @@ const MuhuratSearchPage: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <SEO
-                title="Muhurat Search | Astrologer Tool"
-                description="Search for auspicious Muhurat windows, generic or personalized to a birth chart."
+                title="Shubh Muhurat Finder & Auspicious Timings | Aadikarta Vedic Astrology"
+                description="Search for auspicious Shubh Muhurat windows online with Aadikarta Vedic Astrology — personalized to your birth chart for marriage, travel, business, and events."
+                keywords="Aadikarta Vedic Astrology, Shubh Muhurat finder, auspicious time calculator, online Muhurat search, birth chart Muhurat Aadikarta"
             />
             <Header />
 

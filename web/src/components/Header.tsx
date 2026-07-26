@@ -55,8 +55,8 @@ const Header: React.FC = () => {
                     <button className="mobile-menu-btn" onClick={toggleMenu} aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
-                    <Link to="/" className="brand-logo" aria-label="Aadikarta Home">
-                        <img src="/assets/logo.webp" alt="Aadikarta" className="h-20 w-auto" width="146" height="80" />
+                    <Link to="/" className="brand-logo" aria-label="Aadikarta Vedic Astrology Home">
+                        <img src="/assets/logo.webp" alt="Aadikarta Vedic Astrology" className="h-20 w-auto" width="146" height="80" />
                     </Link>
                 </div>
 

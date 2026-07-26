@@ -23,20 +23,24 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
             "@type": "WebSite",
             "@id": "https://aadikarta.org/#website",
             "url": "https://aadikarta.org",
-            "name": "Aadikarta",
-            "description": "India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists. Live chat consultations starting from ₹10/min.",
+            "name": "Aadikarta Vedic Astrology",
+            "alternateName": ["Aadikarta", "Aadikarta Astro", "Aadikarta Vedic Astrology Platform"],
+            "description": "India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists on Aadikarta Vedic Astrology. Live chat consultations starting from ₹10/min.",
             "publisher": { "@id": "https://aadikarta.org/#organization" }
         },
         {
             "@type": "Organization",
             "@id": "https://aadikarta.org/#organization",
-            "name": "Aadikarta",
+            "name": "Aadikarta Vedic Astrology",
+            "alternateName": ["Aadikarta", "Aadikarta Astro", "Aadikarta Vedic Astrology App", "Aadikarta Vedic Astrology Online"],
             "url": "https://aadikarta.org",
             "logo": "https://aadikarta.org/assets/logo.png",
+            "description": "Aadikarta Vedic Astrology connects you with India's top verified Vedic astrologers, tarot card readers, and spiritual guides for instant live consultations, Kundli matching, daily horoscope, and Vastu advice.",
             "email": supportEmail,
             "telephone": supportPhone,
             "areaServed": "IN",
             "knowsAbout": [
+                "Aadikarta Vedic Astrology",
                 "Vedic Astrology",
                 "Jyotish",
                 "Tarot Reading",
@@ -56,8 +60,9 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
                 "areaServed": "IN"
             },
             "sameAs": [
-                "https://www.facebook.com/aadikarta",
-                "https://www.instagram.com/aadikarta"
+                "https://www.facebook.com/aadikartaastro",
+                "https://x.com/astro_aadikarta",
+                "https://www.instagram.com/astro_aadikarta/"
             ]
         }
     ]
@@ -79,8 +84,9 @@ const Home: React.FC = () => {
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Talk to Verified Astrologers Online | Vedic & Tarot"
-                description="India's top verified astrologers for live chat. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
+                title="Talk to Verified Astrologers Online | Aadikarta Vedic Astrology"
+                description="India's top verified astrologers for live chat on Aadikarta Vedic Astrology. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, Aadikarta Astro, talk to astrologers online, Vedic astrology online, online kundli matching, daily horoscope, tarot reading Aadikarta"
                 structuredData={buildHomeStructuredData(support_email, support_phone)}
             />
             <Helmet>

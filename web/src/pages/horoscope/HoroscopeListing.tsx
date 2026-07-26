@@ -32,9 +32,9 @@ const structuredData = {
         {
             '@type': 'CollectionPage',
             '@id': 'https://aadikarta.org/horoscope#page',
-            name: 'Horoscope by Zodiac Sign | Aadikarta',
+            name: 'Horoscope by Zodiac Sign | Aadikarta Vedic Astrology',
             url: 'https://aadikarta.org/horoscope',
-            description: 'Daily and monthly horoscope readings for all 12 zodiac signs. Personalised Vedic astrology predictions from expert astrologers.',
+            description: 'Daily and monthly horoscope readings for all 12 zodiac signs. Personalized Vedic astrology predictions from expert astrologers on Aadikarta Vedic Astrology.',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
         },
         {
@@ -61,8 +61,9 @@ const HoroscopeListing: React.FC = () => {
     return (
         <div className="bg-white text-slate-900 min-h-screen">
             <SEO
-                title="Horoscope by Zodiac Sign | Vedic Astrology Predictions"
-                description="Daily & monthly horoscope for all 12 zodiac signs. Personalised Vedic astrology predictions from expert astrologers on Aadikarta. Find your sign and get a reading."
+                title="Horoscope by Zodiac Sign | Vedic Predictions | Aadikarta Vedic Astrology"
+                description="Daily & monthly horoscope for all 12 zodiac signs on Aadikarta Vedic Astrology. Personalized Vedic astrology predictions from expert astrologers."
+                keywords="Aadikarta Vedic Astrology horoscope, daily rashiphal, zodiac sign horoscopes, Aries Taurus Gemini Cancer horoscope Aadikarta"
                 structuredData={structuredData}
             />
             <Header />

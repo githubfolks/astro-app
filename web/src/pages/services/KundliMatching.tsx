@@ -13,7 +13,7 @@ const faqs = [
     { question: 'What is kundli matching?', answer: 'Kundli matching (kundali milan) is a Vedic astrology practice where birth charts of a prospective bride and groom are compared using 36 gunas (qualities) to assess compatibility for marriage.' },
     { question: 'How many gunas are required for marriage?', answer: 'Traditionally, a minimum of 18 out of 36 gunas are required for marriage. A score of 24–32 is considered good, and above 32 is excellent compatibility.' },
     { question: 'What is manglik dosha?', answer: 'Manglik dosha (Mars dosha) occurs when Mars is placed in the 1st, 4th, 7th, 8th, or 12th house of the birth chart. Many astrologers recommend matching Manglik individuals with other Mangliks to neutralize the dosha.' },
-    { question: 'How much does kundli matching cost on Aadikarta?', answer: 'Kundli matching consultations on Aadikarta start from ₹10 per minute. A detailed kundali milan session typically takes 20–30 minutes.' },
+    { question: 'How much does kundli matching cost on Aadikarta Vedic Astrology?', answer: 'Kundli matching consultations on Aadikarta Vedic Astrology start from ₹10 per minute. A detailed kundali milan session typically takes 20–30 minutes.' },
 ];
 
 const kundliStructuredData = {
@@ -22,9 +22,9 @@ const kundliStructuredData = {
         {
             '@type': 'Service',
             '@id': 'https://aadikarta.org/services/kundli-matching#service',
-            name: 'Kundli Matching for Marriage',
+            name: 'Kundli Matching for Marriage on Aadikarta Vedic Astrology',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Expert kundli matching (kundali milan) service for marriage using 36-gun Milan analysis, manglik dosha check, and detailed compatibility report from verified Vedic astrologers.',
+            description: 'Expert kundli matching (kundali milan) service for marriage on Aadikarta Vedic Astrology using 36-guna Milan analysis, manglik dosha check, and detailed compatibility report.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
         },
@@ -55,8 +55,9 @@ const KundliMatching: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Kundli Matching for Marriage | Kundali Milan Online"
-                description="Expert kundali milan (kundli matching) for marriage — 36-gun analysis, manglik dosha check & compatibility report from verified Vedic astrologers. From ₹10/min."
+                title="Kundli Matching for Marriage | Kundali Milan Online | Aadikarta Vedic Astrology"
+                description="Expert kundali milan (kundli matching) for marriage on Aadikarta Vedic Astrology — 36-guna analysis, manglik dosha check & compatibility report. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, Kundli matching online, Kundali milan, Gun milan online, marriage compatibility Aadikarta"
                 structuredData={kundliStructuredData}
             />
             <Header />

@@ -237,8 +237,9 @@ const AiAstrologer: React.FC = () => {
     return (
         <div className="ai-astrologer-page pb-20 md:pb-0">
             <SEO
-                title="Free AI Astrologer Chat | Ask 5 Questions Online"
-                description="Chat with Aadi, our AI Vedic astrologer. Enter your birth details and get 5 free instant answers about career, love, marriage & more."
+                title="Free AI Astrologer Chat | Ask Astrology Questions Online | Aadikarta Vedic Astrology"
+                description="Chat with Aadi, Aadikarta Vedic Astrology's AI Vedic astrologer. Enter your birth details and get 5 free instant answers on love, career & destiny."
+                keywords="Aadikarta Vedic Astrology, AI astrologer, free AI astrology chat, online AI Kundli chat, ask astrologer online Aadikarta"
                 structuredData={aiAstrologerStructuredData}
             />
             <Header />

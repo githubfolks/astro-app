@@ -13,7 +13,7 @@ const faqs = [
     { question: 'What is Vedic astrology?', answer: 'Vedic astrology (Jyotish) is an ancient Indian science that studies planetary positions at the time of birth to understand personality, life events, and future trends using the sidereal zodiac.' },
     { question: 'How accurate is Vedic astrology?', answer: 'Vedic astrology uses precise calculations of planetary positions and the natal chart to provide insights. Accuracy depends on the birth time, date, and location, and the expertise of the astrologer.' },
     { question: 'What can a Vedic astrology reading tell me?', answer: 'A Vedic reading can reveal your personality traits, career path, relationship compatibility, health tendencies, financial prospects, and upcoming planetary periods (dashas) that influence your life.' },
-    { question: 'How much does a Vedic astrology consultation cost on Aadikarta?', answer: 'Vedic astrology consultations on Aadikarta start from ₹10 per minute, with expert astrologers available at ₹31–60/min and master-level Jyotish scholars at ₹61–150/min.' },
+    { question: 'How much does a Vedic astrology consultation cost on Aadikarta Vedic Astrology?', answer: 'Vedic astrology consultations on Aadikarta Vedic Astrology start from ₹10 per minute, with expert astrologers available at ₹31–60/min and master-level Jyotish scholars at ₹61–150/min.' },
 ];
 
 const vedicStructuredData = {
@@ -22,9 +22,9 @@ const vedicStructuredData = {
         {
             '@type': 'Service',
             '@id': 'https://aadikarta.org/services/vedic-astrology#service',
-            name: 'Vedic Astrology Consultation',
+            name: 'Vedic Astrology Consultation on Aadikarta Vedic Astrology',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Authentic Vedic astrology (Jyotish) consultations including natal chart analysis, planetary transits, dasha predictions, and life guidance from certified Jyotish experts.',
+            description: 'Authentic Vedic astrology (Jyotish) consultations including natal chart analysis, planetary transits, dasha predictions, and life guidance on Aadikarta Vedic Astrology.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
         },
@@ -55,8 +55,9 @@ const VedicAstrology: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Vedic Astrology (Jyotish) Consultations Online"
-                description="Authentic Vedic astrology consultations from India's top Jyotish experts. Natal chart analysis, planetary transits, dasha predictions. Starting from ₹10/min."
+                title="Vedic Astrology (Jyotish) Consultations Online | Aadikarta Vedic Astrology"
+                description="Authentic Vedic astrology consultations on Aadikarta Vedic Astrology from India's top Jyotish experts. Natal chart analysis, planetary transits, dasha predictions. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, Vedic astrology online, Jyotish consultation, Kundli reading Aadikarta, talk to Jyotish expert"
                 structuredData={vedicStructuredData}
             />
             <Header />

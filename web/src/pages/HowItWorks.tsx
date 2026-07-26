@@ -42,9 +42,9 @@ const steps = [
 const faqs = [
     { q: 'How much does a consultation cost?', a: 'Each astrologer sets their own per-minute rate, starting from ₹10/min. You only pay for the time you use.' },
     { q: 'Is my personal information safe?', a: 'Yes. Your birth details and chat history are encrypted and never shared with third parties.' },
-    { q: 'Can I try a free consultation?', a: 'New users may receive promotional free minutes. Check the current offer on our homepage.' },
+    { q: 'Can I try a free consultation?', a: 'New users may receive promotional free minutes on Aadikarta Vedic Astrology. Check the current offer on our homepage.' },
     { q: 'What if the astrologer goes offline?', a: 'If a session is interrupted, any unused minutes are refunded to your wallet instantly.' },
-    { q: 'Are the astrologers verified?', a: 'Every astrologer on Aadikarta passes a 4-step screening including qualification review and test readings.' },
+    { q: 'Are the astrologers verified?', a: 'Every astrologer on Aadikarta Vedic Astrology passes a 4-step screening including qualification review and test readings.' },
 ];
 
 const structuredData = {
@@ -53,8 +53,8 @@ const structuredData = {
         {
             '@type': 'WebPage',
             '@id': 'https://aadikarta.org/how-it-works#page',
-            name: 'How It Works – Aadikarta Astrology Consultation',
-            description: 'Step-by-step guide to booking an astrology consultation on Aadikarta. Sign up, browse astrologers, add wallet credits, and start a live chat.',
+            name: 'How It Works – Aadikarta Vedic Astrology Consultation',
+            description: 'Step-by-step guide to booking an astrology consultation on Aadikarta Vedic Astrology. Sign up, browse astrologers, add wallet credits, and start a live chat.',
             url: 'https://aadikarta.org/how-it-works',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
             breadcrumb: {
@@ -67,8 +67,8 @@ const structuredData = {
         },
         {
             '@type': 'HowTo',
-            name: 'How to Consult an Astrologer Online on Aadikarta',
-            description: 'Book a live Vedic astrology, tarot, or kundli consultation in 5 simple steps. No appointments needed — pay only per minute.',
+            name: 'How to Consult an Astrologer Online on Aadikarta Vedic Astrology',
+            description: 'Book a live Vedic astrology, tarot, or kundli consultation on Aadikarta Vedic Astrology in simple steps. Pay per minute — no hidden fees.',
             totalTime: 'PT5M',
             step: steps.map((s, i) => ({
                 '@type': 'HowToStep',
@@ -92,8 +92,9 @@ const HowItWorks: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="How It Works | Live Astrology Consultation"
-                description="Book a live astrology consultation in 5 simple steps. Browse verified Vedic astrologers, add wallet credits & chat instantly. Pay per minute — no subscriptions."
+                title="How It Works | Live Astrology Consultation | Aadikarta Vedic Astrology"
+                description="Book a live astrology consultation on Aadikarta Vedic Astrology in simple steps. Browse verified Vedic astrologers, add wallet credits & chat instantly."
+                keywords="How Aadikarta Vedic Astrology works, live astrology chat guide, book astrologer online Aadikarta, talk to astrologer step by step"
                 structuredData={structuredData}
             />
             <Header />

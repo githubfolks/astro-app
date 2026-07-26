@@ -13,7 +13,7 @@ const faqs = [
     { question: 'How accurate is tarot card reading?', answer: 'Tarot accuracy depends on the reader\'s intuition, experience, and the clarity of the question asked. Skilled readers use the cards as a tool for insight and reflection, not literal prediction.' },
     { question: 'What questions can I ask in a tarot reading?', answer: 'You can ask about love, relationships, career, finances, health, decisions, and personal growth. Open-ended questions like "What do I need to know about X?" tend to yield the most insightful readings.' },
     { question: 'Is online tarot reading as accurate as in-person?', answer: 'Yes, online tarot readings can be just as accurate as in-person sessions. The energy and intention of the question, not physical proximity, are what matter to experienced tarot readers.' },
-    { question: 'How much does a tarot reading cost on Aadikarta?', answer: 'Tarot readings on Aadikarta start from ₹10 per minute. A standard 3-card reading session takes about 10–15 minutes; a full Celtic Cross spread typically runs 30–45 minutes.' },
+    { question: 'How much does a tarot reading cost on Aadikarta Vedic Astrology?', answer: 'Tarot readings on Aadikarta Vedic Astrology start from ₹10 per minute. A standard 3-card reading session takes about 10–15 minutes; a full Celtic Cross spread typically runs 30–45 minutes.' },
 ];
 
 const tarotStructuredData = {
@@ -22,9 +22,9 @@ const tarotStructuredData = {
         {
             '@type': 'Service',
             '@id': 'https://aadikarta.org/services/tarot-reading#service',
-            name: 'Online Tarot Card Reading',
+            name: 'Online Tarot Card Reading on Aadikarta Vedic Astrology',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Accurate online tarot card readings from expert tarot readers. Past, present, and future readings covering love, career, finances, and life guidance. Live chat sessions from ₹10/min.',
+            description: 'Accurate online tarot card readings from expert tarot readers on Aadikarta Vedic Astrology. Past, present, and future readings covering love, career, finances, and life guidance.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
         },
@@ -55,8 +55,9 @@ const TarotReading: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Online Tarot Card Reading | Expert Tarot Readers"
-                description="Accurate online tarot readings from expert readers. Past, present & future guidance on love, career & life. Live chat sessions from ₹10/min."
+                title="Online Tarot Card Reading | Expert Tarot Readers | Aadikarta Vedic Astrology"
+                description="Accurate online tarot readings on Aadikarta Vedic Astrology from expert readers. Guidance on love, career & life from ₹10/min."
+                keywords="Aadikarta Vedic Astrology, online tarot reading, tarot card reading Aadikarta, love tarot reading, talk to tarot reader"
                 structuredData={tarotStructuredData}
             />
             <Header />

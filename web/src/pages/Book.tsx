@@ -124,8 +124,9 @@ const Book: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-white">
             <SEO
-                title="Courses | Aadikarta - Learn Vedic Astrology & Memory Mastery"
-                description="Explore our comprehensive courses in Vedic Astrology, Memory Mastery, and Spiritual Sciences taught by verified experts."
+                title="Courses | Learn Vedic Astrology & Memory Mastery | Aadikarta Vedic Astrology"
+                description="Explore comprehensive online courses in Vedic Astrology, Memory Mastery, and Spiritual Sciences on Aadikarta Vedic Astrology taught by verified experts."
+                keywords="Aadikarta Vedic Astrology courses, learn Vedic astrology online, memory mastery course, astrology classes Aadikarta"
                 structuredData={bookStructuredData}
             />
             <Header />

@@ -7,6 +7,7 @@ const BASE_URL = import.meta.env.VITE_SITE_URL || 'https://aadikarta.org';
 interface SEOProps {
     title: string;
     description: string;
+    keywords?: string;
     image?: string;
     imageAlt?: string;
     type?: string;
@@ -19,6 +20,7 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
     title,
     description,
+    keywords = 'Aadikarta Vedic Astrology, Aadikarta Astro, online astrology, Vedic astrologers, Kundli matching, daily horoscope, tarot reading, Vastu Shastra',
     image = `${BASE_URL}/assets/og-image.png`,
     imageAlt,
     type = 'website',
@@ -29,13 +31,22 @@ const SEO: React.FC<SEOProps> = ({
 }) => {
     const { pathname } = useLocation();
     const canonical = `${BASE_URL}${pathname === '/' ? '/' : pathname}`;
-    const fullTitle = `${title} | Aadikarta`;
-    const resolvedImageAlt = imageAlt || title;
+    
+    let fullTitle = title;
+    if (!title.includes('Aadikarta Vedic Astrology')) {
+        if (title.includes('Aadikarta')) {
+            fullTitle = title.replace(/\bAadikarta\b/g, 'Aadikarta Vedic Astrology');
+        } else {
+            fullTitle = `${title} | Aadikarta Vedic Astrology`;
+        }
+    }
+    const resolvedImageAlt = imageAlt || fullTitle;
 
     return (
         <Helmet>
             <title>{fullTitle}</title>
             <meta name="description" content={description} />
+            {keywords && <meta name="keywords" content={keywords} />}
             <link rel="canonical" href={canonical} />
             <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 
@@ -49,7 +60,7 @@ const SEO: React.FC<SEOProps> = ({
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
             <meta property="og:locale" content="en_IN" />
-            <meta property="og:site_name" content="Aadikarta" />
+            <meta property="og:site_name" content="Aadikarta Vedic Astrology" />
 
             {/* Article-specific Open Graph */}
             {type === 'article' && publishedTime && (

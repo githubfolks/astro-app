@@ -13,7 +13,7 @@ const faqs = [
     { question: 'What is the difference between a sun sign and moon sign horoscope?', answer: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' },
     { question: 'How is a personalized horoscope different from a generic one?', answer: 'A personalized horoscope is based on your exact birth date, time, and location, giving predictions tailored to your unique planetary positions. Generic sun-sign horoscopes apply to everyone born in the same month.' },
     { question: 'Which zodiac sign has the best horoscope today?', answer: 'Daily planetary transits affect each sign differently. Rather than a "best" sign, each sign has favorable days based on its ruling planet\'s position. An astrologer can identify your power days each week.' },
-    { question: 'How much does a daily horoscope consultation cost on Aadikarta?', answer: 'Daily horoscope consultations on Aadikarta start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' },
+    { question: 'How much does a daily horoscope consultation cost on Aadikarta Vedic Astrology?', answer: 'Daily horoscope consultations on Aadikarta Vedic Astrology start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' },
 ];
 
 const horoscopeStructuredData = {
@@ -22,9 +22,9 @@ const horoscopeStructuredData = {
         {
             '@type': 'Service',
             '@id': 'https://aadikarta.org/services/daily-horoscope#service',
-            name: 'Daily Horoscope Consultation',
+            name: 'Daily Horoscope Consultation on Aadikarta Vedic Astrology',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Personalized daily horoscope readings from expert astrologers covering love, career, health, and finance predictions for all 12 zodiac signs. Live chat sessions starting from ₹10/min.',
+            description: 'Personalized daily horoscope readings on Aadikarta Vedic Astrology from expert astrologers covering love, career, health, and finance predictions for all 12 zodiac signs.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
         },
@@ -70,8 +70,9 @@ const DailyHoroscope: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Today's Horoscope | Personalized Zodiac Predictions"
-                description="Get today's horoscope for all 12 zodiac signs, plus personalized readings from expert astrologers — love, career, health & finance. From ₹10/min."
+                title="Today's Horoscope | Personalized Zodiac Predictions | Aadikarta Vedic Astrology"
+                description="Get today's horoscope for all 12 zodiac signs on Aadikarta Vedic Astrology, plus personalized readings from expert astrologers. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, today horoscope, daily rashiphal, zodiac sign predictions, horoscope today Aadikarta"
                 structuredData={horoscopeStructuredData}
             />
             <Header />

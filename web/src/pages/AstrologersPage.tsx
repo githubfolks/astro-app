@@ -10,9 +10,9 @@ const astrologersStructuredData = {
         {
             '@type': 'CollectionPage',
             '@id': 'https://aadikarta.org/astrologers#page',
-            name: 'Expert Astrologers Online — Aadikarta',
+            name: 'Expert Astrologers Online — Aadikarta Vedic Astrology',
             url: 'https://aadikarta.org/astrologers',
-            description: 'Browse 500+ verified Vedic astrologers, tarot readers, and numerologists for live chat consultations starting from ₹10/min.',
+            description: 'Browse verified Vedic astrologers, tarot readers, and numerologists on Aadikarta Vedic Astrology for live chat consultations starting from ₹10/min.',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
             breadcrumb: {
                 '@type': 'BreadcrumbList',
@@ -24,7 +24,7 @@ const astrologersStructuredData = {
         },
         {
             '@type': 'ItemList',
-            name: 'Astrology Services on Aadikarta',
+            name: 'Astrology Services on Aadikarta Vedic Astrology',
             itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Vedic Astrology', url: 'https://aadikarta.org/services/vedic-astrology' },
                 { '@type': 'ListItem', position: 2, name: 'Kundli Matching', url: 'https://aadikarta.org/services/kundli-matching' },
@@ -41,8 +41,9 @@ const AstrologersPage: React.FC = () => {
     return (
         <div className="astrologers-page pb-20 md:pb-0">
             <SEO
-                title="Chat with Expert Astrologers Online | Vedic & Tarot"
-                description="Browse 500+ verified astrologers. Live chat for Vedic astrology, kundli matching, tarot & career guidance. Starting from ₹10/min."
+                title="Chat with Expert Astrologers Online | Aadikarta Vedic Astrology"
+                description="Browse verified astrologers on Aadikarta Vedic Astrology. Live chat for Vedic astrology, kundli matching, tarot & career guidance from ₹10/min."
+                keywords="Aadikarta Vedic Astrology, online astrologers, talk to astrologer Aadikarta, chat with Vedic astrologer, tarot readers online"
                 structuredData={astrologersStructuredData}
             />
             <Header />

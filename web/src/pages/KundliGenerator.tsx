@@ -32,10 +32,10 @@ const KundliGenerator: React.FC = () => {
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Aadikarta Kundli Generator",
+        "name": "Aadikarta Vedic Astrology Free Kundli Generator",
         "applicationCategory": "SpiritualApplication",
         "operatingSystem": "Web",
-        "description": "Generate accurate Vedic Kundli and birth charts online with Aadikarta's professional tool.",
+        "description": "Generate accurate Vedic Kundli and birth charts online with Aadikarta Vedic Astrology's free online Kundli generator.",
         "offers": {
             "@type": "Offer",
             "price": "0",
@@ -91,8 +91,9 @@ const KundliGenerator: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <SEO
-                title="Free Kundli Generator | Birth Chart Online"
-                description="Generate your free Vedic Kundli online. Get detailed birth charts and astrological insights with Aadikarta's accurate Kundli generator."
+                title="Free Kundli Generator | Birth Chart Online | Aadikarta Vedic Astrology"
+                description="Generate your free Vedic Kundli online. Detailed birth chart (Janam Patrika), planetary positions & predictions with Aadikarta Vedic Astrology's accurate Kundli generator."
+                keywords="Aadikarta Vedic Astrology, free Kundli generator, Janam Patrika online, Vedic birth chart, free online Kundli Aadikarta"
                 structuredData={structuredData}
             />
             <Header />

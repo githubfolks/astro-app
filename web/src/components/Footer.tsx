@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
                     {/* Left Column: Brand Info */}
                     <div className="footer-column brand-column">
                         <div className="footer-logo">
-                            <img src="/assets/logo.webp" alt="Aadikarta" className="h-12 w-auto" width="160" height="48" />
+                            <img src="/assets/logo.webp" alt="Aadikarta Vedic Astrology" className="h-12 w-auto" width="160" height="48" />
                         </div>
                         <p className="footer-desc">
                             Your trusted companion for astrological guidance.
@@ -100,7 +100,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; 2026 Aadikarta. All rights reserved.</p>
+                    <p>&copy; 2026 Aadikarta Vedic Astrology. All rights reserved.</p>
                     <div className="footer-legal">
                         <Link to="/privacy-policy" onClick={scrollToTop}>Privacy Policy</Link>
                         <Link to="/refund-policy" onClick={scrollToTop}>Refund Policy</Link>

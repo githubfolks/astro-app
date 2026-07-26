@@ -20,17 +20,19 @@ const AboutUs: React.FC = () => {
     const structuredData = {
         "@context": "https://schema.org",
         "@type": "Organization",
-        "name": "Aadikarta",
+        "name": "Aadikarta Vedic Astrology",
+        "alternateName": ["Aadikarta", "Aadikarta Astro"],
         "url": "https://aadikarta.org",
         "logo": "https://aadikarta.org/assets/logo.png",
-        "description": "We bridge ancient Vedic wisdom with modern life, providing authentic astrological guidance."
+        "description": "Aadikarta Vedic Astrology bridges ancient Vedic wisdom with modern technology, providing authentic online astrological guidance from verified experts."
     };
 
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="About Us | India's Trusted Online Astrology Platform"
-                description="Aadikarta is India's online marketplace for verified Vedic astrologers, tarot readers & numerologists. Our mission: accessible spiritual guidance for everyone."
+                title="About Aadikarta Vedic Astrology | India's Trusted Online Astrology Platform"
+                description="Aadikarta Vedic Astrology is India's premier online marketplace for verified Vedic astrologers, tarot readers & numerologists. Learn about our mission and story."
+                keywords="About Aadikarta Vedic Astrology, Aadikarta Astro team, online astrology platform India, verified Vedic astrologers Aadikarta"
                 structuredData={structuredData}
             />
             <Header />

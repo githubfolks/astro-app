@@ -9,8 +9,9 @@ const PrivacyPolicy: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="Privacy Policy"
-                description="Read Aadikarta's Privacy Policy to understand how we collect, use, and protect your personal information."
+                title="Privacy Policy | Aadikarta Vedic Astrology"
+                description="Read Aadikarta Vedic Astrology's Privacy Policy to understand how we collect, use, and protect your personal birth details and information."
+                keywords="Aadikarta Vedic Astrology privacy policy, data security Aadikarta, user privacy"
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl mb-4">

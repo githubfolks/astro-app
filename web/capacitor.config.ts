@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.aadikarta.web',
-  appName: 'Aadikarta',
+  appName: 'Aadikarta Vedic Astrology',
   webDir: 'dist',
   server: {
     // Allow API calls to production server

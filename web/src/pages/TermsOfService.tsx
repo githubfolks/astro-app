@@ -9,8 +9,9 @@ const TermsOfService: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="Terms of Service"
-                description="Review the Terms of Service for using Aadikarta's platform and services."
+                title="Terms of Service | Aadikarta Vedic Astrology"
+                description="Review the Terms of Service for using Aadikarta Vedic Astrology's online consultation platform and services."
+                keywords="Aadikarta Vedic Astrology terms of service, platform rules Aadikarta, user agreement"
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl mb-4">

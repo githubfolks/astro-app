@@ -11,14 +11,14 @@ const buildContactStructuredData = (supportEmail: string) => ({
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
     '@id': 'https://aadikarta.org/contact-us#page',
-    name: 'Contact Aadikarta',
+    name: 'Contact Aadikarta Vedic Astrology',
     url: 'https://aadikarta.org/contact-us',
-    description: 'Contact Aadikarta support for help with consultations, payments, astrologer queries, or technical issues.',
+    description: 'Contact Aadikarta Vedic Astrology support for help with consultations, payments, astrologer queries, or technical issues.',
     publisher: { '@id': 'https://aadikarta.org/#organization' },
     mainEntity: {
         '@type': 'Organization',
         '@id': 'https://aadikarta.org/#organization',
-        name: 'Aadikarta',
+        name: 'Aadikarta Vedic Astrology',
         email: supportEmail,
         contactPoint: {
             '@type': 'ContactPoint',
@@ -71,8 +71,9 @@ const ContactUs: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <SEO
-                title="Contact Aadikarta | Help, Support & Feedback"
-                description="Get in touch with Aadikarta's support team for help with consultations, payments, astrologer queries, or technical issues. We typically respond within 24 hours."
+                title="Contact Aadikarta Vedic Astrology | Customer Support & Help"
+                description="Get in touch with Aadikarta Vedic Astrology's support team for help with consultations, wallet payments, astrologer queries, or technical assistance."
+                keywords="Contact Aadikarta Vedic Astrology, Aadikarta customer support, Aadikarta Vedic Astrology email, talk to support Aadikarta"
                 structuredData={buildContactStructuredData(support_email)}
             />
             <Header />

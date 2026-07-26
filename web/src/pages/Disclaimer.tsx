@@ -7,8 +7,9 @@ const Disclaimer: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="Disclaimer"
-                description="Read Aadikarta's disclaimer regarding astrological services and content provided on the platform."
+                title="Disclaimer | Aadikarta Vedic Astrology"
+                description="Read Aadikarta Vedic Astrology's disclaimer regarding astrological services and content provided on the platform."
+                keywords="Aadikarta Vedic Astrology disclaimer, astrology disclaimer Aadikarta"
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl mb-4">

@@ -13,17 +13,17 @@ const joinStructuredData = {
         {
             '@type': 'WebPage',
             '@id': 'https://aadikarta.org/join-as-astrologer#page',
-            name: 'Become an Astrologer on Aadikarta',
+            name: 'Become an Astrologer on Aadikarta Vedic Astrology',
             url: 'https://aadikarta.org/join-as-astrologer',
-            description: 'Apply to join Aadikarta as a verified astrologer, tarot reader, or numerologist. Set your own rates and earn from live chat consultations.',
+            description: 'Apply to join Aadikarta Vedic Astrology as a verified astrologer, tarot reader, or numerologist. Set your own rates and earn from live chat consultations.',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
         },
         {
             '@type': 'FAQPage',
             mainEntity: [
-                { '@type': 'Question', name: 'Who can join Aadikarta as an astrologer?', acceptedAnswer: { '@type': 'Answer', text: 'Any verified Vedic astrologer, tarot card reader, numerologist, or Vastu consultant with genuine expertise can apply. You will go through a verification process before being listed on the platform.' } },
-                { '@type': 'Question', name: 'How much can I earn as an astrologer on Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'You set your own consultation rate (₹10–₹150 per minute). Your earnings depend on the number of consultations you complete and your hourly rate. Top astrologers on the platform earn over ₹1 lakh per month.' } },
-                { '@type': 'Question', name: 'Is there a fee to join Aadikarta?', acceptedAnswer: { '@type': 'Answer', text: 'No, joining Aadikarta as an astrologer is completely free. Aadikarta takes a platform commission from your earnings only when you complete a paid consultation.' } },
+                { '@type': 'Question', name: 'Who can join Aadikarta Vedic Astrology as an astrologer?', acceptedAnswer: { '@type': 'Answer', text: 'Any verified Vedic astrologer, tarot card reader, numerologist, or Vastu consultant with genuine expertise can apply. You will go through a verification process before being listed on Aadikarta Vedic Astrology.' } },
+                { '@type': 'Question', name: 'How much can I earn as an astrologer on Aadikarta Vedic Astrology?', acceptedAnswer: { '@type': 'Answer', text: 'You set your own consultation rate (₹10–₹150 per minute). Your earnings depend on the number of consultations you complete and your hourly rate. Top astrologers on Aadikarta Vedic Astrology earn over ₹1 lakh per month.' } },
+                { '@type': 'Question', name: 'Is there a fee to join Aadikarta Vedic Astrology?', acceptedAnswer: { '@type': 'Answer', text: 'No, joining Aadikarta Vedic Astrology as an astrologer is completely free. Aadikarta Vedic Astrology takes a platform commission from your earnings only when you complete a paid consultation.' } },
                 { '@type': 'Question', name: 'How long does the verification process take?', acceptedAnswer: { '@type': 'Answer', text: 'The verification process typically takes 2–3 business days after you submit your application and credentials.' } },
             ],
         },
@@ -168,8 +168,9 @@ export const JoinAsAstrologer: React.FC = () => {
                 <ArrowLeft size={20} /> Back to Home
             </Link>
             <SEO
-                title="Become an Astrologer on Aadikarta | Work Online & Earn from Home"
-                description="Are you a Vedic astrologer, tarot reader, or numerologist? Join Aadikarta to connect with thousands of seekers, set your own consultation rates, and earn from live chat sessions. Apply now."
+                title="Become an Astrologer on Aadikarta Vedic Astrology | Work Online & Earn"
+                description="Are you a Vedic astrologer, tarot reader, or numerologist? Join Aadikarta Vedic Astrology to connect with thousands of seekers, set your own consultation rates, and earn from live chat sessions. Apply now."
+                keywords="Aadikarta Vedic Astrology astrologer registration, join Aadikarta Vedic Astrology, astrologer jobs online, work as online astrologer, earn as astrologer"
                 structuredData={joinStructuredData}
             />
             <div className="decor-circle decor-1"></div>

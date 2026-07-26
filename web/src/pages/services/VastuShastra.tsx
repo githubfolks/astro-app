@@ -13,7 +13,7 @@ const faqs = [
     { question: 'What is Vastu Shastra?', answer: 'Vastu Shastra is an ancient Indian science of architecture and spatial arrangement that aligns buildings with natural forces, the five elements (Pancha Bhuta), and cardinal directions to promote well-being and prosperity.' },
     { question: 'Can Vastu remedies be done without demolition?', answer: 'Yes, many Vastu doshas can be corrected without structural changes using remedies like mirrors, crystals, plants, color schemes, furniture placement, and yantras.' },
     { question: 'Which direction should the main door face according to Vastu?', answer: 'North, northeast, or east-facing main doors are generally considered auspicious in Vastu Shastra. South and southwest-facing doors may require specific remedies.' },
-    { question: 'How much does a Vastu consultation cost on Aadikarta?', answer: 'Vastu consultations on Aadikarta start from ₹10 per minute. A full home or office Vastu analysis typically takes 30–60 minutes depending on the property size.' },
+    { question: 'How much does a Vastu consultation cost on Aadikarta Vedic Astrology?', answer: 'Vastu consultations on Aadikarta Vedic Astrology start from ₹10 per minute. A full home or office Vastu analysis typically takes 30–60 minutes depending on the property size.' },
 ];
 
 const vastuStructuredData = {
@@ -22,9 +22,9 @@ const vastuStructuredData = {
         {
             '@type': 'Service',
             '@id': 'https://aadikarta.org/services/vastu-shastra#service',
-            name: 'Vastu Shastra Consultation Online',
+            name: 'Vastu Shastra Consultation Online on Aadikarta Vedic Astrology',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Expert Vastu Shastra consultation for homes, offices, and plots from certified Vastu consultants. Room-by-room analysis, dosha remedies, and energy balancing to attract prosperity and peace.',
+            description: 'Expert Vastu Shastra consultation for homes, offices, and plots on Aadikarta Vedic Astrology from certified Vastu consultants. Room analysis, dosha remedies, and energy balancing.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
         },
@@ -55,8 +55,9 @@ const VastuShastra: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Vastu Shastra Consultation Online | Expert Vastu Advice"
-                description="Expert Vastu Shastra consultation for home & office from certified consultants. Room analysis, dosha remedies & energy balancing. From ₹10/min."
+                title="Vastu Shastra Consultation Online | Expert Vastu Advice | Aadikarta Vedic Astrology"
+                description="Expert Vastu Shastra consultation for home & office on Aadikarta Vedic Astrology from certified consultants. Room analysis, dosha remedies & energy balancing. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, Vastu Shastra online, Vastu consultation Aadikarta, home Vastu remedies, Vastu expert chat"
                 structuredData={vastuStructuredData}
             />
             <Header />
