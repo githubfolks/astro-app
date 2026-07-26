@@ -19,12 +19,21 @@ const AboutUs: React.FC = () => {
 
     const structuredData = {
         "@context": "https://schema.org",
-        "@type": "Organization",
+        "@type": ["Organization", "Corporation"],
+        "@id": "https://aadikarta.org/#organization",
         "name": "Aadikarta Vedic Astrology",
+        "legalName": "Aadikarta Private Limited",
         "alternateName": ["Aadikarta", "Aadikarta Astro"],
         "url": "https://aadikarta.org",
         "logo": "https://aadikarta.org/assets/logo.png",
-        "description": "Aadikarta Vedic Astrology bridges ancient Vedic wisdom with modern technology, providing authentic online astrological guidance from verified experts."
+        "description": "Aadikarta Vedic Astrology bridges ancient Vedic wisdom with modern technology, providing authentic online astrological guidance from verified experts.",
+        "disambiguatingDescription": "Aadikarta.org is a private limited company specializing in Vedic services and is not associated with any public figures or other entities sharing a similar name.",
+        "sameAs": [
+            "https://www.facebook.com/aadikartaastro",
+            "https://x.com/astro_aadikarta",
+            "https://www.instagram.com/astro_aadikarta/",
+            "https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw"
+        ]
     };
 
     return (

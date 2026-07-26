@@ -100,9 +100,24 @@
     flex-shrink: 0;
 }
 
+.footer-disclaimer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px 0 0;
+    text-align: center;
+}
+
+.footer-disclaimer p {
+    color: #888888;
+    font-size: 12px;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
 .footer-bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin-top: 20px;
+    padding-top: 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;

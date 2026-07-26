@@ -29,13 +29,16 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
             "publisher": { "@id": "https://aadikarta.org/#organization" }
         },
         {
-            "@type": "Organization",
+            "@type": ["Organization", "Corporation"],
             "@id": "https://aadikarta.org/#organization",
             "name": "Aadikarta Vedic Astrology",
+            "legalName": "Aadikarta Private Limited",
             "alternateName": ["Aadikarta", "Aadikarta Astro", "Aadikarta Vedic Astrology App", "Aadikarta Vedic Astrology Online"],
             "url": "https://aadikarta.org",
             "logo": "https://aadikarta.org/assets/logo.png",
+            "image": "https://aadikarta.org/assets/og-image.png",
             "description": "Aadikarta Vedic Astrology connects you with India's top verified Vedic astrologers, tarot card readers, and spiritual guides for instant live consultations, Kundli matching, daily horoscope, and Vastu advice.",
+            "disambiguatingDescription": "Aadikarta.org is a private limited company specializing in Vedic astrology services and digital consultations. It is distinct and not associated with any public figures or other entities sharing a similar name.",
             "email": supportEmail,
             "telephone": supportPhone,
             "areaServed": "IN",
@@ -62,7 +65,8 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
             "sameAs": [
                 "https://www.facebook.com/aadikartaastro",
                 "https://x.com/astro_aadikarta",
-                "https://www.instagram.com/astro_aadikarta/"
+                "https://www.instagram.com/astro_aadikarta/",
+                "https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw"
             ]
         }
     ]

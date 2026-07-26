@@ -99,6 +99,12 @@ const Footer: React.FC = () => {
                     </div>
                 </div>
 
+                <div className="footer-disclaimer">
+                    <p>
+                        Aadikarta.org is a private limited company specializing in Vedic services and is not associated with any public figures or other entities sharing a similar name.
+                    </p>
+                </div>
+
                 <div className="footer-bottom">
                     <p>&copy; 2026 Aadikarta Vedic Astrology. All rights reserved.</p>
                     <div className="footer-legal">

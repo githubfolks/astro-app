@@ -16,10 +16,20 @@ const buildContactStructuredData = (supportEmail: string) => ({
     description: 'Contact Aadikarta Vedic Astrology support for help with consultations, payments, astrologer queries, or technical issues.',
     publisher: { '@id': 'https://aadikarta.org/#organization' },
     mainEntity: {
-        '@type': 'Organization',
+        '@type': ['Organization', 'Corporation'],
         '@id': 'https://aadikarta.org/#organization',
         name: 'Aadikarta Vedic Astrology',
+        legalName: 'Aadikarta Private Limited',
+        url: 'https://aadikarta.org',
+        logo: 'https://aadikarta.org/assets/logo.png',
+        disambiguatingDescription: 'Aadikarta.org is a private limited company specializing in Vedic services and is not associated with any public figures or other entities sharing a similar name.',
         email: supportEmail,
+        sameAs: [
+            'https://www.facebook.com/aadikartaastro',
+            'https://x.com/astro_aadikarta',
+            'https://www.instagram.com/astro_aadikarta/',
+            'https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw'
+        ],
         contactPoint: {
             '@type': 'ContactPoint',
             email: supportEmail,
