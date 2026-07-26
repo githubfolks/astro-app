@@ -66,7 +66,8 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
                 "https://www.facebook.com/aadikartaastro",
                 "https://x.com/astro_aadikarta",
                 "https://www.instagram.com/astro_aadikarta/",
-                "https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw"
+                "https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw",
+                "https://www.linkedin.com/in/aadikarta-vedic-astrology"
             ]
         }
     ]

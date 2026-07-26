@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, ArrowUp } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Linkedin, Mail, Phone, ArrowUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSupportContact } from '../hooks/useSupportContact';
 import './Footer.css';
@@ -46,6 +46,7 @@ const Footer: React.FC = () => {
                             <a href="https://x.com/astro_aadikarta" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Twitter profile"><Twitter size={20} /></a>
                             <a href="https://www.instagram.com/astro_aadikarta/" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Instagram profile"><Instagram size={20} /></a>
                             <a href="https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our YouTube channel"><Youtube size={20} /></a>
+                            <a href="https://www.linkedin.com/in/aadikarta-vedic-astrology" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our LinkedIn profile"><Linkedin size={20} /></a>
                         </div>
                     </div>
 
