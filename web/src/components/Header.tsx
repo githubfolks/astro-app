@@ -1,9 +1,124 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Home, Users, BookOpen, ChevronDown, LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Menu, X, Home, Users, BookOpen, ChevronDown, LayoutDashboard, LogOut, User as UserIcon, ArrowLeft, Sun, Heart, Info, Star, HelpCircle, Briefcase, Phone } from 'lucide-react';
 import './Header.css';
 
 import { useAuth } from '../context/AuthContext';
+import { isNative } from '../utils/platform';
+import { getPageTitle } from '../utils/pageTitles';
+
+const NATIVE_TAB_ROOTS = ['/', '/astrologers', '/dashboard'];
+
+const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const getDisplayName = () => {
+        if (!user) return '';
+        if (user.full_name) return user.full_name.split(' ')[0];
+        return user.email?.split('@')[0] || (user.role === 'SEEKER' ? 'User' : user.role === 'TUTOR' ? 'Tutor' : 'Astrologer');
+    };
+
+    const go = (path: string) => {
+        onClose();
+        navigate(path);
+    };
+
+    const handleLogout = () => {
+        logout();
+        onClose();
+        navigate('/');
+    };
+
+    return createPortal(
+        <div className="native-drawer-backdrop" onClick={onClose}>
+            <div className="native-drawer-panel" onClick={(e) => e.stopPropagation()}>
+                <div className="native-drawer-header">
+                    {user ? (
+                        <button className="native-drawer-user" onClick={() => go('/dashboard')}>
+                            <div className="native-drawer-avatar">{getDisplayName()[0]?.toUpperCase()}</div>
+                            <div>
+                                <p className="native-drawer-user-name">{getDisplayName()}</p>
+                                <p className="native-drawer-user-role">
+                                    {user.role === 'SEEKER' ? 'Seeker' : user.role === 'TUTOR' ? 'Tutor' : 'Astrologer'}
+                                </p>
+                            </div>
+                        </button>
+                    ) : (
+                        <button className="native-drawer-user" onClick={() => go('/login')}>
+                            <div className="native-drawer-avatar"><UserIcon size={18} /></div>
+                            <p className="native-drawer-user-name">Login</p>
+                        </button>
+                    )}
+                    <button className="native-drawer-close" onClick={onClose} aria-label="Close menu">
+                        <X size={20} />
+                    </button>
+                </div>
+
+                <nav className="native-drawer-nav">
+                    <button onClick={() => go('/about-us')}><Info size={18} /> About Us</button>
+                    <button onClick={() => go('/astrologers')}><Star size={18} /> Our Astrologers</button>
+                    <button onClick={() => go('/blog')}><BookOpen size={18} /> Blog</button>
+                    <button onClick={() => go('/how-it-works')}><HelpCircle size={18} /> How It Works</button>
+                    <button onClick={() => go('/join-as-astrologer')}><Briefcase size={18} /> Join as Astrologer</button>
+                    <button onClick={() => go('/contact-us')}><Phone size={18} /> Contact Us</button>
+                    <button onClick={() => go('/services/daily-horoscope')}><Sun size={18} /> Daily Horoscope</button>
+                    <button onClick={() => go('/services/kundli-matching')}><Users size={18} /> Kundli Matching</button>
+                    <button onClick={() => go('/services/love-advice')}><Heart size={18} /> Love Advice</button>
+                </nav>
+
+                <div className="native-drawer-legal">
+                    <button onClick={() => go('/privacy-policy')}>Privacy Policy</button>
+                    <button onClick={() => go('/terms-of-service')}>Terms of Service</button>
+                    <button onClick={() => go('/refund-policy')}>Refund Policy</button>
+                    <button onClick={() => go('/disclaimer')}>Disclaimer</button>
+                </div>
+
+                {user && (
+                    <button className="native-drawer-logout" onClick={handleLogout}>
+                        <LogOut size={18} /> Logout
+                    </button>
+                )}
+            </div>
+        </div>,
+        document.body
+    );
+};
+
+const NativeAppBar: React.FC = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const showBack = !NATIVE_TAB_ROOTS.includes(location.pathname);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    return (
+        <header className="native-app-bar">
+            <div className="native-app-bar-content">
+                {showBack ? (
+                    <button
+                        className="native-app-bar-back"
+                        onClick={() => navigate(-1)}
+                        aria-label="Go back"
+                    >
+                        <ArrowLeft size={22} />
+                    </button>
+                ) : (
+                    <span className="native-app-bar-spacer" />
+                )}
+                <span className="native-app-bar-title">{getPageTitle(location.pathname)}</span>
+                <button
+                    className="native-app-bar-menu"
+                    onClick={() => setIsDrawerOpen(true)}
+                    aria-label="Open menu"
+                >
+                    <Menu size={22} />
+                </button>
+            </div>
+            {isDrawerOpen && <NativeDrawer onClose={() => setIsDrawerOpen(false)} />}
+        </header>
+    );
+};
 
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,10 +126,6 @@ const Header: React.FC = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const dropdownRef = useRef<HTMLDivElement>(null);
-
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-    };
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -26,6 +137,14 @@ const Header: React.FC = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    if (isNative()) {
+        return <NativeAppBar />;
+    }
+
+    const toggleMenu = () => {
+        setIsMenuOpen(!isMenuOpen);
+    };
 
     const handleLogout = () => {
         logout();

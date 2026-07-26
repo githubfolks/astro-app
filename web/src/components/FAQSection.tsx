@@ -1,4 +1,5 @@
 import React from 'react';
+import { isNative } from '../utils/platform';
 
 export interface FAQItem {
     question: string;
@@ -12,6 +13,7 @@ interface FAQSectionProps {
 
 const FAQSection: React.FC<FAQSectionProps> = ({ faqs, title = "Frequently Asked Questions" }) => {
     if (!faqs || faqs.length === 0) return null;
+    if (isNative()) return null;
 
     return (
         <section className="faq-section max-w-4xl mx-auto px-6 py-12" data-aos="fade-up">

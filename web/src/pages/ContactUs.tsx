@@ -25,7 +25,7 @@ const buildContactStructuredData = (supportEmail: string) => ({
         disambiguatingDescription: 'Aadikarta.org is a private limited company specializing in Vedic services and is not associated with any public figures or other entities sharing a similar name.',
         email: supportEmail,
         sameAs: [
-            'https://www.facebook.com/aadikartaastro',
+            'https://www.facebook.com/astroaadikarta',
             'https://x.com/astro_aadikarta',
             'https://www.instagram.com/astro_aadikarta/',
             'https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw',

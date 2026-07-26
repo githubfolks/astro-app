@@ -275,3 +275,27 @@
         height: 40px;
     }
 }
+
+/* Minimal native app footer */
+.native-app .native-footer {
+    padding: 28px 0 24px;
+}
+
+.native-app .native-footer .footer-logo {
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.native-app .native-footer .social-links {
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.native-app .native-footer .footer-bottom {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+}

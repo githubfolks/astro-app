@@ -63,7 +63,7 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
                 "areaServed": "IN"
             },
             "sameAs": [
-                "https://www.facebook.com/aadikartaastro",
+                "https://www.facebook.com/astroaadikarta",
                 "https://x.com/astro_aadikarta",
                 "https://www.instagram.com/astro_aadikarta/",
                 "https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw",

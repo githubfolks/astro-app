@@ -1,8 +1,9 @@
-import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { RealtimeProvider } from './context/RealtimeContext';
 import { isNative, getPlatform } from './utils/platform';
+import { storage } from './utils/storage';
 import { App as CapApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
@@ -11,6 +12,9 @@ import ScrollToTop from './components/ScrollToTop';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
+const MobileHome = lazy(() => import('./pages/MobileHome'));
+const HomeRoute: React.FC = () => (isNative() ? <MobileHome /> : <Home />);
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
 const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(module => ({ default: module.ForgotPassword })));
@@ -117,6 +121,30 @@ const NativeInitializer: React.FC = () => {
     return null;
 };
 
+// Shows a one-time onboarding carousel on native before the first launch's routes render
+const OnboardingGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [status, setStatus] = useState<'checking' | 'show' | 'done'>(isNative() ? 'checking' : 'done');
+
+    useEffect(() => {
+        if (!isNative()) return;
+        storage.getItem('onboarding_complete').then((value) => {
+            setStatus(value === 'true' ? 'done' : 'show');
+        });
+    }, []);
+
+    if (status === 'checking') {
+        return <div style={{ position: 'fixed', inset: 0, background: '#FFF9F0' }} />;
+    }
+    if (status === 'show') {
+        return (
+            <Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#FFF9F0' }} />}>
+                <Onboarding onComplete={() => setStatus('done')} />
+            </Suspense>
+        );
+    }
+    return <>{children}</>;
+};
+
 function App() {
     return (
         <Router>
@@ -124,9 +152,10 @@ function App() {
                 <RealtimeProvider>
                     <ScrollToTop />
                     <NativeInitializer />
+                    <OnboardingGate>
                     <Suspense fallback={<PageLoader />}>
                         <Routes>
-                            <Route path="/" element={<Home />} />
+                            <Route path="/" element={<HomeRoute />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/verify-email" element={<VerifyEmail />} />
@@ -208,6 +237,7 @@ function App() {
                         </Routes>
                     </Suspense>
                     <MobileNavBar />
+                    </OnboardingGate>
                 </RealtimeProvider>
             </AuthProvider>
         </Router>

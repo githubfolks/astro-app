@@ -2,7 +2,32 @@ import React, { useState, useEffect } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Linkedin, Mail, Phone, ArrowUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useSupportContact } from '../hooks/useSupportContact';
+import { isNative } from '../utils/platform';
 import './Footer.css';
+
+const NativeFooter: React.FC = () => (
+    <footer className="footer-section native-footer">
+        <div className="container">
+            <div className="footer-logo">
+                <img src="/assets/logo.webp" alt="Aadikarta Vedic Astrology" className="h-12 w-auto" width="160" height="48" />
+            </div>
+            <div className="social-links">
+                <a href="https://www.facebook.com/astroaadikarta" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Facebook page"><Facebook size={20} /></a>
+                <a href="https://x.com/astro_aadikarta" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Twitter profile"><Twitter size={20} /></a>
+                <a href="https://www.instagram.com/astro_aadikarta/" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Instagram profile"><Instagram size={20} /></a>
+                <a href="https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our YouTube channel"><Youtube size={20} /></a>
+                <a href="https://www.linkedin.com/in/aadikarta-vedic-astrology" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our LinkedIn profile"><Linkedin size={20} /></a>
+            </div>
+            <div className="footer-bottom">
+                <p>&copy; 2026 Aadikarta Vedic Astrology. All rights reserved.</p>
+                <div className="footer-legal">
+                    <Link to="/privacy-policy">Privacy Policy</Link>
+                    <Link to="/terms-of-service">Terms of Service</Link>
+                </div>
+            </div>
+        </div>
+    </footer>
+);
 
 const Footer: React.FC = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -20,6 +45,10 @@ const Footer: React.FC = () => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    if (isNative()) {
+        return <NativeFooter />;
+    }
 
     const scrollToTop = () => {
         window.scrollTo({
@@ -42,7 +71,7 @@ const Footer: React.FC = () => {
                             Connecting you with India's best astrologers for a better tomorrow.
                         </p>
                         <div className="social-links">
-                            <a href="https://www.facebook.com/aadikartaastro" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Facebook page"><Facebook size={20} /></a>
+                            <a href="https://www.facebook.com/astroaadikarta" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Facebook page"><Facebook size={20} /></a>
                             <a href="https://x.com/astro_aadikarta" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Twitter profile"><Twitter size={20} /></a>
                             <a href="https://www.instagram.com/astro_aadikarta/" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our Instagram profile"><Instagram size={20} /></a>
                             <a href="https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Visit our YouTube channel"><Youtube size={20} /></a>
