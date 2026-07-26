@@ -30,7 +30,12 @@ const BlogPost: React.FC = () => {
                 "datePublished": p.published_at,
                 "dateModified": p.updated_at || p.published_at,
                 "author": p.author_name
-                    ? { "@type": "Person", "name": p.author_name }
+                    ? {
+                        "@type": "Person",
+                        "name": p.author_name,
+                        "jobTitle": "Certified Astrologer & Columnist",
+                        "worksFor": { "@id": "https://aadikarta.org/#organization" }
+                    }
                     : { "@type": "Organization", "name": "Aadikarta Vedic Astrology", "@id": "https://aadikarta.org/#organization" },
                 "publisher": {
                     "@type": "Organization",

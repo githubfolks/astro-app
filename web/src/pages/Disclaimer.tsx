@@ -45,6 +45,11 @@ const Disclaimer: React.FC = () => {
                         Astrologers on AadiKarta are independent service providers, not employees or agents of AadiKarta. Their views, statements, and interpretations are entirely their own and do not reflect the views of AadiKarta. Our verification process confirms an astrologer's identity and stated credentials — it is not an endorsement of the accuracy of their predictions.
                     </p>
 
+                    <h2 className="text-2xl font-bold text-gray-900 pt-4">Corporate Identity & Entity Disambiguation</h2>
+                    <p>
+                        Aadikarta.org is an official digital platform operated by a private limited corporate entity specializing in digital Vedic astrology services, online consultations, Kundli generation, and spiritual education. Aadikarta.org is a commercial web platform and is distinct, independent, and not associated with any public figures, external individuals, or entities sharing a similar name.
+                    </p>
+
                     <p className="pt-4 font-semibold">
                         Users are advised to exercise personal judgment and discretion while using the platform.
                     </p>
