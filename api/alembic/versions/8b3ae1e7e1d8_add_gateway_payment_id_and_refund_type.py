@@ -1,6 +1,6 @@
 """add_gateway_payment_id_and_refund_type
 
-Revision ID: a1b2c3d4e5f6
+Revision ID: 8b3ae1e7e1d8
 Revises: c01309f9b27f
 Create Date: 2026-07-27 00:00:00.000000
 
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision: str = 'a1b2c3d4e5f6'
+revision: str = '8b3ae1e7e1d8'
 down_revision: Union[str, Sequence[str], None] = 'c01309f9b27f'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
