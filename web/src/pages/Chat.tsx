@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import { KundliContent } from '../components/KundliPanel';
 import PreChatQuestionsModal from '../components/PreChatQuestionsModal';
-import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff } from 'lucide-react';
+import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
@@ -148,6 +148,8 @@ export const Chat: React.FC = () => {
                     setAstrologer({
                         id: astroData.user_id,
                         full_name: astroData.full_name,
+                        display_name: astroData.display_name,
+                        total_consultations: astroData.total_consultations,
                         profile_picture_url: astroData.profile_picture_url,
                         specialties: astroData.specialties,
                         languages: astroData.languages,
@@ -175,6 +177,19 @@ export const Chat: React.FC = () => {
 
 
     const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, talkTimeSeconds, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
+
+    // Groq-generated coaching hint for the astrologer: refreshed whenever the seeker sends a new message.
+    const [coachHint, setCoachHint] = useState<string | null>(null);
+    const lastHintedMsgId = useRef<number | undefined>(undefined);
+    useEffect(() => {
+        if (user?.role !== 'ASTROLOGER' || !activeConsultationId || messages.length === 0) return;
+        const last = messages[messages.length - 1];
+        if (last.sender_id === user.id || last.id === undefined || last.id === lastHintedMsgId.current) return;
+        lastHintedMsgId.current = last.id;
+        api.chatHints.getHint(activeConsultationId)
+            .then((res: { hint: string | null }) => setCoachHint(res.hint || null))
+            .catch(() => { /* hints are best-effort; stay silent on failure */ });
+    }, [messages, user, activeConsultationId]);
 
     // Translate the other party's messages into Hindi when that toggle is on
     useEffect(() => {
@@ -940,6 +955,15 @@ export const Chat: React.FC = () => {
 
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                            {user?.role === 'SEEKER' && astrologer && messages.length === 0 && (
+                                <div className="bg-orange-50 border border-orange-200 text-orange-800 rounded-xl p-3 flex items-start gap-2 text-sm animate-fade-in">
+                                    <Megaphone size={16} className="flex-shrink-0 text-orange-500 mt-0.5" />
+                                    <span>
+                                        You are connected with <span className="font-bold">{astrologer.display_name || astrologer.full_name}</span>.{' '}
+                                        {astrologer.full_name.split(' ')[0]} has guided <span className="font-bold">{astrologer.total_consultations}+</span> people with {astrologer.specialties}.
+                                    </span>
+                                </div>
+                            )}
                             {messages.map((msg, idx) => {
                                 const isMe = msg.sender_id === user?.id;
                                 const isImage = msg.message_type === 'image' && !!msg.media_url;
@@ -991,6 +1015,17 @@ export const Chat: React.FC = () => {
                             </div>
                         )}
 
+                        {/* Groq coaching hint (Astrologer only) — suggests how to respond to the seeker */}
+                        {user?.role === 'ASTROLOGER' && coachHint && (
+                            <div className="bg-amber-50 border-t border-amber-200 px-4 py-2.5 flex items-start gap-2 text-amber-800 text-sm flex-shrink-0 animate-fade-in">
+                                <Lightbulb size={16} className="flex-shrink-0 text-amber-500 mt-0.5" />
+                                <span className="flex-1">{coachHint}</span>
+                                <button onClick={() => setCoachHint(null)} className="text-amber-400 hover:text-amber-700 flex-shrink-0">
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        )}
+
                         {/* Input Area */}
                         <form onSubmit={handleSend} className="bg-white p-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
                             {user?.role === 'ASTROLOGER' && speech.isSupported && (
@@ -1012,6 +1047,8 @@ export const Chat: React.FC = () => {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Type your message..."
+                                spellCheck
+                                lang={chatLanguage === 'hi' ? 'hi' : 'en'}
                                 className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-6 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner"
                                 disabled={status === 'ENDED'}
                             />

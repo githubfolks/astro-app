@@ -410,6 +410,20 @@ export const api = {
         }
     },
 
+    chatHints: {
+        getHint: async (consultation_id: number | string) => {
+            const response = await customFetch(`${API_URL}/chat/hint`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ consultation_id })
+            });
+            return handleResponse(response, 'Failed to get chat hint');
+        }
+    },
+
     chatImage: {
         shareImage: async (consultation_id: number | string, blob: Blob, caption = 'Kundli Chart') => {
             const form = new FormData();

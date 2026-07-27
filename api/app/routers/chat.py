@@ -874,3 +874,97 @@ def translate_message(
         raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
 
     return TranslateResponse(translated_text=translated)
+
+
+# --- Astrologer coaching hints (Groq) ---
+
+_HINT_SYSTEM_PROMPT = (
+    "You are a coaching assistant whispering tips to an astrologer during a live paid chat "
+    "with a seeker. Based on the recent conversation, give ONE short actionable tip (max 25 "
+    "words, in Hindi/Hinglish) on how to respond next — e.g. greet them by name, ask a "
+    "clarifying question about their concern, or reassure them. Output only the tip text, "
+    "no preamble, no quotes."
+)
+
+
+class HintRequest(BaseModel):
+    consultation_id: int
+
+
+class HintResponse(BaseModel):
+    hint: str | None
+
+
+@router.post("/hint", response_model=HintResponse)
+@limiter.limit("20/minute")
+def get_chat_hint(
+    request: Request,
+    payload: HintRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=403, detail="Only astrologers can request chat hints")
+
+    consultation = db.query(models.Consultation).filter(models.Consultation.id == payload.consultation_id).first()
+    if not consultation or current_user.id != consultation.astrologer_id:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    recent = (
+        db.query(models.ChatMessage)
+        .filter(models.ChatMessage.consultation_id == payload.consultation_id)
+        .order_by(models.ChatMessage.timestamp.desc())
+        .limit(6)
+        .all()
+    )
+    if not recent:
+        return HintResponse(hint=None)
+
+    recent = list(reversed(recent))
+    if recent[-1].sender_id == current_user.id:
+        # Astrologer spoke last — nothing to coach a reply to yet.
+        return HintResponse(hint=None)
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return HintResponse(hint=None)
+
+    transcript = "\n".join(
+        f"{'Astrologer' if m.sender_id == current_user.id else 'Seeker'}: {m.message}"
+        for m in recent if m.message_type == "text" and m.message
+    )
+    if not transcript:
+        return HintResponse(hint=None)
+
+    body = {
+        "model": _TRANSLATE_MODEL,
+        "messages": [
+            {"role": "system", "content": _HINT_SYSTEM_PROMPT},
+            {"role": "user", "content": transcript},
+        ],
+        "max_tokens": 100,
+        "temperature": 0.4,
+    }
+
+    try:
+        response = httpx.post(
+            _TRANSLATE_GROQ_URL,
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        logger.error(f"Hint: Groq request failed: {e}")
+        return HintResponse(hint=None)
+
+    if response.status_code != 200:
+        logger.error(f"Hint: Groq error {response.status_code}: {response.text[:500]}")
+        return HintResponse(hint=None)
+
+    try:
+        hint = (response.json()["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, ValueError) as e:
+        logger.error(f"Hint: unexpected Groq response shape: {e}")
+        return HintResponse(hint=None)
+
+    return HintResponse(hint=hint or None)
