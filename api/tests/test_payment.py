@@ -1,7 +1,9 @@
 """Tests for the payment money-path using the built-in Razorpay mock mode
 (no network). Covers order creation, mock verification crediting the wallet,
 the mock-disabled guard, and idempotency."""
+from decimal import Decimal
 from app import models
+from app.routers import payment as payment_router
 from tests.conftest import auth_headers
 
 
@@ -67,3 +69,87 @@ def test_verify_is_idempotent(client, make_user, monkeypatch):
     # Wallet credited only once.
     bal = client.get("/wallet/balance", headers=auth_headers(seeker))
     assert float(bal.json()["balance"]) == 100.0
+
+
+class _FakePaymentAPI:
+    def refund(self, payment_id, data):
+        return {"id": "rfnd_test_1", "amount": data["amount"]}
+
+
+class _FakeRazorpayClient:
+    payment = _FakePaymentAPI()
+
+
+def test_refund_requires_admin(client, make_user):
+    seeker = make_user(models.UserRole.SEEKER)
+    resp = client.post("/payment/refund/1", headers=auth_headers(seeker), json={})
+    assert resp.status_code == 403
+
+
+def test_refund_credits_back_to_gateway_and_debits_wallet(client, make_user, db_session, monkeypatch):
+    monkeypatch.setattr(payment_router, "client", _FakeRazorpayClient())
+    admin = make_user(models.UserRole.ADMIN)
+    seeker = make_user(models.UserRole.SEEKER, balance=50.0)
+
+    txn = models.WalletTransaction(
+        user_id=seeker.id,
+        amount=Decimal("100.0"),
+        transaction_type=models.TransactionType.PAYMENT_GATEWAY,
+        description="Razorpay Payment: pay_real_123",
+        reference_id="order_real_abc",
+        gateway_payment_id="pay_real_123",
+    )
+    db_session.add(txn)
+    db_session.commit()
+    db_session.refresh(txn)
+
+    resp = client.post(f"/payment/refund/{txn.id}", headers=auth_headers(admin), json={"amount": 40})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["refunded_amount"] == 40.0
+    assert body["razorpay_refund_id"] == "rfnd_test_1"
+
+    bal = client.get("/wallet/balance", headers=auth_headers(seeker))
+    assert float(bal.json()["balance"]) == 10.0  # 50 - 40
+
+
+def test_refund_cannot_exceed_remaining_amount(client, make_user, db_session, monkeypatch):
+    monkeypatch.setattr(payment_router, "client", _FakeRazorpayClient())
+    admin = make_user(models.UserRole.ADMIN)
+    seeker = make_user(models.UserRole.SEEKER, balance=100.0)
+
+    txn = models.WalletTransaction(
+        user_id=seeker.id,
+        amount=Decimal("100.0"),
+        transaction_type=models.TransactionType.PAYMENT_GATEWAY,
+        description="Razorpay Payment: pay_real_456",
+        reference_id="order_real_def",
+        gateway_payment_id="pay_real_456",
+    )
+    db_session.add(txn)
+    db_session.commit()
+    db_session.refresh(txn)
+
+    resp = client.post(f"/payment/refund/{txn.id}", headers=auth_headers(admin), json={"amount": 150})
+    assert resp.status_code == 400
+
+
+def test_refund_blocks_mock_payment(client, make_user, db_session, monkeypatch):
+    monkeypatch.setattr(payment_router, "client", _FakeRazorpayClient())
+    admin = make_user(models.UserRole.ADMIN)
+    seeker = make_user(models.UserRole.SEEKER)
+
+    txn = models.WalletTransaction(
+        user_id=seeker.id,
+        amount=Decimal("100.0"),
+        transaction_type=models.TransactionType.PAYMENT_GATEWAY,
+        description="Mock payment",
+        reference_id="order_mock_10000_abc",
+        gateway_payment_id="pay_mock_1",
+    )
+    db_session.add(txn)
+    db_session.commit()
+    db_session.refresh(txn)
+
+    resp = client.post(f"/payment/refund/{txn.id}", headers=auth_headers(admin), json={})
+    assert resp.status_code == 400

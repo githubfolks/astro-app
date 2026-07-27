@@ -38,6 +38,7 @@ class TransactionType(str, enum.Enum):
     CHAT_DEDUCTION = "CHAT_DEDUCTION"
     CHAT_REFUND = "CHAT_REFUND"
     PAYMENT_GATEWAY = "PAYMENT_GATEWAY"
+    PAYMENT_REFUND = "PAYMENT_REFUND"
     COURSE_PURCHASE = "COURSE_PURCHASE"
     PACKAGE_PURCHASE = "PACKAGE_PURCHASE"
 
@@ -152,6 +153,10 @@ class WalletTransaction(Base):
     amount = Column(DECIMAL(10, 2), nullable=False) # Positive for credit, negative for debit
     transaction_type = Column(Enum(TransactionType), nullable=False)
     reference_id = Column(String) # Can be Consultation ID or Payment Gateway ID
+    # Razorpay payment id (pay_xxx) for PAYMENT_GATEWAY transactions — refunds
+    # are issued against the payment, not the order, so this must be captured
+    # separately from reference_id (which stores the order id).
+    gateway_payment_id = Column(String, nullable=True)
     description = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

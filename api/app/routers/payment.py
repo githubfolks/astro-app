@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from .. import models, schemas, database, audit
-from .auth import get_current_user
+from .auth import get_current_user, get_current_admin
 import razorpay
 import uuid
 import os
@@ -40,6 +40,10 @@ class PaymentVerification(BaseModel):
     razorpay_order_id: str
     razorpay_payment_id: str
     razorpay_signature: str
+
+class RefundRequest(BaseModel):
+    amount: float | None = None  # In Rupees. Defaults to the full remaining (unrefunded) amount.
+    notes: str | None = None
 
 @router.post("/order")
 def create_payment_order(order: OrderCreate, current_user: models.User = Depends(get_current_user)):
@@ -141,7 +145,8 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             amount=amount_paid_inr,
             transaction_type=models.TransactionType.PAYMENT_GATEWAY,
             description=f"Razorpay Payment: {data.razorpay_payment_id} {'(MOCK)' if data.razorpay_order_id.startswith('order_mock') else ''}",
-            reference_id=data.razorpay_order_id
+            reference_id=data.razorpay_order_id,
+            gateway_payment_id=data.razorpay_payment_id
         )
         db.add(txn)
         
@@ -214,10 +219,96 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
         amount=amount_inr,
         transaction_type=models.TransactionType.PAYMENT_GATEWAY,
         description=f"Razorpay webhook: {payment_id}",
-        reference_id=order_id
+        reference_id=order_id,
+        gateway_payment_id=payment_id
     )
     db.add(txn)
     audit.log(db, "WALLET_TOPPED_UP_VIA_WEBHOOK", resource_type="user", resource_id=user_id,
               details={"amount": amount_inr, "order_id": order_id, "payment_id": payment_id})
     db.commit()
     return {"status": "ok"}
+
+
+@router.post("/refund/{transaction_id}")
+def refund_payment(
+    transaction_id: int,
+    data: RefundRequest,
+    db: Session = Depends(database.get_db),
+    admin: models.User = Depends(get_current_admin)
+):
+    """
+    Issues a real Razorpay refund (money back to the original card/UPI/etc.)
+    for a wallet top-up, e.g. when the top-up itself was erroneous or duplicated.
+    This is distinct from a dispute resolution, which only credits the wallet.
+    """
+    if not client:
+        raise HTTPException(status_code=503, detail="Razorpay is not configured")
+
+    original = db.query(models.WalletTransaction).filter(
+        models.WalletTransaction.id == transaction_id
+    ).first()
+    if not original:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    if original.transaction_type != models.TransactionType.PAYMENT_GATEWAY:
+        raise HTTPException(status_code=400, detail="Only gateway top-up transactions can be refunded")
+
+    if not original.gateway_payment_id or original.gateway_payment_id.startswith("pay_mock_"):
+        raise HTTPException(status_code=400, detail="Mock/test payments cannot be refunded through Razorpay")
+
+    already_refunded = db.query(models.WalletTransaction).filter(
+        models.WalletTransaction.transaction_type == models.TransactionType.PAYMENT_REFUND,
+        models.WalletTransaction.reference_id == original.reference_id
+    ).all()
+    refunded_so_far = sum(abs(t.amount) for t in already_refunded) if already_refunded else Decimal("0")
+    remaining = Decimal(str(original.amount)) - refunded_so_far
+
+    refund_amount = Decimal(str(data.amount)) if data.amount is not None else remaining
+    if refund_amount <= 0 or refund_amount > remaining:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid refund amount. Remaining refundable: {remaining}"
+        )
+
+    amount_paise = int(refund_amount * 100)
+    try:
+        razorpay_refund = client.payment.refund(original.gateway_payment_id, {
+            "amount": amount_paise,
+            "speed": "normal",
+            "notes": {"reason": data.notes or "Admin-initiated refund", "admin_id": str(admin.id)}
+        })
+    except Exception as e:
+        print(f"Razorpay refund failed: {e}")
+        raise HTTPException(status_code=502, detail="Razorpay refund request failed")
+
+    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == original.user_id).first()
+    if not wallet:
+        raise HTTPException(status_code=404, detail="User wallet not found")
+
+    # The refunded money leaves via Razorpay regardless of whether the user has
+    # already spent the wallet credit, so this can take the balance negative —
+    # that's expected and reflects the user now owing the platform.
+    wallet.balance = (wallet.balance or Decimal("0")) - refund_amount
+
+    txn = models.WalletTransaction(
+        user_id=original.user_id,
+        amount=-refund_amount,
+        transaction_type=models.TransactionType.PAYMENT_REFUND,
+        description=f"Razorpay refund {razorpay_refund['id']} for payment {original.gateway_payment_id}"
+                    + (f": {data.notes}" if data.notes else ""),
+        reference_id=original.reference_id,
+        gateway_payment_id=razorpay_refund['id']
+    )
+    db.add(txn)
+    audit.log(db, "PAYMENT_REFUNDED", actor_id=admin.id, resource_type="wallet_transaction",
+              resource_id=transaction_id,
+              details={"refund_amount": float(refund_amount), "razorpay_refund_id": razorpay_refund['id'],
+                        "user_id": original.user_id})
+    db.commit()
+
+    return {
+        "status": "success",
+        "razorpay_refund_id": razorpay_refund['id'],
+        "refunded_amount": float(refund_amount),
+        "new_balance": wallet.balance
+    }

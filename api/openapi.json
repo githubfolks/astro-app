@@ -595,6 +595,28 @@
       },
       "AstrologerProfile": {
         "properties": {
+          "aadhaar_doc_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aadhaar Doc Url"
+          },
+          "aadhaar_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aadhaar Number"
+          },
           "about_me": {
             "anyOf": [
               {
@@ -642,6 +664,75 @@
             ],
             "title": "Availability Status"
           },
+          "bank_account_holder_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account Holder Name"
+          },
+          "bank_account_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account Number"
+          },
+          "bank_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Address"
+          },
+          "bank_ifsc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Ifsc"
+          },
+          "bank_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Name"
+          },
+          "certificate_urls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certificate Urls"
+          },
           "city": {
             "anyOf": [
               {
@@ -657,6 +748,29 @@
             "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
             "title": "Consultation Fee Per Min",
             "type": "string"
+          },
+          "contract_signature_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Signature Name"
+          },
+          "contract_signed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Signed At"
           },
           "display_name": {
             "anyOf": [
@@ -709,6 +823,23 @@
             "title": "Is Premium",
             "type": "boolean"
           },
+          "kyc_verified": {
+            "default": false,
+            "title": "Kyc Verified",
+            "type": "boolean"
+          },
+          "kyc_verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kyc Verified At"
+          },
           "languages": {
             "anyOf": [
               {
@@ -736,6 +867,28 @@
               }
             ],
             "title": "Legal Agreement Accepted At"
+          },
+          "pan_doc_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pan Doc Url"
+          },
+          "pan_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pan Number"
           },
           "profile_picture_url": {
             "anyOf": [
@@ -804,6 +957,17 @@
           "user_id": {
             "title": "User Id",
             "type": "integer"
+          },
+          "whatsapp_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whatsapp Number"
           }
         },
         "required": [
@@ -819,6 +983,28 @@
       },
       "AstrologerProfileUPDATE": {
         "properties": {
+          "aadhaar_doc_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aadhaar Doc Url"
+          },
+          "aadhaar_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aadhaar Number"
+          },
           "about_me": {
             "anyOf": [
               {
@@ -854,6 +1040,75 @@
               }
             ],
             "title": "Availability Hours"
+          },
+          "bank_account_holder_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account Holder Name"
+          },
+          "bank_account_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Account Number"
+          },
+          "bank_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Address"
+          },
+          "bank_ifsc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Ifsc"
+          },
+          "bank_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bank Name"
+          },
+          "certificate_urls": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Certificate Urls"
           },
           "city": {
             "anyOf": [
@@ -947,6 +1202,28 @@
             ],
             "title": "Languages"
           },
+          "pan_doc_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pan Doc Url"
+          },
+          "pan_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pan Number"
+          },
           "profile_picture_url": {
             "anyOf": [
               {
@@ -979,6 +1256,17 @@
               }
             ],
             "title": "Specialties"
+          },
+          "whatsapp_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Whatsapp Number"
           }
         },
         "title": "AstrologerProfileUPDATE",
@@ -1263,6 +1551,20 @@
           "file"
         ],
         "title": "Body_share_image_chat__consultation_id__share_image_post",
+        "type": "object"
+      },
+      "Body_upload_astrologer_document_astrologers_documents_upload_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_astrologer_document_astrologers_documents_upload_post",
         "type": "object"
       },
       "Body_upload_file_admin_upload_post": {
@@ -1928,6 +2230,21 @@
         ],
         "title": "ContentType",
         "type": "string"
+      },
+      "ContractSignRequest": {
+        "properties": {
+          "signature_name": {
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Signature Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "signature_name"
+        ],
+        "title": "ContractSignRequest",
+        "type": "object"
       },
       "CourseCreate": {
         "properties": {
@@ -2864,6 +3181,19 @@
         "title": "KundliReportResponse",
         "type": "object"
       },
+      "KycVerifyUpdate": {
+        "properties": {
+          "kyc_verified": {
+            "title": "Kyc Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kyc_verified"
+        ],
+        "title": "KycVerifyUpdate",
+        "type": "object"
+      },
       "MatchGenerateRequest": {
         "properties": {
           "boy": {
@@ -3702,6 +4032,34 @@
         "title": "QuotaResponse",
         "type": "object"
       },
+      "RefundRequest": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "title": "RefundRequest",
+        "type": "object"
+      },
       "RejectAstrologerRequest": {
         "properties": {
           "reason": {
@@ -4140,6 +4498,7 @@
           "CHAT_DEDUCTION",
           "CHAT_REFUND",
           "PAYMENT_GATEWAY",
+          "PAYMENT_REFUND",
           "COURSE_PURCHASE"
         ],
         "title": "TransactionType",
@@ -4665,6 +5024,7 @@
           "CHAT_DEDUCTION",
           "CHAT_REFUND",
           "PAYMENT_GATEWAY",
+          "PAYMENT_REFUND",
           "COURSE_PURCHASE",
           "PACKAGE_PURCHASE"
         ],
@@ -4688,6 +5048,7 @@
           "CHAT_DEDUCTION",
           "CHAT_REFUND",
           "PAYMENT_GATEWAY",
+          "PAYMENT_REFUND",
           "COURSE_PURCHASE"
         ],
         "title": "TransactionType",
@@ -5087,6 +5448,61 @@
         ]
       }
     },
+    "/admin/astrologers/{user_id}/kyc": {
+      "put": {
+        "operationId": "update_astrologer_kyc_verification_admin_astrologers__user_id__kyc_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KycVerifyUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Astrologer Kyc Verification",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/astrologers/{user_id}/onboarding/advance": {
       "post": {
         "description": "Move an astrologer to a target onboarding stage and send the matching step email.",
@@ -5255,7 +5671,6 @@
     },
     "/admin/astrologers/{user_id}/stats": {
       "get": {
-        "description": "Performance stats for an astrologer:\n  - avg_online_hours_per_day_30d: rolling 30-day average daily online time\n  - poor_chat_percentage: % of rated consultations with rating <= 2\n  - first_user_repeat_percentage: % of \"this astrologer was the seeker's very\n    first consultation on the platform\" seekers who came back to this astrologer again\n  - loyal_user_percentage: % of this astrologer's unique seekers who returned within\n    15 days of their first consultation with this astrologer AND stayed >10 min",
         "operationId": "get_astrologer_stats_admin_astrologers__user_id__stats_get",
         "parameters": [
           {
@@ -5986,6 +6401,30 @@
         "summary": "Mark Payout Paid",
         "tags": [
           "Admin - Payouts"
+        ]
+      }
+    },
+    "/admin/seo/analytics": {
+      "get": {
+        "operationId": "get_seo_analytics_admin_seo_analytics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Seo Analytics",
+        "tags": [
+          "Admin"
         ]
       }
     },
@@ -7012,6 +7451,118 @@
         ]
       }
     },
+    "/astrologers/contract": {
+      "get": {
+        "operationId": "get_astrologer_contract_astrologers_contract_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Astrologer Contract",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
+    "/astrologers/contract/sign": {
+      "post": {
+        "operationId": "sign_astrologer_contract_astrologers_contract_sign_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractSignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Sign Astrologer Contract",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
+    "/astrologers/documents/upload": {
+      "post": {
+        "operationId": "upload_astrologer_document_astrologers_documents_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_astrologer_document_astrologers_documents_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Upload Astrologer Document",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
     "/astrologers/onboarding": {
       "post": {
         "operationId": "astrologer_onboarding_astrologers_onboarding_post",
@@ -7181,6 +7732,31 @@
           }
         ],
         "summary": "Update Astrologer Profile",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
+    "/astrologers/stats/performance": {
+      "get": {
+        "description": "Performance stats for the logged-in astrologer's own dashboard (same metrics\nthe admin sees on the astrologer detail page).",
+        "operationId": "get_my_performance_stats_astrologers_stats_performance_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get My Performance Stats",
         "tags": [
           "Astrologers"
         ]
@@ -10543,6 +11119,62 @@
         ]
       }
     },
+    "/payment/refund/{transaction_id}": {
+      "post": {
+        "description": "Issues a real Razorpay refund (money back to the original card/UPI/etc.)\nfor a wallet top-up, e.g. when the top-up itself was erroneous or duplicated.\nThis is distinct from a dispute resolution, which only credits the wallet.",
+        "operationId": "refund_payment_payment_refund__transaction_id__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "transaction_id",
+            "required": true,
+            "schema": {
+              "title": "Transaction Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefundRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Refund Payment",
+        "tags": [
+          "Payment"
+        ]
+      }
+    },
     "/payment/verify": {
       "post": {
         "operationId": "verify_payment_payment_verify_post",
@@ -10863,6 +11495,26 @@
           }
         },
         "summary": "Get Public Post",
+        "tags": [
+          "Public Content"
+        ]
+      }
+    },
+    "/public/support-contact": {
+      "get": {
+        "description": "Support email/phone as configured in Admin > Settings > Support Contact.",
+        "operationId": "get_support_contact_public_support_contact_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Support Contact",
         "tags": [
           "Public Content"
         ]
