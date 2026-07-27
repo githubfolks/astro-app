@@ -21,7 +21,10 @@ from ..services.email_service import (
     build_astrologer_approved_email,
     build_astrologer_rejected_email,
     build_admin_password_reset_email,
+    build_meeting_ics,
+    ONBOARDING_CALENDAR_ATTENDEE,
 )
+import base64
 
 router = APIRouter(
     prefix="/admin",
@@ -903,6 +906,13 @@ _ONBOARDING_EMAIL_BUILDERS = {
     ),
 }
 
+# Stages that get a .ics calendar invite (in addition to the templated email)
+# alongside the meeting summary text used as the invite's title.
+_ONBOARDING_CALENDAR_SUMMARIES = {
+    models.OnboardingStage.INTERVIEW_SCHEDULED: lambda p: f"Aadikarta Interview - {p.full_name}",
+    models.OnboardingStage.TRAINING_SCHEDULED: lambda p: f"Aadikarta Growth & Training Meeting - {p.full_name}",
+}
+
 
 @router.get("/astrologers/onboarding")
 def list_onboarding_astrologers(db: Session = Depends(database.get_db)):
@@ -987,7 +997,30 @@ def advance_onboarding(
     builder = _ONBOARDING_EMAIL_BUILDERS.get(target)
     if builder and astrologer_email:
         subject, html_body = builder(profile, request)
-        send_email(background_tasks, [astrologer_email], subject, html_body)
+        recipients = [astrologer_email]
+        attachments = None
+
+        summary_builder = _ONBOARDING_CALENDAR_SUMMARIES.get(target)
+        if summary_builder:
+            ics_bytes = build_meeting_ics(
+                uid=f"onboarding-{target.value}-{user_id}@aadikarta.org",
+                summary=summary_builder(profile),
+                date=request.date,
+                time=request.time,
+                location=request.meeting_link or "",
+                attendee_emails=[astrologer_email, ONBOARDING_CALENDAR_ATTENDEE],
+            )
+            if ics_bytes:
+                # Send the invite to the internal mailbox too so it lands in
+                # its own calendar, not just the ATTENDEE field of the ics.
+                recipients.append(ONBOARDING_CALENDAR_ATTENDEE)
+                attachments = [{
+                    "filename": "invite.ics",
+                    "content": base64.b64encode(ics_bytes).decode("ascii"),
+                    "content_type": "text/calendar; method=REQUEST",
+                }]
+
+        send_email(background_tasks, recipients, subject, html_body, attachments=attachments)
 
     return {"message": f"Astrologer moved to {target.value}", "onboarding_stage": target.value}
 

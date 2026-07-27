@@ -8,9 +8,11 @@ notifications). Routers should import the ``build_*`` helpers and
 ``send_email`` from here rather than talking to the mail provider directly.
 """
 import os
+import base64
 import logging
-from datetime import datetime
-from typing import List, Tuple
+from datetime import datetime, timedelta
+from typing import List, Optional, Tuple
+from zoneinfo import ZoneInfo
 
 import httpx
 from fastapi import BackgroundTasks
@@ -22,6 +24,15 @@ logger = logging.getLogger(__name__)
 APP_NAME = os.getenv("APP_NAME", "Aadikarta")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://aadikarta.org").rstrip("/")
 OTP_VALIDITY_MINUTES = 10
+
+# Internal mailbox that should always be looped in as an attendee on
+# onboarding meeting invites (interview, growth/training), so the team has a
+# shared record of every scheduled call without relying on the admin to
+# remember to add themselves.
+ONBOARDING_CALENDAR_ATTENDEE = os.getenv(
+    "ONBOARDING_CALENDAR_ATTENDEE", "astro.aadikarta@gmail.com"
+)
+_IST = ZoneInfo("Asia/Kolkata")
 
 # Resend (https://resend.com) transactional email API.
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
@@ -500,10 +511,77 @@ def build_admin_password_reset_email() -> Tuple[str, str]:
     )
 
 
+# --- Calendar invites ---------------------------------------------------------
+
+
+def _ics_escape(value: str) -> str:
+    """Escape text per RFC 5545 (commas, semicolons, newlines)."""
+    return (value or "").replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+
+
+def build_meeting_ics(
+    uid: str,
+    summary: str,
+    date: str,
+    time: str,
+    description: str = "",
+    location: str = "",
+    duration_minutes: int = 30,
+    attendee_emails: Optional[List[str]] = None,
+) -> Optional[bytes]:
+    """Build an iCalendar (.ics) meeting request for a scheduled onboarding call.
+
+    `date`/`time` are the same "YYYY-MM-DD" / "HH:MM" (IST) strings the admin
+    enters for the stage email. Returns None when they're missing or unparsable
+    so callers can skip attaching an invite rather than send a broken one.
+    """
+    if not date or not time:
+        return None
+    try:
+        start_ist = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M").replace(tzinfo=_IST)
+    except ValueError:
+        return None
+    start_utc = start_ist.astimezone(ZoneInfo("UTC"))
+    end_utc = start_utc + timedelta(minutes=duration_minutes)
+    now_utc = datetime.now(ZoneInfo("UTC")).strftime("%Y%m%dT%H%M%SZ")
+    attendees = "".join(
+        f"ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:{email}\r\n"
+        for email in dict.fromkeys(attendee_emails or []) if email
+    )
+    lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Aadikarta//Onboarding//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:REQUEST",
+        "BEGIN:VEVENT",
+        f"UID:{uid}",
+        f"DTSTAMP:{now_utc}",
+        f"DTSTART:{start_utc.strftime('%Y%m%dT%H%M%SZ')}",
+        f"DTEND:{end_utc.strftime('%Y%m%dT%H%M%SZ')}",
+        f"SUMMARY:{_ics_escape(summary)}",
+        f"DESCRIPTION:{_ics_escape(description)}",
+        f"LOCATION:{_ics_escape(location)}",
+        f"ORGANIZER;CN={_ics_escape(MAIL_FROM_NAME)}:mailto:{MAIL_FROM}",
+        attendees.rstrip("\r\n"),
+        "STATUS:CONFIRMED",
+        "SEQUENCE:0",
+        "END:VEVENT",
+        "END:VCALENDAR",
+        "",
+    ]
+    return "\r\n".join(lines).encode("utf-8")
+
+
 # --- Sending -----------------------------------------------------------------
 
 
-def _send_via_resend(recipients: List[str], subject: str, html_body: str) -> None:
+def _send_via_resend(
+    recipients: List[str],
+    subject: str,
+    html_body: str,
+    attachments: Optional[List[dict]] = None,
+) -> None:
     """Deliver one email through the Resend API. Runs in a background task.
 
     Failures are logged rather than raised so a mail outage never breaks the
@@ -520,6 +598,8 @@ def _send_via_resend(recipients: List[str], subject: str, html_body: str) -> Non
         "subject": subject,
         "html": html_body,
     }
+    if attachments:
+        payload["attachments"] = attachments
     try:
         resp = httpx.post(
             RESEND_API_URL,
@@ -546,12 +626,13 @@ def send_email(
     recipients: List[str],
     subject: str,
     html_body: str,
+    attachments: Optional[List[dict]] = None,
 ) -> None:
     """Queue an HTML email to be sent in the background via Resend.
 
     No-ops when there are no recipients so callers don't need to guard.
     """
-    recipients = [r for r in (recipients or []) if r]
+    recipients = [r for r in dict.fromkeys(r for r in (recipients or []) if r)]
     if not recipients:
         return
-    background_tasks.add_task(_send_via_resend, recipients, subject, html_body)
+    background_tasks.add_task(_send_via_resend, recipients, subject, html_body, attachments)
