@@ -256,7 +256,7 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
 
     # Editing any KYC field invalidates a prior admin verification — force re-review.
     KYC_FIELDS = {
-        "pan_number", "pan_doc_url", "aadhaar_number", "aadhaar_doc_url",
+        "pan_number", "pan_doc_url", "aadhaar_number", "aadhaar_doc_url", "aadhaar_doc_back_url",
         "bank_account_holder_name", "bank_account_number", "bank_ifsc",
     }
     if db_profile.kyc_verified and KYC_FIELDS & update_fields.keys():

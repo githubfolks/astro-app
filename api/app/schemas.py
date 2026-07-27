@@ -127,6 +127,7 @@ class AstrologerProfileBase(BaseModel):
     pan_doc_url: Optional[str] = None
     aadhaar_number: Optional[str] = None
     aadhaar_doc_url: Optional[str] = None
+    aadhaar_doc_back_url: Optional[str] = None
     bank_account_holder_name: Optional[str] = None
     bank_account_number: Optional[str] = None
     bank_ifsc: Optional[str] = None
@@ -161,6 +162,7 @@ class AstrologerProfileUPDATE(BaseModel):
     pan_doc_url: Optional[str] = None
     aadhaar_number: Optional[str] = None
     aadhaar_doc_url: Optional[str] = None
+    aadhaar_doc_back_url: Optional[str] = None
     bank_account_holder_name: Optional[str] = None
     bank_account_number: Optional[str] = None
     bank_ifsc: Optional[str] = None

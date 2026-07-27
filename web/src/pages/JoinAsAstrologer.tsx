@@ -68,6 +68,7 @@ export const JoinAsAstrologer: React.FC = () => {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const astrologyOptions = ['Vedic', 'Lal Kitab', 'Numerology', 'Tarot Reader', 'Vastu', 'Palmistry', 'Western Astrology'];
@@ -100,6 +101,9 @@ export const JoinAsAstrologer: React.FC = () => {
             setError(`File too large — max ${MAX_PHOTO_SIZE_MB}MB`);
             e.target.value = '';
             return;
+        }
+        if (field === 'profile_photo_url') {
+            setPhotoPreview(URL.createObjectURL(file));
         }
         setIsLoading(true);
         try {
@@ -292,10 +296,15 @@ export const JoinAsAstrologer: React.FC = () => {
                             <label className="section-label"><Camera size={15} /> Profile Photo (Max {MAX_PHOTO_SIZE_MB}MB)</label>
                             <div className="form-grid">
                                 <div className="form-group">
-                                    <div className="file-upload-box">
-                                        <Camera size={24} />
-                                        <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'profile_photo_url')} />
-                                        {formData.profile_photo_url ? <span className="file-name">Uploaded!</span> : <span>Click to upload photo</span>}
+                                    <div className="photo-upload-row">
+                                        {photoPreview && (
+                                            <img src={photoPreview} alt="Profile preview" className="photo-preview-thumb" />
+                                        )}
+                                        <div className="file-upload-box">
+                                            <Camera size={24} />
+                                            <input type="file" accept="image/*" onChange={e => handleFileUpload(e, 'profile_photo_url')} />
+                                            {formData.profile_photo_url ? <span className="file-name">Uploaded!</span> : <span>Click to upload photo</span>}
+                                        </div>
                                     </div>
                                     <p className="field-hint">JPG, PNG, WEBP or HEIC — max {MAX_PHOTO_SIZE_MB}MB. A clear, front-facing photo helps seekers recognize you.</p>
                                 </div>
@@ -339,6 +348,9 @@ export const JoinAsAstrologer: React.FC = () => {
                 .full-width { grid-column: span 2; }
                 .onboarding-step textarea { width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; font-family: inherit; background-color: #fcfcfc; resize: vertical; transition: border-color 0.3s; }
                 .onboarding-step textarea:focus { outline: none; border-color: var(--primary); background-color: white; }
+                .photo-upload-row { display: flex; align-items: center; gap: 16px; }
+                .photo-preview-thumb { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb; flex-shrink: 0; }
+                .photo-upload-row .file-upload-box { flex: 1; }
                 .file-upload-box { border: 2px dashed #e5e7eb; border-radius: 12px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; cursor: pointer; color: #9ca3af; transition: 0.3s; }
                 .file-upload-box:hover { border-color: #7c3aed; color: #7c3aed; }
                 .file-upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }

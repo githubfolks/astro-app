@@ -244,7 +244,7 @@ def _greeting(name: str = None, word: str = "Dear") -> str:
 def _signoff(regards: str = "Warm regards,") -> str:
     return (
         f'<p style="margin:24px 0 0 0;font-size:15px;line-height:24px;">'
-        f'{regards}<br>Team {APP_NAME}</p>'
+        f'{regards}<br>Team {APP_NAME} Astrology</p>'
     )
 
 

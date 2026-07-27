@@ -8,6 +8,13 @@ import { getPasswordError } from '../utils/password';
 const NICKNAME_PREFIXES = ['Acharya', 'Pandit', 'Guruji', 'Astro'];
 const MAX_UPLOAD_SIZE_MB = 5;
 
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const resolveImageUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `${API_URL}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
 /** Client-side nickname suggestions — first name + a common Vedic-astrologer
  * honorific, so seekers never see the astrologer's real full name. */
 function suggestNicknames(fullName, specialties) {
@@ -112,14 +119,7 @@ export default function AstrologerForm() {
             const response = await api.post('/admin/upload', uploadData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            const url = response.data.url;
-            if (url.startsWith('http')) {
-                setFormData(prev => ({ ...prev, profile_picture_url: url }));
-            } else {
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-                const fullUrl = `${apiUrl}${url}`;
-                setFormData(prev => ({ ...prev, profile_picture_url: fullUrl }));
-            }
+            setFormData(prev => ({ ...prev, profile_picture_url: response.data.url }));
         } catch (error) {
             console.error("Upload failed", error);
             alert("Image upload failed");
@@ -259,7 +259,7 @@ export default function AstrologerForm() {
                             <div className="relative group">
                                 <div className="w-40 h-40 rounded-xl bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                                     {formData.profile_picture_url ? (
-                                        <img src={formData.profile_picture_url} alt="Profile" className="w-full h-full object-cover" />
+                                        <img src={resolveImageUrl(formData.profile_picture_url)} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="text-center text-gray-400">
                                             <ImageIcon className="w-8 h-8 mx-auto mb-2" />

@@ -333,16 +333,19 @@ const AstrologerProfile: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-8">
-                            {/* About Section */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-normal text-gray-900 mb-4 flex items-center gap-2">
-                                    <Award className="text-[#E91E63]" size={24} />
-                                    About Me
-                                </h2>
-                                <p className="text-gray-600 leading-relaxed">
-                                    {astrologer.about_me || `${astrologer.full_name} is a highly experienced astrologer with ${astrologer.experience_years || 5}+ years of practice in Vedic astrology. Specializing in ${specialtiesArray.join(', ') || 'various aspects of astrology'}, they provide accurate predictions and practical remedies for life's challenges. With a deep understanding of planetary influences and their effects on human life, they offer guidance on career, relationships, health, and spiritual growth.`}
-                                </p>
-                            </div>
+                            {/* About Section — omitted entirely when the astrologer hasn't written a real bio,
+                                rather than showing fabricated boilerplate attributed to them. */}
+                            {astrologer.about_me && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <h2 className="text-xl font-normal text-gray-900 mb-4 flex items-center gap-2">
+                                        <Award className="text-[#E91E63]" size={24} />
+                                        About Me
+                                    </h2>
+                                    <p className="text-gray-600 leading-relaxed">
+                                        {astrologer.about_me}
+                                    </p>
+                                </div>
+                            )}
 
                             {/* Expertise Section */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

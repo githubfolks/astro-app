@@ -24,6 +24,14 @@
   padding: 0;
 }
 
+html,
+body {
+  overflow-x: hidden;
+  /* AOS fade-left/fade-right elements translate past the viewport edge before
+     they scroll into view and animate in; this contains that instead of
+     letting it widen the page and add a horizontal scrollbar. */
+}
+
 body {
   font-family: var(--font-family);
   background-color: var(--bg-light);

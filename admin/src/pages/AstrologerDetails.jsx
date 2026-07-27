@@ -273,7 +273,10 @@ export default function AstrologerDetails() {
                                 <div>
                                     <span className="text-gray-900 text-xs uppercase tracking-wide block">Aadhaar Number</span>
                                     <span className="font-medium text-gray-900 text-sm">{profile.profile.aadhaar_number || '-'}</span>
-                                    <div className="mt-0.5"><DocLink url={profile.profile.aadhaar_doc_url} label="View Aadhaar doc" /></div>
+                                    <div className="mt-0.5 flex gap-3">
+                                        <DocLink url={profile.profile.aadhaar_doc_url} label="View front" />
+                                        <DocLink url={profile.profile.aadhaar_doc_back_url} label="View back" />
+                                    </div>
                                 </div>
                             </div>
 

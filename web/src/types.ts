@@ -29,6 +29,7 @@ export interface AstrologerProfile extends Astrologer {
     pan_doc_url?: string | null;
     aadhaar_number?: string | null;
     aadhaar_doc_url?: string | null;
+    aadhaar_doc_back_url?: string | null;
     bank_account_holder_name?: string | null;
     bank_account_number?: string | null;
     bank_ifsc?: string | null;

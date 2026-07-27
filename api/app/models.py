@@ -122,7 +122,8 @@ class AstrologerProfile(Base):
     pan_number = Column(String, nullable=True)
     pan_doc_url = Column(String, nullable=True)
     aadhaar_number = Column(String, nullable=True)
-    aadhaar_doc_url = Column(String, nullable=True)
+    aadhaar_doc_url = Column(String, nullable=True)  # front side
+    aadhaar_doc_back_url = Column(String, nullable=True)
     bank_account_holder_name = Column(String, nullable=True)
     bank_account_number = Column(String, nullable=True)
     bank_ifsc = Column(String, nullable=True)

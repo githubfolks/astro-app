@@ -17,6 +17,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
     const [panDocUrl, setPanDocUrl] = useState<string | null>(null);
     const [aadhaarNumber, setAadhaarNumber] = useState('');
     const [aadhaarDocUrl, setAadhaarDocUrl] = useState<string | null>(null);
+    const [aadhaarDocBackUrl, setAadhaarDocBackUrl] = useState<string | null>(null);
     const [accountHolderName, setAccountHolderName] = useState('');
     const [accountNumber, setAccountNumber] = useState('');
     const [ifsc, setIfsc] = useState('');
@@ -24,6 +25,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
     const [bankAddress, setBankAddress] = useState('');
     const [uploadingPan, setUploadingPan] = useState(false);
     const [uploadingAadhaar, setUploadingAadhaar] = useState(false);
+    const [uploadingAadhaarBack, setUploadingAadhaarBack] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [saved, setSaved] = useState(false);
@@ -33,6 +35,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
         setPanDocUrl(profile.pan_doc_url || null);
         setAadhaarNumber(profile.aadhaar_number || '');
         setAadhaarDocUrl(profile.aadhaar_doc_url || null);
+        setAadhaarDocBackUrl(profile.aadhaar_doc_back_url || null);
         setAccountHolderName(profile.bank_account_holder_name || '');
         setAccountNumber(profile.bank_account_number || '');
         setIfsc(profile.bank_ifsc || '');
@@ -74,6 +77,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                 pan_doc_url: panDocUrl,
                 aadhaar_number: aadhaarNumber,
                 aadhaar_doc_url: aadhaarDocUrl,
+                aadhaar_doc_back_url: aadhaarDocBackUrl,
                 bank_account_holder_name: accountHolderName,
                 bank_account_number: accountNumber,
                 bank_ifsc: ifsc,
@@ -82,6 +86,7 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
             });
             onSaved(updated);
             setSaved(true);
+            setTimeout(() => setSaved(false), 4000);
         } catch (err) {
             setError(getErrorMessage(err) || 'Failed to save KYC details');
         } finally {
@@ -158,8 +163,11 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                             className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
                         />
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Aadhaar Upload (Max {MAX_DOC_SIZE_MB}MB)</label>
+                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Aadhaar Upload — Front (Max {MAX_DOC_SIZE_MB}MB)</label>
                         <input
                             type="file"
                             accept="image/*,.pdf"
@@ -172,6 +180,27 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                                 <p className="text-xs text-green-600 flex items-center gap-1.5">
                                     <CheckCircle2 size={12} className="flex-shrink-0" /> Uploaded
                                     <a href={resolveImageUrl(aadhaarDocUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center gap-0.5">
+                                        <ExternalLink size={10} /> View
+                                    </a>
+                                </p>
+                                <p className="text-xs text-gray-400">Select a new file above to replace it.</p>
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Aadhaar Upload — Back (Max {MAX_DOC_SIZE_MB}MB)</label>
+                        <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => handleDocUpload(e, setUploadingAadhaarBack, setAadhaarDocBackUrl)}
+                            className="w-full text-xs text-gray-600"
+                        />
+                        {uploadingAadhaarBack && <p className="text-xs text-gray-400 mt-1">Uploading…</p>}
+                        {aadhaarDocBackUrl && !uploadingAadhaarBack && (
+                            <div className="mt-1">
+                                <p className="text-xs text-green-600 flex items-center gap-1.5">
+                                    <CheckCircle2 size={12} className="flex-shrink-0" /> Uploaded
+                                    <a href={resolveImageUrl(aadhaarDocBackUrl)} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center gap-0.5">
                                         <ExternalLink size={10} /> View
                                     </a>
                                 </p>
@@ -233,11 +262,16 @@ export const KycDocumentsCard: React.FC<Props> = ({ profile, onSaved }) => {
                 </div>
 
                 {error && <p className="text-xs text-red-600">{error}</p>}
-                {saved && !error && <p className="text-xs text-green-600">Saved successfully.</p>}
+                {saved && !error && (
+                    <div className="flex items-center gap-2 bg-green-50 border border-green-300 text-green-800 rounded-lg px-4 py-3 font-semibold text-sm">
+                        <CheckCircle2 size={18} className="text-green-600 flex-shrink-0" />
+                        Saved successfully!
+                    </div>
+                )}
 
                 <button
                     onClick={handleSave}
-                    disabled={saving || uploadingPan || uploadingAadhaar}
+                    disabled={saving || uploadingPan || uploadingAadhaar || uploadingAadhaarBack}
                     className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {saving && <Loader2 size={16} className="animate-spin" />}

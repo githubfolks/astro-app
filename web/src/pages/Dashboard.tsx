@@ -13,7 +13,7 @@ import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl } from '../utils/url';
-import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart } from 'lucide-react';
+import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart, AlertTriangle } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<Consultation[]>([]);
@@ -181,10 +181,31 @@ export const Dashboard: React.FC = () => {
     };
 
     if (user?.role === 'ASTROLOGER') {
+        const missingOnboardingItems: string[] = [];
+        if (astrologerProfile) {
+            if (!astrologerProfile.contract_signed_at) missingOnboardingItems.push('sign your contract');
+            if (!astrologerProfile.profile_picture_url) missingOnboardingItems.push('upload a profile photo');
+            if (!astrologerProfile.kyc_verified) missingOnboardingItems.push('complete KYC verification');
+        }
+
         return (
             <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
                 <Header />
                 <main className="flex-1 container mx-auto p-6 md:p-8">
+                    {missingOnboardingItems.length > 0 && (
+                        <a
+                            href="#astrologer-onboarding-panel"
+                            className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 hover:bg-amber-100 transition-colors group"
+                        >
+                            <AlertTriangle size={20} className="text-amber-600 flex-shrink-0" />
+                            <span className="text-sm font-medium flex-1">
+                                Your profile isn't complete yet — you still need to {missingOnboardingItems.join(', ')}.
+                            </span>
+                            <span className="text-sm font-bold underline group-hover:no-underline whitespace-nowrap">
+                                Complete Profile →
+                            </span>
+                        </a>
+                    )}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                         <div className="text-center md:text-left">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">Astrologer Dashboard</h2>
@@ -527,7 +548,7 @@ export const Dashboard: React.FC = () => {
                             </div>
 
                             {/* Onboarding & Profile Management — full width, not squeezed into a sidebar column */}
-                            <div className="mt-8">
+                            <div id="astrologer-onboarding-panel" className="mt-8 scroll-mt-24">
                                 <AstrologerOnboardingTabs
                                     astrologerProfile={astrologerProfile}
                                     onProfileSaved={setAstrologerProfile}
