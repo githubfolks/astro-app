@@ -30,8 +30,8 @@ const AboutUs: React.FC = () => {
         "disambiguatingDescription": "Aadikarta.org is a private limited company specializing in Vedic services and is not associated with any public figures or other entities sharing a similar name.",
         "sameAs": [
             "https://www.facebook.com/astroaadikarta",
-            "https://x.com/astro_aadikarta",
-            "https://www.instagram.com/astro_aadikarta/",
+            "https://x.com/astro_aadikarta_2026",
+            "https://www.instagram.com/astro_aadikarta_2026/",
             "https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw",
             "https://www.linkedin.com/in/aadikarta-vedic-astrology"
         ]

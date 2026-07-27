@@ -26,8 +26,8 @@ const buildContactStructuredData = (supportEmail: string) => ({
         email: supportEmail,
         sameAs: [
             'https://www.facebook.com/astroaadikarta',
-            'https://x.com/astro_aadikarta',
-            'https://www.instagram.com/astro_aadikarta/',
+            'https://x.com/astro_aadikarta_2026',
+            'https://www.instagram.com/astro_aadikarta_2026/',
             'https://www.youtube.com/channel/UC1cAAmALtOOln2EJ3CLj5Bw',
             'https://www.linkedin.com/in/aadikarta-vedic-astrology'
         ],

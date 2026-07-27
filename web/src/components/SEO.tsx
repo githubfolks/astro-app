@@ -75,7 +75,7 @@ const SEO: React.FC<SEOProps> = ({
 
             {/* Twitter */}
             <meta name="twitter:card" content="summary_large_image" />
-            <meta name="twitter:site" content="@astro_aadikarta" />
+            <meta name="twitter:site" content="@astro_aadikarta_2026" />
             <meta name="twitter:url" content={canonical} />
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />

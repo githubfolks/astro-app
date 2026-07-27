@@ -108,7 +108,7 @@ Well-structured; private/auth routes disallowed, AI crawlers (GPTBot, ClaudeBot,
 `https://aadikarta.org` is hardcoded independently in `web/index.html`, `web/src/components/SEO.tsx` (`BASE_URL`), and `web/scripts/generate-sitemap.js` (`BASE`) — no single source of truth (no `.env`-driven `VITE_SITE_URL` or similar). Not a bug today, but any future staging/environment change requires editing all three in sync, and a missed one would silently ship wrong canonical/OG/sitemap URLs.
 
 ### Twitter Handle — Still Inconsistent
-`index.html:32` uses `@aadikarta`; `SEO.tsx:67` uses `@astro_aadikarta`. The Footer links to `x.com/astro_aadikarta`, suggesting `@astro_aadikarta` is correct — recommend fixing `index.html` to match (or vice versa if the handle changed).
+`index.html:32` uses `@aadikarta`; `SEO.tsx:67` uses `@astro_aadikarta_2026`. The Footer links to `x.com/astro_aadikarta_2026`, suggesting `@astro_aadikarta_2026` is correct — recommend fixing `index.html` to match (or vice versa if the handle changed).
 
 ### Structured Data — Duplicate Organization Schema
 `index.html` still defines a static `Organization` JSON-LD block (name, url, logo, description — no `aggregateRating` now, which is good) *and* `Home.tsx` independently defines Organization schema again via Helmet as part of a `WebSite`+`Organization` `@graph`. Both can end up present depending on how the prerendered HTML merges with the static block. Low risk now that the `aggregateRating` claim is gone from both, but still worth consolidating to one source.
@@ -124,7 +124,7 @@ Well-structured; private/auth routes disallowed, AI crawlers (GPTBot, ClaudeBot,
 ### High Priority (This Week)
 1. Shorten the homepage title tag from 71 to ≤60 chars so it doesn't truncate in SERPs.
 2. Add blog post and astrologer profile URLs to `sitemap.xml` (data already fetched in `prerender.js`, easy to share with `generate-sitemap.js`).
-3. Fix the Twitter handle mismatch (`@aadikarta` vs `@astro_aadikarta`) in `index.html`.
+3. Fix the Twitter handle mismatch (`@aadikarta` vs `@astro_aadikarta_2026`) in `index.html`.
 4. Consolidate the duplicate `Organization` JSON-LD (pick `Home.tsx`'s Helmet version, drop the static one in `index.html`, or vice versa).
 
 ### Medium Priority (This Month)
