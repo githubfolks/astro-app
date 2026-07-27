@@ -7,12 +7,15 @@ A mock top-up is identified by reference_id starting with 'order_mock_' or
 gateway_payment_id starting with 'pay_mock_' on a PAYMENT_GATEWAY transaction.
 
 Usage:
-    python scripts/cleanup_mock_transactions.py            # dry run (default) - prints what would change
-    python scripts/cleanup_mock_transactions.py --apply     # actually deletes rows and adjusts balances
+    python scripts/cleanup_mock_transactions.py               # dry run (default) - prints what would change
+    python scripts/cleanup_mock_transactions.py --apply        # deletes rows and adjusts balances; skips users who'd go negative
+    python scripts/cleanup_mock_transactions.py --apply --floor-negative-at-zero
+        # same, but for users who'd go negative, floors their balance at 0 instead of skipping
+        # (use only after confirming the spend was test activity, not real customer usage)
 
 If a user's balance would go negative after rollback (because the mock credit was
 already spent on something, e.g. a real consultation), that user is skipped and
-reported for manual review instead of silently going negative.
+reported for manual review by default instead of silently going negative.
 """
 import argparse
 import os
@@ -32,6 +35,8 @@ from app import models
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--apply", action="store_true", help="Actually apply the changes (default is dry-run)")
+    parser.add_argument("--floor-negative-at-zero", action="store_true",
+                         help="For users whose rollback would go negative, set balance to 0 instead of skipping")
     args = parser.parse_args()
 
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
@@ -57,7 +62,7 @@ def main():
     print(f"Found {len(mock_txns)} mock transaction(s) across {len(by_user)} user(s).\n")
 
     skipped_users = []
-    to_delete = []
+    to_delete = []  # (wallet, new_balance, txns)
 
     for user_id, txns in by_user.items():
         wallet = session.query(models.UserWallet).filter(models.UserWallet.user_id == user_id).first()
@@ -65,15 +70,23 @@ def main():
         total_mock_credit = sum(Decimal(str(t.amount)) for t in txns)
         resulting_balance = (current_balance or Decimal("0")) - total_mock_credit
 
-        print(f"User {user_id}: {len(txns)} mock txn(s), total ₹{total_mock_credit}, "
-              f"balance ₹{current_balance} -> ₹{resulting_balance}"
-              + (" [SKIP: would go negative]" if resulting_balance < 0 else ""))
+        would_go_negative = resulting_balance < 0
+        action = ""
+        if would_go_negative and not args.floor_negative_at_zero:
+            action = " [SKIP: would go negative]"
+        elif would_go_negative:
+            action = " [floored to ₹0]"
 
-        if resulting_balance < 0:
+        print(f"User {user_id}: {len(txns)} mock txn(s), total ₹{total_mock_credit}, "
+              f"balance ₹{current_balance} -> ₹{max(resulting_balance, Decimal('0')) if (would_go_negative and args.floor_negative_at_zero) else resulting_balance}"
+              f"{action}")
+
+        if would_go_negative and not args.floor_negative_at_zero:
             skipped_users.append(user_id)
             continue
 
-        to_delete.append((wallet, total_mock_credit, txns))
+        new_balance = max(resulting_balance, Decimal("0")) if would_go_negative else resulting_balance
+        to_delete.append((wallet, new_balance, txns))
 
     print(f"\n{len(to_delete)} user(s) will be cleaned up; {len(skipped_users)} skipped "
           f"(balance would go negative — likely already spent the mock credit; review manually): "
@@ -84,8 +97,8 @@ def main():
         session.close()
         return
 
-    for wallet, total_mock_credit, txns in to_delete:
-        wallet.balance = (wallet.balance or Decimal("0")) - total_mock_credit
+    for wallet, new_balance, txns in to_delete:
+        wallet.balance = new_balance
         for t in txns:
             session.delete(t)
 
