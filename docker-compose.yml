@@ -21,6 +21,9 @@ services:
       REDIS_URL: "${REDIS_URL}"
       JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
       ENABLE_MOCK_PAYMENTS: "${ENABLE_MOCK_PAYMENTS}"
+      RZP_KEY_ID: "${RZP_KEY_ID}"
+      RZP_KEY_SECRET: "${RZP_KEY_SECRET}"
+      RAZORPAY_WEBHOOK_SECRET: "${RAZORPAY_WEBHOOK_SECRET}"
     ports:
       - "9000:8000"
     volumes:

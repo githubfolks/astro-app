@@ -17,16 +17,21 @@ router = APIRouter(
 )
 
 # Initialize Razorpay Client
-# Access credentials from environment variables
-# Ensure these are set in your .env or system environment
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
+# Access credentials from environment variables. The project's .env uses the
+# RZP_KEY_ID / RZP_KEY_SECRET names; RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are
+# also accepted for compatibility with Razorpay's own docs/tooling.
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID") or os.getenv("RZP_KEY_ID")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET") or os.getenv("RZP_KEY_SECRET")
 
-# Check if keys are present (optional logic, or fail hard)
+def mock_payments_enabled() -> bool:
+    # Read live (not cached at import) so tests can monkeypatch it and so a
+    # config change doesn't require a process restart to take effect.
+    return os.getenv("ENABLE_MOCK_PAYMENTS", "").strip().lower() == "true"
+
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     print("WARNING: Razorpay keys not found in environment variables.")
 
-client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)) if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET else None
 
 class OrderCreate(BaseModel):
     amount: float # In Rupees
@@ -44,8 +49,9 @@ def create_payment_order(order: OrderCreate, current_user: models.User = Depends
     # Razorpay expects amount in paise (1 INR = 100 paise)
     amount_paise = int(order.amount * 100)
     
-    # Mock Mode
-    if not RAZORPAY_KEY_ID or RAZORPAY_KEY_ID == "mock_key":
+    # Mock Mode: explicit opt-in via ENABLE_MOCK_PAYMENTS, or automatic
+    # fallback when no live keys are configured at all.
+    if mock_payments_enabled() or not client:
         return {
             "order_id": f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}",
             "amount": amount_paise,
@@ -79,7 +85,7 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
         
         # Check if Mock Order
         if data.razorpay_order_id.startswith("order_mock_"):
-            if os.getenv("ENABLE_MOCK_PAYMENTS") != "true":
+            if not mock_payments_enabled():
                 raise HTTPException(status_code=400, detail="Mock payments are disabled in this environment")
             print(f"Processing Mock Payment: {data.razorpay_order_id}")
             # Try to extract the amount from order_id (format: order_mock_{amount_paise}_{uuid})
