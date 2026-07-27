@@ -461,18 +461,20 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
     if not astro:
         raise HTTPException(status_code=404, detail="Astrologer not found")
 
-    # Send WhatsApp notification to the astrologer (always triggered on click)
+    # Ring the astrologer's phone via a loud push notification (always triggered on click)
     try:
-        from ..services.whatsapp_service import send_whatsapp
+        from ..notifications import send_push_notification
         seeker_name = (current_user.seeker_profile.full_name if current_user.seeker_profile else None) or "Seeker"
-        if astro.user and astro.user.phone_number:
-            send_whatsapp(
-                to_phone=astro.user.phone_number,
-                template_key="waplex_template_notify_astrologer",
-                params={"seeker_name": seeker_name}
+        for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == astrologer_id).all():
+            send_push_notification(
+                token=tok.fcm_token,
+                title=f"🔔 {seeker_name} wants a consultation",
+                body="Tap to open Aadikarta and go online",
+                data={"type": "KNOCK", "astrologer_id": str(astrologer_id), "seeker_id": str(current_user.id)},
+                android_channel_id="knock_alerts",
             )
     except Exception as e:
-        print(f"Failed to send notify WhatsApp message to astrologer: {e}")
+        print(f"Failed to send knock push notification to astrologer: {e}")
 
     existing = db.query(models.AvailabilityNotification).filter(
         models.AvailabilityNotification.seeker_id == current_user.id,

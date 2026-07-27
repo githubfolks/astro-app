@@ -113,8 +113,19 @@ const NativeInitializer: React.FC = () => {
             }
         });
 
+        // Tapping a "knock" ring push should take the astrologer straight to their queue
+        let pushHandler: Promise<{ remove: () => void }> | undefined;
+        import('@capacitor/push-notifications').then(({ PushNotifications }) => {
+            pushHandler = PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+                if (action.notification.data?.type === 'KNOCK') {
+                    navigate('/dashboard');
+                }
+            });
+        }).catch(() => { });
+
         return () => {
             backHandler.then(h => h.remove());
+            pushHandler?.then(h => h.remove());
         };
     }, [navigate]);
 

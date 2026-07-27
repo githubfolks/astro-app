@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { api } from '../services/api';
+import { fcmService } from '../services/fcm';
+import { isNative } from '../utils/platform';
 
 interface User {
     id: number;
@@ -21,6 +23,14 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Astrologers need a registered device token to receive "knock" ring pushes
+// while offline; seekers/admins don't need it today.
+const registerPushIfAstrologer = (role: User['role']) => {
+    if (role === 'ASTROLOGER' && isNative()) {
+        fcmService.requestPermissionAndGetToken().catch(e => console.error('FCM registration failed:', e));
+    }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
@@ -34,7 +44,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 const storedUser = await storage.getItem('user');
                 if (storedToken && storedUser) {
                     setToken(storedToken);
-                    setUser(JSON.parse(storedUser));
+                    const parsedUser = JSON.parse(storedUser);
+                    setUser(parsedUser);
+                    registerPushIfAstrologer(parsedUser.role);
                 }
             } catch (e) {
                 console.error('Failed to load auth state:', e);
@@ -50,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newUser);
         await storage.setItem('token', newToken);
         await storage.setItem('user', JSON.stringify(newUser));
+        registerPushIfAstrologer(newUser.role);
     };
 
     const logout = async () => {

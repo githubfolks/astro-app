@@ -18,15 +18,29 @@ try:
 except Exception as e:
     logger.warning(f"Firebase Admin SDK not initialized: {e}")
 
-def send_push_notification(token: str, title: str, body: str, data: dict = None):
+def send_push_notification(token: str, title: str, body: str, data: dict = None, android_channel_id: str = None):
     """
     Send a push notification to a single device.
+
+    android_channel_id must match a channel already created on-device
+    (see MainActivity's notification channel setup); Android silently falls
+    back to the default channel otherwise, which is not high-priority/loud.
     """
     if not firebase_admin._apps:
         logger.info(f"[MOCK PUSH] To: {token} | Title: {title} | Body: {body}")
         return
 
     try:
+        android_config = None
+        if android_channel_id:
+            android_config = messaging.AndroidConfig(
+                priority="high",
+                notification=messaging.AndroidNotification(
+                    channel_id=android_channel_id,
+                    sound="default",
+                ),
+            )
+
         message = messaging.Message(
             notification=messaging.Notification(
                 title=title,
@@ -34,6 +48,7 @@ def send_push_notification(token: str, title: str, body: str, data: dict = None)
             ),
             data=data or {},
             token=token,
+            android=android_config,
         )
         response = messaging.send(message)
         logger.info(f"Successfully sent message: {response}")
