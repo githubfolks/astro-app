@@ -218,13 +218,13 @@ const Header: React.FC = () => {
                                 <Link
                                     to="/dashboard"
                                     onClick={() => setIsMenuOpen(false)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', color: '#333' }}
+                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px', padding: '8px 0', color: '#333', width: '100%' }}
                                 >
                                     <LayoutDashboard size={18} /> Dashboard
                                 </Link>
                                 <button
                                     onClick={() => { handleLogout(); setIsMenuOpen(false); }}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', width: '100%' }}
+                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px', padding: '8px 0', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', width: '100%' }}
                                 >
                                     <LogOut size={18} /> Logout
                                 </button>

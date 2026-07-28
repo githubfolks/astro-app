@@ -178,7 +178,8 @@
 }
 
 @media (max-width: 900px) {
-    .footer-content {
+    .footer-content,
+    .footer-content.footer-content-compact {
         grid-template-columns: 1fr 1fr;
         gap: 40px;
     }
@@ -190,7 +191,8 @@
         /* Reduced top padding, kept bottom safe area */
     }
 
-    .footer-content {
+    .footer-content,
+    .footer-content.footer-content-compact {
         grid-template-columns: 1fr;
         gap: 50px;
         margin-bottom: 40px;
