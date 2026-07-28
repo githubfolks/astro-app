@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import List
 from decimal import Decimal
 from datetime import datetime
@@ -279,7 +280,21 @@ def submit_review(review: schemas.ReviewCreate, current_user: models.User = Depe
         comment=review.comment
     )
     db.add(new_review)
+    db.flush()
+
+    # Keep the astrologer's stored rating_avg (read on their profile, listing, and
+    # public pages) in sync — it's a denormalized column, not computed on read.
+    avg_rating = db.query(func.avg(models.Review.rating)).filter(
+        models.Review.astrologer_id == consultation.astrologer_id
+    ).scalar()
+    astrologer_profile = db.query(models.AstrologerProfile).filter(
+        models.AstrologerProfile.user_id == consultation.astrologer_id
+    ).first()
+    if astrologer_profile and avg_rating is not None:
+        astrologer_profile.rating_avg = round(float(avg_rating), 2)
+
     db.commit()
+    db.refresh(new_review)
     return new_review
 
 # --- Chat ---

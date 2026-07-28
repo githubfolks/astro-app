@@ -13,7 +13,12 @@ import ScrollToTop from './components/ScrollToTop';
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
 const MobileHome = lazy(() => import('./pages/MobileHome'));
-const HomeRoute: React.FC = () => (isNative() ? <MobileHome /> : <Home />);
+const AstrologerHome = lazy(() => import('./pages/AstrologerHome'));
+const HomeRoute: React.FC = () => {
+    const { user } = useAuth();
+    if (isNative() && user?.role === 'ASTROLOGER') return <AstrologerHome />;
+    return isNative() ? <MobileHome /> : <Home />;
+};
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
 const Signup = lazy(() => import('./pages/Signup').then(module => ({ default: module.Signup })));
