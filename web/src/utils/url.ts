@@ -21,3 +21,11 @@ export const resolveImageUrl = (url: string | null | undefined, fallbackName?: s
     
     return `${base}${path}`;
 };
+
+/**
+ * Astrologers may set a public nickname (display_name); seekers should always
+ * see that instead of the astrologer's real/legal full_name.
+ */
+export const getAstrologerDisplayName = (astrologer?: { full_name?: string | null; display_name?: string | null } | null) => {
+    return astrologer?.display_name || astrologer?.full_name || 'Astrologer';
+};

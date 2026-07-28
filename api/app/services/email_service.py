@@ -386,7 +386,7 @@ def build_onboarding_started_email(name: str) -> Tuple[str, str]:
         If you face any issues, please reach out to your onboarding manager by clicking the "Need Help"
         button in the app. Let's begin this exciting journey together!
       </p>
-      {_button("Open the Astrologer App", FRONTEND_URL)}
+      {_button("Open the Astrologer App", f"{FRONTEND_URL}/login")}
       {_signoff()}"""
     return f"Welcome onboard to {APP_NAME}!", _layout(
         f"Welcome onboard, {name}!" if name else "Welcome onboard!",
@@ -491,6 +491,24 @@ def build_astrologer_rejected_email(reason: str) -> Tuple[str, str]:
       </p>"""
     return f"{APP_NAME} - Application Status Update", _layout(
         "Application status update", content, preheader=f"Update on your {APP_NAME} application"
+    )
+
+
+def build_profile_incomplete_email(name: str, missing_items: str) -> Tuple[str, str]:
+    content = f"""
+      {_greeting(name, word="Hello")}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        We are reviewing your astrologer profile on {APP_NAME} and noticed that some information is missing or incomplete.
+      </p>
+      <p style="margin:0 0 8px 0;font-size:15px;line-height:24px;"><strong>Please provide the following:</strong></p>
+      <div style="margin:0 0 16px 0;font-size:14px;line-height:24px;padding:12px;background-color:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;white-space:pre-wrap;color:#374151;">{missing_items}</div>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Kindly log in to your account and update your profile so we can proceed with your application.
+      </p>
+      {_button("Update Profile", f"{FRONTEND_URL}/login")}
+      {_signoff()}"""
+    return f"{APP_NAME} - Action Required: Complete your profile", _layout(
+        "Action required on your profile", content, preheader=f"Please provide missing information for your {APP_NAME} profile"
     )
 
 

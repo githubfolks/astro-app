@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit2, Trash2, Crown, Search } from 'lucide-react';
 import api from '../services/api';
@@ -26,17 +26,26 @@ const STAGE_FILTERS = [
 export default function Astrologers() {
     const navigate = useNavigate();
     const [astrologers, setAstrologers] = useState([]);
+    const astrologersRef = useRef([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [stageFilter, setStageFilter] = useState('ALL');
+
+    // Kept in sync with `astrologers` so rapid-fire handlers (e.g. toggling two
+    // badges back-to-back) can read the latest committed values synchronously
+    // instead of racing React's async state updates.
+    const setAstrologersSynced = useCallback((next) => {
+        astrologersRef.current = next;
+        setAstrologers(next);
+    }, []);
 
     const fetchAstrologers = useCallback(async () => {
         try {
             const response = await api.get('/admin/astrologers_full');
-            setAstrologers(response.data.astrologers);
+            setAstrologersSynced(response.data.astrologers);
         } catch (error) {
             console.error("Failed to fetch astrologers", error);
         }
-    }, []);
+    }, [setAstrologersSynced]);
 
     useEffect(() => {
         fetchAstrologers();
@@ -54,7 +63,7 @@ export default function Astrologers() {
     };
 
     const handleToggleStatus = async (item, newStatus) => {
-        setAstrologers(astrologers.map(a => a.id === item.id ? { ...a, is_active: newStatus } : a));
+        setAstrologersSynced(astrologersRef.current.map(a => a.id === item.id ? { ...a, is_active: newStatus } : a));
         try {
             await api.put(`/admin/users/${item.id}/status`, { is_active: newStatus });
         } catch (error) {
@@ -63,12 +72,19 @@ export default function Astrologers() {
         }
     };
 
-    const handleTogglePremium = async (item, newValue) => {
-        setAstrologers(astrologers.map(a => a.id === item.id ? { ...a, profile: { ...a.profile, is_premium: newValue } } : a));
+    const handleToggleBadge = async (item, badgeType, newValue) => {
+        const current = astrologersRef.current.find(a => a.id === item.id) || item;
+        const updatedProfile = { ...current.profile, [badgeType]: newValue };
+        const updatePayload = {
+            is_premium: updatedProfile.is_premium || false,
+            is_vip: updatedProfile.is_vip || false,
+            is_trending: updatedProfile.is_trending || false,
+        };
+        setAstrologersSynced(astrologersRef.current.map(a => a.id === item.id ? { ...a, profile: updatedProfile } : a));
         try {
-            await api.put(`/admin/astrologers/${item.id}/premium`, { is_premium: newValue });
+            await api.put(`/admin/astrologers/${item.id}/badges`, updatePayload);
         } catch (error) {
-            console.error("Premium toggle failed", error);
+            console.error(`Badge toggle failed for ${badgeType}`, error);
             fetchAstrologers();
         }
     };
@@ -164,7 +180,7 @@ export default function Astrologers() {
 
                         {/* Mid Section: Badges & Premium Switch */}
                         <div className="flex items-center justify-between border-t border-gray-50 mt-3 pt-3">
-                            <div className="flex gap-1.5">
+                            <div className="flex gap-1.5 flex-wrap">
                                 <span className="px-2 py-0.5 bg-indigo-50/50 text-indigo-700 text-[10px] font-bold rounded">
                                     {item.profile?.experience_years}y exp
                                 </span>
@@ -172,12 +188,29 @@ export default function Astrologers() {
                                     ₹{item.profile?.consultation_fee_per_min}/m
                                 </span>
                             </div>
-
+                        </div>
+                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-50">
                             <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] font-semibold text-gray-900">Premium</span>
+                                <span className="text-[10px] font-semibold text-amber-600">PREM</span>
                                 <Switch
                                     checked={!!item.profile?.is_premium}
-                                    onCheckedChange={(checked) => handleTogglePremium(item, checked)}
+                                    onCheckedChange={(checked) => handleToggleBadge(item, 'is_premium', checked)}
+                                    size="sm"
+                                />
+                            </div>
+                            <div className="flex items-center gap-1.5 border-l border-gray-200 pl-2">
+                                <span className="text-[10px] font-semibold text-purple-600">VIP</span>
+                                <Switch
+                                    checked={!!item.profile?.is_vip}
+                                    onCheckedChange={(checked) => handleToggleBadge(item, 'is_vip', checked)}
+                                    size="sm"
+                                />
+                            </div>
+                            <div className="flex items-center gap-1.5 border-l border-gray-200 pl-2">
+                                <span className="text-[10px] font-semibold text-blue-600">TREND</span>
+                                <Switch
+                                    checked={!!item.profile?.is_trending}
+                                    onCheckedChange={(checked) => handleToggleBadge(item, 'is_trending', checked)}
                                     size="sm"
                                 />
                             </div>

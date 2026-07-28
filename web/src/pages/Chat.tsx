@@ -12,7 +12,7 @@ import PreChatQuestionsModal from '../components/PreChatQuestionsModal';
 import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
-import { resolveImageUrl } from '../utils/url';
+import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { loadRazorpay } from '../utils/loadRazorpay';
 
 export const Chat: React.FC = () => {
@@ -26,12 +26,47 @@ export const Chat: React.FC = () => {
     const [activeConsultationId, setActiveConsultationId] = useState<string | undefined>(consultationId);
     const [astrologer, setAstrologer] = useState<Astrologer | null>(null);
     const [seeker, setSeeker] = useState<SeekerProfile | null>(null);
+    const [isEditingSeeker, setIsEditingSeeker] = useState(false);
+    const [editSeekerData, setEditSeekerData] = useState({ date_of_birth: '', time_of_birth: '', place_of_birth: '', gender: '' });
+
+    const handleEditSeekerToggle = () => {
+        if (!isEditingSeeker) {
+            setEditSeekerData({
+                date_of_birth: seeker?.date_of_birth || '',
+                time_of_birth: seeker?.time_of_birth || '',
+                place_of_birth: seeker?.place_of_birth || '',
+                gender: seeker?.gender || ''
+            });
+        }
+        setIsEditingSeeker(!isEditingSeeker);
+    };
+
+    const handleSaveSeekerDetails = async () => {
+        if (!seeker?.user_id) return;
+        try {
+            const updated = await api.seekers.updateOne(seeker.user_id, editSeekerData);
+            setSeeker(updated);
+            setIsEditingSeeker(false);
+            if (showKundli) {
+                // Fetch the newly generated kundli with updated details.
+                // Call handleViewKundli explicitly with updated data.
+                handleViewKundli(updated);
+            } else {
+                setKundliData(null);
+                setKundliReportId(null);
+            }
+        } catch (e) {
+            console.error("Failed to update seeker details", e);
+        }
+    };
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showKundli, setShowKundli] = useState(false);
     const [kundliData, setKundliData] = useState<ChartData | null>(null);
     const [kundliReportId, setKundliReportId] = useState<number | null>(null);
     const [kundliLoading, setKundliLoading] = useState(false);
     const [kundliError, setKundliError] = useState<string | null>(null);
+    const [showAdhocKundliForm, setShowAdhocKundliForm] = useState(false);
+    const [adhocKundliData, setAdhocKundliData] = useState({ full_name: '', date_of_birth: '', time_of_birth: '', place_of_birth: '' });
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
     const [showSidebarMobile, setShowSidebarMobile] = useState(false);
     const [showPreChatModal, setShowPreChatModal] = useState(false);
@@ -87,14 +122,14 @@ export const Chat: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const createNewConsultation = async (answers?: { topic: string; concern_note: string }) => {
+    const createNewConsultation = async (answers?: any) => {
         if (!astrologerId) return;
         try {
             setCreatingConsultation(true);
             const data = await api.consultations.create({
                 astrologer_id: parseInt(astrologerId),
                 consultation_type: 'CHAT',
-                ...(answers ? { topic: answers.topic, concern_note: answers.concern_note } : {})
+                ...(answers || {})
             });
             setShowPreChatModal(false);
             navigate(`/chat/${data.id}`, { replace: true });
@@ -176,7 +211,7 @@ export const Chat: React.FC = () => {
     }, [activeConsultationId, token, user]);
 
 
-    const { messages, sendMessage, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, talkTimeSeconds, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
+    const { messages, sendMessage, sendTyping, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, isTyping, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
 
     // Groq-generated coaching hint for the astrologer: refreshed whenever the seeker sends a new message.
     const [coachHint, setCoachHint] = useState<string | null>(null);
@@ -231,12 +266,6 @@ export const Chat: React.FC = () => {
             return () => clearTimeout(t);
         }
     }, [status, user?.role, navigate]);
-
-    const formatTalkTime = (totalSeconds: number) => {
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    };
 
     // Queue position for a waiting seeker (Q2): poll until the astrologer engages.
     const [queueAhead, setQueueAhead] = useState<number | null>(null);
@@ -322,6 +351,10 @@ export const Chat: React.FC = () => {
         full_name: seeker.full_name || 'Client',
         profile_picture_url: null, // Seekers don't have profile pics in schema?
     } : null);
+    // Seekers only ever see the astrologer's public nickname, never their legal full_name
+    const opponentName = user?.role === 'SEEKER'
+        ? getAstrologerDisplayName(astrologer)
+        : (opponent?.full_name || 'User');
 
     useEffect(() => {
         // Double scroll to ensure layout has settled
@@ -335,6 +368,16 @@ export const Chat: React.FC = () => {
         if (input.trim()) {
             sendMessage(input);
             setInput('');
+        }
+    };
+
+    const lastTyped = useRef(0);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInput(e.target.value);
+        const now = Date.now();
+        if (now - lastTyped.current > 2000) {
+            sendTyping();
+            lastTyped.current = now;
         }
     };
 
@@ -363,6 +406,12 @@ export const Chat: React.FC = () => {
         setShowSidebarMobile(false);
     };
 
+    const handleShareDashaText = (text: string) => {
+        if (!activeConsultationId) return;
+        sendMessage(text);
+        setShowSidebarMobile(false);
+    };
+
     const handleSubmitReview = async (rating: number, comment: string) => {
         if (!activeConsultationId) return;
         try {
@@ -379,12 +428,27 @@ export const Chat: React.FC = () => {
         navigate('/dashboard');
     };
 
-    const handleViewKundli = async () => {
-        if (!seeker) return;
+    const handleViewKundli = async (seekerOverride?: SeekerProfile) => {
+        const targetSeeker = seekerOverride || seeker;
+        if (!targetSeeker) return;
 
-        // If already loaded, just open the panel
-        if (kundliData) {
+        // Use cached data only if we aren't overriding (re-fetching on edit)
+        if (kundliData && !seekerOverride) {
             setShowKundli(true);
+            return;
+        }
+
+        // Profile is missing birth details — offer the ad-hoc entry form
+        // instead of calling the API with blank fields.
+        if (!(targetSeeker.date_of_birth && targetSeeker.time_of_birth && targetSeeker.place_of_birth)) {
+            setShowKundli(true);
+            setShowAdhocKundliForm(true);
+            setAdhocKundliData({
+                full_name: targetSeeker.full_name || '',
+                date_of_birth: targetSeeker.date_of_birth || '',
+                time_of_birth: targetSeeker.time_of_birth || '',
+                place_of_birth: targetSeeker.place_of_birth || '',
+            });
             return;
         }
 
@@ -394,11 +458,40 @@ export const Chat: React.FC = () => {
 
         try {
             const data = await api.kundli.generate({
+                seeker_id: targetSeeker.user_id,
+                full_name: targetSeeker.full_name || 'Seeker',
+                date_of_birth: targetSeeker.date_of_birth || '',
+                time_of_birth: targetSeeker.time_of_birth || '',
+                place_of_birth: targetSeeker.place_of_birth || '',
+            });
+            setKundliData(data.chart_data);
+            setKundliReportId(data.id);
+        } catch (err) {
+            setKundliError(getErrorMessage(err) || 'Failed to generate Kundli. Please try again.');
+        } finally {
+            setKundliLoading(false);
+        }
+    };
+
+    // Generates a Kundli from birth details the astrologer typed in manually
+    // (e.g. shared verbally by the seeker in chat) without touching the
+    // seeker's saved profile.
+    const handleGenerateAdhocKundli = async () => {
+        if (!seeker) return;
+        const { full_name, date_of_birth, time_of_birth, place_of_birth } = adhocKundliData;
+        if (!date_of_birth || !time_of_birth || !place_of_birth) return;
+
+        setShowAdhocKundliForm(false);
+        setKundliLoading(true);
+        setKundliError(null);
+
+        try {
+            const data = await api.kundli.generate({
                 seeker_id: seeker.user_id,
-                full_name: seeker.full_name || 'Seeker',
-                date_of_birth: seeker.date_of_birth || '',
-                time_of_birth: seeker.time_of_birth || '',
-                place_of_birth: seeker.place_of_birth || '',
+                full_name: full_name || seeker.full_name || 'Seeker',
+                date_of_birth,
+                time_of_birth,
+                place_of_birth,
             });
             setKundliData(data.chart_data);
             setKundliReportId(data.id);
@@ -457,9 +550,9 @@ export const Chat: React.FC = () => {
                     {/* Left Panel: Details (Astrologer OR Seeker) */}
                     <div className={`
                         ${showSidebarMobile
-                            ? 'flex fixed inset-0 z-50 bg-white p-6 m-4 rounded-2xl shadow-2xl animate-in slide-in-from-left duration-300 overflow-y-auto'
+                            ? 'chat-native-safe-top chat-native-safe-bottom flex fixed inset-0 z-50 bg-white p-6 shadow-2xl animate-in slide-in-from-left duration-300 overflow-y-auto'
                             : 'hidden'
-                        } 
+                        }
                         md:relative md:flex md:inset-auto md:z-0 md:bg-white md:p-6 md:m-0 md:w-1/3 md:rounded-2xl md:shadow-lg md:overflow-y-auto md:border md:border-gray-100 flex-col
                     `}>
                         {/* Mobile Close Button */}
@@ -480,11 +573,11 @@ export const Chat: React.FC = () => {
                                 <div className="space-y-6">
                                     <div className="flex flex-col items-center text-center">
                                         <img
-                                            src={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
-                                            alt={astrologer.full_name}
+                                            src={resolveImageUrl(astrologer.profile_picture_url, getAstrologerDisplayName(astrologer))}
+                                            alt={getAstrologerDisplayName(astrologer)}
                                             className="w-32 h-32 rounded-full object-cover border-4 border-[#FFB700] shadow-md mb-4"
                                         />
-                                        <h2 className="text-2xl font-bold text-gray-900">{astrologer.full_name}</h2>
+                                        <h2 className="text-2xl font-bold text-gray-900">{getAstrologerDisplayName(astrologer)}</h2>
                                         <p className="text-[#E91E63] font-semibold">{astrologer.specialties}</p>
 
                                         <div className="flex items-center gap-2 mt-2 bg-green-50 px-3 py-1 rounded-full border border-green-200">
@@ -556,9 +649,8 @@ export const Chat: React.FC = () => {
                                             Profile
                                         </button>
                                         <button
-                                            onClick={handleViewKundli}
-                                            disabled={!(seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth)}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${showKundli ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-900 hover:text-gray-700'} disabled:opacity-40 disabled:cursor-not-allowed`}
+                                            onClick={() => handleViewKundli()}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${showKundli ? 'bg-white text-purple-700 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                         >
                                             🔮 Kundli
                                         </button>
@@ -567,34 +659,67 @@ export const Chat: React.FC = () => {
                                     {!showKundli ? (
                                         <div className="space-y-4 pt-4 border-t border-gray-100">
 
-                                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date of Birth</h3>
-                                                        <p className="text-gray-900 font-medium">
-                                                            {seeker.date_of_birth ? new Date(seeker.date_of_birth).toLocaleDateString() : 'Not provided'}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time of Birth</h3>
-                                                        <p className="text-gray-900 font-medium">
-                                                            {seeker.time_of_birth ? seeker.time_of_birth : 'Not provided'}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Place of Birth</h3>
-                                                        <p className="text-gray-900 font-medium">
-                                                            {seeker.place_of_birth || 'Not provided'}
-                                                        </p>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Gender</h3>
-                                                        <p className="text-gray-900 font-medium">
-                                                            {seeker.gender || 'Not specified'}
-                                                        </p>
+                                            {isEditingSeeker ? (
+                                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4">
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-500 uppercase">Date of Birth</label>
+                                                            <input type="date" value={editSeekerData.date_of_birth} onChange={e => setEditSeekerData({...editSeekerData, date_of_birth: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-500 uppercase">Time of Birth</label>
+                                                            <input type="time" step="1" value={editSeekerData.time_of_birth} onChange={e => setEditSeekerData({...editSeekerData, time_of_birth: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
+                                                            <input type="text" value={editSeekerData.place_of_birth} onChange={e => setEditSeekerData({...editSeekerData, place_of_birth: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-500 uppercase">Gender</label>
+                                                            <select value={editSeekerData.gender} onChange={e => setEditSeekerData({...editSeekerData, gender: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white">
+                                                                <option value="">Select</option>
+                                                                <option value="MALE">Male</option>
+                                                                <option value="FEMALE">Female</option>
+                                                                <option value="OTHER">Other</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex gap-2 pt-2">
+                                                            <button onClick={handleSaveSeekerDetails} className="flex-1 bg-[#E91E63] text-white py-2 rounded-lg text-sm font-bold shadow-md">Save</button>
+                                                            <button onClick={handleEditSeekerToggle} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg text-sm font-bold">Cancel</button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            ) : (
+                                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 relative group">
+                                                    <button onClick={handleEditSeekerToggle} className="absolute top-2 right-2 p-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-500 hover:text-[#E91E63] shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Date of Birth</h3>
+                                                            <p className="text-gray-900 font-medium">
+                                                                {seeker.date_of_birth ? new Date(seeker.date_of_birth).toLocaleDateString() : 'Not provided'}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Time of Birth</h3>
+                                                            <p className="text-gray-900 font-medium">
+                                                                {seeker.time_of_birth ? seeker.time_of_birth : 'Not provided'}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Place of Birth</h3>
+                                                            <p className="text-gray-900 font-medium">
+                                                                {seeker.place_of_birth || 'Not provided'}
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Gender</h3>
+                                                            <p className="text-gray-900 font-medium">
+                                                                {seeker.gender || 'Not specified'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
                                                 <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Notes</h3>
@@ -605,22 +730,69 @@ export const Chat: React.FC = () => {
                                                 </p>
                                             </div>
 
-                                            {!(seeker.date_of_birth && seeker.time_of_birth && seeker.place_of_birth) && (
-                                                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-center">
-                                                    <p className="text-gray-400 text-xs">Birth details not available for Kundli generation</p>
-                                                </div>
-                                            )}
                                         </div>
                                     ) : (
                                         <div className="pt-2 border-t border-gray-100">
-                                            <KundliContent
-                                                chartData={kundliData}
-                                                reportId={kundliReportId ?? undefined}
-                                                loading={kundliLoading}
-                                                error={kundliError}
-                                                canShare={user?.role === 'ASTROLOGER'}
-                                                onShareImage={handleShareKundliImage}
-                                            />
+                                            <div className="flex items-center justify-between px-1 pb-2">
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                                    {kundliData && !showAdhocKundliForm ? 'Chart' : 'Ad-hoc Kundli'}
+                                                </span>
+                                                <button
+                                                    onClick={() => {
+                                                        setAdhocKundliData({
+                                                            full_name: seeker.full_name || '',
+                                                            date_of_birth: seeker.date_of_birth || '',
+                                                            time_of_birth: seeker.time_of_birth || '',
+                                                            place_of_birth: seeker.place_of_birth || '',
+                                                        });
+                                                        setShowAdhocKundliForm(v => !v);
+                                                    }}
+                                                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors"
+                                                >
+                                                    {showAdhocKundliForm ? 'Cancel' : '✏️ Enter details manually'}
+                                                </button>
+                                            </div>
+
+                                            {showAdhocKundliForm ? (
+                                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4 space-y-3">
+                                                    <p className="text-xs text-gray-500">
+                                                        Enter the birth details the seeker shared in chat. This won't change their saved profile.
+                                                    </p>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Name</label>
+                                                        <input type="text" value={adhocKundliData.full_name} onChange={e => setAdhocKundliData({ ...adhocKundliData, full_name: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="Full name" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Date of Birth</label>
+                                                        <input type="date" value={adhocKundliData.date_of_birth} onChange={e => setAdhocKundliData({ ...adhocKundliData, date_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Time of Birth</label>
+                                                        <input type="time" step="1" value={adhocKundliData.time_of_birth} onChange={e => setAdhocKundliData({ ...adhocKundliData, time_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
+                                                        <input type="text" value={adhocKundliData.place_of_birth} onChange={e => setAdhocKundliData({ ...adhocKundliData, place_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
+                                                    </div>
+                                                    <button
+                                                        onClick={handleGenerateAdhocKundli}
+                                                        disabled={!adhocKundliData.date_of_birth || !adhocKundliData.time_of_birth || !adhocKundliData.place_of_birth}
+                                                        className="w-full bg-[#E91E63] text-white py-2 rounded-lg text-sm font-bold shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    >
+                                                        Generate Kundli
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <KundliContent
+                                                    chartData={kundliData}
+                                                    reportId={kundliReportId ?? undefined}
+                                                    loading={kundliLoading}
+                                                    error={kundliError}
+                                                    canShare={user?.role === 'ASTROLOGER'}
+                                                    onShareImage={handleShareKundliImage}
+                                                    onShareDashaText={handleShareDashaText}
+                                                />
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -644,13 +816,13 @@ export const Chat: React.FC = () => {
                     {/* Right Panel: Chat Interface */}
                     <div className="flex-1 flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 relative">
                         {/* Chat Header */}
-                        <div className="bg-white p-3 md:p-4 border-b border-gray-100 flex justify-between items-center gap-2 z-10">
+                        <div className="chat-native-safe-top bg-white p-3 md:p-4 border-b border-gray-100 flex justify-between items-center gap-2 z-10">
                             <div className="flex items-center gap-4 min-w-0 flex-1">
                                 {/* Mobile only profile summary */}
                                 <div className="md:hidden flex items-center gap-2 min-w-0">
-                                    <img src={resolveImageUrl(opponent?.profile_picture_url, opponent?.full_name)} className="w-9 h-9 rounded-full border-2 border-[#FFB700] flex-shrink-0" alt="Profile" />
+                                    <img src={resolveImageUrl(opponent?.profile_picture_url, opponentName)} className="w-9 h-9 rounded-full border-2 border-[#FFB700] flex-shrink-0" alt="Profile" />
                                     <div className="min-w-0">
-                                        <h3 className="font-bold text-gray-900 text-sm truncate">{opponent?.full_name || 'Loading...'}</h3>
+                                        <h3 className="font-bold text-gray-900 text-sm truncate">{opponent ? opponentName : 'Loading...'}</h3>
                                         <span className="text-[10px] text-green-600 font-semibold flex items-center gap-1">● Live</span>
                                     </div>
                                 </div>
@@ -691,25 +863,9 @@ export const Chat: React.FC = () => {
                                     </div>
                                 )}
 
-                                {user?.role === 'SEEKER' && (
+                                {(user?.role === 'SEEKER' || user?.role === 'ASTROLOGER') && status !== 'ENDED' && (
                                     <div className={`text-sm hidden sm:flex items-center gap-3 ${lowBalance ? 'text-amber-700' : 'text-gray-600'}`}>
-                                        <span>Balance: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>₹{billingInfo.balance.toFixed(2)}</span></span>
-                                        <span className="text-gray-300">|</span>
-                                        <span>Spent: <span className="font-bold font-mono text-gray-900">₹{billingInfo.spent}</span></span>
-                                    </div>
-                                )}
-
-                                {user?.role === 'ASTROLOGER' && (
-                                    <div className="text-sm hidden sm:flex items-center gap-3 text-gray-600">
-                                        <span>Talk Time: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span></span>
-                                        <span className="text-gray-300">|</span>
-                                        <span>Earnings: <span className="font-bold font-mono text-green-700">₹{billingInfo.spent.toFixed(2)}</span></span>
-                                        {status !== 'ENDED' && (
-                                            <>
-                                                <span className="text-gray-300">|</span>
-                                                <span className={lowBalance ? 'text-amber-700' : ''}>Time Remaining: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>{billingInfo.minutes_remaining} min</span></span>
-                                            </>
-                                        )}
+                                        <span>Time Remaining: <span className={`font-bold font-mono ${lowBalance ? 'text-amber-700' : 'text-gray-900'}`}>{billingInfo.minutes_remaining} min</span></span>
                                     </div>
                                 )}
 
@@ -753,27 +909,7 @@ export const Chat: React.FC = () => {
                             never get clipped out of the cramped header row above (they were previously
                             invisible on mobile — either hidden or pushed off-screen with no scroll). */}
                         <div className="md:hidden flex items-center gap-3 px-4 py-1.5 border-b border-gray-100 bg-gray-50 overflow-x-auto text-[11px] flex-shrink-0 whitespace-nowrap">
-                            {user?.role === 'SEEKER' && (
-                                <span className={lowBalance ? 'text-amber-700' : 'text-gray-600'}>
-                                    Balance: <span className="font-bold font-mono">₹{billingInfo.balance.toFixed(2)}</span>
-                                </span>
-                            )}
-                            {user?.role === 'SEEKER' && (
-                                <span className="text-gray-600">
-                                    Spent: <span className="font-bold font-mono text-gray-900">₹{billingInfo.spent}</span>
-                                </span>
-                            )}
-                            {user?.role === 'ASTROLOGER' && (
-                                <span className="text-gray-600">
-                                    Talk: <span className="font-bold font-mono text-gray-900">{formatTalkTime(talkTimeSeconds)}</span>
-                                </span>
-                            )}
-                            {user?.role === 'ASTROLOGER' && (
-                                <span className="text-green-700">
-                                    Earn: <span className="font-bold font-mono">₹{billingInfo.spent.toFixed(2)}</span>
-                                </span>
-                            )}
-                            {user?.role === 'ASTROLOGER' && status !== 'ENDED' && (
+                            {(user?.role === 'SEEKER' || user?.role === 'ASTROLOGER') && status !== 'ENDED' && (
                                 <span className={lowBalance ? 'text-amber-700' : 'text-gray-600'}>
                                     Left: <span className="font-bold font-mono">{billingInfo.minutes_remaining}m</span>
                                 </span>
@@ -998,6 +1134,11 @@ export const Chat: React.FC = () => {
                                     </div>
                                 );
                             })}
+                            {isTyping && (
+                                <div className="text-gray-400 text-xs italic px-4 py-1 animate-pulse">
+                                    {opponentName} is typing...
+                                </div>
+                            )}
                             <div ref={messagesEndRef} />
                         </div>
 
@@ -1027,7 +1168,7 @@ export const Chat: React.FC = () => {
                         )}
 
                         {/* Input Area */}
-                        <form onSubmit={handleSend} className="bg-white p-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
+                        <form onSubmit={handleSend} className="chat-native-safe-bottom bg-white p-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
                             {user?.role === 'ASTROLOGER' && speech.isSupported && (
                                 <button
                                     type="button"
@@ -1045,7 +1186,7 @@ export const Chat: React.FC = () => {
                             <input
                                 type="text"
                                 value={input}
-                                onChange={(e) => setInput(e.target.value)}
+                                onChange={handleInputChange}
                                 placeholder="Type your message..."
                                 spellCheck
                                 lang={chatLanguage === 'hi' ? 'hi' : 'en'}

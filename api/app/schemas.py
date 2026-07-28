@@ -118,6 +118,8 @@ class AstrologerProfileBase(BaseModel):
     astrology_types: Optional[List[str]] = None
     is_approved: bool = False
     is_premium: bool = False
+    is_vip: bool = False
+    is_trending: bool = False
     legal_agreement_accepted: bool = False
     legal_agreement_accepted_at: Optional[datetime] = None
     # Post-login onboarding checklist (read-only display fields)
@@ -221,6 +223,10 @@ class ConsultationBase(BaseModel):
     rate_per_min: Optional[Decimal] = None # Optional request, usually set by system
     topic: Optional[str] = None
     concern_note: Optional[str] = None
+    spouse_name: Optional[str] = None
+    spouse_date_of_birth: Optional[date] = None
+    spouse_time_of_birth: Optional[time] = None
+    spouse_place_of_birth: Optional[str] = None
 
 class ConsultationCreate(ConsultationBase):
     pass

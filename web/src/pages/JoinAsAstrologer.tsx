@@ -6,6 +6,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, GraduationCap, Camera, ShieldCheck, ArrowLeft, Sparkles, Award, Globe2, Clock, MapPin, MessageSquareText } from 'lucide-react';
 import './Auth.css';
 import SEO from '../components/SEO';
+import PasswordInput from '../components/PasswordInput';
 
 const joinStructuredData = {
     '@context': 'https://schema.org',
@@ -208,7 +209,7 @@ export const JoinAsAstrologer: React.FC = () => {
                             </div>
                             <div className="form-group">
                                 <label>Password</label>
-                                <input type="password" placeholder="••••••••" autoComplete="new-password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                                <PasswordInput placeholder="••••••••" autoComplete="new-password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
                                 <p className="field-hint">{PASSWORD_REQUIREMENTS}</p>
                             </div>
                             <div className="form-group">

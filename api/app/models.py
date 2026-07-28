@@ -108,6 +108,8 @@ class AstrologerProfile(Base):
     astrology_types = Column(JSON, nullable=True) # List of types
     is_approved = Column(Boolean, default=False)
     is_premium = Column(Boolean, default=False, nullable=False)  # Admin-granted: surfaces astrologer at the top of listings
+    is_vip = Column(Boolean, default=False, nullable=False, server_default='false')
+    is_trending = Column(Boolean, default=False, nullable=False, server_default='false')
     onboarding_stage = Column(Enum(OnboardingStage), default=OnboardingStage.APPLIED, nullable=False)
     onboarding_meta = Column(JSON, nullable=True)  # Last-entered email fields per step, for card re-display
     legal_agreement_accepted = Column(Boolean, default=False)
@@ -187,6 +189,10 @@ class Consultation(Base):
     consultation_type = Column(Enum(ConsultationType), nullable=False)
     topic = Column(String, nullable=True)
     concern_note = Column(Text, nullable=True)
+    spouse_name = Column(String, nullable=True)
+    spouse_date_of_birth = Column(Date, nullable=True)
+    spouse_time_of_birth = Column(Time, nullable=True)
+    spouse_place_of_birth = Column(String, nullable=True)
     start_time = Column(DateTime(timezone=True))
     end_time = Column(DateTime(timezone=True))
     duration_seconds = Column(Integer, default=0)

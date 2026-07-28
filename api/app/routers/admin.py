@@ -20,6 +20,7 @@ from ..services.email_service import (
     build_growth_meeting_email,
     build_astrologer_approved_email,
     build_astrologer_rejected_email,
+    build_profile_incomplete_email,
     build_admin_password_reset_email,
     build_meeting_ics,
     ONBOARDING_CALENDAR_ATTENDEE,
@@ -262,8 +263,10 @@ class UserEditRequest(BaseModel):
 class UserStatusUpdate(BaseModel):
     is_active: bool
 
-class PremiumUpdate(BaseModel):
+class BadgesUpdate(BaseModel):
     is_premium: bool
+    is_vip: bool
+    is_trending: bool
 
 class KycVerifyUpdate(BaseModel):
     kyc_verified: bool
@@ -300,15 +303,17 @@ def update_user_status(user_id: int, status_update: UserStatusUpdate, db: Sessio
     db.commit()
     return {"message": f"User {'activated' if user.is_active else 'deactivated'} successfully", "is_active": user.is_active}
 
-@router.put("/astrologers/{user_id}/premium")
-def update_astrologer_premium(user_id: int, update: PremiumUpdate, db: Session = Depends(database.get_db)):
+@router.put("/astrologers/{user_id}/badges")
+def update_astrologer_badges(user_id: int, update: BadgesUpdate, db: Session = Depends(database.get_db)):
     profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Astrologer profile not found")
 
     profile.is_premium = update.is_premium
+    profile.is_vip = update.is_vip
+    profile.is_trending = update.is_trending
     db.commit()
-    return {"message": f"Astrologer {'marked premium' if profile.is_premium else 'unmarked premium'}", "is_premium": profile.is_premium}
+    return {"message": "Badges updated successfully", "is_premium": profile.is_premium, "is_vip": profile.is_vip, "is_trending": profile.is_trending}
 
 @router.put("/astrologers/{user_id}/kyc")
 def update_astrologer_kyc_verification(user_id: int, update: KycVerifyUpdate, db: Session = Depends(database.get_db)):
@@ -319,7 +324,21 @@ def update_astrologer_kyc_verification(user_id: int, update: KycVerifyUpdate, db
     profile.kyc_verified = update.kyc_verified
     profile.kyc_verified_at = datetime.utcnow() if update.kyc_verified else None
     db.commit()
-    return {"message": f"KYC {'verified' if profile.kyc_verified else 'marked unverified'}", "kyc_verified": profile.kyc_verified, "kyc_verified_at": profile.kyc_verified_at}
+    return {"message": f"Astrologer KYC {'verified' if update.kyc_verified else 'unverified'}"}
+
+class RequestMissingInfoRequest(BaseModel):
+    missing_items: str
+
+@router.post("/astrologers/{user_id}/request-missing-info")
+def request_astrologer_missing_info(user_id: int, request: RequestMissingInfoRequest, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id, models.User.role == models.UserRole.ASTROLOGER).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Astrologer not found")
+        
+    subject, body = build_profile_incomplete_email(user.full_name, request.missing_items)
+    background_tasks.add_task(send_email, user.email, subject, body)
+    
+    return {"message": "Request for missing info sent successfully"}
 
 # Specific endpoint to create an Admin (only by another admin)
 @router.post("/create_admin", response_model=schemas.Token)

@@ -3,6 +3,7 @@ import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import PasswordInput from '../components/PasswordInput';
 import './Auth.css';
 
 export const ResetPassword: React.FC = () => {
@@ -56,8 +57,7 @@ export const ResetPassword: React.FC = () => {
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
-                        <input
-                            type="password"
+                        <PasswordInput
                             placeholder="New Password"
                             autoComplete="new-password"
                             value={newPassword}
@@ -70,8 +70,7 @@ export const ResetPassword: React.FC = () => {
                     </div>
 
                     <div className="form-group">
-                        <input
-                            type="password"
+                        <PasswordInput
                             placeholder="Confirm New Password"
                             autoComplete="new-password"
                             value={confirmPassword}

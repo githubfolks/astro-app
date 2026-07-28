@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { AstrologerListItem } from '../types';
+import { getAstrologerDisplayName } from '../utils/url';
 
 const FREE_QUESTION_LIMIT = 5;
 const GUEST_DETAILS_KEY = 'ai_astrologer_birth_details';
@@ -395,16 +396,16 @@ const AiAstrologer: React.FC = () => {
                                         >
                                             <div className="relative shrink-0">
                                                 {a.profile_picture_url ? (
-                                                    <img src={a.profile_picture_url} alt={a.full_name || 'Astrologer'} className="w-11 h-11 rounded-xl object-cover" />
+                                                    <img src={a.profile_picture_url} alt={getAstrologerDisplayName(a)} className="w-11 h-11 rounded-xl object-cover" />
                                                 ) : (
                                                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold">
-                                                        {(a.full_name || 'A').charAt(0)}
+                                                        {getAstrologerDisplayName(a).charAt(0)}
                                                     </div>
                                                 )}
                                                 {a.is_online && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-indigo-950"></span>}
                                             </div>
                                             <div className="min-w-0 flex-1">
-                                                <p className="text-white text-sm font-semibold truncate">{a.full_name || 'Astrologer'}</p>
+                                                <p className="text-white text-sm font-semibold truncate">{getAstrologerDisplayName(a)}</p>
                                                 <p className="text-indigo-200/60 text-xs truncate">{a.specialties || 'Vedic'}</p>
                                             </div>
                                             <div className="text-right shrink-0">

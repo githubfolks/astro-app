@@ -12,8 +12,8 @@ import RatingModal from '../components/RatingModal';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
-import { resolveImageUrl } from '../utils/url';
-import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart, AlertTriangle } from 'lucide-react';
+import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
+import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart, AlertTriangle, Eye } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<Consultation[]>([]);
@@ -153,6 +153,8 @@ export const Dashboard: React.FC = () => {
         ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)
     );
 
+    const activeSession = (user?.role === 'ASTROLOGER' ? history : seekerHistory).find(c => ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status));
+
     const toggleOnlineStatus = async () => {
         try {
             setUpdatingProfile(true);
@@ -191,7 +193,28 @@ export const Dashboard: React.FC = () => {
         return (
             <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
                 <Header />
-                <main className="flex-1 container mx-auto p-6 md:p-8">
+                {activeSession && (
+                    <div className="sticky top-0 z-40 bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white shadow-lg rounded-b-2xl">
+                        <div className="container mx-auto px-4 py-3 md:px-8 md:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                                    <MessageCircle className="animate-pulse" size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="font-bold text-sm md:text-lg leading-tight">You have an ongoing consultation!</p>
+                                    <p className="text-xs md:text-sm text-white/90">Click below to resume your session.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => navigate(`/chat/${activeSession.id}`)}
+                                className="w-full sm:w-auto bg-white text-[#E91E63] px-6 py-2.5 rounded-full font-bold hover:bg-gray-100 active:scale-95 transition-all shadow-sm whitespace-nowrap"
+                            >
+                                Resume Chat →
+                            </button>
+                        </div>
+                    </div>
+                )}
+                <main className={`flex-1 container mx-auto p-6 md:p-8 ${activeSession ? 'pt-8 md:pt-10' : ''}`}>
                     {missingOnboardingItems.length > 0 && (
                         <a
                             href="#astrologer-onboarding-panel"
@@ -206,8 +229,8 @@ export const Dashboard: React.FC = () => {
                             </span>
                         </a>
                     )}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                        <div className="text-center md:text-left">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <div className="w-full text-center md:w-auto md:text-left">
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">Astrologer Dashboard</h2>
                             <p className="text-gray-600">Manage your status and consultations.</p>
                         </div>
@@ -289,12 +312,13 @@ export const Dashboard: React.FC = () => {
                                                                 <button
                                                                     onClick={() => navigate(`/chat/${c.id}`)}
                                                                     disabled={blocked}
-                                                                    title={blocked ? 'Finish your current chat first' : ''}
-                                                                    className={`font-semibold text-sm px-6 py-2 rounded-lg transition-all shadow-md active:scale-95 ${blocked
+                                                                    title={blocked ? 'Finish your current chat first' : 'Open Chat'}
+                                                                    aria-label="Open Chat"
+                                                                    className={`w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 ${blocked
                                                                         ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                                                         : 'bg-[#E91E63] hover:bg-pink-700 text-white'}`}
                                                                 >
-                                                                    {isThisActive ? 'Open Chat' : blocked ? 'Waiting' : 'Open Chat'}
+                                                                    <MessageCircle size={20} />
                                                                 </button>
                                                             );
                                                         })()}
@@ -436,7 +460,7 @@ export const Dashboard: React.FC = () => {
                         <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-900">History</h3>
                                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                                     <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
+                                        <table className="w-full min-w-[640px] text-left">
                                             <thead className="bg-gray-50 border-b border-gray-100">
                                                 <tr>
                                                     <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Date</th>
@@ -469,9 +493,11 @@ export const Dashboard: React.FC = () => {
                                                             <div className="flex items-center justify-end gap-3">
                                                                 <button
                                                                     onClick={() => setDetailConsultation(c)}
-                                                                    className="text-gray-400 hover:text-[#E91E63] font-medium text-sm transition-colors"
+                                                                    title="View"
+                                                                    aria-label="View"
+                                                                    className="text-gray-400 hover:text-[#E91E63] transition-colors"
                                                                 >
-                                                                    View
+                                                                    <Eye size={18} />
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -498,7 +524,7 @@ export const Dashboard: React.FC = () => {
                                 </h3>
                                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                                     <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
+                                        <table className="w-full min-w-[720px] text-left">
                                             <thead className="bg-gray-50 border-b border-gray-100">
                                                 <tr>
                                                     <th className="p-4 font-bold text-gray-700 uppercase text-xs tracking-wider">Date</th>
@@ -695,28 +721,47 @@ export const Dashboard: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <Header />
-            <main className="flex-1 container mx-auto p-6 md:p-8">
+            {activeSession && (
+                <div className="sticky top-0 z-40 bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white shadow-lg rounded-b-2xl">
+                    <div className="container mx-auto px-4 py-3 md:px-8 md:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                                <MessageCircle className="animate-pulse" size={20} />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-bold text-sm md:text-lg leading-tight">You have an ongoing consultation!</p>
+                                <p className="text-xs md:text-sm text-white/90">Click below to resume your session.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => navigate(`/chat/${activeSession.id}`)}
+                            className="w-full sm:w-auto bg-white text-[#E91E63] px-6 py-2.5 rounded-full font-bold hover:bg-gray-100 active:scale-95 transition-all shadow-sm whitespace-nowrap"
+                        >
+                            Resume Chat →
+                        </button>
+                    </div>
+                </div>
+            )}
+            <main className={`flex-1 container mx-auto p-6 md:p-8 ${activeSession ? 'pt-8 md:pt-10' : ''}`}>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Past Consultations */}
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <h3 className="text-xl font-bold text-gray-900 mt-2 mb-4 flex items-center gap-2">
                                 <MessageCircle className="text-[#E91E63]" size={24} />
                                 My Consultations
                                 <span className="text-sm font-normal text-gray-900">({seekerHistory.length})</span>
                             </h3>
 
                             {/* Live Classes for Student */}
-                            <div className="mb-8">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={18} /></span>
-                                    My Live Classes
-                                </h3>
-                                <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-                                    {sessions.length === 0 ? (
-                                        <p className="text-sm text-gray-900">No active classes to join.</p>
-                                    ) : (
+                            {sessions.length > 0 && (
+                                <div className="mb-8">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={18} /></span>
+                                        My Live Classes
+                                    </h3>
+                                    <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
                                         <div className="space-y-3">
                                             {sessions.map((s: EduSession) => {
                                                 const active = isSessionActive(s.scheduled_start, s.scheduled_end);
@@ -743,23 +788,19 @@ export const Dashboard: React.FC = () => {
                                                 );
                                             })}
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Enrolled Courses & Materials for Student */}
-                            <div className="mb-8">
-                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <span className="bg-indigo-600 text-white p-1 rounded-md"><Book size={18} /></span>
-                                    My Learning Materials
-                                </h3>
-                                <div className="space-y-4">
-                                    {myCourses.length === 0 ? (
-                                        <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm">
-                                            <p className="text-sm text-gray-900">You are not enrolled in any courses.</p>
-                                        </div>
-                                    ) : (
-                                        myCourses.map(course => (
+                            {myCourses.length > 0 && (
+                                <div className="mb-8">
+                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <span className="bg-indigo-600 text-white p-1 rounded-md"><Book size={18} /></span>
+                                        My Learning Materials
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {myCourses.map(course => (
                                             <div key={course.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                                                 <div
                                                     className="p-4 bg-gray-50 flex justify-between items-center cursor-pointer hover:bg-gray-100 transition-colors"
@@ -801,10 +842,10 @@ export const Dashboard: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                        ))
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Search Box */}
                             {seekerHistory.length > 0 && (
@@ -837,7 +878,7 @@ export const Dashboard: React.FC = () => {
                             ) : (() => {
                                 // Filter by search
                                 const filtered = seekerHistory.filter((c: Consultation) => {
-                                    const name = c.astrologer_profile?.full_name?.toLowerCase() || '';
+                                    const name = getAstrologerDisplayName(c.astrologer_profile).toLowerCase();
                                     return name.includes(searchQuery.toLowerCase());
                                 });
 
@@ -858,49 +899,48 @@ export const Dashboard: React.FC = () => {
                                     <>
                                         <div className="grid gap-4">
                                             {paginatedData.map((c: Consultation) => (
-                                                <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-all">
-                                                    <div className="flex flex-col md:flex-row justify-between gap-4">
-                                                        <div className="flex items-start gap-4">
-                                                            <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xl overflow-hidden border border-gray-100">
-                                                                <img 
-                                                                    src={resolveImageUrl(c.astrologer_profile?.profile_picture_url, c.astrologer_profile?.full_name)} 
-                                                                    alt="Profile" 
-                                                                    className="w-full h-full object-cover" 
+                                                <div key={c.id} className="bg-white rounded-xl border border-gray-100 p-4 md:p-5 hover:shadow-md transition-all">
+                                                    <div className="grid grid-cols-3 items-center gap-2 md:gap-4">
+                                                        <div className="flex flex-col items-center text-center gap-1.5 min-w-0">
+                                                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xl overflow-hidden border border-gray-100 flex-shrink-0">
+                                                                <img
+                                                                    src={resolveImageUrl(c.astrologer_profile?.profile_picture_url, getAstrologerDisplayName(c.astrologer_profile))}
+                                                                    alt="Profile"
+                                                                    className="w-full h-full object-cover"
                                                                 />
                                                             </div>
-                                                            <div>
-                                                                <h4 className="font-bold text-gray-900">{c.astrologer_profile?.full_name || `Astrologer #${c.astrologer_id}`}</h4>
-                                                                <div className="flex flex-wrap gap-2 mt-1 text-sm text-gray-900">
-                                                                    <span className="flex items-center gap-1">
-                                                                        <Calendar size={14} />
-                                                                        {new Date(c.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                                    </span>
-                                                                    <span className="flex items-center gap-1">
-                                                                        <Clock size={14} />
-                                                                        {Math.round((c.duration_seconds || 0) / 60)} mins
-                                                                    </span>
-                                                                </div>
-                                                                <div className="mt-2">
-                                                                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${c.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                                                                        c.status === 'ACTIVE' || c.status === 'ONGOING' ? 'bg-blue-100 text-blue-700' :
-                                                                            'bg-gray-100 text-gray-600'
-                                                                        }`}>
-                                                                        {c.status}
-                                                                    </span>
-                                                                </div>
+                                                            <h4 className="font-bold text-gray-900 text-sm md:text-base w-full truncate">{c.astrologer_profile ? getAstrologerDisplayName(c.astrologer_profile) : `Astrologer #${c.astrologer_id}`}</h4>
+                                                        </div>
+
+                                                        <div className="min-w-0">
+                                                            <div className="flex flex-col gap-1 text-xs md:text-sm text-gray-900">
+                                                                <span className="flex items-center gap-1">
+                                                                    <Calendar size={14} className="flex-shrink-0" />
+                                                                    {new Date(c.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                </span>
+                                                                <span className="flex items-center gap-1">
+                                                                    <Clock size={14} className="flex-shrink-0" />
+                                                                    {Math.round((c.duration_seconds || 0) / 60)} mins
+                                                                </span>
+                                                            </div>
+                                                            <div className="mt-1.5">
+                                                                <span className={`text-xs font-bold px-2 py-1 rounded-full ${c.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
+                                                                    c.status === 'ACTIVE' || c.status === 'ONGOING' ? 'bg-blue-100 text-blue-700' :
+                                                                        'bg-gray-100 text-gray-600'
+                                                                    }`}>
+                                                                    {c.status}
+                                                                </span>
                                                             </div>
                                                         </div>
 
-                                                        <div className="flex flex-col items-end justify-between">
-                                                            <div className="text-right">
-                                                                <div className="text-lg font-bold text-gray-900">₹{Number(c.total_cost || 0).toFixed(2)}</div>
-                                                                <div className="text-xs text-gray-900">@₹{Number(c.rate_per_min || 0)}/min</div>
-                                                            </div>
+                                                        <div className="text-right">
+                                                            <div className="text-base md:text-lg font-bold text-gray-900">₹{Number(c.total_cost || 0).toFixed(2)}</div>
+                                                            <div className="text-xs text-gray-900">@₹{Number(c.rate_per_min || 0)}/min</div>
 
-                                                            {c.status === 'COMPLETED' && (
+                                                            {c.status === 'COMPLETED' ? (
                                                                 <div className="mt-2">
                                                                     {c.review ? (
-                                                                        <div className="flex items-center gap-1 text-yellow-600">
+                                                                        <div className="flex items-center justify-end gap-1 text-yellow-600">
                                                                             {[...Array(5)].map((_, i) => (
                                                                                 <Star key={i} size={16} fill={i < (c.review?.rating || 0) ? 'currentColor' : 'none'} />
                                                                             ))}
@@ -914,7 +954,11 @@ export const Dashboard: React.FC = () => {
                                                                         </button>
                                                                     )}
                                                                 </div>
-                                                            )}
+                                                            ) : ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status) ? (
+                                                                <div className="mt-2 text-sm font-semibold text-[#E91E63]">
+                                                                    Active Session
+                                                                </div>
+                                                            ) : null}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1069,7 +1113,7 @@ export const Dashboard: React.FC = () => {
             {/* Rating Modal */}
             <RatingModal
                 isOpen={showRatingModal}
-                astrologerName={ratingConsultation?.astrologer_profile?.full_name || `Astrologer`}
+                astrologerName={ratingConsultation?.astrologer_profile ? getAstrologerDisplayName(ratingConsultation.astrologer_profile) : 'Astrologer'}
                 onSubmit={handleReviewSubmit}
                 onSkip={() => { setShowRatingModal(false); setRatingConsultation(null); }}
             />

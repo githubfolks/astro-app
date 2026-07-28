@@ -1,6 +1,15 @@
 import { api } from './api';
 import { isNative, getPlatform } from '../utils/platform';
 
+// android/app/build.gradle only applies the google-services Gradle plugin (and initializes
+// FirebaseApp) when android/app/google-services.json is present — see that file's
+// "google-services.json not found, google-services plugin not applied" log line. Without it,
+// PushNotifications.register() calls FirebaseMessaging.getInstance() natively, which throws
+// on a Capacitor bridge thread with no JS-catchable boundary and crashes the whole app.
+// Flip this on (and set it in the relevant .env file) once a real google-services.json has
+// been added and the app rebuilt.
+const PUSH_NOTIFICATIONS_ENABLED = import.meta.env.VITE_PUSH_NOTIFICATIONS_ENABLED === 'true';
+
 // Native push notifications (lazily imported to avoid loading the plugin on web)
 let PushNotifications: typeof import('@capacitor/push-notifications').PushNotifications | null = null;
 
@@ -15,6 +24,10 @@ export const fcmService = {
     async requestPermissionAndGetToken(): Promise<string | null> {
         // Native path: use Capacitor PushNotifications
         if (isNative()) {
+            if (!PUSH_NOTIFICATIONS_ENABLED) {
+                console.log('Push notifications disabled: Firebase is not configured for this build');
+                return null;
+            }
             try {
                 await loadNativePush();
                 if (!PushNotifications) return null;

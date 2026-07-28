@@ -119,6 +119,16 @@ a {
   padding-bottom: var(--safe-area-bottom);
 }
 
+/* Chat page renders its own fixed full-screen layout (no site-header/
+   mobile-bottom-nav), so its header/input bar need their own safe-area padding. */
+.native-app .chat-native-safe-top {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+}
+
+.native-app .chat-native-safe-bottom {
+  padding-bottom: calc(var(--safe-area-bottom, 0px) + 1.5rem);
+}
+
 /* Add bottom spacing to page content for fixed bottom nav */
 .native-app .home-page,
 .native-app .page-content,

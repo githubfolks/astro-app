@@ -47,6 +47,7 @@ export interface AstrologerListItem {
     user_id: number;
     slug?: string | null;
     full_name?: string;
+    display_name?: string | null;
     profile_picture_url?: string;
     specialties?: string;
     languages?: string;
@@ -73,7 +74,12 @@ export interface SeekerProfile {
 /** Minimal profile embedded in consultation records. */
 export interface ProfileSummary {
     full_name?: string;
+    display_name?: string | null;
     profile_picture_url?: string;
+    date_of_birth?: string;
+    time_of_birth?: string;
+    place_of_birth?: string;
+    gender?: string;
 }
 
 export interface ConsultationReview {
@@ -94,6 +100,10 @@ export interface Consultation {
     concern_note?: string | null;
     is_promotional_first_chat?: boolean;
     promotional_rate_total?: number | null;
+    spouse_name?: string | null;
+    spouse_date_of_birth?: string | null;
+    spouse_time_of_birth?: string | null;
+    spouse_place_of_birth?: string | null;
     review?: ConsultationReview | null;
     astrologer_profile?: ProfileSummary | null;
     seeker_profile?: ProfileSummary | null;

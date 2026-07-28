@@ -21,7 +21,7 @@ import {
     Bell
 } from 'lucide-react';
 
-import { resolveImageUrl } from '../utils/url';
+import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import SEO from '../components/SEO';
 
 const AstrologerProfile: React.FC = () => {
@@ -46,7 +46,7 @@ const AstrologerProfile: React.FC = () => {
             {
                 "@type": "Person",
                 "@id": `https://aadikarta.org/astrologers/${ast.slug || ast.user_id}#person`,
-                "name": ast.full_name,
+                "name": getAstrologerDisplayName(ast),
                 "jobTitle": "Astrologer",
                 "description": ast.about_me,
                 "image": ast.profile_picture_url,
@@ -54,7 +54,7 @@ const AstrologerProfile: React.FC = () => {
             },
             {
                 "@type": "ProfessionalService",
-                "name": `${ast.full_name} - Vedic Astrologer on Aadikarta`,
+                "name": `${getAstrologerDisplayName(ast)} - Vedic Astrologer on Aadikarta`,
                 "image": ast.profile_picture_url,
                 "priceRange": "₹₹",
                 "aggregateRating": {
@@ -184,14 +184,15 @@ const AstrologerProfile: React.FC = () => {
     const specialtiesArray = astrologer.specialties?.split(',').map((s: string) => s.trim()) || [];
     const languagesArray = astrologer.languages?.split(',').map((l: string) => l.trim()) || [];
     const status = astrologer.availability_status || (astrologer.is_online ? 'ONLINE' : 'OFFLINE');
+    const displayName = getAstrologerDisplayName(astrologer);
 
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <SEO
-                title={`${astrologer.full_name} | Expert Astrologer | Aadikarta Vedic Astrology`}
-                description={`Consult with ${astrologer.full_name} on Aadikarta Vedic Astrology, a verified expert with ${astrologer.experience_years}+ years of experience in ${specialtiesArray.slice(0, 3).join(', ')}.`}
-                keywords={`Aadikarta Vedic Astrology, ${astrologer.full_name}, talk to ${astrologer.full_name}, ${specialtiesArray.slice(0, 3).join(', ')}`}
-                image={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
+                title={`${displayName} | Expert Astrologer | Aadikarta Vedic Astrology`}
+                description={`Consult with ${displayName} on Aadikarta Vedic Astrology, a verified expert with ${astrologer.experience_years}+ years of experience in ${specialtiesArray.slice(0, 3).join(', ')}.`}
+                keywords={`Aadikarta Vedic Astrology, ${displayName}, talk to ${displayName}, ${specialtiesArray.slice(0, 3).join(', ')}`}
+                image={resolveImageUrl(astrologer.profile_picture_url, displayName)}
                 structuredData={getStructuredData(astrologer)}
             />
             <Header />
@@ -204,8 +205,8 @@ const AstrologerProfile: React.FC = () => {
                             <div className="relative">
                                 <div className="w-40 h-40 md:w-52 md:h-52 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl bg-gradient-to-br from-purple-400 to-pink-500">
                                     <img
-                                        src={resolveImageUrl(astrologer.profile_picture_url, astrologer.full_name)}
-                                        alt={astrologer.full_name}
+                                        src={resolveImageUrl(astrologer.profile_picture_url, displayName)}
+                                        alt={displayName}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -232,7 +233,7 @@ const AstrologerProfile: React.FC = () => {
                                     <CheckCircle size={20} className="text-blue-400" />
                                     <span className="text-sm text-blue-300 font-medium">Verified Expert</span>
                                 </div>
-                                <h1 className="text-3xl md:text-4xl font-normal mb-3">{astrologer.full_name}</h1>
+                                <h1 className="text-3xl md:text-4xl font-normal mb-3">{displayName}</h1>
 
                                 {/* Rating & Stats */}
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
@@ -364,7 +365,7 @@ const AstrologerProfile: React.FC = () => {
 
                             {/* Why Consult Section */}
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-normal text-gray-900 mb-4">Why Consult {astrologer.full_name}?</h2>
+                                <h2 className="text-xl font-normal text-gray-900 mb-4">Why Consult {displayName}?</h2>
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">

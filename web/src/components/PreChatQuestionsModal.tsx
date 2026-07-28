@@ -4,7 +4,13 @@ import { X, HelpCircle } from 'lucide-react';
 interface PreChatQuestionsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (answers: { topic: string; concern_note: string }) => void;
+    onSubmit: (answers: { 
+        topic: string; 
+        spouse_name?: string;
+        spouse_date_of_birth?: string;
+        spouse_time_of_birth?: string;
+        spouse_place_of_birth?: string;
+    }) => void;
     submitting?: boolean;
 }
 
@@ -26,23 +32,38 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
     submitting = false,
 }) => {
     const [topic, setTopic] = useState('');
-    const [concernNote, setConcernNote] = useState('');
+    const [spouseName, setSpouseName] = useState('');
+    const [spouseDob, setSpouseDob] = useState('');
+    const [spouseTob, setSpouseTob] = useState('');
+    const [spousePob, setSpousePob] = useState('');
     const [error, setError] = useState('');
 
     if (!isOpen) return null;
+
+    const requiresSpouseDetails = topic === 'Love & Relationships' || topic === 'Marriage';
 
     const handleSubmit = () => {
         if (!topic) {
             setError('Please select what you would like to discuss');
             return;
         }
+
+        const answers: any = { topic };
+        
+        if (requiresSpouseDetails) {
+            if (spouseName) answers.spouse_name = spouseName.trim();
+            if (spouseDob) answers.spouse_date_of_birth = spouseDob;
+            if (spouseTob) answers.spouse_time_of_birth = spouseTob + ':00'; // Ensure HH:MM:SS format
+            if (spousePob) answers.spouse_place_of_birth = spousePob.trim();
+        }
+
         setError('');
-        onSubmit({ topic, concern_note: concernNote.trim() });
+        onSubmit(answers);
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in my-8">
                 <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] p-5 text-white">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
@@ -54,7 +75,7 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
                         </button>
                     </div>
                     <p className="mt-2 text-sm opacity-90">
-                        A quick note helps the astrologer prepare for your session
+                        Please provide some details before your session
                     </p>
                 </div>
 
@@ -81,19 +102,62 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
                         </select>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                            Briefly describe your concern (optional)
-                        </label>
-                        <textarea
-                            value={concernNote}
-                            onChange={(e) => setConcernNote(e.target.value)}
-                            rows={3}
-                            maxLength={500}
-                            placeholder="e.g. I want to know the right time to start a new job"
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none resize-none"
-                        />
-                    </div>
+                    {requiresSpouseDetails && (
+                        <div className="space-y-4 pt-2 border-t border-gray-100">
+                            <h3 className="text-sm font-bold text-[#E91E63]">Partner / Spouse Details (Optional)</h3>
+                            
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={spouseName}
+                                    onChange={(e) => setSpouseName(e.target.value)}
+                                    placeholder="Enter name"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Date of Birth
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={spouseDob}
+                                        onChange={(e) => setSpouseDob(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                        Time of Birth
+                                    </label>
+                                    <input
+                                        type="time"
+                                        value={spouseTob}
+                                        onChange={(e) => setSpouseTob(e.target.value)}
+                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">
+                                    Place of Birth
+                                </label>
+                                <input
+                                    type="text"
+                                    value={spousePob}
+                                    onChange={(e) => setSpousePob(e.target.value)}
+                                    placeholder="City, State, Country"
+                                    className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <button
                         onClick={handleSubmit}

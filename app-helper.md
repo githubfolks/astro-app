@@ -55,3 +55,9 @@ ViKr@m#2026
 
 
 The Bio/Description (Copy-Paste this): Aadikarta Astrology (aadikarta.org) is an official digital platform operated by Aadikarta Vedic Astro Private Limited. We connect global users with verified, authentic Vedic astrologers and tarot readers for secure online consultations.
+
+Aadikarta Astrology (aadikarta.org), by Aadikarta Vedic Astro Pvt Ltd, connects global users with verified Vedic astrologers and tarot readers online. (143 chars)
+
+Aadikarta Astrology (aadikarta.org) is Aadikarta Vedic Astro Pvt Ltd's official platform for secure consultations with verified Vedic astrologers. (139 chars)
+
+We're Aadikarta Vedic Astro Pvt Ltd, running aadikarta.org to connect users worldwide with authentic, verified Vedic astrologers and tarot readers. (146 chars)

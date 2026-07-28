@@ -2,6 +2,7 @@ import { getErrorMessage } from '../utils/errors';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import PasswordInput from './PasswordInput';
 import './LoginModal.css';
 
 interface Props {
@@ -82,8 +83,7 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
                     </div>
                     <div className="form-group">
                         <label>Password</label>
-                        <input
-                            type="password"
+                        <PasswordInput
                             name="password"
                             autoComplete="current-password"
                             value={password}

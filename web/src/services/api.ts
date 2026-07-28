@@ -262,6 +262,17 @@ export const api = {
             });
             return handleResponse(response, 'Failed to fetch seeker profile');
         },
+        updateOne: async (userId: number | string, data: JsonBody) => {
+            const response = await customFetch(`${API_URL}/users/${userId}/profile`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to update seeker profile');
+        },
         getProfile: async () => {
             const response = await customFetch(`${API_URL}/seekers/profile`, {
                 headers: await authHeaders()

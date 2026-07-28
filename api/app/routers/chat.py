@@ -47,9 +47,11 @@ class ConnectionManager:
             if not self.active_connections[consultation_id]:
                 del self.active_connections[consultation_id]
 
-    async def broadcast(self, consultation_id: int, message: dict):
+    async def broadcast(self, consultation_id: int, message: dict, exclude_user_id: int | None = None):
         if consultation_id in self.active_connections:
             for connection in self.active_connections[consultation_id]:
+                if exclude_user_id is not None and connection["user_id"] == exclude_user_id:
+                    continue
                 try:
                     await connection["ws"].send_text(json.dumps(message))
                 except Exception as e:
@@ -726,6 +728,12 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: 
                 
             elif msg_type == "PING":
                 await websocket.send_text(json.dumps({"type": "PONG"}))
+
+            elif msg_type == "TYPING":
+                await manager.broadcast(consultation_id, {
+                    "type": "TYPING",
+                    "sender_id": user.id,
+                }, exclude_user_id=user.id)
 
             elif msg_type == "RESUME_CHAT":
                 db.refresh(consultation)

@@ -36,6 +36,9 @@ export default function AstrologerDetails() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [kycUpdating, setKycUpdating] = useState(false);
+    const [showMissingInfoModal, setShowMissingInfoModal] = useState(false);
+    const [missingItemsText, setMissingItemsText] = useState("");
+    const [sendingRequest, setSendingRequest] = useState(false);
 
     const fetchData = useCallback(async () => {
         try {
@@ -73,6 +76,21 @@ export default function AstrologerDetails() {
             alert(err.response?.data?.detail || 'Failed to update KYC verification status');
         } finally {
             setKycUpdating(false);
+        }
+    };
+
+    const handleSendRequest = async () => {
+        if (!missingItemsText.trim()) return;
+        setSendingRequest(true);
+        try {
+            await api.post(`/admin/astrologers/${id}/request-missing-info`, { missing_items: missingItemsText });
+            alert("Request sent successfully!");
+            setShowMissingInfoModal(false);
+            setMissingItemsText("");
+        } catch (err) {
+            alert(err.response?.data?.detail || 'Failed to send request');
+        } finally {
+            setSendingRequest(false);
         }
     };
 
@@ -307,12 +325,18 @@ export default function AstrologerDetails() {
                                 </div>
                             </div>
 
-                            <div className="pt-3 border-t border-gray-50">
+                            <div className="pt-3 border-t border-gray-50 flex gap-2">
+                                <button
+                                    onClick={() => setShowMissingInfoModal(true)}
+                                    className="w-1/2 text-xs font-semibold py-2 rounded-lg transition-colors bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200"
+                                >
+                                    Request Info
+                                </button>
                                 <button
                                     onClick={() => handleKycVerify(!profile.profile.kyc_verified)}
                                     disabled={kycUpdating}
                                     className={clsx(
-                                        "w-full text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50",
+                                        "w-1/2 text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50",
                                         profile.profile.kyc_verified
                                             ? "bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200"
                                             : "bg-green-600 hover:bg-green-700 text-white"
@@ -377,7 +401,36 @@ export default function AstrologerDetails() {
                                 </tbody>
                             </table>
                         </div>
+                        </div>
+
+            {showMissingInfoModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-gray-900">Request Missing Info</h3>
+                            <button onClick={() => setShowMissingInfoModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                            Describe what information or documents are missing. This will be emailed directly to the astrologer.
+                        </p>
+                        <textarea
+                            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                            rows={5}
+                            placeholder="e.g. Please provide a clear picture of your PAN card."
+                            value={missingItemsText}
+                            onChange={(e) => setMissingItemsText(e.target.value)}
+                        />
+                        <div className="mt-4 flex justify-end gap-3">
+                            <Button variant="outline" onClick={() => setShowMissingInfoModal(false)}>Cancel</Button>
+                            <Button onClick={handleSendRequest} disabled={sendingRequest || !missingItemsText.trim()}>
+                                {sendingRequest ? "Sending..." : "Send Request"}
+                            </Button>
+                        </div>
                     </div>
+                </div>
+            )}
         </div>
     );
 }

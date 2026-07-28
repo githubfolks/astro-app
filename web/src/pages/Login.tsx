@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import PasswordInput from '../components/PasswordInput';
 import './Auth.css';
 
 export const Login: React.FC = () => {
@@ -99,8 +100,7 @@ export const Login: React.FC = () => {
                     </div>
 
                     <div className="form-group">
-                        <input
-                            type="password"
+                        <PasswordInput
                             name="password"
                             autoComplete="current-password"
                             placeholder="Password"

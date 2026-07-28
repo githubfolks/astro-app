@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Languages, Award, Clock, Bell, Crown } from 'lucide-react';
 import type { Astrologer } from '../types';
-import { resolveImageUrl } from '../utils/url';
+import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { api } from '../services/api';
 import './AstrologerCard.css';
 
@@ -31,14 +31,15 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
 
     const badgeClass = status === 'ONLINE' ? 'online' : status === 'BUSY' ? 'busy' : 'offline';
     const badgeText = status === 'ONLINE' ? 'Online' : status === 'BUSY' ? 'Busy' : 'Offline';
+    const displayName = getAstrologerDisplayName(astro);
 
     return (
         <div className="card astro-card">
             <div className="astro-main-row">
                 <Link to={`/astrologers/${astro.slug || astro.id}`} className="astro-image-container">
                     <img
-                        src={resolveImageUrl(astro.profile_picture_url, astro.full_name)}
-                        alt={astro.full_name}
+                        src={resolveImageUrl(astro.profile_picture_url, displayName)}
+                        alt={displayName}
                         className="astro-img"
                         width="84"
                         height="84"
@@ -53,7 +54,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                     <p className="astro-spec">{astro.specialties}</p>
                     <Link to={`/astrologers/${astro.slug || astro.id}`} style={{ textDecoration: 'none' }}>
                         <h3 className="astro-name flex items-center gap-1.5">
-                            {astro.full_name}
+                            {displayName}
                             {astro.is_premium && (
                                 <span
                                     title="Premium Astrologer"

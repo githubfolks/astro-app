@@ -51,6 +51,28 @@ def get_user_profile(user_id: int, current_user: models.User = Depends(get_curre
         profile.full_name = mask_name(profile.full_name)
     return profile
 
+@router.put("/{user_id}/profile", response_model=schemas.SeekerProfile)
+def update_user_profile(user_id: int, profile_update: schemas.SeekerProfileCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    if current_user.id != user_id:
+        has_consultation = current_user.role == models.UserRole.ASTROLOGER and db.query(models.Consultation).filter(
+            models.Consultation.astrologer_id == current_user.id,
+            models.Consultation.seeker_id == user_id,
+        ).first() is not None
+        if not has_consultation:
+            raise HTTPException(status_code=403, detail="Not authorized to edit this profile")
+    
+    db_profile = db.query(models.SeekerProfile).filter(models.SeekerProfile.user_id == user_id).first()
+    if not db_profile:
+        db_profile = models.SeekerProfile(user_id=user_id)
+        db.add(db_profile)
+    
+    for key, value in profile_update.dict(exclude_unset=True).items():
+        setattr(db_profile, key, value)
+    
+    db.commit()
+    db.refresh(db_profile)
+    return db_profile
+
 class DeviceTokenSchema(BaseModel):
     token: str
     platform: str = "web"

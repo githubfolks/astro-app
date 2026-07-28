@@ -36,6 +36,8 @@ interface KundliContentProps {
     /** When provided (astrologer chat context), a "Share to Chat" button captures the
      * visible Rashi chart as a PNG and hands it off for upload/sending. */
     onShareImage?: (blob: Blob) => Promise<void> | void;
+    /** Shares Dasha periods as a text message in chat. */
+    onShareDashaText?: (text: string) => Promise<void> | void;
     canShare?: boolean;
 }
 
@@ -76,6 +78,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     loading = false,
     error = null,
     onShareImage,
+    onShareDashaText,
     canShare = false,
 }) => {
     const [activeTab, setActiveTab] = useState('D1');
@@ -114,6 +117,21 @@ export const KundliContent: React.FC<KundliContentProps> = ({
         } finally {
             setSharing(false);
             setTimeout(() => setShareStatus('idle'), 2500);
+        }
+    };
+
+    const handleShareDashaClick = async () => {
+        if (!onShareDashaText || sharing || !chartData?.vimshottari_dasha?.active_periods) return;
+        setSharing(true);
+        try {
+            const periods = chartData.vimshottari_dasha.active_periods.map((period) => {
+                const pathStr = period.path.map((p: string) => hi(PLANET_NAME_HI, p, lang)).join(' → ');
+                return `${hi(DASHA_LEVEL_HI, period.level, lang)}: ${pathStr}\n(${period.start} - ${period.end})`;
+            }).join('\n\n');
+            const message = `🌟 *Vimshottari Dasha*\n\n${periods}`;
+            await onShareDashaText(message);
+        } finally {
+            setSharing(false);
         }
     };
 
@@ -371,9 +389,20 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                             {/* Vimshottari Dasha */}
                             {activePeriods && activePeriods.length > 0 && (
                                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center gap-2">
-                                        <Clock size={14} className="text-indigo-600" />
-                                        {lang === 'hi' ? UI_HI.vimshottariDasha : 'Vimshottari Dasha'}
+                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <Clock size={14} className="text-indigo-600" />
+                                            {lang === 'hi' ? UI_HI.vimshottariDasha : 'Vimshottari Dasha'}
+                                        </span>
+                                        {canShare && onShareDashaText && (
+                                            <button
+                                                onClick={handleShareDashaClick}
+                                                disabled={sharing}
+                                                className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-60"
+                                            >
+                                                <Share2 size={12} /> Share
+                                            </button>
+                                        )}
                                     </h3>
                                     <div className="p-4 pt-1 space-y-3">
                                         {activePeriods.map(period => (

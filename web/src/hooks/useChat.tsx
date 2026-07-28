@@ -29,6 +29,7 @@ export const useChat = (consultationId: string) => {
     const [timerActive, setTimerActive] = useState(false);
     const [talkTimeSeconds, setTalkTimeSeconds] = useState(0);
     const [lowBalance, setLowBalance] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
     const [moderationAlert, setModerationAlert] = useState<string | null>(null);
     const [sessionError, setSessionError] = useState<string | null>(null);
     const [endedReason, setEndedReason] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export const useChat = (consultationId: string) => {
     const heartbeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
     const pongTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const lastPongReceived = useRef(true);
+    const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const clearHeartbeat = useCallback(() => {
         if (heartbeatTimer.current) { clearInterval(heartbeatTimer.current); heartbeatTimer.current = null; }
@@ -137,6 +139,11 @@ export const useChat = (consultationId: string) => {
                     break;
                 case 'MODERATION_ALERT':
                     setModerationAlert(data.message || 'Sharing personal contact details is not allowed. This chat is monitored.');
+                    break;
+                case 'TYPING':
+                    setIsTyping(true);
+                    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+                    typingTimeout.current = setTimeout(() => setIsTyping(false), 3000);
                     break;
                 case 'ERROR':
                     setSessionError(data.message || 'Something went wrong.');
@@ -241,6 +248,12 @@ export const useChat = (consultationId: string) => {
         }
     };
 
+    const sendTyping = () => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ type: 'TYPING' }));
+        }
+    };
+
     const endChat = () => {
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             shouldReconnect.current = false;
@@ -259,8 +272,8 @@ export const useChat = (consultationId: string) => {
     };
 
     return {
-        messages, sendMessage, endChat, resumeChat, status, pauseReason,
-        billingInfo, timerActive, lowBalance, talkTimeSeconds,
+        messages, sendMessage, sendTyping, endChat, resumeChat, status, pauseReason,
+        billingInfo, timerActive, lowBalance, talkTimeSeconds, isTyping,
         moderationAlert, dismissModerationAlert: () => setModerationAlert(null),
         sessionError, dismissSessionError: () => setSessionError(null),
         endedReason,

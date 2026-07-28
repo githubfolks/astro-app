@@ -469,7 +469,7 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
             send_push_notification(
                 token=tok.fcm_token,
                 title=f"🔔 {seeker_name} wants a consultation",
-                body="Tap to open Aadikarta and go online",
+                body="A seeker wants to talk to you! Tap to open Aadikarta and go online",
                 data={"type": "KNOCK", "astrologer_id": str(astrologer_id), "seeker_id": str(current_user.id)},
                 android_channel_id="knock_alerts",
             )

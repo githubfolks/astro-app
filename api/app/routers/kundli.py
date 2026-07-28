@@ -98,6 +98,7 @@ async def generate_kundli_report(
             latitude=lat,
             longitude=lon,
             timezone="Asia/Kolkata",
+            dasha_levels=5,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

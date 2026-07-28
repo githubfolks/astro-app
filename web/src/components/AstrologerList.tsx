@@ -103,6 +103,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 id: profile.user_id,
                 slug: profile.slug || null,
                 full_name: profile.full_name || "Astrologer",
+                display_name: profile.display_name || null,
                 profile_picture_url: profile.profile_picture_url,
                 specialties: profile.specialties || "Vedic",
                 languages: profile.languages || "English",
@@ -188,7 +189,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const filteredAstrologers = astrologers.filter(astro => {
         const matchesCategory = selectedCategory === 'All' ||
             (astro.specialties && astro.specialties.includes(selectedCategory));
-        const matchesSearch = astro.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        const matchesSearch = (astro.display_name || astro.full_name).toLowerCase().includes(searchQuery.toLowerCase()) ||
             (astro.languages && astro.languages.toLowerCase().includes(searchQuery.toLowerCase())) ||
             (astro.specialties && astro.specialties.toLowerCase().includes(searchQuery.toLowerCase()));
         return matchesCategory && matchesSearch;
