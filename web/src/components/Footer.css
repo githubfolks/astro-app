@@ -14,6 +14,11 @@
     margin-bottom: 60px;
 }
 
+.footer-content.footer-content-compact {
+    /* Astrologers don't get a Services column: Brand, Company, Contact */
+    grid-template-columns: 1.5fr 1fr 1.2fr;
+}
+
 .footer-column {
     display: flex;
     flex-direction: column;

@@ -58,14 +58,18 @@ const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
                 <nav className="native-drawer-nav">
                     <button onClick={() => go('/about-us')}><Info size={18} /> About Us</button>
-                    <button onClick={() => go('/astrologers')}><Star size={18} /> Our Astrologers</button>
                     <button onClick={() => go('/blog')}><BookOpen size={18} /> Blog</button>
-                    <button onClick={() => go('/how-it-works')}><HelpCircle size={18} /> How It Works</button>
-                    <button onClick={() => go('/join-as-astrologer')}><Briefcase size={18} /> Join as Astrologer</button>
                     <button onClick={() => go('/contact-us')}><Phone size={18} /> Contact Us</button>
-                    <button onClick={() => go('/services/daily-horoscope')}><Sun size={18} /> Daily Horoscope</button>
-                    <button onClick={() => go('/services/kundli-matching')}><Users size={18} /> Kundli Matching</button>
-                    <button onClick={() => go('/services/love-advice')}><Heart size={18} /> Love Advice</button>
+                    {user?.role !== 'ASTROLOGER' && (
+                        <>
+                            <button onClick={() => go('/astrologers')}><Star size={18} /> Our Astrologers</button>
+                            <button onClick={() => go('/how-it-works')}><HelpCircle size={18} /> How It Works</button>
+                            <button onClick={() => go('/join-as-astrologer')}><Briefcase size={18} /> Join as Astrologer</button>
+                            <button onClick={() => go('/services/daily-horoscope')}><Sun size={18} /> Daily Horoscope</button>
+                            <button onClick={() => go('/services/kundli-matching')}><Users size={18} /> Kundli Matching</button>
+                            <button onClick={() => go('/services/love-advice')}><Heart size={18} /> Love Advice</button>
+                        </>
+                    )}
                 </nav>
 
                 <div className="native-drawer-legal">

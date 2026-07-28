@@ -8,7 +8,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import { KundliContent } from '../components/KundliPanel';
-import PreChatQuestionsModal from '../components/PreChatQuestionsModal';
+import PreChatQuestionsModal, { type PreChatAnswers } from '../components/PreChatQuestionsModal';
 import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
@@ -122,7 +122,7 @@ export const Chat: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const createNewConsultation = async (answers?: any) => {
+    const createNewConsultation = async (answers?: PreChatAnswers) => {
         if (!astrologerId) return;
         try {
             setCreatingConsultation(true);

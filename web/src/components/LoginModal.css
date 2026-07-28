@@ -112,7 +112,7 @@
 .remember-me-container {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     margin-top: 10px;
     margin-bottom: 15px;
     font-size: 13px;
@@ -121,8 +121,9 @@
 }
 
 .remember-me-container input[type="checkbox"] {
-    width: auto;
-    margin: 0;
+    width: 16px;
+    height: 16px;
+    margin: 0 8px 0 0;
     cursor: pointer;
     accent-color: var(--primary);
 }

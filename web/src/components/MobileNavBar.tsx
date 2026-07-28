@@ -1,26 +1,29 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, MessageCircle, Wallet, User as UserIcon } from 'lucide-react';
+import { Home, MessageCircle, Wallet, User as UserIcon, History, Receipt } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { isNative } from '../utils/platform';
 
 export const MobileNavBar: React.FC = () => {
-    useAuth();
+    const { user } = useAuth();
     const location = useLocation();
 
     // Hide on chat pages (full-screen chat experience)
     if (location.pathname.startsWith('/chat/')) return null;
 
-    const chatPath = '/astrologers';
-    const walletPath = '/dashboard';
-    const profilePath = '/dashboard';
-
-    const navItems = [
-        { name: 'Home', icon: Home, path: '/' },
-        { name: 'Consult', icon: MessageCircle, path: chatPath },
-        { name: 'Wallet', icon: Wallet, path: walletPath },
-        { name: 'Profile', icon: UserIcon, path: profilePath },
-    ];
+    const navItems = user?.role === 'ASTROLOGER'
+        ? [
+            { name: 'Home', icon: Home, path: '/' },
+            { name: 'Chats', icon: History, path: '/chat-history' },
+            { name: 'Payouts', icon: Receipt, path: '/transaction-history' },
+            { name: 'Profile', icon: UserIcon, path: '/dashboard' },
+        ]
+        : [
+            { name: 'Home', icon: Home, path: '/' },
+            { name: 'Consult', icon: MessageCircle, path: '/astrologers' },
+            { name: 'Wallet', icon: Wallet, path: '/dashboard' },
+            { name: 'Profile', icon: UserIcon, path: '/dashboard' },
+        ];
 
     // On native: always show. On web: only show below md breakpoint (md:hidden)
     const containerClass = isNative()

@@ -109,7 +109,7 @@ export const Login: React.FC = () => {
                             disabled={isLoading}
                         />
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                            <label className="remember-me-container">
+                            <label className="remember-me-container" style={{ marginTop: 0 }}>
                                 <input
                                     type="checkbox"
                                     checked={savePassword}

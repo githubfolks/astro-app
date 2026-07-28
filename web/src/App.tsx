@@ -16,7 +16,7 @@ const MobileHome = lazy(() => import('./pages/MobileHome'));
 const AstrologerHome = lazy(() => import('./pages/AstrologerHome'));
 const HomeRoute: React.FC = () => {
     const { user } = useAuth();
-    if (isNative() && user?.role === 'ASTROLOGER') return <AstrologerHome />;
+    if (user?.role === 'ASTROLOGER') return <AstrologerHome />;
     return isNative() ? <MobileHome /> : <Home />;
 };
 const Onboarding = lazy(() => import('./pages/Onboarding'));
@@ -27,6 +27,8 @@ const VerifyOTP = lazy(() => import('./pages/VerifyOTP').then(module => ({ defau
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail').then(module => ({ default: module.VerifyEmail })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(module => ({ default: module.ResetPassword })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const ChatHistoryPage = lazy(() => import('./pages/ChatHistoryPage'));
+const TransactionHistoryPage = lazy(() => import('./pages/TransactionHistoryPage'));
 const Chat = lazy(() => import('./pages/Chat').then(module => ({ default: module.Chat })));
 const AstrologersPage = lazy(() => import('./pages/AstrologersPage'));
 const AstrologerProfile = lazy(() => import('./pages/AstrologerProfile'));
@@ -213,6 +215,16 @@ function App() {
                             <Route path="/dashboard" element={
                                 <ProtectedRoute>
                                     <Dashboard />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/chat-history" element={
+                                <ProtectedRoute>
+                                    <ChatHistoryPage />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/transaction-history" element={
+                                <ProtectedRoute>
+                                    <TransactionHistoryPage />
                                 </ProtectedRoute>
                             } />
                             <Route path="/chat/:consultationId" element={

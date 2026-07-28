@@ -455,9 +455,14 @@ export const Dashboard: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Past History Section */}
+                    {/* Past History Section — top 5 only; full paginated list lives at /chat-history */}
                     <div className="mt-8">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4 text-gray-900">History</h3>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-xl font-bold text-gray-900">History</h3>
+                            <button onClick={() => navigate('/chat-history')} className="text-sm font-semibold text-[#E91E63] hover:underline">
+                                View All →
+                            </button>
+                        </div>
                                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                                     <div className="overflow-x-auto">
                                         <table className="w-full min-w-[640px] text-left">
@@ -471,7 +476,7 @@ export const Dashboard: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
-                                                {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).map((c: Consultation) => (
+                                                {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).slice(0, 5).map((c: Consultation) => (
                                                     <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="p-4 text-sm text-gray-900">
                                                             {new Date(c.created_at).toLocaleDateString()}
@@ -516,12 +521,17 @@ export const Dashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Payout & Transaction History */}
+                            {/* Payout & Transaction History — top 5 only; full paginated list lives at /transaction-history */}
                             <div className="mt-8">
-                                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <Wallet size={20} className="text-[#E91E63]" />
-                                    Payout & Transaction History
-                                </h3>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                                        <Wallet size={20} className="text-[#E91E63]" />
+                                        Payout & Transaction History
+                                    </h3>
+                                    <button onClick={() => navigate('/transaction-history')} className="text-sm font-semibold text-[#E91E63] hover:underline">
+                                        View All →
+                                    </button>
+                                </div>
                                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
                                     <div className="overflow-x-auto">
                                         <table className="w-full min-w-[720px] text-left">
@@ -536,7 +546,7 @@ export const Dashboard: React.FC = () => {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
-                                                {payoutHistory.map((p: PayoutHistoryItem) => (
+                                                {payoutHistory.slice(0, 5).map((p: PayoutHistoryItem) => (
                                                     <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                                                         <td className="p-4 text-sm text-gray-600 font-medium">
                                                             {new Date(p.processed_at || p.created_at).toLocaleDateString()}

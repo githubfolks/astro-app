@@ -3,6 +3,7 @@ import { Facebook, Twitter, Instagram, Youtube, Linkedin, Mail, Phone, ArrowUp }
 import { Link } from 'react-router-dom';
 import { useSupportContact } from '../hooks/useSupportContact';
 import { isNative } from '../utils/platform';
+import { useAuth } from '../context/AuthContext';
 import './Footer.css';
 
 const NativeFooter: React.FC = () => (
@@ -32,6 +33,8 @@ const NativeFooter: React.FC = () => (
 const Footer: React.FC = () => {
     const [showScrollTop, setShowScrollTop] = useState(false);
     const { support_email, support_phone } = useSupportContact();
+    const { user } = useAuth();
+    const isAstrologer = user?.role === 'ASTROLOGER';
 
     useEffect(() => {
         const handleScroll = () => {
@@ -60,7 +63,7 @@ const Footer: React.FC = () => {
     return (
         <footer className="footer-section">
             <div className="container">
-                <div className="footer-content">
+                <div className={`footer-content ${isAstrologer ? 'footer-content-compact' : ''}`}>
                     {/* Left Column: Brand Info */}
                     <div className="footer-column brand-column">
                         <div className="footer-logo">
@@ -79,20 +82,22 @@ const Footer: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Services Column */}
-                    <div className="footer-column">
-                        <div className="info-group">
-                            <h4 className="footer-title">Services</h4>
-                            <ul className="footer-links">
-                                <li><Link to="/services/vedic-astrology" onClick={scrollToTop}>Vedic Astrology</Link></li>
-                                <li><Link to="/services/kundli-matching" onClick={scrollToTop}>Kundli Matching</Link></li>
-                                <li><Link to="/services/tarot-reading" onClick={scrollToTop}>Tarot Reading</Link></li>
-                                <li><Link to="/services/love-advice" onClick={scrollToTop}>Love Advice</Link></li>
-                                <li><Link to="/services/daily-horoscope" onClick={scrollToTop}>Daily Horoscope</Link></li>
-                                <li><Link to="/services/vastu-shastra" onClick={scrollToTop}>Vastu Shastra</Link></li>
-                            </ul>
+                    {/* Services Column — seeker-facing services, not relevant once you're an astrologer on the platform */}
+                    {!isAstrologer && (
+                        <div className="footer-column">
+                            <div className="info-group">
+                                <h4 className="footer-title">Services</h4>
+                                <ul className="footer-links">
+                                    <li><Link to="/services/vedic-astrology" onClick={scrollToTop}>Vedic Astrology</Link></li>
+                                    <li><Link to="/services/kundli-matching" onClick={scrollToTop}>Kundli Matching</Link></li>
+                                    <li><Link to="/services/tarot-reading" onClick={scrollToTop}>Tarot Reading</Link></li>
+                                    <li><Link to="/services/love-advice" onClick={scrollToTop}>Love Advice</Link></li>
+                                    <li><Link to="/services/daily-horoscope" onClick={scrollToTop}>Daily Horoscope</Link></li>
+                                    <li><Link to="/services/vastu-shastra" onClick={scrollToTop}>Vastu Shastra</Link></li>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Company Column */}
                     <div className="footer-column">
@@ -100,10 +105,10 @@ const Footer: React.FC = () => {
                             <h4 className="footer-title">Company</h4>
                             <ul className="footer-links">
                                 <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
-                                <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>
+                                {!isAstrologer && <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>}
                                 <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
-                                <li><Link to="/how-it-works" onClick={scrollToTop}>How It Works</Link></li>
-                                <li><Link to="/join-as-astrologer" onClick={scrollToTop}>Join as Astrologer</Link></li>
+                                {!isAstrologer && <li><Link to="/how-it-works" onClick={scrollToTop}>How It Works</Link></li>}
+                                {!isAstrologer && <li><Link to="/join-as-astrologer" onClick={scrollToTop}>Join as Astrologer</Link></li>}
                                 <li><Link to="/contact-us" onClick={scrollToTop}>Contact Us</Link></li>
                             </ul>
                         </div>

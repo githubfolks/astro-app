@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Star } from 'lucide-react';
+import { MessageCircle, Star, Wifi, ThumbsDown, Repeat, Heart } from 'lucide-react';
 import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { useRealtime } from '../context/RealtimeContext';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
-import type { Consultation, AstrologerProfile as AstrologerProfileType } from '../types';
+import { isNative } from '../utils/platform';
+import type { Consultation, AstrologerProfile as AstrologerProfileType, ProfileSummary, PerformanceStats } from '../types';
+
+interface RepeatSeeker {
+    seekerId: number;
+    profile: ProfileSummary | null | undefined;
+    count: number;
+    totalEarning: number;
+    lastChatDate: string;
+}
 
 const ACTIVE_STATUSES = ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'];
 const QUEUE_STATUSES = ['REQUESTED', ...ACTIVE_STATUSES];
@@ -17,6 +27,7 @@ const AstrologerHome: React.FC = () => {
     const navigate = useNavigate();
     const [history, setHistory] = useState<Consultation[]>([]);
     const [profile, setProfile] = useState<AstrologerProfileType | null>(null);
+    const [performanceStats, setPerformanceStats] = useState<PerformanceStats | null>(null);
     const [isOnline, setIsOnline] = useState(false);
     const [updating, setUpdating] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -36,6 +47,9 @@ const AstrologerHome: React.FC = () => {
             } finally {
                 setLoading(false);
             }
+            // Weekly-cadence stats — fetched separately so a slow/failed call here
+            // never blocks the actionable content above from rendering.
+            api.astrologers.getPerformanceStats().then(setPerformanceStats).catch(console.error);
         };
         load();
     }, []);
@@ -70,7 +84,34 @@ const AstrologerHome: React.FC = () => {
         ['COMPLETED', 'AUTO_ENDED'].includes(c.status) && new Date(c.created_at).toDateString() === todayStr
     );
     const earnedToday = todayConsults.reduce((sum, c) => sum + Number(c.total_cost || 0), 0);
-    const firstName = profile?.full_name?.split(' ')[0] || 'Astrologer';
+
+    // Seekers who've booked this astrologer more than once, most recent chat first.
+    const repeatSeekersMap = new Map<number, RepeatSeeker>();
+    for (const c of history) {
+        if (!c.seeker_id || !['COMPLETED', 'AUTO_ENDED'].includes(c.status)) continue;
+        const cost = Number(c.total_cost || 0);
+        const existing = repeatSeekersMap.get(c.seeker_id);
+        if (existing) {
+            existing.count += 1;
+            existing.totalEarning += cost;
+            if (new Date(c.created_at) > new Date(existing.lastChatDate)) {
+                existing.lastChatDate = c.created_at;
+                existing.profile = c.seeker_profile;
+            }
+        } else {
+            repeatSeekersMap.set(c.seeker_id, {
+                seekerId: c.seeker_id,
+                profile: c.seeker_profile,
+                count: 1,
+                totalEarning: cost,
+                lastChatDate: c.created_at,
+            });
+        }
+    }
+    const repeatSeekers = Array.from(repeatSeekersMap.values())
+        .filter((s) => s.count > 1)
+        .sort((a, b) => new Date(b.lastChatDate).getTime() - new Date(a.lastChatDate).getTime())
+        .slice(0, 5);
 
     if (loading) {
         return (
@@ -86,32 +127,43 @@ const AstrologerHome: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <Header />
-            <main className="flex-1 container mx-auto p-4 md:p-8 max-w-2xl space-y-4">
-                {activeSession && (
-                    <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white rounded-2xl shadow-lg p-4 flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                            <MessageCircle className="animate-pulse" size={20} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm leading-tight">Ongoing consultation</p>
-                            <p className="text-xs text-white/90 truncate">
-                                {activeSession.seeker_profile?.full_name || 'Seeker'} · resume when ready
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => navigate(`/chat/${activeSession.id}`)}
-                            className="bg-white text-[#E91E63] px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap active:scale-95 transition-all"
-                        >
-                            Resume →
-                        </button>
-                    </div>
-                )}
+            <main className="flex-1 container mx-auto p-4 md:p-8 max-w-5xl">
+              {activeSession && (
+                  <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white rounded-2xl shadow-lg p-4 flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                          <MessageCircle className="animate-pulse" size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm leading-tight">Ongoing consultation</p>
+                          <p className="text-xs text-white/90 truncate">
+                              {activeSession.seeker_profile?.full_name || 'Seeker'} · resume when ready
+                          </p>
+                      </div>
+                      <button
+                          onClick={() => navigate(`/chat/${activeSession.id}`)}
+                          className="bg-white text-[#E91E63] px-4 py-2 rounded-full font-bold text-xs whitespace-nowrap active:scale-95 transition-all"
+                      >
+                          Resume →
+                      </button>
+                  </div>
+              )}
 
-                <div>
-                    <h2 className="text-lg font-bold text-gray-900">Namaste, {firstName}</h2>
-                    <p className="text-xs text-gray-500">Here's how today looks</p>
-                </div>
+              <div className="flex flex-col items-center text-center gap-1 pt-1 mb-4">
+                  <img
+                      src={resolveImageUrl(profile?.profile_picture_url, profile?.full_name)}
+                      alt={profile?.full_name || 'Profile'}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+                  />
+                  <h2 className="text-lg font-bold text-gray-900 mt-1">{profile?.full_name || 'Astrologer'}</h2>
+                  {profile?.display_name && (
+                      <p className="text-sm font-semibold text-[#E91E63]">"{profile.display_name}"</p>
+                  )}
+                  <p className="text-xs text-gray-500">Here's how today looks</p>
+              </div>
 
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
                     <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
                     <div className="flex-1 min-w-0">
@@ -127,9 +179,34 @@ const AstrologerHome: React.FC = () => {
                     </button>
                 </div>
 
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">Today</span>
+                        <span className="text-xs text-gray-400">{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                    <div className="grid grid-cols-3 divide-x divide-gray-100">
+                        <div className="text-center">
+                            <p className="text-lg font-extrabold text-[#E91E63] font-mono">₹{earnedToday.toFixed(0)}</p>
+                            <p className="text-[10px] text-gray-400 uppercase">Earned</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-lg font-extrabold text-gray-900 font-mono">{todayConsults.length}</p>
+                            <p className="text-[10px] text-gray-400 uppercase">Chats</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-lg font-extrabold text-gray-900 font-mono flex items-center justify-center gap-1">
+                                <Star size={14} className="text-yellow-500 fill-yellow-500" />
+                                {profile?.rating_avg ? Number(profile.rating_avg).toFixed(1) : '—'}
+                            </p>
+                            <p className="text-[10px] text-gray-400 uppercase">Rating</p>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
                 <div>
                     <div className="flex items-center justify-between px-1 mb-2">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Requests Queue</span>
+                        <span className="text-xs font-bold text-gray-900 uppercase tracking-wider">Requests Queue</span>
                         {queue.length > 0 && (
                             <span className="bg-[#E91E63] text-white text-[11px] font-bold rounded-full px-2 py-0.5">{queue.length}</span>
                         )}
@@ -179,38 +256,72 @@ const AstrologerHome: React.FC = () => {
                     )}
                 </div>
 
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today</span>
-                        <span className="text-xs text-gray-400">{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
-                    </div>
-                    <div className="grid grid-cols-3 divide-x divide-gray-100">
-                        <div className="text-center">
-                            <p className="text-lg font-extrabold text-[#E91E63] font-mono">₹{earnedToday.toFixed(0)}</p>
-                            <p className="text-[10px] text-gray-400 uppercase">Earned</p>
+                <div>
+                    <span className="text-xs font-bold text-gray-900 uppercase tracking-wider px-1">Repeat Seekers</span>
+                    {repeatSeekers.length === 0 ? (
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center text-sm text-gray-400 mt-2">
+                            No repeat seekers yet.
                         </div>
-                        <div className="text-center">
-                            <p className="text-lg font-extrabold text-gray-900 font-mono">{todayConsults.length}</p>
-                            <p className="text-[10px] text-gray-400 uppercase">Chats</p>
+                    ) : (
+                        <div className="space-y-2 mt-2">
+                            {repeatSeekers.map((s) => (
+                                <div key={s.seekerId} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3 flex items-center gap-3">
+                                    <img
+                                        src={resolveImageUrl(s.profile?.profile_picture_url, s.profile?.full_name || String(s.seekerId))}
+                                        alt="Profile"
+                                        className="w-11 h-11 rounded-full object-cover border border-gray-100 flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-bold text-gray-900 text-sm truncate">{s.profile?.full_name || `User #${s.seekerId}`}</p>
+                                        <p className="text-[11px] text-gray-500">
+                                            {s.count} chats · Last {new Date(s.lastChatDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                        </p>
+                                    </div>
+                                    <p className="text-sm font-extrabold text-[#E91E63] font-mono flex-shrink-0">₹{s.totalEarning.toFixed(0)}</p>
+                                </div>
+                            ))}
                         </div>
-                        <div className="text-center">
-                            <p className="text-lg font-extrabold text-gray-900 font-mono flex items-center justify-center gap-1">
-                                <Star size={14} className="text-yellow-500 fill-yellow-500" />
-                                {profile?.rating_avg ? Number(profile.rating_avg).toFixed(1) : '—'}
-                            </p>
-                            <p className="text-[10px] text-gray-400 uppercase">Rating</p>
-                        </div>
-                    </div>
+                    )}
+                </div>
                 </div>
 
-                <button
-                    onClick={() => navigate('/dashboard')}
-                    className="w-full flex items-center justify-between border border-dashed border-gray-300 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-500 hover:border-[#E91E63] hover:text-[#E91E63] transition-colors"
-                >
-                    Full history, payouts &amp; stats
-                    <span>→</span>
-                </button>
+                <div className="space-y-4">
+                    {performanceStats && (
+                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-1.5 bg-cyan-50 text-cyan-600 rounded-lg"><Wifi size={16} /></div>
+                                    <h3 className="text-xs font-medium text-gray-600">Avg Online (30d)</h3>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{performanceStats.avg_online_hours_per_day_30d} hrs/day</p>
+                            </div>
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-1.5 bg-red-50 text-red-600 rounded-lg"><ThumbsDown size={16} /></div>
+                                    <h3 className="text-xs font-medium text-gray-600">Poor Chat %</h3>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{performanceStats.poor_chat_percentage}%</p>
+                            </div>
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><Repeat size={16} /></div>
+                                    <h3 className="text-xs font-medium text-gray-600">First User Repeat %</h3>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{performanceStats.first_user_repeat_percentage}%</p>
+                            </div>
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-1.5 bg-pink-50 text-pink-600 rounded-lg"><Heart size={16} /></div>
+                                    <h3 className="text-xs font-medium text-gray-600">Loyal User %</h3>
+                                </div>
+                                <p className="text-lg font-bold text-gray-900">{performanceStats.loyal_user_percentage}%</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+              </div>
             </main>
+            {!isNative() && <Footer />}
         </div>
     );
 };

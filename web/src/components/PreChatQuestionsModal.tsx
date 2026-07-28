@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { X, HelpCircle } from 'lucide-react';
 
+export interface PreChatAnswers {
+    topic: string;
+    spouse_name?: string;
+    spouse_date_of_birth?: string;
+    spouse_time_of_birth?: string;
+    spouse_place_of_birth?: string;
+}
+
 interface PreChatQuestionsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (answers: { 
-        topic: string; 
-        spouse_name?: string;
-        spouse_date_of_birth?: string;
-        spouse_time_of_birth?: string;
-        spouse_place_of_birth?: string;
-    }) => void;
+    onSubmit: (answers: PreChatAnswers) => void;
     submitting?: boolean;
 }
 
@@ -48,7 +50,7 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
             return;
         }
 
-        const answers: any = { topic };
+        const answers: PreChatAnswers = { topic };
         
         if (requiresSpouseDetails) {
             if (spouseName) answers.spouse_name = spouseName.trim();

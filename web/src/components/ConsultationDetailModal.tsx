@@ -66,7 +66,7 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
                 place_of_birth: consultation.seeker_profile.place_of_birth || 'New Delhi, Delhi, India',
             });
             setKundliData(data.chart_data);
-        } catch (e) {
+        } catch {
             setKundliError('Failed to generate Kundli');
         } finally {
             setKundliLoading(false);
@@ -103,7 +103,7 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
 
             const res = await api.matching.generate({ boy, girl });
             setMatchData(res.match_data);
-        } catch (e) {
+        } catch {
             setMatchError('Failed to generate compatibility report');
         } finally {
             setMatchLoading(false);
