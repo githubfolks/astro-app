@@ -187,20 +187,24 @@
 
 @media (max-width: 768px) {
     .footer-section {
-        padding: 60px 0 100px;
+        padding: 40px 0 100px;
         /* Reduced top padding, kept bottom safe area */
     }
 
     .footer-content,
     .footer-content.footer-content-compact {
-        grid-template-columns: 1fr;
-        gap: 50px;
-        margin-bottom: 40px;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px 20px;
+        margin-bottom: 30px;
     }
 
-    .brand-column,
-    .footer-column {
+    .brand-column {
+        grid-column: 1 / -1;
         text-align: center;
+    }
+
+    .footer-column {
+        text-align: left;
     }
 
     .footer-logo {
@@ -209,9 +213,8 @@
     }
 
     .footer-desc {
-        margin: 0 auto 25px;
-        font-size: 15px;
-        /* Slightly larger for readability */
+        margin: 0 auto 20px;
+        font-size: 14px;
     }
 
     .social-links {
@@ -221,38 +224,31 @@
     }
 
     .footer-title {
-        font-size: 18px;
-        /* Larger heading */
-        margin-bottom: 20px;
+        font-size: 15px;
+        margin-bottom: 12px;
         color: white;
         /* Ensure visibility */
     }
 
     .footer-links li {
-        margin-bottom: 18px;
-        /* More vertical space */
+        margin-bottom: 10px;
     }
 
     .footer-links a {
         display: block;
-        /* Larger tap area */
-        padding: 5px 0;
-        font-size: 15px;
+        padding: 2px 0;
+        font-size: 14px;
     }
 
     .contact-list {
         display: flex;
-        /* Flex instead of inline-block for better centering control */
         flex-direction: column;
-        align-items: center;
-        /* Center items */
-        text-align: center;
-        gap: 20px;
+        align-items: flex-start;
+        text-align: left;
+        gap: 12px;
     }
 
     .contact-list li {
-        justify-content: center;
-        /* Center content within li */
         margin-bottom: 0;
     }
 
