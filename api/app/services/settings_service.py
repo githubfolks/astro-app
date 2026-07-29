@@ -37,6 +37,12 @@ DEFAULTS: dict[str, str] = {
     "google_tts_api_key": "",
     "content_studio_public_base_url": "",  # e.g. https://api.aadikarta.org — where /static video files are publicly reachable, needed for Facebook/Instagram to fetch them when posting
     "content_studio_caption_cta": "Chat with a certified astrologer on Aadikarta - just ₹10/min ✨\n\nLink in bio | Book your reading now",
+    # Lets /payment/order and /payment/verify skip Razorpay entirely and credit
+    # the wallet directly — for staging/test only. Seeded from the
+    # ENABLE_MOCK_PAYMENTS env var so existing deployments keep their current
+    # behavior; from here on it's admin-toggleable via /admin/settings without
+    # a redeploy.
+    "enable_mock_payments": "true" if os.getenv("ENABLE_MOCK_PAYMENTS", "").strip().lower() == "true" else "false",
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.

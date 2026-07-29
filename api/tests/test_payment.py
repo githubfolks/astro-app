@@ -7,12 +7,20 @@ from app.routers import payment as payment_router
 from tests.conftest import auth_headers
 
 
-def _mock_verify_body(order_id="order_mock_abc123"):
+def _mock_verify_body(order_id):
     return {
         "razorpay_order_id": order_id,
         "razorpay_payment_id": "pay_mock_1",
         "razorpay_signature": "sig_mock",
     }
+
+
+def _create_mock_order(client, seeker, amount=100):
+    """/payment/verify now requires a PaymentOrder row created via /payment/order
+    (rather than trusting an order id string) — tests must create one first."""
+    resp = client.post("/payment/order", headers=auth_headers(seeker), json={"amount": amount})
+    assert resp.status_code == 200
+    return resp.json()["order_id"]
 
 
 def test_create_order_requires_auth(client):
@@ -36,10 +44,11 @@ def test_create_mock_order(client, make_user):
 
 
 def test_mock_verify_credits_wallet(client, make_user, monkeypatch):
-    monkeypatch.setenv("ENABLE_MOCK_PAYMENTS", "true")
+    monkeypatch.setattr(payment_router, "mock_payments_enabled", lambda: True)
     seeker = make_user(models.UserRole.SEEKER)
+    order_id = _create_mock_order(client, seeker)
 
-    resp = client.post("/payment/verify", headers=auth_headers(seeker), json=_mock_verify_body())
+    resp = client.post("/payment/verify", headers=auth_headers(seeker), json=_mock_verify_body(order_id))
     assert resp.status_code == 200
     assert resp.json()["status"] == "success"
     assert float(resp.json()["new_balance"]) == 100.0
@@ -49,16 +58,35 @@ def test_mock_verify_credits_wallet(client, make_user, monkeypatch):
 
 
 def test_mock_verify_blocked_when_mock_disabled(client, make_user, monkeypatch):
-    monkeypatch.delenv("ENABLE_MOCK_PAYMENTS", raising=False)
+    monkeypatch.setattr(payment_router, "mock_payments_enabled", lambda: False)
     seeker = make_user(models.UserRole.SEEKER)
-    resp = client.post("/payment/verify", headers=auth_headers(seeker), json=_mock_verify_body())
+    order_id = _create_mock_order(client, seeker)
+    resp = client.post("/payment/verify", headers=auth_headers(seeker), json=_mock_verify_body(order_id))
     assert resp.status_code == 400
 
 
-def test_verify_is_idempotent(client, make_user, monkeypatch):
-    monkeypatch.setenv("ENABLE_MOCK_PAYMENTS", "true")
+def test_mock_verify_rejects_unknown_order(client, make_user, monkeypatch):
+    monkeypatch.setattr(payment_router, "mock_payments_enabled", lambda: True)
     seeker = make_user(models.UserRole.SEEKER)
-    body = _mock_verify_body(order_id="order_mock_dup")
+    resp = client.post("/payment/verify", headers=auth_headers(seeker), json=_mock_verify_body("order_mock_neverissued_x"))
+    assert resp.status_code == 400
+
+
+def test_mock_verify_rejects_order_owned_by_another_user(client, make_user, monkeypatch):
+    monkeypatch.setattr(payment_router, "mock_payments_enabled", lambda: True)
+    owner = make_user(models.UserRole.SEEKER)
+    attacker = make_user(models.UserRole.SEEKER)
+    order_id = _create_mock_order(client, owner)
+
+    resp = client.post("/payment/verify", headers=auth_headers(attacker), json=_mock_verify_body(order_id))
+    assert resp.status_code == 403
+
+
+def test_verify_is_idempotent(client, make_user, monkeypatch):
+    monkeypatch.setattr(payment_router, "mock_payments_enabled", lambda: True)
+    seeker = make_user(models.UserRole.SEEKER)
+    order_id = _create_mock_order(client, seeker)
+    body = _mock_verify_body(order_id)
 
     first = client.post("/payment/verify", headers=auth_headers(seeker), json=body)
     assert first.status_code == 200

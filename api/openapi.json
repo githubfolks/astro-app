@@ -534,6 +534,8 @@
             "type": "integer"
           },
           "full_name": {
+            "maxLength": 100,
+            "minLength": 1,
             "title": "Full Name",
             "type": "string"
           },
@@ -595,6 +597,17 @@
       },
       "AstrologerProfile": {
         "properties": {
+          "aadhaar_doc_back_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aadhaar Doc Back Url"
+          },
           "aadhaar_doc_url": {
             "anyOf": [
               {
@@ -823,6 +836,16 @@
             "title": "Is Premium",
             "type": "boolean"
           },
+          "is_trending": {
+            "default": false,
+            "title": "Is Trending",
+            "type": "boolean"
+          },
+          "is_vip": {
+            "default": false,
+            "title": "Is Vip",
+            "type": "boolean"
+          },
           "kyc_verified": {
             "default": false,
             "title": "Kyc Verified",
@@ -983,6 +1006,17 @@
       },
       "AstrologerProfileUPDATE": {
         "properties": {
+          "aadhaar_doc_back_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aadhaar Doc Back Url"
+          },
           "aadhaar_doc_url": {
             "anyOf": [
               {
@@ -1270,6 +1304,29 @@
           }
         },
         "title": "AstrologerProfileUPDATE",
+        "type": "object"
+      },
+      "BadgesUpdate": {
+        "properties": {
+          "is_premium": {
+            "title": "Is Premium",
+            "type": "boolean"
+          },
+          "is_trending": {
+            "title": "Is Trending",
+            "type": "boolean"
+          },
+          "is_vip": {
+            "title": "Is Vip",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_premium",
+          "is_vip",
+          "is_trending"
+        ],
+        "title": "BadgesUpdate",
         "type": "object"
       },
       "BatchCreate": {
@@ -2007,6 +2064,52 @@
               }
             ]
           },
+          "spouse_date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Date Of Birth"
+          },
+          "spouse_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Name"
+          },
+          "spouse_place_of_birth": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Place Of Birth"
+          },
+          "spouse_time_of_birth": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Time Of Birth"
+          },
           "start_time": {
             "anyOf": [
               {
@@ -2093,6 +2196,52 @@
               }
             ],
             "title": "Rate Per Min"
+          },
+          "spouse_date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Date Of Birth"
+          },
+          "spouse_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Name"
+          },
+          "spouse_place_of_birth": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Place Of Birth"
+          },
+          "spouse_time_of_birth": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spouse Time Of Birth"
           },
           "topic": {
             "anyOf": [
@@ -2794,6 +2943,39 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HintRequest": {
+        "properties": {
+          "consultation_id": {
+            "title": "Consultation Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "consultation_id"
+        ],
+        "title": "HintRequest",
+        "type": "object"
+      },
+      "HintResponse": {
+        "properties": {
+          "hint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hint"
+          }
+        },
+        "required": [
+          "hint"
+        ],
+        "title": "HintResponse",
         "type": "object"
       },
       "Horoscope": {
@@ -4001,19 +4183,6 @@
         "title": "PostUpdate",
         "type": "object"
       },
-      "PremiumUpdate": {
-        "properties": {
-          "is_premium": {
-            "title": "Is Premium",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "is_premium"
-        ],
-        "title": "PremiumUpdate",
-        "type": "object"
-      },
       "QuotaResponse": {
         "properties": {
           "questions_remaining": {
@@ -4069,6 +4238,19 @@
           }
         },
         "title": "RejectAstrologerRequest",
+        "type": "object"
+      },
+      "RequestMissingInfoRequest": {
+        "properties": {
+          "missing_items": {
+            "title": "Missing Items",
+            "type": "string"
+          }
+        },
+        "required": [
+          "missing_items"
+        ],
+        "title": "RequestMissingInfoRequest",
         "type": "object"
       },
       "ResendVerificationRequest": {
@@ -5303,6 +5485,61 @@
         ]
       }
     },
+    "/admin/astrologers/{user_id}/badges": {
+      "put": {
+        "operationId": "update_astrologer_badges_admin_astrologers__user_id__badges_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BadgesUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Astrologer Badges",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/astrologers/{user_id}/commission": {
       "patch": {
         "operationId": "update_astrologer_commission_admin_astrologers__user_id__commission_patch",
@@ -5559,61 +5796,6 @@
         ]
       }
     },
-    "/admin/astrologers/{user_id}/premium": {
-      "put": {
-        "operationId": "update_astrologer_premium_admin_astrologers__user_id__premium_put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "user_id",
-            "required": true,
-            "schema": {
-              "title": "User Id",
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PremiumUpdate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Update Astrologer Premium",
-        "tags": [
-          "Admin"
-        ]
-      }
-    },
     "/admin/astrologers/{user_id}/reject": {
       "post": {
         "operationId": "reject_astrologer_admin_astrologers__user_id__reject_post",
@@ -5664,6 +5846,61 @@
           }
         ],
         "summary": "Reject Astrologer",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/astrologers/{user_id}/request-missing-info": {
+      "post": {
+        "operationId": "request_astrologer_missing_info_admin_astrologers__user_id__request_missing_info_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestMissingInfoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Request Astrologer Missing Info",
         "tags": [
           "Admin"
         ]
@@ -7851,6 +8088,52 @@
         ]
       }
     },
+    "/chat/hint": {
+      "post": {
+        "operationId": "get_chat_hint_chat_hint_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HintRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HintResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Chat Hint",
+        "tags": [
+          "Chat"
+        ]
+      }
+    },
     "/chat/history/{consultation_id}": {
       "get": {
         "operationId": "get_chat_history_chat_history__consultation_id__get",
@@ -9399,6 +9682,26 @@
         ]
       }
     },
+    "/cron/onboarding/send-reminders": {
+      "post": {
+        "description": "Nudge astrologers stalled 5+ days mid-onboarding. Call once daily.",
+        "operationId": "trigger_onboarding_reminders_cron_onboarding_send_reminders_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Trigger Onboarding Reminders",
+        "tags": [
+          "Cron"
+        ]
+      }
+    },
     "/disputes/": {
       "get": {
         "operationId": "list_all_disputes_disputes__get",
@@ -10301,7 +10604,7 @@
     },
     "/kundli/seeker/{seeker_id}": {
       "get": {
-        "description": "Get all Kundli reports for a specific seeker.",
+        "description": "Get all Kundli reports the current astrologer generated for a specific seeker.",
         "operationId": "get_seeker_kundli_reports_kundli_seeker__seeker_id__get",
         "parameters": [
           {
@@ -10565,7 +10868,7 @@
     },
     "/matching/seeker/{seeker_id}": {
       "get": {
-        "description": "Get all Match reports involving a specific seeker (as boy or girl).",
+        "description": "Get all Match reports the current astrologer generated involving a specific seeker (as boy or girl).",
         "operationId": "get_seeker_match_reports_matching_seeker__seeker_id__get",
         "parameters": [
           {
@@ -11874,6 +12177,61 @@
           }
         ],
         "summary": "Get User Profile",
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "update_user_profile_users__user_id__profile_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeekerProfileCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeekerProfile"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update User Profile",
         "tags": [
           "Users"
         ]

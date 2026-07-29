@@ -23,9 +23,9 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.create_table(
         'payment_orders',
-        sa.Column('id', sa.Integer(), primary_key=True, index=True),
+        sa.Column('id', sa.Integer(), primary_key=True),
         sa.Column('order_id', sa.String(), nullable=False),
-        sa.Column('user_id', sa.Integer(), sa.ForeignKey('users.id'), nullable=False, index=True),
+        sa.Column('user_id', sa.Integer(), sa.ForeignKey('users.id'), nullable=False),
         sa.Column('amount_paise', sa.Integer(), nullable=False),
         sa.Column('is_mock', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('consumed', sa.Boolean(), nullable=False, server_default='false'),

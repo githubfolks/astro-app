@@ -25,9 +25,10 @@ RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID") or os.getenv("RZP_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET") or os.getenv("RZP_KEY_SECRET")
 
 def mock_payments_enabled() -> bool:
-    # Read live (not cached at import) so tests can monkeypatch it and so a
-    # config change doesn't require a process restart to take effect.
-    return os.getenv("ENABLE_MOCK_PAYMENTS", "").strip().lower() == "true"
+    # Admin-toggleable via /admin/settings (settings_service caches for ~30s,
+    # not a hard restart, so flipping it takes effect almost immediately).
+    from ..services.settings_service import get_setting
+    return (get_setting("enable_mock_payments") or "").strip().lower() == "true"
 
 if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
     print("WARNING: Razorpay keys not found in environment variables.")

@@ -36,6 +36,18 @@ const GROUPS = [
         ],
     },
     {
+        title: 'Payments',
+        desc: 'Controls how /payment/order and /payment/verify behave.',
+        fields: [
+            {
+                key: 'enable_mock_payments',
+                label: 'Enable Mock Payments',
+                boolean: true,
+                warning: 'When on, ANY signed-in user can credit their own wallet without paying — Razorpay is bypassed entirely. Never leave this on in production.',
+            },
+        ],
+    },
+    {
         title: 'Facebook & Instagram Integration',
         desc: 'Configure Facebook Page ID and Instagram Business Account details for automated post sharing.',
         fields: [
@@ -320,6 +332,66 @@ export default function Settings() {
 
     const onChange = (key, val) => setValues(prev => ({ ...prev, [key]: val }));
 
+    const renderField = (f) => {
+        if (f.boolean) {
+            const checked = String(values[f.key] ?? 'false').toLowerCase() === 'true';
+            return (
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={e => onChange(f.key, e.target.checked ? 'true' : 'false')}
+                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs font-semibold text-gray-900 uppercase">{f.label}</span>
+                    <span className={`text-xs font-semibold ${checked ? 'text-emerald-600' : 'text-gray-400'}`}>
+                        ({checked ? 'Enabled' : 'Disabled'})
+                    </span>
+                </label>
+            );
+        }
+        if (f.textarea) {
+            return (
+                <textarea
+                    rows={2}
+                    value={values[f.key] ?? ''}
+                    onChange={e => onChange(f.key, e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+            );
+        }
+        return (
+            <input
+                type={f.secret ? 'password' : 'text'}
+                value={values[f.key] ?? ''}
+                onChange={e => onChange(f.key, e.target.value)}
+                placeholder={f.secret ? '******** (leave to keep current)' : ''}
+                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+            />
+        );
+    };
+
+    const renderGroup = (group) => (
+        <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
+            {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}
+            <div className="space-y-4">
+                {group.fields.map(f => (
+                    <div key={f.key}>
+                        {!f.boolean && <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">{f.label}</label>}
+                        {renderField(f)}
+                        {f.warning && (
+                            <p className="text-xs text-amber-600 mt-1.5 flex items-start gap-1">
+                                <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                                {f.warning}
+                            </p>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
     const save = async () => {
         try {
             setSaving(true);
@@ -365,68 +437,12 @@ export default function Settings() {
                         error={waError}
                     />
 
-                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions'].includes(g.title)).map(group => (
-                        <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                            <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
-                            {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}
-                            <div className="space-y-4">
-                                {group.fields.map(f => (
-                                    <div key={f.key}>
-                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">{f.label}</label>
-                                        {f.textarea ? (
-                                            <textarea
-                                                rows={2}
-                                                value={values[f.key] ?? ''}
-                                                onChange={e => onChange(f.key, e.target.value)}
-                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            />
-                                        ) : (
-                                            <input
-                                                type={f.secret ? 'password' : 'text'}
-                                                value={values[f.key] ?? ''}
-                                                onChange={e => onChange(f.key, e.target.value)}
-                                                placeholder={f.secret ? '******** (leave to keep current)' : ''}
-                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions', 'Payments'].includes(g.title)).map(renderGroup)}
                 </div>
 
                 {/* Right Column */}
                 <div className="space-y-6">
-                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration', 'Content Studio (Bhashini Hindi Voice)', 'Content Studio (Google TTS Fallback)', 'Content Studio (Social Posting)'].includes(g.title)).map(group => (
-                        <div key={group.title} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                            <h2 className="font-bold text-gray-800 mb-1">{group.title}</h2>
-                            {group.desc && <p className="text-xs text-gray-900 mb-4">{group.desc}</p>}
-                            <div className="space-y-4">
-                                {group.fields.map(f => (
-                                    <div key={f.key}>
-                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">{f.label}</label>
-                                        {f.textarea ? (
-                                            <textarea
-                                                rows={2}
-                                                value={values[f.key] ?? ''}
-                                                onChange={e => onChange(f.key, e.target.value)}
-                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            />
-                                        ) : (
-                                            <input
-                                                type={f.secret ? 'password' : 'text'}
-                                                value={values[f.key] ?? ''}
-                                                onChange={e => onChange(f.key, e.target.value)}
-                                                placeholder={f.secret ? '******** (leave to keep current)' : ''}
-                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
+                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration', 'Content Studio (Bhashini Hindi Voice)', 'Content Studio (Google TTS Fallback)', 'Content Studio (Social Posting)'].includes(g.title)).map(renderGroup)}
                 </div>
             </div>
 
