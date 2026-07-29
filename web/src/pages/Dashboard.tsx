@@ -194,7 +194,7 @@ export const Dashboard: React.FC = () => {
             <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
                 <Header />
                 {activeSession && (
-                    <div className="sticky top-0 z-40 bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white shadow-lg rounded-b-2xl">
+                    <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white shadow-lg rounded-b-2xl">
                         <div className="container mx-auto px-4 py-3 md:px-8 md:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex items-center gap-3 min-w-0">
                                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
@@ -214,7 +214,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <main className={`flex-1 container mx-auto p-6 md:p-8 ${activeSession ? 'pt-8 md:pt-10' : ''}`}>
+                <main className={`flex-1 container mx-auto p-6 md:p-8`}>
                     {missingOnboardingItems.length > 0 && (
                         <a
                             href="#astrologer-onboarding-panel"
@@ -732,7 +732,7 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <Header />
             {activeSession && (
-                <div className="sticky top-0 z-40 bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white shadow-lg rounded-b-2xl">
+                <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] text-white shadow-lg rounded-b-2xl">
                     <div className="container mx-auto px-4 py-3 md:px-8 md:py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
@@ -752,7 +752,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </div>
             )}
-            <main className={`flex-1 container mx-auto p-6 md:p-8 ${activeSession ? 'pt-8 md:pt-10' : ''}`}>
+            <main className={`flex-1 container mx-auto p-6 md:p-8`}>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8">
@@ -964,7 +964,11 @@ export const Dashboard: React.FC = () => {
                                                                         </button>
                                                                     )}
                                                                 </div>
-                                                            ) : ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status) ? (
+                                                            ) : c.status === 'REQUESTED' ? (
+                                                                <div className="mt-2 text-sm font-semibold text-gray-500">
+                                                                    Pending
+                                                                </div>
+                                                            ) : ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status) ? (
                                                                 <div className="mt-2 text-sm font-semibold text-[#E91E63]">
                                                                     Active Session
                                                                 </div>

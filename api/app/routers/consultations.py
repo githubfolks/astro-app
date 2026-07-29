@@ -71,6 +71,10 @@ def request_consultation(request: schemas.ConsultationCreate, current_user: mode
         status=models.ConsultationStatus.REQUESTED,
         topic=request.topic,
         concern_note=request.concern_note,
+        spouse_name=request.spouse_name,
+        spouse_date_of_birth=request.spouse_date_of_birth,
+        spouse_time_of_birth=request.spouse_time_of_birth,
+        spouse_place_of_birth=request.spouse_place_of_birth,
         is_promotional_first_chat=is_first_chat,
         promotional_rate_total=promotional_rate_total
     )

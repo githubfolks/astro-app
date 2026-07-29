@@ -276,7 +276,7 @@ export interface SadeSati {
 }
 
 export interface DashaPeriod {
-    level: 'Mahadasha' | 'Antardasha' | 'Pratyantardasha';
+    level: 'Mahadasha' | 'Antardasha' | 'Pratyantardasha' | 'Sukshma' | 'Prana';
     lord: string;
     start: string;
     end: string;

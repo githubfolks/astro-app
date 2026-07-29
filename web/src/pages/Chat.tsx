@@ -8,9 +8,10 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
 import { KundliContent } from '../components/KundliPanel';
+import { MatchContent } from '../components/MatchPanel';
 import PreChatQuestionsModal, { type PreChatAnswers } from '../components/PreChatQuestionsModal';
-import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb } from 'lucide-react';
-import type { Astrologer, SeekerProfile, ChartData, RazorpayResponse, RazorpayError } from '../types';
+import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb, HeartHandshake } from 'lucide-react';
+import type { Astrologer, SeekerProfile, ChartData, MatchData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { loadRazorpay } from '../utils/loadRazorpay';
@@ -53,7 +54,12 @@ export const Chat: React.FC = () => {
                 handleViewKundli(updated);
             } else {
                 setKundliData(null);
-                setKundliReportId(null);
+            }
+            if (showCompatibility) {
+                setMatchData(null);
+                handleViewCompatibility(updated);
+            } else {
+                setMatchData(null);
             }
         } catch (e) {
             console.error("Failed to update seeker details", e);
@@ -62,17 +68,24 @@ export const Chat: React.FC = () => {
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [showKundli, setShowKundli] = useState(false);
     const [kundliData, setKundliData] = useState<ChartData | null>(null);
-    const [kundliReportId, setKundliReportId] = useState<number | null>(null);
     const [kundliLoading, setKundliLoading] = useState(false);
     const [kundliError, setKundliError] = useState<string | null>(null);
     const [showAdhocKundliForm, setShowAdhocKundliForm] = useState(false);
     const [adhocKundliData, setAdhocKundliData] = useState({ full_name: '', date_of_birth: '', time_of_birth: '', place_of_birth: '' });
+    const [showCompatibility, setShowCompatibility] = useState(false);
+    const [matchData, setMatchData] = useState<MatchData | null>(null);
+    const [matchLoading, setMatchLoading] = useState(false);
+    const [matchError, setMatchError] = useState<string | null>(null);
     const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
     const [showSidebarMobile, setShowSidebarMobile] = useState(false);
     const [showPreChatModal, setShowPreChatModal] = useState(false);
     const [creatingConsultation, setCreatingConsultation] = useState(false);
     const [consultationTopic, setConsultationTopic] = useState<string | null>(null);
-    const [consultationConcernNote, setConsultationConcernNote] = useState<string | null>(null);
+    // Whatever spouse/partner info the seeker entered — may be partial (e.g. name
+    // only, or missing time of birth). null means nothing was entered at all.
+    const [spouseRaw, setSpouseRaw] = useState<{ name: string; date_of_birth: string; time_of_birth: string; place_of_birth: string } | null>(null);
+    const [showAdhocSpouseForm, setShowAdhocSpouseForm] = useState(false);
+    const [adhocSpouseData, setAdhocSpouseData] = useState({ full_name: '', date_of_birth: '', time_of_birth: '', place_of_birth: '' });
     const [isPromotionalChat, setIsPromotionalChat] = useState(false);
     const [promotionalRateTotal, setPromotionalRateTotal] = useState<number | null>(null);
 
@@ -172,7 +185,17 @@ export const Chat: React.FC = () => {
                 // 1. Get Consultation Details
                 const consultData = await api.consultations.getOne(activeConsultationId);
                 setConsultationTopic(consultData.topic || null);
-                setConsultationConcernNote(consultData.concern_note || null);
+                const hasAnySpouseInfo = !!(consultData.spouse_name || consultData.spouse_date_of_birth || consultData.spouse_time_of_birth || consultData.spouse_place_of_birth);
+                setSpouseRaw(
+                    hasAnySpouseInfo
+                        ? {
+                            name: consultData.spouse_name || '',
+                            date_of_birth: consultData.spouse_date_of_birth || '',
+                            time_of_birth: consultData.spouse_time_of_birth || '',
+                            place_of_birth: consultData.spouse_place_of_birth || '',
+                        }
+                        : null
+                );
                 setIsPromotionalChat(!!consultData.is_promotional_first_chat);
                 setPromotionalRateTotal(consultData.promotional_rate_total ?? null);
 
@@ -239,19 +262,6 @@ export const Chat: React.FC = () => {
                 .finally(() => translatingIds.current.delete(m.id as number));
         });
     }, [chatLanguage, messages, user, activeConsultationId, translatedText]);
-
-    // Translate the seeker's concern note into Hindi for the astrologer when that toggle is on
-    const [translatedNote, setTranslatedNote] = useState<string | null>(null);
-    const translatingNote = useRef(false);
-    useEffect(() => {
-        setTranslatedNote(null);
-        if (chatLanguage !== 'hi' || !activeConsultationId || !consultationConcernNote || translatingNote.current) return;
-        translatingNote.current = true;
-        api.chatTranslate.translate(activeConsultationId, consultationConcernNote, 'hi')
-            .then(res => setTranslatedNote(res.translated_text))
-            .catch(() => { /* keep showing the original note if translation fails */ })
-            .finally(() => { translatingNote.current = false; });
-    }, [chatLanguage, activeConsultationId, consultationConcernNote]);
 
     // React to the chat ending regardless of who ended it (self, other party, or
     // system auto-end) so both sides get feedback and are routed off the page.
@@ -400,15 +410,9 @@ export const Chat: React.FC = () => {
         // other party did.
     };
 
-    const handleShareKundliImage = async (blob: Blob) => {
+    const handleShareKundliImage = async (blob: Blob, caption?: string) => {
         if (!activeConsultationId) return;
-        await api.chatImage.shareImage(activeConsultationId, blob);
-        setShowSidebarMobile(false);
-    };
-
-    const handleShareDashaText = (text: string) => {
-        if (!activeConsultationId) return;
-        sendMessage(text);
+        await api.chatImage.shareImage(activeConsultationId, blob, caption);
         setShowSidebarMobile(false);
     };
 
@@ -465,12 +469,87 @@ export const Chat: React.FC = () => {
                 place_of_birth: targetSeeker.place_of_birth || '',
             });
             setKundliData(data.chart_data);
-            setKundliReportId(data.id);
         } catch (err) {
             setKundliError(getErrorMessage(err) || 'Failed to generate Kundli. Please try again.');
         } finally {
             setKundliLoading(false);
         }
+    };
+
+    const generateCompatibility = async (
+        person: SeekerProfile,
+        spouse: { full_name: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }
+    ) => {
+        setMatchLoading(true);
+        setMatchError(null);
+        try {
+            const seekerPerson = {
+                seeker_id: person.user_id,
+                full_name: person.full_name || 'Seeker',
+                date_of_birth: person.date_of_birth || '',
+                time_of_birth: person.time_of_birth || '',
+                place_of_birth: person.place_of_birth || '',
+            };
+            // Guna Milan roles are just labels for the two charts being compared —
+            // put the seeker on whichever side matches their recorded gender.
+            const seekerIsBride = person.gender === 'FEMALE';
+            const data = await api.matching.generate({
+                boy: seekerIsBride ? spouse : seekerPerson,
+                girl: seekerIsBride ? seekerPerson : spouse,
+            });
+            setMatchData(data.match_data);
+        } catch (err) {
+            setMatchError(getErrorMessage(err) || 'Failed to generate compatibility report. Please try again.');
+        } finally {
+            setMatchLoading(false);
+        }
+    };
+
+    const handleViewCompatibility = async (targetSeeker?: SeekerProfile) => {
+        const person = targetSeeker || seeker;
+        setShowCompatibility(true);
+        setShowKundli(false);
+        if (!person || !spouseRaw) return;
+
+        // Cached from a previous view — no need to regenerate, unless we're
+        // re-fetching with updated seeker details.
+        if (matchData && !targetSeeker) return;
+
+        // Spouse info is missing a field (e.g. no time of birth) — offer the
+        // ad-hoc entry form instead of calling the API with blank fields.
+        if (!(spouseRaw.date_of_birth && spouseRaw.time_of_birth && spouseRaw.place_of_birth)) {
+            setShowAdhocSpouseForm(true);
+            setAdhocSpouseData({
+                full_name: spouseRaw.name || '',
+                date_of_birth: spouseRaw.date_of_birth || '',
+                time_of_birth: spouseRaw.time_of_birth || '',
+                place_of_birth: spouseRaw.place_of_birth || '',
+            });
+            return;
+        }
+
+        await generateCompatibility(person, {
+            full_name: spouseRaw.name || 'Spouse',
+            date_of_birth: spouseRaw.date_of_birth,
+            time_of_birth: spouseRaw.time_of_birth,
+            place_of_birth: spouseRaw.place_of_birth,
+        });
+    };
+
+    // Generates a compatibility report from spouse/partner birth details the
+    // astrologer typed in manually, filling in whatever the seeker left out.
+    const handleGenerateAdhocCompatibility = async () => {
+        if (!seeker) return;
+        const { full_name, date_of_birth, time_of_birth, place_of_birth } = adhocSpouseData;
+        if (!date_of_birth || !time_of_birth || !place_of_birth) return;
+
+        setShowAdhocSpouseForm(false);
+        await generateCompatibility(seeker, {
+            full_name: full_name || 'Spouse',
+            date_of_birth,
+            time_of_birth,
+            place_of_birth,
+        });
     };
 
     // Generates a Kundli from birth details the astrologer typed in manually
@@ -494,7 +573,6 @@ export const Chat: React.FC = () => {
                 place_of_birth,
             });
             setKundliData(data.chart_data);
-            setKundliReportId(data.id);
         } catch (err) {
             setKundliError(getErrorMessage(err) || 'Failed to generate Kundli. Please try again.');
         } finally {
@@ -640,11 +718,11 @@ export const Chat: React.FC = () => {
                                         <span className="text-sm text-gray-900 font-medium">Client Details</span>
                                     </div>
 
-                                    {/* Toggle: Profile <-> Kundli (kept in the same panel so the chart never disappears once loaded) */}
+                                    {/* Toggle: Profile <-> Kundli <-> Compatibility (kept in the same panel so content never disappears once loaded) */}
                                     <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
                                         <button
-                                            onClick={() => setShowKundli(false)}
-                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${!showKundli ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
+                                            onClick={() => { setShowKundli(false); setShowCompatibility(false); }}
+                                            className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${!showKundli && !showCompatibility ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
                                         >
                                             Profile
                                         </button>
@@ -654,9 +732,69 @@ export const Chat: React.FC = () => {
                                         >
                                             🔮 Kundli
                                         </button>
+                                        {spouseRaw && (
+                                            <button
+                                                onClick={() => handleViewCompatibility()}
+                                                className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${showCompatibility ? 'bg-white text-pink-700 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
+                                            >
+                                                <HeartHandshake size={14} /> Match
+                                            </button>
+                                        )}
                                     </div>
 
-                                    {!showKundli ? (
+                                    {showCompatibility ? (
+                                        <div className="pt-2 border-t border-gray-100">
+                                            <div className="flex items-center justify-between px-1 pb-2">
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                                    {showAdhocSpouseForm ? 'Complete Spouse Details' : 'Compatibility'}
+                                                </span>
+                                            </div>
+                                            {!spouseRaw ? (
+                                                <p className="text-sm text-gray-500 p-4">No spouse/partner details were provided for this consultation.</p>
+                                            ) : !(seeker?.date_of_birth && seeker?.time_of_birth && seeker?.place_of_birth) ? (
+                                                <p className="text-sm text-gray-500 p-4">Seeker's birth details are missing. Add them from the Profile tab first.</p>
+                                            ) : showAdhocSpouseForm ? (
+                                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-3">
+                                                    <p className="text-xs text-gray-500">
+                                                        The seeker didn't provide complete spouse/partner birth details. Fill in what's missing to generate the compatibility report.
+                                                    </p>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Name</label>
+                                                        <input type="text" value={adhocSpouseData.full_name} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, full_name: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="Spouse/partner name" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Date of Birth</label>
+                                                        <input type="date" value={adhocSpouseData.date_of_birth} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, date_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Time of Birth</label>
+                                                        <input type="time" step="1" value={adhocSpouseData.time_of_birth} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, time_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
+                                                        <input type="text" value={adhocSpouseData.place_of_birth} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, place_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
+                                                    </div>
+                                                    <button
+                                                        onClick={handleGenerateAdhocCompatibility}
+                                                        disabled={!adhocSpouseData.date_of_birth || !adhocSpouseData.time_of_birth || !adhocSpouseData.place_of_birth}
+                                                        className="w-full bg-[#E91E63] text-white py-2 rounded-lg text-sm font-bold shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    >
+                                                        Generate Compatibility
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <MatchContent
+                                                    matchData={matchData}
+                                                    boyName={seeker?.gender === 'FEMALE' ? (spouseRaw.name || 'Partner') : (seeker?.full_name || 'Seeker')}
+                                                    girlName={seeker?.gender === 'FEMALE' ? (seeker?.full_name || 'Seeker') : (spouseRaw.name || 'Partner')}
+                                                    loading={matchLoading}
+                                                    error={matchError}
+                                                    canShare={user?.role === 'ASTROLOGER'}
+                                                    onShareImage={handleShareKundliImage}
+                                                />
+                                            )}
+                                        </div>
+                                    ) : !showKundli ? (
                                         <div className="space-y-4 pt-4 border-t border-gray-100">
 
                                             {isEditingSeeker ? (
@@ -721,15 +859,6 @@ export const Chat: React.FC = () => {
                                                 </div>
                                             )}
 
-                                            <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                                                <h3 className="text-xs font-bold text-yellow-800 uppercase tracking-wider mb-2">Notes</h3>
-                                                <p className="text-yellow-900 text-sm">
-                                                    {chatLanguage === 'hi' && consultationConcernNote
-                                                        ? (translatedNote || 'Translating…')
-                                                        : (consultationConcernNote || 'No additional notes.')}
-                                                </p>
-                                            </div>
-
                                         </div>
                                     ) : (
                                         <div className="pt-2 border-t border-gray-100">
@@ -785,12 +914,10 @@ export const Chat: React.FC = () => {
                                             ) : (
                                                 <KundliContent
                                                     chartData={kundliData}
-                                                    reportId={kundliReportId ?? undefined}
                                                     loading={kundliLoading}
                                                     error={kundliError}
                                                     canShare={user?.role === 'ASTROLOGER'}
                                                     onShareImage={handleShareKundliImage}
-                                                    onShareDashaText={handleShareDashaText}
                                                 />
                                             )}
                                         </div>
@@ -963,12 +1090,7 @@ export const Chat: React.FC = () => {
                         {user?.role === 'ASTROLOGER' && consultationTopic && (
                             <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-2 flex items-start gap-2 text-indigo-800 text-sm flex-shrink-0">
                                 <Info size={15} className="flex-shrink-0 text-indigo-500 mt-0.5" />
-                                <span>
-                                    <span className="font-bold">{consultationTopic}</span>
-                                    {consultationConcernNote && (
-                                        <span> — {chatLanguage === 'hi' ? (translatedNote || consultationConcernNote) : consultationConcernNote}</span>
-                                    )}
-                                </span>
+                                <span className="font-bold">{consultationTopic}</span>
                             </div>
                         )}
 

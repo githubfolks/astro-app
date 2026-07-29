@@ -22,7 +22,6 @@ const KundliGenerator: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [chartData, setChartData] = useState<ChartData | null>(null);
-    const [reportId, setReportId] = useState<number | null>(null);
     const [showPanel, setShowPanel] = useState(false);
 
     // History
@@ -72,7 +71,6 @@ const KundliGenerator: React.FC = () => {
                 place_of_birth: formData.place_of_birth,
             });
             setChartData(result.chart_data);
-            setReportId(result.id);
             setShowPanel(true);
             loadHistory(); // Refresh history
         } catch (err) {
@@ -84,7 +82,6 @@ const KundliGenerator: React.FC = () => {
 
     const handleViewHistoryReport = async (report: KundliReport) => {
         setChartData(report.chart_data ?? null);
-        setReportId(report.id);
         setShowPanel(true);
     };
 
@@ -251,7 +248,6 @@ const KundliGenerator: React.FC = () => {
                 isOpen={showPanel}
                 onClose={() => setShowPanel(false)}
                 chartData={chartData}
-                reportId={reportId ?? undefined}
                 seekerName={formData.full_name || 'Seeker'}
                 loading={loading}
                 error={error}

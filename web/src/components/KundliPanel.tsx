@@ -1,9 +1,8 @@
-import type { ChartData, DivisionChart, PlanetPosition, DashaInsightsData } from '../types';
+import type { ChartData, DivisionChart, PlanetPosition } from '../types';
 import React, { useRef, useState } from 'react';
-import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon, Lightbulb } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon } from 'lucide-react';
 import KundliChart, { PLANET_SHORT, PLANET_COLORS } from './KundliChart';
-import { api } from '../services/api';
-import { getErrorMessage } from '../utils/errors';
 import {
     type Lang, hi,
     PLANET_NAME_HI, RASHI_HI, NAKSHATRA_HI, TITHI_HI, PANCHANG_YOGA_HI,
@@ -11,12 +10,12 @@ import {
     DASHA_LEVEL_HI, SADE_SATI_PHASE_HI, AVASTHA_STATE_HI, UI_HI,
 } from '../utils/kundliHindi';
 import { isExalted, isDebilitated, computeCombustSet, computeVargottamaSet } from '../utils/planetDignity';
+import { computeActiveSukshmaAndPrana } from '../utils/subDasha';
 
 interface KundliPanelProps {
     isOpen: boolean;
     onClose: () => void;
     chartData?: ChartData | null; // Full FreeAstroAPI /vedic/calculate response
-    reportId?: number; // Kundli report id — enables the on-demand Dasha Insights section
     seekerName?: string;
     loading?: boolean;
     error?: string | null;
@@ -30,14 +29,11 @@ const TABS = [
 
 interface KundliContentProps {
     chartData?: ChartData | null;
-    reportId?: number; // Kundli report id — enables the on-demand Dasha Insights section
     loading?: boolean;
     error?: string | null;
-    /** When provided (astrologer chat context), a "Share to Chat" button captures the
-     * visible Rashi chart as a PNG and hands it off for upload/sending. */
-    onShareImage?: (blob: Blob) => Promise<void> | void;
-    /** Shares Dasha periods as a text message in chat. */
-    onShareDashaText?: (text: string) => Promise<void> | void;
+    /** When provided (astrologer chat context), "Share to Chat" buttons capture the
+     * visible Rashi chart (or Dasha card) as a PNG and hand it off for upload/sending. */
+    onShareImage?: (blob: Blob, caption?: string) => Promise<void> | void;
     canShare?: boolean;
 }
 
@@ -70,39 +66,39 @@ function getDivisionChart(chartData: ChartData, tab: string): DivisionChart | un
     return chartData.vargas?.vargas?.[tab];
 }
 
+const DAYS_PER_YEAR = 365.2425;
+
+/** Sukshma/Prana periods run days or hours, not years — "0.0 yrs remaining" is
+ * useless at that scale, so switch to whole days once a period drops under a year. */
+function formatPeriodDuration(period: { remaining_years: number; duration_years: number }, lang: Lang): string {
+    if (period.duration_years >= 1) {
+        return lang === 'hi'
+            ? UI_HI.yrsRemainingOf(period.remaining_years.toFixed(1), period.duration_years.toFixed(1))
+            : `${period.remaining_years.toFixed(1)} yrs remaining of ${period.duration_years.toFixed(1)} yrs`;
+    }
+    const remainingDays = Math.max(0, period.remaining_years * DAYS_PER_YEAR);
+    const totalDays = period.duration_years * DAYS_PER_YEAR;
+    return lang === 'hi'
+        ? `${totalDays.toFixed(0)} दिन में से ${remainingDays.toFixed(0)} दिन शेष`
+        : `${remainingDays.toFixed(0)} days remaining of ${totalDays.toFixed(0)} days`;
+}
+
 /** The chart tabs, visualization and detail tables — no overlay/header, so it can be
  * embedded inline (e.g. in the astrologer chat sidebar) as well as inside KundliPanel. */
 export const KundliContent: React.FC<KundliContentProps> = ({
     chartData,
-    reportId,
     loading = false,
     error = null,
     onShareImage,
-    onShareDashaText,
     canShare = false,
 }) => {
     const [activeTab, setActiveTab] = useState('D1');
     const [lang, setLang] = useState<Lang>('en');
     const chartRef = useRef<SVGSVGElement>(null);
+    const dashaCardRef = useRef<HTMLDivElement>(null);
     const [sharing, setSharing] = useState(false);
     const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
-    const [dashaInsights, setDashaInsights] = useState<DashaInsightsData | null>(null);
-    const [dashaInsightsLoading, setDashaInsightsLoading] = useState(false);
-    const [dashaInsightsError, setDashaInsightsError] = useState<string | null>(null);
-
-    const handleLoadDashaInsights = async () => {
-        if (!reportId || dashaInsightsLoading) return;
-        setDashaInsightsLoading(true);
-        setDashaInsightsError(null);
-        try {
-            const report = await api.kundli.getDashaInsights(reportId);
-            setDashaInsights(report.dasha_insights_data ?? null);
-        } catch (err) {
-            setDashaInsightsError(getErrorMessage(err) || 'Failed to load Dasha Insights');
-        } finally {
-            setDashaInsightsLoading(false);
-        }
-    };
+    const [dashaShareStatus, setDashaShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
     const handleShareClick = async () => {
         if (!onShareImage || sharing || !chartRef.current) return;
@@ -120,18 +116,22 @@ export const KundliContent: React.FC<KundliContentProps> = ({
         }
     };
 
-    const handleShareDashaClick = async () => {
-        if (!onShareDashaText || sharing || !chartData?.vimshottari_dasha?.active_periods) return;
+    const handleShareDashaImageClick = async () => {
+        if (!onShareImage || sharing || !dashaCardRef.current) return;
         setSharing(true);
+        setDashaShareStatus('idle');
         try {
-            const periods = chartData.vimshottari_dasha.active_periods.map((period) => {
-                const pathStr = period.path.map((p: string) => hi(PLANET_NAME_HI, p, lang)).join(' → ');
-                return `${hi(DASHA_LEVEL_HI, period.level, lang)}: ${pathStr}\n(${period.start} - ${period.end})`;
-            }).join('\n\n');
-            const message = `🌟 *Vimshottari Dasha*\n\n${periods}`;
-            await onShareDashaText(message);
+            const canvas = await html2canvas(dashaCardRef.current, { backgroundColor: '#ffffff', scale: 2 });
+            const blob = await new Promise<Blob>((resolve, reject) => {
+                canvas.toBlob(b => b ? resolve(b) : reject(new Error('Failed to export image')), 'image/png');
+            });
+            await onShareImage(blob, 'Vimshottari Dasha');
+            setDashaShareStatus('success');
+        } catch {
+            setDashaShareStatus('error');
         } finally {
             setSharing(false);
+            setTimeout(() => setDashaShareStatus('idle'), 2500);
         }
     };
 
@@ -142,7 +142,14 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     // Both are planet-level facts, so they apply regardless of which division tab is active.
     const combustSet = computeCombustSet(chartData?.chart);
     const vargottamaSet = computeVargottamaSet(chartData?.chart, chartData?.vargas?.vargas?.D9);
-    const activePeriods = chartData?.vimshottari_dasha?.active_periods;
+    const apiActivePeriods = chartData?.vimshottari_dasha?.active_periods;
+    // FreeAstroAPI stops at Pratyantardasha (level 3); derive Sukshma/Prana locally
+    // from it via the standard Vimshottari proportional-subdivision rule.
+    const pratyantardasha = apiActivePeriods?.find(p => p.level === 'Pratyantardasha');
+    const subDasha = pratyantardasha ? computeActiveSukshmaAndPrana(pratyantardasha) : null;
+    const activePeriods = apiActivePeriods && subDasha
+        ? [...apiActivePeriods, subDasha.sukshma, subDasha.prana]
+        : apiActivePeriods;
     const sadeSati = chartData?.chart?.sade_sati;
     const yogas = chartData?.yogas;
     const shadbala = chartData?.shadbala;
@@ -272,6 +279,59 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                 </div>
                             )}
 
+                            {/* Vimshottari Dasha */}
+                            {activePeriods && activePeriods.length > 0 && (
+                                <div ref={dashaCardRef} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
+                                        <span className="flex items-center gap-2">
+                                            <Clock size={14} className="text-indigo-600" />
+                                            {lang === 'hi' ? UI_HI.vimshottariDasha : 'Vimshottari Dasha'}
+                                        </span>
+                                        {canShare && onShareImage && (
+                                            <div data-html2canvas-ignore="true" className="flex items-center gap-2">
+                                                <button
+                                                    onClick={handleShareDashaImageClick}
+                                                    disabled={sharing}
+                                                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1 disabled:opacity-60"
+                                                >
+                                                    {sharing ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />}
+                                                    {sharing ? 'Sharing…' : 'Share to Chat'}
+                                                </button>
+                                                {dashaShareStatus === 'success' && (
+                                                    <span className="text-[11px] text-emerald-600 font-semibold">Shared ✓</span>
+                                                )}
+                                                {dashaShareStatus === 'error' && (
+                                                    <span className="text-[11px] text-red-600 font-semibold">Failed</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </h3>
+                                    <div className="p-4 pt-1 space-y-3">
+                                        {activePeriods.map(period => (
+                                            <div key={period.level}>
+                                                <div className="flex justify-between items-baseline mb-1">
+                                                    <span className="text-xs font-semibold text-gray-700">
+                                                        {hi(DASHA_LEVEL_HI, period.level, lang)}: {period.path.map(p => hi(PLANET_NAME_HI, p, lang)).join(' → ')}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-400">
+                                                        {period.start} – {period.end}
+                                                    </span>
+                                                </div>
+                                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-indigo-500 rounded-full"
+                                                        style={{ width: `${Math.min(period.progress_fraction * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                                    {formatPeriodDuration(period, lang)}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Planet Positions Table */}
                             {activeChart?.planets && (
                                 <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -383,89 +443,6 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                             );
                                         })}
                                     </div>
-                                </div>
-                            )}
-
-                            {/* Vimshottari Dasha */}
-                            {activePeriods && activePeriods.length > 0 && (
-                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
-                                        <span className="flex items-center gap-2">
-                                            <Clock size={14} className="text-indigo-600" />
-                                            {lang === 'hi' ? UI_HI.vimshottariDasha : 'Vimshottari Dasha'}
-                                        </span>
-                                        {canShare && onShareDashaText && (
-                                            <button
-                                                onClick={handleShareDashaClick}
-                                                disabled={sharing}
-                                                className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-1 disabled:opacity-60"
-                                            >
-                                                <Share2 size={12} /> Share
-                                            </button>
-                                        )}
-                                    </h3>
-                                    <div className="p-4 pt-1 space-y-3">
-                                        {activePeriods.map(period => (
-                                            <div key={period.level}>
-                                                <div className="flex justify-between items-baseline mb-1">
-                                                    <span className="text-xs font-semibold text-gray-700">
-                                                        {hi(DASHA_LEVEL_HI, period.level, lang)}: {period.path.map(p => hi(PLANET_NAME_HI, p, lang)).join(' → ')}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-400">
-                                                        {period.start} – {period.end}
-                                                    </span>
-                                                </div>
-                                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-indigo-500 rounded-full"
-                                                        style={{ width: `${Math.min(period.progress_fraction * 100, 100)}%` }}
-                                                    />
-                                                </div>
-                                                <p className="text-[10px] text-gray-400 mt-0.5">
-                                                    {lang === 'hi'
-                                                        ? UI_HI.yrsRemainingOf(period.remaining_years.toFixed(1), period.duration_years.toFixed(1))
-                                                        : `${period.remaining_years.toFixed(1)} yrs remaining of ${period.duration_years.toFixed(1)} yrs`}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Dasha Insights */}
-                            {reportId && (
-                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
-                                        <span className="flex items-center gap-2">
-                                            <Lightbulb size={14} className="text-amber-600" />
-                                            Dasha Insights
-                                        </span>
-                                        {!dashaInsights && (
-                                            <button
-                                                onClick={handleLoadDashaInsights}
-                                                disabled={dashaInsightsLoading}
-                                                className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors disabled:opacity-60"
-                                            >
-                                                {dashaInsightsLoading ? 'Loading…' : 'Load Insights'}
-                                            </button>
-                                        )}
-                                    </h3>
-                                    {dashaInsightsError && (
-                                        <p className="text-xs text-red-600 px-4 pb-3">{dashaInsightsError}</p>
-                                    )}
-                                    {dashaInsights && (
-                                        <div className="p-4 pt-1 space-y-2">
-                                            {dashaInsights.importance.slice(0, 8).map(fact => (
-                                                <div key={fact.fact_id} className="p-2.5 rounded-lg bg-amber-50/60 border border-amber-100">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <span className="text-xs font-semibold text-gray-800">{fact.title}</span>
-                                                        <span className="text-[9px] font-bold uppercase tracking-wide text-amber-600 shrink-0">{fact.category}</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-gray-500 mt-0.5">{fact.summary}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             )}
 
@@ -597,7 +574,6 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
     isOpen,
     onClose,
     chartData,
-    reportId,
     seekerName = 'Seeker',
     loading = false,
     error = null,
@@ -630,7 +606,7 @@ const KundliPanel: React.FC<KundliPanelProps> = ({
                     </button>
                 </div>
 
-                <KundliContent chartData={chartData} reportId={reportId} loading={loading} error={error} />
+                <KundliContent chartData={chartData} loading={loading} error={error} />
             </div>
 
             <style>{`

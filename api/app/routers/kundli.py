@@ -69,14 +69,26 @@ async def generate_kundli_report(
     # Reports generated before the switch to FreeAstroAPI carry the old
     # astroapi.dev response shape (no top-level "chart" key) and are
     # incompatible with the current frontend — treat those as stale and
-    # regenerate rather than serving unusable cached data.
+    # regenerate rather than serving unusable cached data. Same for reports
+    # cached before the dasha_levels fix / older FreeAstroAPI contract, whose
+    # active_periods may be missing a level (e.g. no Antardasha) — regenerate
+    # those too rather than serving an incomplete dasha chain forever.
     existing = db.query(models.KundliReport).filter(
         models.KundliReport.date_of_birth == dob,
         models.KundliReport.time_of_birth == tob,
         models.KundliReport.place_of_birth == place,
     ).first()
 
-    if existing and isinstance(existing.chart_data, dict) and "chart" in existing.chart_data:
+    def _has_complete_dasha(data: dict) -> bool:
+        levels = {p.get("level") for p in data.get("vimshottari_dasha", {}).get("active_periods", [])}
+        return {"Mahadasha", "Antardasha", "Pratyantardasha"}.issubset(levels)
+
+    if (
+        existing
+        and isinstance(existing.chart_data, dict)
+        and "chart" in existing.chart_data
+        and _has_complete_dasha(existing.chart_data)
+    ):
         return existing
 
     # Geocode place of birth
@@ -98,7 +110,7 @@ async def generate_kundli_report(
             latitude=lat,
             longitude=lon,
             timezone="Asia/Kolkata",
-            dasha_levels=5,
+            dasha_levels=3,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

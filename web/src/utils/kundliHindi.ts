@@ -122,6 +122,7 @@ export const STRENGTH_HI: Record<string, string> = {
 
 export const DASHA_LEVEL_HI: Record<string, string> = {
     Mahadasha: 'महादशा', Antardasha: 'अंतर्दशा', Pratyantardasha: 'प्रत्यंतर्दशा',
+    Sukshma: 'सूक्ष्म दशा', Prana: 'प्राण दशा',
 };
 
 export const SADE_SATI_PHASE_HI: Record<string, string> = {
@@ -132,6 +133,11 @@ export const SADE_SATI_PHASE_HI: Record<string, string> = {
 
 export const AVASTHA_STATE_HI: Record<string, string> = {
     Bala: 'बाल', Kumara: 'कुमार', Yuva: 'युवा', Vriddha: 'वृद्ध', Mrita: 'मृत',
+};
+
+export const KOOTA_NAME_HI: Record<string, string> = {
+    Varna: 'वर्ण', Vashya: 'वश्य', Tara: 'तारा', Yoni: 'योनि',
+    'Graha Maitri': 'ग्रह मैत्री', Gana: 'गण', Bhakoot: 'भकूट', Nadi: 'नाड़ी',
 };
 
 /** Static UI chrome (section headings, field labels, states) — not API data. */
@@ -176,4 +182,11 @@ export const UI_HI = {
     sadeSatiActive: 'साढ़े साती सक्रिय',
     sadeSatiNotActive: 'साढ़े साती सक्रिय नहीं है',
     avasthaAbbr: 'अव',
+    generatingMatchReport: 'मिलान रिपोर्ट बन रही है...',
+    failedToGenerateMatch: 'मिलान रिपोर्ट बनाने में विफल',
+    ashtakootaBreakdown: 'अष्टकूट विवरण',
+    doshaAnalysis: 'दोष विश्लेषण',
+    manglikDosha: 'मंगलिक दोष',
+    meetsMinimum: (threshold: number) => `पारंपरिक न्यूनतम (${threshold}/36) से अधिक`,
+    belowMinimum: (threshold: number) => `पारंपरिक न्यूनतम (${threshold}/36) से कम`,
 };
