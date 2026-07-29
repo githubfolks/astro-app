@@ -59,8 +59,8 @@ def create_payment_order(
     # Razorpay expects amount in paise (1 INR = 100 paise)
     amount_paise = int(order.amount * 100)
 
-    # Mock Mode: explicit opt-in via ENABLE_MOCK_PAYMENTS, or automatic
-    # fallback when no live keys are configured at all.
+    # Mock Mode: explicit opt-in via the admin-toggleable "enable_mock_payments"
+    # setting, or automatic fallback when no live keys are configured at all.
     if mock_payments_enabled() or not client:
         order_id = f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}"
         db.add(models.PaymentOrder(

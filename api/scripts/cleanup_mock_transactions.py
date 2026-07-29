@@ -1,7 +1,8 @@
 """
-Removes mock-mode wallet top-up transactions (created while ENABLE_MOCK_PAYMENTS=true
-or when no live Razorpay keys were configured) and rolls back the corresponding
-credit from each affected user's wallet balance, so the ledger stays consistent.
+Removes mock-mode wallet top-up transactions (created while the "enable_mock_payments"
+admin setting was on, or when no live Razorpay keys were configured) and rolls back
+the corresponding credit from each affected user's wallet balance, so the ledger
+stays consistent.
 
 A mock top-up is identified by reference_id starting with 'order_mock_' or
 gateway_payment_id starting with 'pay_mock_' on a PAYMENT_GATEWAY transaction.
