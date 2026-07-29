@@ -7,14 +7,14 @@ seekers see accurate Online/Busy/Offline status.
 
 One user can hold several sockets (dashboard + chat tab); messages fan out to all.
 """
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
 import json
 import logging
 from datetime import datetime
 
 from .. import models, database
-from .chat import get_user_from_token
+from .chat import get_user_from_token, receive_ws_token
 from ..redis_client import get_redis
 from ..services.settings_service import get_setting
 
@@ -73,7 +73,7 @@ class NotificationManager:
         return user_id in self.connections
 
     async def connect(self, user_id: int, websocket: WebSocket):
-        await websocket.accept()
+        # Socket is already accepted by receive_ws_token() during the auth handshake.
         self.connections.setdefault(user_id, []).append(websocket)
         mark_present(user_id)
 
@@ -163,7 +163,12 @@ def broadcast_event(payload: dict):
 
 
 @router.websocket("/ws")
-async def realtime_endpoint(websocket: WebSocket, token: str = Query(...)):
+async def realtime_endpoint(websocket: WebSocket):
+    token = await receive_ws_token(websocket)
+    if token is None:
+        await websocket.close(code=4003)
+        return
+
     db = database.SessionLocal()
     try:
         user = await get_user_from_token(token, db)

@@ -41,6 +41,14 @@ def update_my_profile(profile_update: schemas.SeekerProfileCreate, current_user:
 
 @router.get("/{user_id}/profile", response_model=schemas.SeekerProfile)
 def get_user_profile(user_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):
+    if current_user.id != user_id and current_user.role != models.UserRole.ADMIN:
+        has_consultation = current_user.role == models.UserRole.ASTROLOGER and db.query(models.Consultation).filter(
+            models.Consultation.astrologer_id == current_user.id,
+            models.Consultation.seeker_id == user_id,
+        ).first() is not None
+        if not has_consultation:
+            raise HTTPException(status_code=403, detail="Not authorized to view this profile")
+
     profile = db.query(models.SeekerProfile).filter(models.SeekerProfile.user_id == user_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")

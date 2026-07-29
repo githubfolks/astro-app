@@ -169,6 +169,22 @@ class WalletTransaction(Base):
 
     user = relationship("User", back_populates="wallet_transactions")
 
+class PaymentOrder(Base):
+    """Server-side record of an order created via POST /payment/order (mock
+    or real), so /payment/verify can look up the amount the platform actually
+    quoted instead of trusting a client-supplied value (e.g. parsed out of a
+    mock order id string).
+    """
+    __tablename__ = "payment_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(String, unique=True, index=True, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    amount_paise = Column(Integer, nullable=False)
+    is_mock = Column(Boolean, default=False, nullable=False, server_default='false')
+    consumed = Column(Boolean, default=False, nullable=False, server_default='false')
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class ChatPackage(Base):
     __tablename__ = "chat_packages"
 

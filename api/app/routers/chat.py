@@ -1,4 +1,4 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Query, Request, UploadFile, File, Form
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, HTTPException, Request, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from typing import Literal
@@ -24,13 +24,36 @@ router = APIRouter(
     tags=["Chat"]
 )
 
+WS_AUTH_TIMEOUT_SECS = 10.0
+
+
+async def receive_ws_token(websocket: WebSocket, timeout: float = WS_AUTH_TIMEOUT_SECS) -> str | None:
+    """Accept the socket and read the auth token from the client's first
+    message instead of a `?token=` query param — query strings land in
+    access logs, reverse proxies, and browser history, leaking a long-lived
+    session JWT. Returns None (caller should close the socket) if no valid
+    `{"token": "..."}` message arrives within `timeout` seconds.
+    """
+    await websocket.accept()
+    try:
+        raw = await asyncio.wait_for(websocket.receive_text(), timeout=timeout)
+    except (asyncio.TimeoutError, WebSocketDisconnect):
+        return None
+    try:
+        msg = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    token = msg.get("token")
+    return token if isinstance(token, str) and token else None
+
+
 class ConnectionManager:
     def __init__(self):
         # Map consultation_id -> List of {ws, role, user_id}
         self.active_connections: dict[int, list[dict]] = {}
 
     async def connect(self, websocket: WebSocket, consultation_id: int, user: models.User):
-        await websocket.accept()
+        # Socket is already accepted by receive_ws_token() during the auth handshake.
         if consultation_id not in self.active_connections:
             self.active_connections[consultation_id] = []
         
@@ -566,13 +589,19 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
             redis.delete(f"active_consultation:{consultation_id}")
 
 @router.websocket("/ws/{consultation_id}")
-async def websocket_endpoint(websocket: WebSocket, consultation_id: int, token: str = Query(...)):
+async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
     logger.info(f"New WS connection attempt: consultation_id={consultation_id}")
 
     # Create a new session for this connection scope
     db = database.SessionLocal()
 
     try:
+        token = await receive_ws_token(websocket)
+        if token is None:
+            logger.warning(f"WS reject (consultation {consultation_id}): no auth token received")
+            await websocket.close(code=4003)
+            return
+
         user = await get_user_from_token(token, db)
 
         if not user:

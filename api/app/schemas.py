@@ -26,6 +26,16 @@ def _validate_strong_password(value: str) -> str:
 # Reusable annotated type so every password field shares one policy.
 StrongPassword = Annotated[str, AfterValidator(_validate_strong_password)]
 
+# Rejects embedded CR/LF and other control characters. Applied to free-text
+# name fields that flow into single-line contexts (ICS calendar properties,
+# email headers) where a raw \r/\n would inject additional lines/properties.
+def _validate_single_line_name(value: str) -> str:
+    if re.search(r"[\r\n\x00-\x08\x0b\x0c\x0e-\x1f]", value):
+        raise ValueError("Name cannot contain line breaks or control characters.")
+    return value
+
+PlainName = Annotated[str, Field(min_length=1, max_length=100), AfterValidator(_validate_single_line_name)]
+
 # Enums
 class UserRole(str, Enum):
     ADMIN = "ADMIN"
@@ -321,7 +331,7 @@ class AdminCreateAstrologer(BaseModel):
 
 class AstrologerOnboardingRequest(BaseModel):
     # User fields
-    full_name: str
+    full_name: PlainName
     email: str
     phone_number: str
     password: StrongPassword

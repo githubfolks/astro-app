@@ -68,11 +68,14 @@ export const useChat = (consultationId: string) => {
     const connect = useCallback(() => {
         if (!token || !consultationId || !shouldReconnect.current) return;
 
-        const url = `${WS_URL}/${consultationId}?token=${token}`;
+        const url = `${WS_URL}/${consultationId}`;
         const socket = new WebSocket(url);
         ws.current = socket;
 
         socket.onopen = () => {
+            // Auth token goes in the first message, not the URL — a `?token=`
+            // query string ends up in access logs/proxies/browser history.
+            socket.send(JSON.stringify({ token }));
             reconnectAttempt.current = 0;
             startHeartbeat(socket);
             setStatus(prev => (prev === 'ENDED' || prev === 'PAUSED') ? prev : 'CONNECTING');

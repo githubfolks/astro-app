@@ -568,8 +568,23 @@ def build_admin_password_reset_email() -> Tuple[str, str]:
 
 
 def _ics_escape(value: str) -> str:
-    """Escape text per RFC 5545 (commas, semicolons, newlines)."""
-    return (value or "").replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+    """Escape text per RFC 5545 (commas, semicolons, newlines).
+
+    Normalizes \\r\\n and bare \\r to \\n *before* the literal-newline escape
+    below — otherwise a caller-supplied \\r survives as a raw line break in
+    the serialized .ics body, letting it inject additional calendar
+    properties (e.g. a spoofed LOCATION/URL line) past the fields this
+    function is meant to confine to a single escaped value.
+    """
+    return (
+        (value or "")
+        .replace("\\", "\\\\")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .replace(",", "\\,")
+        .replace(";", "\\;")
+        .replace("\n", "\\n")
+    )
 
 
 def build_meeting_ics(

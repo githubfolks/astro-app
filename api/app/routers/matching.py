@@ -141,7 +141,8 @@ def get_match_report(
     _require_astrologer(current_user)
 
     report = db.query(models.KundliMatchReport).filter(
-        models.KundliMatchReport.id == report_id
+        models.KundliMatchReport.id == report_id,
+        models.KundliMatchReport.generated_by == current_user.id,
     ).first()
 
     if not report:
@@ -156,12 +157,13 @@ def get_seeker_match_reports(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(database.get_db)
 ):
-    """Get all Match reports involving a specific seeker (as boy or girl)."""
+    """Get all Match reports the current astrologer generated involving a specific seeker (as boy or girl)."""
     _require_astrologer(current_user)
 
     reports = db.query(models.KundliMatchReport).filter(
         (models.KundliMatchReport.boy_seeker_id == seeker_id) |
-        (models.KundliMatchReport.girl_seeker_id == seeker_id)
+        (models.KundliMatchReport.girl_seeker_id == seeker_id),
+        models.KundliMatchReport.generated_by == current_user.id,
     ).order_by(models.KundliMatchReport.created_at.desc()).all()
 
     return reports

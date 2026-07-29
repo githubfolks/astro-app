@@ -207,6 +207,13 @@ async def resume_consultation(
     if consultation.status != models.ConsultationStatus.PAUSED:
         raise HTTPException(status_code=400, detail="Consultation is not paused")
 
+    from .chat import astrologer_has_other_active
+    if astrologer_has_other_active(db, consultation.astrologer_id, consultation.id):
+        raise HTTPException(
+            status_code=409,
+            detail="Astrologer is currently in another active session. Try again once they're free."
+        )
+
     # Balance must cover at least one minute
     wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == consultation.seeker_id).first()
     if not wallet or float(wallet.balance) < float(consultation.rate_per_min):

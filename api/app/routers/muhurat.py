@@ -147,7 +147,8 @@ def get_muhurat_search(
     _require_astrologer(current_user)
 
     result = db.query(models.MuhuratSearch).filter(
-        models.MuhuratSearch.id == search_id
+        models.MuhuratSearch.id == search_id,
+        models.MuhuratSearch.generated_by == current_user.id,
     ).first()
 
     if not result:

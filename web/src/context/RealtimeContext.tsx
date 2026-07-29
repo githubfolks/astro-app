@@ -42,10 +42,13 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const connect = useCallback((currentToken: string) => {
         if (!shouldReconnect.current) return;
-        const socket = new WebSocket(`${WS_URL}?token=${currentToken}`);
+        const socket = new WebSocket(WS_URL);
         ws.current = socket;
 
         socket.onopen = () => {
+            // Auth token goes in the first message, not the URL — a `?token=`
+            // query string ends up in access logs/proxies/browser history.
+            socket.send(JSON.stringify({ token: currentToken }));
             reconnectAttempt.current = 0;
             clearHeartbeat();
             heartbeatTimer.current = setInterval(() => {

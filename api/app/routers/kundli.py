@@ -208,7 +208,8 @@ def get_kundli_report(
     _require_astrologer(current_user)
 
     report = db.query(models.KundliReport).filter(
-        models.KundliReport.id == report_id
+        models.KundliReport.id == report_id,
+        models.KundliReport.generated_by == current_user.id,
     ).first()
 
     if not report:
@@ -223,11 +224,12 @@ def get_seeker_kundli_reports(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(database.get_db)
 ):
-    """Get all Kundli reports for a specific seeker."""
+    """Get all Kundli reports the current astrologer generated for a specific seeker."""
     _require_astrologer(current_user)
 
     reports = db.query(models.KundliReport).filter(
-        models.KundliReport.seeker_id == seeker_id
+        models.KundliReport.seeker_id == seeker_id,
+        models.KundliReport.generated_by == current_user.id,
     ).order_by(models.KundliReport.created_at.desc()).all()
 
     return reports

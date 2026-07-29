@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from .. import models, schemas, database, audit
 from .auth import get_current_user, get_current_admin
@@ -46,18 +47,27 @@ class RefundRequest(BaseModel):
     notes: str | None = None
 
 @router.post("/order")
-def create_payment_order(order: OrderCreate, current_user: models.User = Depends(get_current_user)):
+def create_payment_order(
+    order: OrderCreate,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user),
+):
     if order.amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")
-    
+
     # Razorpay expects amount in paise (1 INR = 100 paise)
     amount_paise = int(order.amount * 100)
-    
+
     # Mock Mode: explicit opt-in via ENABLE_MOCK_PAYMENTS, or automatic
     # fallback when no live keys are configured at all.
     if mock_payments_enabled() or not client:
+        order_id = f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}"
+        db.add(models.PaymentOrder(
+            order_id=order_id, user_id=current_user.id, amount_paise=amount_paise, is_mock=True,
+        ))
+        db.commit()
         return {
-            "order_id": f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}",
+            "order_id": order_id,
             "amount": amount_paise,
             "currency": "INR",
             "key_id": "mock_key"
@@ -67,11 +77,16 @@ def create_payment_order(order: OrderCreate, current_user: models.User = Depends
         "amount": amount_paise,
         "currency": "INR",
         "receipt": f"receipt_user_{current_user.id}",
-        # "notes": { "user_id": str(current_user.id) } 
+        # "notes": { "user_id": str(current_user.id) }
     }
-    
+
     try:
         razorpay_order = client.order.create(data=data)
+        db.add(models.PaymentOrder(
+            order_id=razorpay_order['id'], user_id=current_user.id,
+            amount_paise=razorpay_order['amount'], is_mock=False,
+        ))
+        db.commit()
         return {
             "order_id": razorpay_order['id'],
             "amount": razorpay_order['amount'],
@@ -86,19 +101,27 @@ def create_payment_order(order: OrderCreate, current_user: models.User = Depends
 def verify_payment(data: PaymentVerification, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     try:
         amount_paid_inr = 0.0
-        
+
+        # Every order (mock or real) is persisted at creation time in
+        # POST /payment/order — look it up rather than trusting anything
+        # derived from the client-supplied order id string.
+        order = db.query(models.PaymentOrder).filter(
+            models.PaymentOrder.order_id == data.razorpay_order_id
+        ).first()
+        if not order:
+            raise HTTPException(status_code=400, detail="Unknown order")
+        if order.user_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Order does not belong to this account")
+        if order.consumed:
+            return {"message": "Payment already processed", "status": "success"}
+
         # Check if Mock Order
         if data.razorpay_order_id.startswith("order_mock_"):
             if not mock_payments_enabled():
                 raise HTTPException(status_code=400, detail="Mock payments are disabled in this environment")
             print(f"Processing Mock Payment: {data.razorpay_order_id}")
-            # Try to extract the amount from order_id (format: order_mock_{amount_paise}_{uuid})
-            parts = data.razorpay_order_id.split("_")
-            if len(parts) >= 3 and parts[2].isdigit():
-                amount_paid_inr = float(parts[2]) / 100.0
-            else:
-                amount_paid_inr = 100.0 # Default fallback test amount
-        
+            amount_paid_inr = order.amount_paise / 100.0
+
         else:
             # Verify Signature
             params_dict = {
@@ -149,11 +172,19 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             gateway_payment_id=data.razorpay_payment_id
         )
         db.add(txn)
-        
-        db.commit()
-        
+        order.consumed = True
+
+        try:
+            db.commit()
+        except IntegrityError:
+            # Lost the race to a concurrent request crediting the same order
+            # (unique index on reference_id for PAYMENT_GATEWAY transactions) —
+            # the other request's credit stands, this one is a no-op.
+            db.rollback()
+            return {"message": "Payment already processed", "status": "success"}
+
         return {"message": "Payment successful", "status": "success", "new_balance": wallet.balance}
-        
+
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -225,7 +256,13 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
     db.add(txn)
     audit.log(db, "WALLET_TOPPED_UP_VIA_WEBHOOK", resource_type="user", resource_id=user_id,
               details={"amount": amount_inr, "order_id": order_id, "payment_id": payment_id})
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lost the race to a concurrent /payment/verify (or a webhook retry)
+        # crediting the same order — the other request's credit stands.
+        db.rollback()
+        return {"status": "already_processed"}
     return {"status": "ok"}
 
 
