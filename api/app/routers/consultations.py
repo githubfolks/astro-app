@@ -115,6 +115,7 @@ def _notify_astrologer_of_request(db: Session, consultation: models.Consultation
                 title="New consultation request",
                 body=f"{seeker_name} wants to chat with you.",
                 data={"consultation_id": str(consultation.id), "type": "NEW_REQUEST"},
+                android_channel_id="knock_alerts",
             )
     except Exception as e:
         print(f"push notify failed: {e}")

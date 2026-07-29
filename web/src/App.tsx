@@ -135,11 +135,11 @@ const NativeInitializer: React.FC = () => {
             }
         });
 
-        // Tapping a "knock" ring push should take the astrologer straight to their queue
+        // Tapping a "knock" ring push (or a new consultation request) should take the astrologer straight to their queue
         let pushHandler: Promise<{ remove: () => void }> | undefined;
         import('@capacitor/push-notifications').then(({ PushNotifications }) => {
             pushHandler = PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-                if (action.notification.data?.type === 'KNOCK') {
+                if (action.notification.data?.type === 'KNOCK' || action.notification.data?.type === 'NEW_REQUEST') {
                     navigate('/dashboard');
                 }
             });
