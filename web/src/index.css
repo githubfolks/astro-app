@@ -150,6 +150,14 @@ a {
   padding-bottom: calc(70px + var(--safe-area-bottom, 0px));
 }
 
+/* The exclusion above only worked in theory: this selector actually enforces it.
+   .home-page nests <main> directly above <Footer>, and .native-footer already
+   reserves its own nav clearance, so leaving main's padding-bottom in place
+   doubled the gap right before the footer. */
+.native-app .home-page main {
+  padding-bottom: 0;
+}
+
 /* Always show mobile nav on native (override md:hidden) */
 .native-app .mobile-bottom-nav {
   display: block !important;
