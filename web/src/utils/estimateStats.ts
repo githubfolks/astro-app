@@ -5,7 +5,7 @@
  * (doesn't shift on re-render or page reload) while still varying per astrologer.
  */
 export function estimateConsultations(astrologerId: number, experienceYears: number): number {
-    const seed = Math.sin(astrologerId * 12.9898) * 43758.5453;
+    const seed = Math.sin((astrologerId || 0) * 12.9898) * 43758.5453;
     const fraction = seed - Math.floor(seed);
     const years = Math.max(experienceYears || 0, 1);
     const estimate = 1000 + years * 180 + fraction * 600;
