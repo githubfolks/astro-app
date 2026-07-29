@@ -112,6 +112,10 @@ class AstrologerProfile(Base):
     is_trending = Column(Boolean, default=False, nullable=False, server_default='false')
     onboarding_stage = Column(Enum(OnboardingStage), default=OnboardingStage.APPLIED, nullable=False)
     onboarding_meta = Column(JSON, nullable=True)  # Last-entered email fields per step, for card re-display
+    # Stall reminders — reset whenever onboarding_stage changes (see advance_onboarding).
+    onboarding_stage_updated_at = Column(DateTime(timezone=True), nullable=True)
+    onboarding_reminder_count = Column(Integer, default=0, nullable=False, server_default='0')
+    onboarding_reminder_last_sent_at = Column(DateTime(timezone=True), nullable=True)
     legal_agreement_accepted = Column(Boolean, default=False)
     legal_agreement_accepted_at = Column(DateTime(timezone=True), nullable=True)
 

@@ -334,10 +334,13 @@ def request_astrologer_missing_info(user_id: int, request: RequestMissingInfoReq
     user = db.query(models.User).filter(models.User.id == user_id, models.User.role == models.UserRole.ASTROLOGER).first()
     if not user:
         raise HTTPException(status_code=404, detail="Astrologer not found")
-        
-    subject, body = build_profile_incomplete_email(user.full_name, request.missing_items)
-    background_tasks.add_task(send_email, user.email, subject, body)
-    
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    subject, body = build_profile_incomplete_email(profile.full_name, request.missing_items)
+    send_email(background_tasks, [user.email], subject, body)
+
     return {"message": "Request for missing info sent successfully"}
 
 # Specific endpoint to create an Admin (only by another admin)
@@ -985,6 +988,10 @@ def advance_onboarding(
 
     target = request.target_stage
     profile.onboarding_stage = target
+    # Restart the stall clock and reminder count for the new stage.
+    profile.onboarding_stage_updated_at = datetime.utcnow()
+    profile.onboarding_reminder_count = 0
+    profile.onboarding_reminder_last_sent_at = None
 
     # Persist the entered email fields for card re-display.
     meta = dict(profile.onboarding_meta or {})

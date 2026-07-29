@@ -230,6 +230,15 @@ def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Se
     # Premium astrologers always surface first, regardless of the secondary sort.
     if sort_by == 'rating':
         query = query.order_by(models.AstrologerProfile.is_premium.desc(), models.AstrologerProfile.rating_avg.desc())
+    elif sort_by == 'top':
+        # Rating-led ranking (e.g. the "Talk to a Verified Astrologer" panel):
+        # rating first, then the trending/VIP/premium badges only as tiebreakers.
+        query = query.order_by(
+            models.AstrologerProfile.rating_avg.desc(),
+            models.AstrologerProfile.is_trending.desc(),
+            models.AstrologerProfile.is_vip.desc(),
+            models.AstrologerProfile.is_premium.desc(),
+        )
     else:
         query = query.order_by(models.AstrologerProfile.is_premium.desc())
 

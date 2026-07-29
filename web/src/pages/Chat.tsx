@@ -634,7 +634,7 @@ export const Chat: React.FC = () => {
 
     if (astrologerId && !consultationId) {
         return (
-            <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+            <div className="chat-slide-in flex flex-col min-h-screen bg-[#FFF9F0]">
                 <Header />
                 <div className="flex-1 flex flex-col items-center justify-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E91E63] mb-4"></div>
@@ -655,7 +655,7 @@ export const Chat: React.FC = () => {
 
     return (
         <div
-            className="fixed inset-0 flex flex-col overflow-hidden bg-[#FFF9F0]"
+            className="chat-slide-in fixed inset-0 flex flex-col overflow-hidden bg-[#FFF9F0]"
             style={{
                 height: viewportHeight,
                 top: window.visualViewport?.offsetTop || 0

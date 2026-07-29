@@ -104,8 +104,9 @@ const AiAstrologer: React.FC = () => {
 
     // Verified astrologers shown in the panel beside the chat
     const [verifiedAstros, setVerifiedAstros] = useState<AstrologerListItem[]>([]);
+    const [brokenAvatarIds, setBrokenAvatarIds] = useState<Set<number>>(new Set());
     useEffect(() => {
-        api.astrologers.list(0, 5, 'rating')
+        api.astrologers.list(0, 5, 'top')
             .then(data => { if (Array.isArray(data)) setVerifiedAstros(data); })
             .catch(() => { /* panel is optional — hide it if the fetch fails */ });
     }, []);
@@ -395,14 +396,21 @@ const AiAstrologer: React.FC = () => {
                                             className="flex items-center gap-3 bg-white/5 hover:bg-white/15 border border-white/10 rounded-2xl p-3 transition-all"
                                         >
                                             <div className="relative shrink-0">
-                                                {a.profile_picture_url ? (
-                                                    <img src={a.profile_picture_url} alt={getAstrologerDisplayName(a)} className="w-11 h-11 rounded-xl object-cover" />
+                                                {a.profile_picture_url && !brokenAvatarIds.has(a.user_id) ? (
+                                                    <img
+                                                        src={a.profile_picture_url}
+                                                        alt={getAstrologerDisplayName(a)}
+                                                        className="w-11 h-11 rounded-xl object-cover"
+                                                        onError={() => setBrokenAvatarIds(prev => new Set(prev).add(a.user_id))}
+                                                    />
                                                 ) : (
                                                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold">
                                                         {getAstrologerDisplayName(a).charAt(0)}
                                                     </div>
                                                 )}
-                                                {a.is_online && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-indigo-950"></span>}
+                                                {(a.availability_status || (a.is_online ? 'ONLINE' : 'OFFLINE')) === 'ONLINE' && (
+                                                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-indigo-950"></span>
+                                                )}
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <p className="text-white text-sm font-semibold truncate">{getAstrologerDisplayName(a)}</p>

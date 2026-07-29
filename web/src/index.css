@@ -371,6 +371,27 @@ a {
   }
 }
 
+/* Chat page slide-in — makes "Start Chat" feel like it opens over the
+   current page rather than a hard navigation jump. */
+.chat-slide-in {
+  animation: chat-slide-in 280ms ease-out;
+}
+
+@keyframes chat-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-slide-in {
+    animation: none;
+  }
+}
+
 /* Premium Marketing Page Styles */
 .gradient-text {
   background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);

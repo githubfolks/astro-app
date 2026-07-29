@@ -395,6 +395,41 @@ def build_onboarding_started_email(name: str) -> Tuple[str, str]:
     )
 
 
+# Friendly "what's left" copy per stage, keyed by OnboardingStage.value so the
+# router doesn't need to import the enum just to build a reminder email.
+_ONBOARDING_STAGE_NUDGE = {
+    "APPLIED": "we're still reviewing your application",
+    "INTERVIEW_SCHEDULED": "your interview is scheduled but hasn't been completed yet",
+    "PROFILE_ACTIVATED": "your profile has been activated, but you haven't started onboarding yet",
+    "ONBOARDING_INTIMATED": "we're waiting for you to begin onboarding",
+    "ONBOARDING_STARTED": "your onboarding checklist (personal details, contract, KYC documents) is still incomplete",
+    "TRAINING_SCHEDULED": "your growth &amp; training meeting hasn't been completed yet",
+}
+
+
+def build_onboarding_reminder_email(name: str, stage_value: str) -> Tuple[str, str]:
+    """Nudge for an astrologer stalled at `stage_value` for 5+ days (sent up to 3 times)."""
+    nudge = _ONBOARDING_STAGE_NUDGE.get(stage_value, "your onboarding is still incomplete")
+    content = f"""
+      {_greeting(name, word="Hello")}
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        It's been a few days since we last heard from you, and {nudge}. We'd love to have you fully
+        onboarded and live on {APP_NAME}!
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Please log in and complete the remaining steps at your earliest convenience so we can get you
+        started with consultations.
+      </p>
+      {_button("Continue Onboarding", f"{FRONTEND_URL}/login")}
+      <p style="margin:0 0 16px 0;font-size:14px;line-height:24px;color:#6b7280;">
+        If you need any help or have questions, just reply to this email and we'll be happy to assist.
+      </p>
+      {_signoff()}"""
+    return f"{APP_NAME} - Complete your onboarding", _layout(
+        "Your onboarding is waiting", content, preheader=f"Finish setting up your {APP_NAME} astrologer profile"
+    )
+
+
 def build_growth_meeting_email(
     name: str, day: str, date: str, time: str, timezone: str, meeting_link: str
 ) -> Tuple[str, str]:
