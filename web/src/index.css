@@ -100,6 +100,9 @@ a {
 }
 
 /* ============ Mobile Native App Styles ============ */
+/* .native-app is applied on <body> both inside the Capacitor native shell AND on
+   narrow (<768px) browser viewports, so mobile web matches the native app's
+   fonts/spacing. See AppModeClass in App.tsx. */
 
 /* Safe area padding for devices with notch / home indicator */
 .native-app {
@@ -345,6 +348,73 @@ a {
    nested .container/section wrappers */
 .native-app .container {
   padding: 0 16px;
+}
+
+/* Authenticated app shell (Layout.tsx nav, Dashboard.tsx <main>) compaction.
+   These pages are built from raw Tailwind utility classes with no semantic
+   hooks, so we override the utility classes directly, scoped to the
+   dashboard wrapper, rather than touching every card in the JSX. */
+.native-app .dashboard-nav {
+  padding: 10px 16px;
+}
+
+.native-app .dashboard-nav h1 {
+  font-size: 18px;
+}
+
+.native-app main.dashboard-main {
+  padding: 16px;
+}
+
+.native-app .dashboard-main .p-6,
+.native-app .dashboard-main .p-8 {
+  padding: 16px;
+}
+
+.native-app .dashboard-main .px-6 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.native-app .dashboard-main .py-6 {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.native-app .dashboard-main .gap-8 {
+  gap: 12px;
+}
+
+.native-app .dashboard-main .gap-6 {
+  gap: 10px;
+}
+
+.native-app .dashboard-main .mb-8 {
+  margin-bottom: 16px;
+}
+
+.native-app .dashboard-main .mt-8 {
+  margin-top: 16px;
+}
+
+.native-app .dashboard-main .space-y-8 > * + * {
+  margin-top: 16px;
+}
+
+.native-app .dashboard-main .text-3xl {
+  font-size: 20px;
+}
+
+.native-app .dashboard-main .text-2xl {
+  font-size: 17px;
+}
+
+.native-app .dashboard-main .text-xl {
+  font-size: 15px;
+}
+
+.native-app .dashboard-main h2 + p {
+  font-size: 13px;
 }
 
 /* Loading screen for auth initialization */

@@ -15,7 +15,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
     return (
         <div className="min-h-screen bg-gray-900 text-white">
-            <nav className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center sticky top-0 z-50">
+            <nav className="dashboard-nav bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center sticky top-0 z-50">
                 <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
                         Aadikarta
@@ -43,7 +43,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </div>
             </nav>
 
-            <main className="container mx-auto p-6">
+            <main className="dashboard-main container mx-auto p-6">
                 {children}
             </main>
         </div>

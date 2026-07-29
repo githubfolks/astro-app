@@ -216,7 +216,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
                 )}
-                <main className={`flex-1 container mx-auto p-6 md:p-8`}>
+                <main className={`dashboard-main flex-1 container mx-auto p-6 md:p-8`}>
                     {missingOnboardingItems.length > 0 && (
                         <a
                             href="#astrologer-onboarding-panel"
@@ -608,7 +608,7 @@ export const Dashboard: React.FC = () => {
         return (
             <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
                 <Header />
-                <main className="flex-1 container mx-auto p-6 md:p-8">
+                <main className="dashboard-main flex-1 container mx-auto p-6 md:p-8">
                     <div className="text-center md:text-left mb-8">
                         <h2 className="text-3xl text-gray-900 mb-2">Welcome, {user?.full_name || 'Tutor'}</h2>
                         <p className="text-gray-600">Manage your live classes and sessions.</p>
@@ -754,7 +754,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                 </div>
             )}
-            <main className={`flex-1 container mx-auto p-6 md:p-8`}>
+            <main className={`dashboard-main flex-1 container mx-auto p-6 md:p-8`}>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8 order-2 lg:order-none">

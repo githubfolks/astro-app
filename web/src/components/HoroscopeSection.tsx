@@ -35,12 +35,12 @@ const HoroscopeSection: React.FC = () => {
             <div className="absolute bottom-[-100px] right-[-100px] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none"></div>
 
             <div className="container mx-auto px-4 relative z-10">
-                <div className="max-w-3xl mx-auto mb-16 text-center" data-aos="fade-up">
+                <div className="horoscope-heading max-w-3xl mx-auto mb-16 text-center" data-aos="fade-up">
                     <span className="text-amber-500 font-semibold uppercase tracking-widest text-sm mb-4 block">Cosmic Forecast</span>
-                    <h2 className="text-3xl md:text-4xl text-white mb-6">
+                    <h2 className="horoscope-title text-3xl md:text-4xl text-white mb-6">
                         Explore Your Daily <span className="text-amber-500">Horoscope</span>
                     </h2>
-                    <p className="text-xl text-gray-400 leading-relaxed">
+                    <p className="horoscope-description text-xl text-gray-400 leading-relaxed">
                         Discover what the stars have in store for you today. Select your zodiac sign for personalized guidance on love, career, and spiritual energy.
                     </p>
                 </div>

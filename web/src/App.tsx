@@ -2,7 +2,7 @@ import React, { useEffect, useState, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { RealtimeProvider } from './context/RealtimeContext';
-import { isNative, getPlatform } from './utils/platform';
+import { isNative, isMobileViewport, useIsMobileViewport, getPlatform } from './utils/platform';
 import { storage } from './utils/storage';
 import { App as CapApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -16,8 +16,9 @@ const MobileHome = lazy(() => import('./pages/MobileHome'));
 const AstrologerHome = lazy(() => import('./pages/AstrologerHome'));
 const HomeRoute: React.FC = () => {
     const { user } = useAuth();
+    const isMobile = useIsMobileViewport();
     if (user?.role === 'ASTROLOGER') return <AstrologerHome />;
-    return isNative() ? <MobileHome /> : <Home />;
+    return (isNative() || isMobile) ? <MobileHome /> : <Home />;
 };
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const Login = lazy(() => import('./pages/Login').then(module => ({ default: module.Login })));
@@ -91,6 +92,23 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <React.Fragment>{children}</React.Fragment>;
 };
 
+// Toggles the compact-mobile-UI body class for the native shell AND narrow browser
+// viewports, so mobile web gets the same fonts/spacing as the native app.
+const AppModeClass: React.FC = () => {
+    useEffect(() => {
+        const update = () => {
+            document.body.classList.toggle('native-app', isNative() || isMobileViewport());
+        };
+        update();
+
+        const mql = window.matchMedia('(max-width: 767px)');
+        mql.addEventListener('change', update);
+        return () => mql.removeEventListener('change', update);
+    }, []);
+
+    return null;
+};
+
 // Native initialization & back button handling
 const NativeInitializer: React.FC = () => {
     const navigate = useNavigate();
@@ -98,9 +116,6 @@ const NativeInitializer: React.FC = () => {
     useEffect(() => {
 
         if (!isNative()) return;
-
-        // Add native-app class to body
-        document.body.classList.add('native-app');
 
         // Configure status bar
         StatusBar.setStyle({ style: Style.Light }).catch(() => { });
@@ -169,6 +184,7 @@ function App() {
             <AuthProvider>
                 <RealtimeProvider>
                     <ScrollToTop />
+                    <AppModeClass />
                     <NativeInitializer />
                     <OnboardingGate>
                     <Suspense fallback={<PageLoader />}>

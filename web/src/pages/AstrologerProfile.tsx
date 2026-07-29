@@ -248,7 +248,7 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-1 text-gray-300">
                                         <Users size={16} />
-                                        <span>{astrologer.total_consultations || estimateConsultations(astrologer.user_id, astrologer.experience_years)}+ Consultations</span>
+                                        <span>{astrologer.total_consultations || estimateConsultations(astrologer.user_id || 0, astrologer.experience_years || 5)}+ Consultations</span>
                                     </div>
                                 </div>
 
@@ -411,7 +411,7 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Consultations</span>
-                                        <span className="font-bold text-gray-900">{astrologer.total_consultations || estimateConsultations(astrologer.user_id, astrologer.experience_years)}+</span>
+                                        <span className="font-bold text-gray-900">{astrologer.total_consultations || estimateConsultations(astrologer.user_id || 0, astrologer.experience_years || 5)}+</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Rating</span>

@@ -118,3 +118,41 @@
     font-weight: 600;
     color: #ffffff;
 }
+
+/* Native app / mobile web: compact widget instead of full desktop-scale marketing block */
+.native-app .panchang-heading {
+    margin-bottom: 20px;
+}
+
+.native-app .panchang-title {
+    font-size: 20px;
+    margin-bottom: 6px;
+}
+
+.native-app .panchang-description {
+    font-size: 13px;
+}
+
+.native-app .panchang-grid {
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.native-app .astro-time-card {
+    padding: 12px;
+    border-radius: 14px;
+}
+
+.native-app .astro-time-card .icon-wrapper {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 8px;
+}
+
+.native-app .astro-time-card .label {
+    font-size: 10px;
+}
+
+.native-app .astro-time-card .value {
+    font-size: 14px;
+}

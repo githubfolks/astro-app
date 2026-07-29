@@ -137,3 +137,59 @@
         gap: 15px;
     }
 }
+
+/* Native app / mobile web: compact section instead of full desktop-scale marketing block */
+.native-app .horoscope-section {
+    padding: 32px 0;
+}
+
+.native-app .horoscope-heading {
+    margin-bottom: 24px;
+}
+
+.native-app .horoscope-title {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.native-app .horoscope-description {
+    font-size: 14px;
+}
+
+.native-app .zodiac-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.native-app .zodiac-card {
+    padding: 14px 8px;
+    border-radius: 14px;
+}
+
+.native-app .zodiac-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 8px;
+    font-size: 26px;
+}
+
+.native-app .zodiac-name {
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.native-app .zodiac-translation {
+    font-size: 11px;
+    margin-bottom: 5px;
+}
+
+.native-app .zodiac-dates {
+    font-size: 10px;
+    margin-bottom: 8px;
+}
+
+.native-app .zodiac-element {
+    font-size: 9px;
+    padding: 2px 6px;
+}

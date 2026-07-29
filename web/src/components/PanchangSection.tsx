@@ -97,12 +97,12 @@ const PanchangSection: React.FC = () => {
 
     return (
         <div className="panchang-widget relative z-10" data-aos="fade-up">
-            <div className="mb-12 text-center">
+            <div className="panchang-heading mb-12 text-center">
                 <span className="text-amber-500 font-semibold uppercase tracking-widest text-sm mb-3 block">Daily Almanac</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                <h2 className="panchang-title text-3xl md:text-4xl font-bold text-white mb-4">
                     Today's <span className="text-amber-500">Panchang</span>
                 </h2>
-                <p className="text-gray-400 max-w-xl mx-auto">
+                <p className="panchang-description text-gray-400 max-w-xl mx-auto">
                     Real-time Vedic calculations for your location including Tithi, Nakshatra, and auspicious timings.
                 </p>
 
@@ -137,7 +137,7 @@ const PanchangSection: React.FC = () => {
             ) : panchang ? (
                 <div className="w-full">
                     {/* Sun + Tithi/Nakshatra Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="panchang-grid grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div className="astro-time-card">
                             <div className="icon-wrapper sun"><Sun size={20} /></div>
                             <span className="label">Sunrise</span>
