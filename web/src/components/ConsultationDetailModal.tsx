@@ -4,6 +4,7 @@ import type { Consultation, ChatHistoryItem, ChartData, MatchData } from '../typ
 import { api } from '../services/api';
 import { KundliContent } from './KundliPanel';
 import { MatchContent } from './MatchPanel';
+import { resolveImageUrl } from '../utils/url';
 
 interface Props {
     consultation: Consultation | null;
@@ -20,7 +21,8 @@ const formatDuration = (totalSeconds?: number) => {
 const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => {
     const [messages, setMessages] = useState<ChatHistoryItem[]>([]);
     const [loading, setLoading] = useState(false);
-    
+    const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+
     type TabType = 'transcript' | 'details' | 'kundli' | 'compatibility';
     const [activeTab, setActiveTab] = useState<TabType>('transcript');
 
@@ -189,20 +191,36 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
                                 <div className="space-y-3 pr-1 p-3 rounded-xl border border-gray-100" style={{ backgroundColor: '#F9FAFB' }}>
                                     {messages.map((msg) => {
                                         const isSeeker = msg.sender_id === consultation.seeker_id;
+                                        const isImage = msg.message_type === 'image' && !!msg.media_url;
                                         return (
                                             <div key={msg.id} className={`flex flex-col ${isSeeker ? 'items-start' : 'items-end'}`}>
                                                 <span className="text-[10px] font-bold mb-0.5" style={{ color: '#4B5563' }}>
                                                     {isSeeker ? (consultation.seeker_profile?.full_name || 'Seeker') : 'You'}
                                                 </span>
-                                                <div 
-                                                    className="px-4 py-2.5 rounded-2xl text-sm max-w-[85%] font-medium leading-relaxed"
-                                                    style={isSeeker 
-                                                        ? { backgroundColor: '#E5E7EB', color: '#111827', border: '1px solid #D1D5DB', borderTopLeftRadius: '0px' } 
-                                                        : { backgroundColor: '#E91E63', color: '#FFFFFF', borderTopRightRadius: '0px' }
-                                                    }
-                                                >
-                                                    {msg.message}
-                                                </div>
+                                                {isImage ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setPreviewImageUrl(resolveImageUrl(msg.media_url))}
+                                                        className="p-1.5 rounded-2xl max-w-[85%]"
+                                                        style={{ backgroundColor: '#E5E7EB', border: '1px solid #D1D5DB' }}
+                                                    >
+                                                        <img
+                                                            src={resolveImageUrl(msg.media_url)}
+                                                            alt={msg.message || 'Shared image'}
+                                                            className="rounded-lg max-w-full max-h-56 object-contain bg-white"
+                                                        />
+                                                    </button>
+                                                ) : (
+                                                    <div
+                                                        className="px-4 py-2.5 rounded-2xl text-sm max-w-[85%] font-medium leading-relaxed"
+                                                        style={isSeeker
+                                                            ? { backgroundColor: '#E5E7EB', color: '#111827', border: '1px solid #D1D5DB', borderTopLeftRadius: '0px' }
+                                                            : { backgroundColor: '#E91E63', color: '#FFFFFF', borderTopRightRadius: '0px' }
+                                                        }
+                                                    >
+                                                        {msg.message}
+                                                    </div>
+                                                )}
                                                 <span className="text-[9px] mt-1 font-semibold" style={{ color: '#6B7280' }}>
                                                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
@@ -323,6 +341,29 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
 
                 </div>
             </div>
+
+            {/* In-app image preview — never open a new tab/browser, which on the
+                mobile build would leave the WebView. */}
+            {previewImageUrl && (
+                <div
+                    className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                    onClick={(e) => { e.stopPropagation(); setPreviewImageUrl(null); }}
+                >
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setPreviewImageUrl(null); }}
+                        className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                        aria-label="Close"
+                    >
+                        <X size={22} />
+                    </button>
+                    <img
+                        src={previewImageUrl}
+                        alt="Shared image"
+                        onClick={e => e.stopPropagation()}
+                        className="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+                    />
+                </div>
+            )}
         </div>
     );
 };

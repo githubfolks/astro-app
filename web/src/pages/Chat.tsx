@@ -66,6 +66,7 @@ export const Chat: React.FC = () => {
         }
     };
     const [showRatingModal, setShowRatingModal] = useState(false);
+    const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
     const [showKundli, setShowKundli] = useState(false);
     const [kundliData, setKundliData] = useState<ChartData | null>(null);
     const [kundliLoading, setKundliLoading] = useState(false);
@@ -1234,13 +1235,17 @@ export const Chat: React.FC = () => {
                                             : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
                                             }`}>
                                             {isImage ? (
-                                                <a href={resolveImageUrl(msg.media_url)} target="_blank" rel="noopener noreferrer">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPreviewImageUrl(resolveImageUrl(msg.media_url))}
+                                                    className="block w-full"
+                                                >
                                                     <img
                                                         src={resolveImageUrl(msg.media_url)}
                                                         alt={msg.content || 'Kundli Chart'}
                                                         className="rounded-lg max-w-full max-h-64 object-contain bg-white"
                                                     />
-                                                </a>
+                                                </button>
                                             ) : (
                                                 <p className="text-sm md:text-base leading-relaxed">{translation || msg.content}</p>
                                             )}
@@ -1334,6 +1339,29 @@ export const Chat: React.FC = () => {
                 onSubmit={handleSubmitReview}
                 onSkip={handleSkipReview}
             />
+
+            {/* Shared-image preview — opened in-app instead of a new browser tab,
+                which on the mobile build would leave the WebView and strand the chat. */}
+            {previewImageUrl && (
+                <div
+                    className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+                    onClick={() => setPreviewImageUrl(null)}
+                >
+                    <button
+                        onClick={() => setPreviewImageUrl(null)}
+                        className="absolute top-4 right-4 md:top-6 md:right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                        aria-label="Close"
+                    >
+                        <X size={22} />
+                    </button>
+                    <img
+                        src={previewImageUrl}
+                        alt="Shared image"
+                        onClick={e => e.stopPropagation()}
+                        className="max-w-full max-h-full rounded-lg shadow-2xl object-contain"
+                    />
+                </div>
+            )}
 
         </div>
     );

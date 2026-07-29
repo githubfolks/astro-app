@@ -10,6 +10,7 @@ import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
 import RatingModal from '../components/RatingModal';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
+import SeekerChatTranscriptModal from '../components/SeekerChatTranscriptModal';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
@@ -34,6 +35,7 @@ export const Dashboard: React.FC = () => {
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [showRatingModal, setShowRatingModal] = useState(false);
     const [detailConsultation, setDetailConsultation] = useState<Consultation | null>(null);
+    const [transcriptConsultation, setTranscriptConsultation] = useState<Consultation | null>(null);
     const [ratingConsultation, setRatingConsultation] = useState<Consultation | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -755,7 +757,7 @@ export const Dashboard: React.FC = () => {
             <main className={`flex-1 container mx-auto p-6 md:p-8`}>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-2 space-y-8 order-2 lg:order-none">
                         {/* Past Consultations */}
                         <div>
                             <h3 className="text-xl font-bold text-gray-900 mt-2 mb-4 flex items-center gap-2">
@@ -947,15 +949,16 @@ export const Dashboard: React.FC = () => {
                                                             <div className="text-base md:text-lg font-bold text-gray-900">₹{Number(c.total_cost || 0).toFixed(2)}</div>
                                                             <div className="text-xs text-gray-900">@₹{Number(c.rate_per_min || 0)}/min</div>
 
-                                                            {c.status === 'COMPLETED' ? (
-                                                                <div className="mt-2">
-                                                                    {c.review ? (
+                                                            {['COMPLETED', 'AUTO_ENDED'].includes(c.status) ? (
+                                                                <div className="mt-2 flex flex-col items-end gap-1">
+                                                                    {c.review && (
                                                                         <div className="flex items-center justify-end gap-1 text-yellow-600">
                                                                             {[...Array(5)].map((_, i) => (
                                                                                 <Star key={i} size={16} fill={i < (c.review?.rating || 0) ? 'currentColor' : 'none'} />
                                                                             ))}
                                                                         </div>
-                                                                    ) : (
+                                                                    )}
+                                                                    {c.status === 'COMPLETED' && !c.review && (
                                                                         <button
                                                                             onClick={() => openRating(c)}
                                                                             className="text-sm text-[#E91E63] font-semibold hover:underline"
@@ -963,6 +966,12 @@ export const Dashboard: React.FC = () => {
                                                                             Rate Now
                                                                         </button>
                                                                     )}
+                                                                    <button
+                                                                        onClick={() => setTranscriptConsultation(c)}
+                                                                        className="text-xs text-gray-500 font-semibold hover:text-[#E91E63] hover:underline flex items-center gap-1"
+                                                                    >
+                                                                        <Eye size={12} /> View Chat
+                                                                    </button>
                                                                 </div>
                                                             ) : c.status === 'REQUESTED' ? (
                                                                 <div className="mt-2 text-sm font-semibold text-gray-500">
@@ -1008,7 +1017,7 @@ export const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Sidebar - Wallet & Profile */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-1 space-y-6 order-1 lg:order-none">
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <Wallet className="text-[#E91E63]" size={20} />
@@ -1130,6 +1139,12 @@ export const Dashboard: React.FC = () => {
                 astrologerName={ratingConsultation?.astrologer_profile ? getAstrologerDisplayName(ratingConsultation.astrologer_profile) : 'Astrologer'}
                 onSubmit={handleReviewSubmit}
                 onSkip={() => { setShowRatingModal(false); setRatingConsultation(null); }}
+            />
+
+            {/* Past Chat Transcript (Seeker) */}
+            <SeekerChatTranscriptModal
+                consultation={transcriptConsultation}
+                onClose={() => setTranscriptConsultation(null)}
             />
         </div>
     );

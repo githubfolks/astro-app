@@ -14,6 +14,12 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // AndroidManifest.xml sets this activity's theme to AppTheme.NoActionBarLaunch
+        // (the splash-screen theme) so the splash background/icon show correctly on
+        // launch. Once the activity is actually created, switch to the real app theme
+        // (no ActionBar) — otherwise the splash theme's default ActionBar sticks around
+        // for the whole session, showing a native title bar above the WebView content.
+        setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
         createKnockNotificationChannel();
     }
