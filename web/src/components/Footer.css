@@ -286,6 +286,7 @@
 /* Minimal native app footer */
 .native-app .native-footer {
     padding: 28px 0 24px;
+    padding-bottom: calc(70px + var(--safe-area-bottom, 0px));
 }
 
 .native-app .native-footer .footer-logo {

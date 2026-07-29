@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
+import { estimateConsultations } from '../utils/estimateStats';
 import SEO from '../components/SEO';
 
 const AstrologerProfile: React.FC = () => {
@@ -247,7 +248,7 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-1 text-gray-300">
                                         <Users size={16} />
-                                        <span>{astrologer.total_consultations || 500}+ Consultations</span>
+                                        <span>{astrologer.total_consultations || estimateConsultations(astrologer.id, astrologer.experience_years)}+ Consultations</span>
                                     </div>
                                 </div>
 
@@ -410,7 +411,7 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Consultations</span>
-                                        <span className="font-bold text-gray-900">{astrologer.total_consultations || 500}+</span>
+                                        <span className="font-bold text-gray-900">{astrologer.total_consultations || estimateConsultations(astrologer.id, astrologer.experience_years)}+</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Rating</span>

@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat } from '../hooks/useChat';
 import { useSpeechToText } from '../hooks/useSpeechToText';
+import { useTextSuggestions, getWordAtCursor } from '../hooks/useTextSuggestions';
+import { estimateConsultations } from '../utils/estimateStats';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -379,17 +381,66 @@ export const Chat: React.FC = () => {
         if (input.trim()) {
             sendMessage(input);
             setInput('');
+            setSuggestions([]);
+            setSuggestionTarget(null);
         }
     };
 
     const lastTyped = useRef(0);
+    const messageInputRef = useRef<HTMLInputElement>(null);
+    const { getSuggestions } = useTextSuggestions();
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [suggestionTarget, setSuggestionTarget] = useState<{ start: number; end: number } | null>(null);
+
+    const updateSuggestions = (value: string, cursor: number) => {
+        const atCursor = getWordAtCursor(value, cursor);
+        if (atCursor.word.length >= 2) {
+            setSuggestions(getSuggestions(atCursor.word, false));
+            setSuggestionTarget({ start: atCursor.start, end: atCursor.end });
+            return;
+        }
+        // Cursor sits right after a just-finished word (e.g. a space was typed) — spell-check it.
+        let pos = cursor;
+        while (pos > 0 && /[^a-zA-Z']/.test(value[pos - 1])) pos--;
+        if (pos > 0) {
+            const prev = getWordAtCursor(value, pos);
+            if (prev.word.length >= 2) {
+                const corrections = getSuggestions(prev.word, true);
+                setSuggestions(corrections);
+                setSuggestionTarget(corrections.length ? { start: prev.start, end: prev.end } : null);
+                return;
+            }
+        }
+        setSuggestions([]);
+        setSuggestionTarget(null);
+    };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInput(e.target.value);
+        const value = e.target.value;
+        setInput(value);
+        updateSuggestions(value, e.target.selectionStart ?? value.length);
         const now = Date.now();
         if (now - lastTyped.current > 2000) {
             sendTyping();
             lastTyped.current = now;
         }
+    };
+
+    const applySuggestion = (word: string) => {
+        if (!suggestionTarget) return;
+        const { start, end } = suggestionTarget;
+        const before = input.slice(0, start);
+        const after = input.slice(end);
+        const insertion = after.startsWith(' ') ? word : `${word} `;
+        const newValue = before + insertion + after;
+        setInput(newValue);
+        setSuggestions([]);
+        setSuggestionTarget(null);
+        requestAnimationFrame(() => {
+            const pos = before.length + insertion.length;
+            messageInputRef.current?.setSelectionRange(pos, pos);
+            messageInputRef.current?.focus();
+        });
     };
 
     // Astrologer voice input: speak in Hindi, get Hinglish text appended to the composer.
@@ -1219,7 +1270,7 @@ export const Chat: React.FC = () => {
                                     <Megaphone size={16} className="flex-shrink-0 text-orange-500 mt-0.5" />
                                     <span>
                                         You are connected with <span className="font-bold">{astrologer.display_name || astrologer.full_name}</span>.{' '}
-                                        {astrologer.full_name.split(' ')[0]} has guided <span className="font-bold">{astrologer.total_consultations}+</span> people with {astrologer.specialties}.
+                                        {astrologer.full_name.split(' ')[0]} has guided <span className="font-bold">{astrologer.total_consultations || estimateConsultations(astrologer.id, astrologer.experience_years)}+</span> people with {astrologer.specialties}.
                                     </span>
                                 </div>
                             )}
@@ -1295,38 +1346,58 @@ export const Chat: React.FC = () => {
                         )}
 
                         {/* Input Area */}
-                        <form onSubmit={handleSend} className="chat-native-safe-bottom bg-white p-4 border-t border-gray-100 flex gap-3 flex-shrink-0">
-                            {user?.role === 'ASTROLOGER' && speech.isSupported && (
-                                <button
-                                    type="button"
-                                    onClick={toggleVoiceInput}
-                                    disabled={status === 'ENDED'}
-                                    title="Speak in Hindi — converted to Hinglish text"
-                                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${speech.isListening
-                                        ? 'bg-red-500 text-white animate-pulse'
-                                        : 'bg-gray-50 text-gray-900 border border-gray-200 hover:text-[#E91E63] hover:border-[#E91E63]'
-                                        }`}
-                                >
-                                    {speech.isListening ? <MicOff size={20} /> : <Mic size={20} />}
-                                </button>
+                        <form onSubmit={handleSend} className="chat-native-safe-bottom bg-white p-4 border-t border-gray-100 flex flex-col gap-2 flex-shrink-0">
+                            {suggestions.length > 0 && (
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                                    {suggestions.map((s) => (
+                                        <button
+                                            key={s}
+                                            type="button"
+                                            onMouseDown={(e) => e.preventDefault()}
+                                            onClick={() => applySuggestion(s)}
+                                            className="flex-shrink-0 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 text-sm text-gray-700 hover:border-[#E91E63] hover:text-[#E91E63] transition-colors"
+                                        >
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
                             )}
-                            <input
-                                type="text"
-                                value={input}
-                                onChange={handleInputChange}
-                                placeholder="Type your message..."
-                                spellCheck
-                                lang={chatLanguage === 'hi' ? 'hi' : 'en'}
-                                className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-6 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner"
-                                disabled={status === 'ENDED'}
-                            />
-                            <button
-                                type="submit"
-                                disabled={status === 'ENDED' || !input.trim()}
-                                className="bg-[#E91E63] hover:bg-pink-700 w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95 shadow-lg shadow-pink-200"
-                            >
-                                <Send size={20} />
-                            </button>
+                            <div className="flex gap-3">
+                                {user?.role === 'ASTROLOGER' && speech.isSupported && (
+                                    <button
+                                        type="button"
+                                        onClick={toggleVoiceInput}
+                                        disabled={status === 'ENDED'}
+                                        title="Speak in Hindi — converted to Hinglish text"
+                                        className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${speech.isListening
+                                            ? 'bg-red-500 text-white animate-pulse'
+                                            : 'bg-gray-50 text-gray-900 border border-gray-200 hover:text-[#E91E63] hover:border-[#E91E63]'
+                                            }`}
+                                    >
+                                        {speech.isListening ? <MicOff size={20} /> : <Mic size={20} />}
+                                    </button>
+                                )}
+                                <input
+                                    ref={messageInputRef}
+                                    type="text"
+                                    value={input}
+                                    onChange={handleInputChange}
+                                    onSelect={(e) => updateSuggestions(input, e.currentTarget.selectionStart ?? input.length)}
+                                    onBlur={() => { setSuggestions([]); setSuggestionTarget(null); }}
+                                    placeholder="Type your message..."
+                                    spellCheck
+                                    lang={chatLanguage === 'hi' ? 'hi' : 'en'}
+                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-6 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner"
+                                    disabled={status === 'ENDED'}
+                                />
+                                <button
+                                    type="submit"
+                                    disabled={status === 'ENDED' || !input.trim()}
+                                    className="bg-[#E91E63] hover:bg-pink-700 w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95 shadow-lg shadow-pink-200"
+                                >
+                                    <Send size={20} />
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>

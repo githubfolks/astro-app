@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 :root {
   --primary: #D97706;
   /* Darker Amber-600 for better contrast (7.36:1 vs white) */
@@ -129,8 +137,11 @@ a {
   padding-bottom: calc(var(--safe-area-bottom, 0px) + 1.5rem);
 }
 
-/* Add bottom spacing to page content for fixed bottom nav */
-.native-app .home-page,
+/* Add bottom spacing to page content for fixed bottom nav.
+   Deliberately excludes .home-page: Home.tsx/MobileHome.tsx nest both
+   <main> and <Footer> inside .home-page, and NativeFooter (Footer.css)
+   already reserves its own nav clearance — matching .home-page here would
+   double that spacing after the footer. */
 .native-app .page-content,
 .native-app main {
   padding-bottom: calc(70px + var(--safe-area-bottom, 0px));
