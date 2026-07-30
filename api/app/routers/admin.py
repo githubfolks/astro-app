@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
+from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 import shutil
 import uuid
@@ -11,6 +13,7 @@ from ..schemas import _validate_strong_password
 from .. import models_edu, schemas_edu
 from decimal import Decimal
 from .auth import get_current_admin, get_password_hash
+from ..services.wallet_limits import get_wallet_cap
 from ..services.email_service import (
     send_email,
     build_interview_scheduled_email,
@@ -26,6 +29,13 @@ from ..services.email_service import (
     ONBOARDING_CALENDAR_ATTENDEE,
 )
 import base64
+import io
+import csv
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 
 router = APIRouter(
     prefix="/admin",
@@ -709,15 +719,49 @@ def edit_user_details(
     db.commit()
     return {"message": "User details updated successfully"}
 
-@router.get("/users/{user_id}/consultations")
-def get_user_consultations(user_id: int, db: Session = Depends(database.get_db)):
-    rows = (
+def _query_user_consultations(
+    db: Session,
+    user_id: int,
+    search: Optional[str] = None,
+    consultation_type: Optional[models.ConsultationType] = None,
+    status: Optional[models.ConsultationStatus] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+):
+    query = (
         db.query(models.Consultation, models.AstrologerProfile.full_name)
         .outerjoin(models.AstrologerProfile, models.Consultation.astrologer_id == models.AstrologerProfile.user_id)
         .filter(models.Consultation.seeker_id == user_id)
-        .order_by(models.Consultation.created_at.desc())
-        .all()
     )
+    if consultation_type:
+        query = query.filter(models.Consultation.consultation_type == consultation_type)
+    if status:
+        query = query.filter(models.Consultation.status == status)
+    if date_from:
+        query = query.filter(models.Consultation.created_at >= datetime.combine(date_from, time.min))
+    if date_to:
+        query = query.filter(models.Consultation.created_at <= datetime.combine(date_to, time.max))
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(models.AstrologerProfile.full_name.ilike(search_term))
+    return query
+
+@router.get("/users/{user_id}/consultations")
+def get_user_consultations(
+    user_id: int,
+    skip: int = 0,
+    limit: int = 20,
+    search: Optional[str] = None,
+    consultation_type: Optional[models.ConsultationType] = None,
+    status: Optional[models.ConsultationStatus] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: Session = Depends(database.get_db),
+):
+    query = _query_user_consultations(db, user_id, search, consultation_type, status, date_from, date_to)
+    total = query.count()
+    rows = query.order_by(models.Consultation.created_at.desc()).offset(skip).limit(limit).all()
+
     result = []
     for c, astrologer_name in rows:
         result.append({
@@ -730,30 +774,174 @@ def get_user_consultations(user_id: int, db: Session = Depends(database.get_db))
             "total_cost": float(c.total_cost or 0),
             "created_at": c.created_at,
         })
-    return result
+    return {"total": total, "consultations": result}
 
-@router.get("/users/{user_id}/wallet-history", response_model=List[schemas.WalletTransaction])
-def get_user_wallet_history(user_id: int, db: Session = Depends(database.get_db)):
-    # Fetch all wallet transactions for the user
-    transactions = db.query(models.WalletTransaction).filter(
-        models.WalletTransaction.user_id == user_id
-    ).order_by(models.WalletTransaction.created_at.desc()).all()
-    return transactions
+def _user_display_name(db: Session, user_id: int) -> str:
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return f"User #{user_id}"
+    profile = db.query(models.SeekerProfile).filter(models.SeekerProfile.user_id == user_id).first()
+    return (profile.full_name if profile and profile.full_name else None) or user.email or f"User #{user_id}"
 
-@router.get("/transactions")
-def list_all_transactions(
+def _build_pdf_report(title: str, subtitle: str, headers: List[str], rows: List[list], col_widths: List[float]) -> io.BytesIO:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), topMargin=15 * mm, bottomMargin=15 * mm)
+    styles = getSampleStyleSheet()
+    elements = [
+        Paragraph(title, styles["Title"]),
+        Paragraph(subtitle, styles["Normal"]),
+        Spacer(1, 8 * mm),
+    ]
+
+    table_data = [headers] + rows
+    table = Table(table_data, colWidths=col_widths, repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4f46e5")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f3f4f6")]),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#d1d5db")),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+    ]))
+    elements.append(table)
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
+
+@router.get("/users/{user_id}/consultations/export")
+def export_user_consultations(
+    user_id: int,
+    search: Optional[str] = None,
+    consultation_type: Optional[models.ConsultationType] = None,
+    status: Optional[models.ConsultationStatus] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: Session = Depends(database.get_db),
+):
+    query = _query_user_consultations(db, user_id, search, consultation_type, status, date_from, date_to)
+    rows = query.order_by(models.Consultation.created_at.desc()).all()
+
+    name = _user_display_name(db, user_id)
+    period = f"{date_from or 'Start'} to {date_to or 'Today'}"
+    table_rows = []
+    for c, astrologer_name in rows:
+        duration = f"{(c.duration_seconds or 0) // 60}m {(c.duration_seconds or 0) % 60}s"
+        table_rows.append([
+            c.created_at.strftime("%Y-%m-%d %H:%M") if c.created_at else "-",
+            c.consultation_type.value if hasattr(c.consultation_type, "value") else c.consultation_type,
+            astrologer_name or f"Astrologer #{c.astrologer_id}",
+            duration,
+            f"Rs. {float(c.total_cost or 0):.2f}",
+            c.status.value if hasattr(c.status, "value") else c.status,
+        ])
+
+    buffer = _build_pdf_report(
+        title="Consultation History Report",
+        subtitle=f"User: {name} (#{user_id}) &nbsp;|&nbsp; Period: {period}",
+        headers=["Date", "Type", "Astrologer", "Duration", "Cost", "Status"],
+        rows=table_rows,
+        col_widths=[35 * mm, 25 * mm, 55 * mm, 30 * mm, 30 * mm, 30 * mm],
+    )
+    filename = f"consultation-history-user-{user_id}.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+def _query_user_wallet_history(
+    db: Session,
+    user_id: int,
+    search: Optional[str] = None,
+    transaction_type: Optional[models.TransactionType] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+):
+    query = db.query(models.WalletTransaction).filter(models.WalletTransaction.user_id == user_id)
+    if transaction_type:
+        query = query.filter(models.WalletTransaction.transaction_type == transaction_type)
+    if date_from:
+        query = query.filter(models.WalletTransaction.created_at >= datetime.combine(date_from, time.min))
+    if date_to:
+        query = query.filter(models.WalletTransaction.created_at <= datetime.combine(date_to, time.max))
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            (models.WalletTransaction.description.ilike(search_term)) |
+            (models.WalletTransaction.reference_id.ilike(search_term))
+        )
+    return query
+
+@router.get("/users/{user_id}/wallet-history")
+def get_user_wallet_history(
+    user_id: int,
     skip: int = 0,
-    limit: int = 100,
-    role: models.UserRole = models.UserRole.SEEKER,
+    limit: int = 20,
+    search: Optional[str] = None,
+    transaction_type: Optional[models.TransactionType] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: Session = Depends(database.get_db),
+):
+    query = _query_user_wallet_history(db, user_id, search, transaction_type, date_from, date_to)
+    total = query.count()
+    rows = query.order_by(models.WalletTransaction.created_at.desc()).offset(skip).limit(limit).all()
+    transactions = [schemas.WalletTransaction.model_validate(t) for t in rows]
+    return {"total": total, "transactions": transactions}
+
+@router.get("/users/{user_id}/wallet-history/export")
+def export_user_wallet_history(
+    user_id: int,
+    search: Optional[str] = None,
+    transaction_type: Optional[models.TransactionType] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    db: Session = Depends(database.get_db),
+):
+    query = _query_user_wallet_history(db, user_id, search, transaction_type, date_from, date_to)
+    rows = query.order_by(models.WalletTransaction.created_at.desc()).all()
+
+    name = _user_display_name(db, user_id)
+    period = f"{date_from or 'Start'} to {date_to or 'Today'}"
+    table_rows = []
+    for t in rows:
+        amount = float(t.amount)
+        table_rows.append([
+            t.created_at.strftime("%Y-%m-%d %H:%M") if t.created_at else "-",
+            t.transaction_type.value if hasattr(t.transaction_type, "value") else t.transaction_type,
+            t.reference_id or "-",
+            t.description or "-",
+            f"{'+' if amount > 0 else ''}Rs. {amount:.2f}",
+        ])
+
+    buffer = _build_pdf_report(
+        title="Wallet Transaction History Report",
+        subtitle=f"User: {name} (#{user_id}) &nbsp;|&nbsp; Period: {period}",
+        headers=["Date", "Type", "Reference", "Description", "Amount"],
+        rows=table_rows,
+        col_widths=[35 * mm, 30 * mm, 30 * mm, 90 * mm, 30 * mm],
+    )
+    filename = f"wallet-history-user-{user_id}.pdf"
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+def _query_all_transactions(
+    db: Session,
+    role: models.UserRole,
     transaction_type: Optional[models.TransactionType] = None,
     search: Optional[str] = None,
-    db: Session = Depends(database.get_db)
 ):
-    """All wallet transactions for a given role (defaults to seekers), for admin auditing."""
+    profile_model = models.SeekerProfile if role == models.UserRole.SEEKER else models.AstrologerProfile
     query = (
-        db.query(models.WalletTransaction, models.User.email, models.User.phone_number, models.SeekerProfile.full_name)
+        db.query(models.WalletTransaction, models.User.email, models.User.phone_number, profile_model.full_name)
         .join(models.User, models.WalletTransaction.user_id == models.User.id)
-        .outerjoin(models.SeekerProfile, models.WalletTransaction.user_id == models.SeekerProfile.user_id)
+        .outerjoin(profile_model, models.WalletTransaction.user_id == profile_model.user_id)
         .filter(models.User.role == role)
     )
 
@@ -765,8 +953,21 @@ def list_all_transactions(
         query = query.filter(
             (models.User.email.ilike(search_term)) |
             (models.User.phone_number.ilike(search_term)) |
-            (models.SeekerProfile.full_name.ilike(search_term))
+            (profile_model.full_name.ilike(search_term))
         )
+    return query
+
+@router.get("/transactions")
+def list_all_transactions(
+    skip: int = 0,
+    limit: int = 100,
+    role: models.UserRole = models.UserRole.SEEKER,
+    transaction_type: Optional[models.TransactionType] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(database.get_db)
+):
+    """All wallet transactions for a given role (defaults to seekers), for admin auditing."""
+    query = _query_all_transactions(db, role, transaction_type, search)
 
     total = query.count()
     rows = query.order_by(models.WalletTransaction.created_at.desc()).offset(skip).limit(limit).all()
@@ -788,9 +989,94 @@ def list_all_transactions(
 
     return {"total": total, "transactions": transactions}
 
+MAX_TRANSACTION_EXPORT_ROWS = 50_000
+
+@router.get("/transactions/export")
+def export_all_transactions(
+    role: models.UserRole = models.UserRole.SEEKER,
+    transaction_type: Optional[models.TransactionType] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(database.get_db),
+):
+    """CSV export of the (filtered, unpaginated) transaction list — for handing
+    data to accounting/audit rather than reading it off the admin UI."""
+    query = _query_all_transactions(db, role, transaction_type, search)
+    rows = query.order_by(models.WalletTransaction.created_at.desc()).limit(MAX_TRANSACTION_EXPORT_ROWS).all()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["ID", "User ID", "User Name", "Email", "Phone", "Amount", "Type", "Reference", "Description", "Created At"])
+    for txn, email, phone_number, full_name in rows:
+        writer.writerow([
+            txn.id,
+            txn.user_id,
+            full_name or f"User #{txn.user_id}",
+            email or "",
+            phone_number or "",
+            float(txn.amount),
+            txn.transaction_type.value if hasattr(txn.transaction_type, "value") else txn.transaction_type,
+            txn.reference_id or "",
+            txn.description or "",
+            txn.created_at.strftime("%Y-%m-%d %H:%M:%S") if txn.created_at else "",
+        ])
+    buffer.seek(0)
+    filename = f"transactions-{role.value.lower()}.csv"
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+@router.get("/wallets/reconciliation")
+def get_wallet_reconciliation(
+    only_mismatches: bool = True,
+    tolerance: float = 0.01,
+    db: Session = Depends(database.get_db),
+):
+    """Compares each wallet's stored balance against the sum of its own
+    transaction ledger, to catch drift from a bug or a manual DB edit that
+    the two would otherwise hide from each other. Not a substitute for
+    reconciling against Razorpay's settlement reports (out of scope here),
+    just an internal self-consistency check."""
+    ledger_totals = dict(
+        db.query(models.WalletTransaction.user_id, func.sum(models.WalletTransaction.amount))
+        .group_by(models.WalletTransaction.user_id)
+        .all()
+    )
+
+    rows = (
+        db.query(models.UserWallet, models.User.email, models.User.phone_number, models.User.role)
+        .join(models.User, models.UserWallet.user_id == models.User.id)
+        .all()
+    )
+
+    results = []
+    for wallet, email, phone_number, role in rows:
+        stored = float(wallet.balance or 0)
+        computed = float(ledger_totals.get(wallet.user_id, Decimal("0")))
+        diff = round(stored - computed, 2)
+        if only_mismatches and abs(diff) <= tolerance:
+            continue
+        results.append({
+            "user_id": wallet.user_id,
+            "email": email,
+            "phone_number": phone_number,
+            "role": role,
+            "stored_balance": stored,
+            "computed_balance": computed,
+            "diff": diff,
+        })
+
+    results.sort(key=lambda r: abs(r["diff"]), reverse=True)
+    return {"total_wallets_checked": len(rows), "mismatches": len(results), "results": results}
+
 class WalletAdjustmentRequest(BaseModel):
     amount: float
     description: str = "Admin adjustment"
+    # Optional client-generated key (e.g. a UUID minted once per button click)
+    # so a double-click or retried request reuses the original transaction
+    # instead of adjusting the wallet twice.
+    idempotency_key: Optional[str] = None
 
 @router.post("/users/{user_id}/wallet/credit")
 def admin_wallet_credit(
@@ -804,6 +1090,14 @@ def admin_wallet_credit(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    if body.idempotency_key:
+        existing = db.query(models.WalletTransaction).filter(
+            models.WalletTransaction.idempotency_key == body.idempotency_key
+        ).first()
+        if existing:
+            wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user_id).first()
+            return {"new_balance": float(wallet.balance) if wallet else 0.0, "message": "Wallet adjustment already applied"}
+
     wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user_id).first()
     if not wallet:
         wallet = models.UserWallet(user_id=user_id, balance=Decimal("0.00"))
@@ -813,12 +1107,20 @@ def admin_wallet_credit(
     if new_balance < 0:
         raise HTTPException(status_code=400, detail="Adjustment would result in negative balance")
 
+    cap = get_wallet_cap(user)
+    if cap is not None and body.amount > 0 and Decimal(str(new_balance)) > cap:
+        raise HTTPException(
+            status_code=400,
+            detail=f"This credit would exceed the maximum wallet balance of ₹{cap} allowed for this user."
+        )
+
     wallet.balance = Decimal(str(new_balance))
     tx = models.WalletTransaction(
         user_id=user_id,
         amount=Decimal(str(body.amount)),
         transaction_type=models.TransactionType.DEPOSIT if body.amount > 0 else models.TransactionType.WITHDRAWAL,
         description=body.description,
+        idempotency_key=body.idempotency_key,
     )
     db.add(tx)
 
@@ -834,7 +1136,13 @@ def admin_wallet_credit(
             "description": body.description
         }
     )
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # Lost the race to a concurrent request with the same idempotency key.
+        db.rollback()
+        wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user_id).first()
+        return {"new_balance": float(wallet.balance) if wallet else 0.0, "message": "Wallet adjustment already applied"}
     return {"new_balance": new_balance, "message": "Wallet adjusted successfully"}
 
 @router.get("/astrologers/pending")

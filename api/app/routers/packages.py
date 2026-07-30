@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from pydantic import BaseModel
 from decimal import Decimal
-from .. import models, database
+from .. import models, database, audit
 from .auth import get_current_user, get_current_admin
 
 router = APIRouter(prefix="/packages", tags=["Packages"])
@@ -122,6 +122,15 @@ def checkout_with_package(
         description=f"Package purchase: {pkg.name} ({pkg.duration_minutes} min)"
     )
     db.add(txn)
+
+    audit.log(
+        db,
+        action="PACKAGE_PURCHASED",
+        actor_id=current_user.id,
+        resource_type="chat_package",
+        resource_id=pkg.id,
+        details={"astrologer_id": data.astrologer_id, "amount": float(pkg.price)}
+    )
 
     # Create consultation with package time
     consultation = models.Consultation(

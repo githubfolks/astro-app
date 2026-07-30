@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request, Backgrou
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from jose import JWTError
-from .. import models, models_edu, schemas_edu, database
+from .. import models, models_edu, schemas_edu, database, audit
 from .auth import get_current_user, get_current_user_optional
 from ..services import miro_service, email_service
 from datetime import datetime, timedelta, timezone
@@ -240,6 +240,15 @@ def enroll_student(enrollment: schemas_edu.BatchEnrollmentCreate, db: Session = 
             description=f"Enrollment fee for course: {course.title}"
         )
         db.add(transaction)
+
+        audit.log(
+            db,
+            action="COURSE_PURCHASED",
+            actor_id=current_user.id,
+            resource_type="course",
+            resource_id=course.id,
+            details={"batch_id": enrollment.batch_id, "amount": float(course.price)}
+        )
 
     # Create Enrollment
     db_enrollment = models_edu.BatchEnrollment(

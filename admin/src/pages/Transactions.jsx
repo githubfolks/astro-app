@@ -5,9 +5,10 @@ import {
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Download } from 'lucide-react';
 import api from '../services/api';
 import clsx from 'clsx';
+import { downloadFile } from '../utils/downloadFile';
 
 const TRANSACTION_TYPES = [
     'DEPOSIT', 'WITHDRAWAL', 'CHAT_DEDUCTION', 'CHAT_REFUND',
@@ -27,6 +28,7 @@ export default function Transactions() {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterRole, setFilterRole] = useState("SEEKER");
     const [filterType, setFilterType] = useState("");
+    const [csvLoading, setCsvLoading] = useState(false);
 
     const fetchTransactions = useCallback(async () => {
         setLoading(true);
@@ -61,6 +63,15 @@ export default function Transactions() {
         }, 500);
         return () => clearTimeout(timer);
     }, [searchQuery, fetchTransactions]);
+
+    const handleExportCsv = async () => {
+        setCsvLoading(true);
+        const params = { role: filterRole };
+        if (searchQuery) params.search = searchQuery;
+        if (filterType) params.transaction_type = filterType;
+        await downloadFile('/admin/transactions/export', params, `transactions-${filterRole.toLowerCase()}.csv`);
+        setCsvLoading(false);
+    };
 
     return (
         <div className="space-y-6">
@@ -105,6 +116,10 @@ export default function Transactions() {
 
                     <Button onClick={fetchTransactions}>
                         <RefreshCw size={16} className="mr-2" /> Refresh
+                    </Button>
+
+                    <Button variant="outlined" onClick={handleExportCsv} disabled={csvLoading}>
+                        <Download size={16} className="mr-2" /> {csvLoading ? 'Exporting...' : 'Export CSV'}
                     </Button>
                 </div>
             </Card>

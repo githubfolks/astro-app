@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle, Key, CreditCard, Landmark, FileSignature, Award, ShieldCheck, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Wallet, MessageSquare, IndianRupee, User, CheckCircle, XCircle, Key, CreditCard, Landmark, FileSignature, Award, ShieldCheck, ExternalLink, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../services/api';
 import { Button, Avatar } from '../components/ui';
 import clsx from 'clsx';
 import { ResetPasswordModal } from '../components/ResetPasswordModal';
 import { EditUserModal } from '../components/EditUserModal';
+import { downloadFile } from '../utils/downloadFile';
 
 // Mirrors the STAGES list in AstrologerOnboarding.jsx / Astrologers.jsx so the
 // badge shown here matches the Kanban column the astrologer currently sits in.
@@ -19,6 +20,11 @@ const STAGE_INFO = {
     COMPLETED: { label: 'Completed', classes: 'bg-green-50 text-green-700 border-green-200' },
     REJECTED: { label: 'Rejected', classes: 'bg-red-50 text-red-700 border-red-200' },
 };
+
+const CONSULTATION_TYPES = ['CHAT', 'VOICE', 'VIDEO'];
+const CONSULTATION_STATUSES = ['REQUESTED', 'ONGOING', 'COMPLETED', 'CANCELLED', 'ACCEPTED', 'ACTIVE', 'PAUSED', 'AUTO_ENDED', 'REJECTED', 'MISSED'];
+const TRANSACTION_TYPES = ['DEPOSIT', 'WITHDRAWAL', 'CHAT_DEDUCTION', 'CHAT_REFUND', 'PAYMENT_GATEWAY', 'PAYMENT_REFUND', 'COURSE_PURCHASE', 'PACKAGE_PURCHASE'];
+const PAGE_SIZE = 10;
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const resolveDocUrl = (path) => {
@@ -41,13 +47,40 @@ function DocLink({ url, label }) {
     );
 }
 
+function Pagination({ page, total, pageSize, onPageChange }) {
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    if (total === 0) return null;
+    const start = (page - 1) * pageSize + 1;
+    const end = Math.min(page * pageSize, total);
+    return (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-xs text-gray-600">
+            <span>Showing {start}-{end} of {total}</span>
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={() => onPageChange(page - 1)}
+                    disabled={page <= 1}
+                    className="p-1.5 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+                >
+                    <ChevronLeft size={14} />
+                </button>
+                <span>Page {page} of {totalPages}</span>
+                <button
+                    onClick={() => onPageChange(page + 1)}
+                    disabled={page >= totalPages}
+                    className="p-1.5 rounded border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+                >
+                    <ChevronRight size={14} />
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function UserDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
 
     const [data, setData] = useState(null);
-    const [consultations, setConsultations] = useState([]);
-    const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -56,19 +89,39 @@ export default function UserDetails() {
     const [walletAmount, setWalletAmount] = useState('');
     const [walletDesc, setWalletDesc] = useState('Admin adjustment');
     const [walletLoading, setWalletLoading] = useState(false);
+    const [walletIdempotencyKey, setWalletIdempotencyKey] = useState(null);
     const [kycUpdating, setKycUpdating] = useState(false);
 
-    const fetchData = useCallback(async () => {
+    // Consultation history: paging / search / filter
+    const [consultations, setConsultations] = useState([]);
+    const [consultTotal, setConsultTotal] = useState(0);
+    const [consultLoading, setConsultLoading] = useState(true);
+    const [consultPage, setConsultPage] = useState(1);
+    const [consultSearchInput, setConsultSearchInput] = useState('');
+    const [consultSearch, setConsultSearch] = useState('');
+    const [consultType, setConsultType] = useState('');
+    const [consultStatus, setConsultStatus] = useState('');
+    const [consultDateFrom, setConsultDateFrom] = useState('');
+    const [consultDateTo, setConsultDateTo] = useState('');
+    const [consultPdfLoading, setConsultPdfLoading] = useState(false);
+
+    // Wallet history: paging / search / filter
+    const [transactions, setTransactions] = useState([]);
+    const [txnTotal, setTxnTotal] = useState(0);
+    const [txnLoading, setTxnLoading] = useState(true);
+    const [txnPage, setTxnPage] = useState(1);
+    const [txnSearchInput, setTxnSearchInput] = useState('');
+    const [txnSearch, setTxnSearch] = useState('');
+    const [txnType, setTxnType] = useState('');
+    const [txnDateFrom, setTxnDateFrom] = useState('');
+    const [txnDateTo, setTxnDateTo] = useState('');
+    const [txnPdfLoading, setTxnPdfLoading] = useState(false);
+
+    const fetchUser = useCallback(async () => {
         try {
             setLoading(true);
-            const [userRes, consultRes, transRes] = await Promise.all([
-                api.get(`/admin/users/${id}/details`),
-                api.get(`/admin/users/${id}/consultations`),
-                api.get(`/admin/users/${id}/wallet-history`)
-            ]);
+            const userRes = await api.get(`/admin/users/${id}/details`);
             setData(userRes.data);
-            setConsultations(consultRes.data);
-            setTransactions(transRes.data);
         } catch (error) {
             console.error("Failed to fetch user details", error);
         } finally {
@@ -76,10 +129,73 @@ export default function UserDetails() {
         }
     }, [id]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+    useEffect(() => { fetchUser(); }, [fetchUser]);
 
+    // Debounce free-text search inputs
+    useEffect(() => {
+        const t = setTimeout(() => { setConsultSearch(consultSearchInput); setConsultPage(1); }, 400);
+        return () => clearTimeout(t);
+    }, [consultSearchInput]);
+
+    useEffect(() => {
+        const t = setTimeout(() => { setTxnSearch(txnSearchInput); setTxnPage(1); }, 400);
+        return () => clearTimeout(t);
+    }, [txnSearchInput]);
+
+    const fetchConsultations = useCallback(async () => {
+        try {
+            setConsultLoading(true);
+            const res = await api.get(`/admin/users/${id}/consultations`, {
+                params: {
+                    skip: (consultPage - 1) * PAGE_SIZE,
+                    limit: PAGE_SIZE,
+                    search: consultSearch || undefined,
+                    consultation_type: consultType || undefined,
+                    status: consultStatus || undefined,
+                    date_from: consultDateFrom || undefined,
+                    date_to: consultDateTo || undefined,
+                }
+            });
+            setConsultations(res.data.consultations);
+            setConsultTotal(res.data.total);
+        } catch (error) {
+            console.error("Failed to fetch consultations", error);
+        } finally {
+            setConsultLoading(false);
+        }
+    }, [id, consultPage, consultSearch, consultType, consultStatus, consultDateFrom, consultDateTo]);
+
+    useEffect(() => { fetchConsultations(); }, [fetchConsultations]);
+
+    const fetchTransactions = useCallback(async () => {
+        try {
+            setTxnLoading(true);
+            const res = await api.get(`/admin/users/${id}/wallet-history`, {
+                params: {
+                    skip: (txnPage - 1) * PAGE_SIZE,
+                    limit: PAGE_SIZE,
+                    search: txnSearch || undefined,
+                    transaction_type: txnType || undefined,
+                    date_from: txnDateFrom || undefined,
+                    date_to: txnDateTo || undefined,
+                }
+            });
+            setTransactions(res.data.transactions);
+            setTxnTotal(res.data.total);
+        } catch (error) {
+            console.error("Failed to fetch wallet history", error);
+        } finally {
+            setTxnLoading(false);
+        }
+    }, [id, txnPage, txnSearch, txnType, txnDateFrom, txnDateTo]);
+
+    useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
+
+    const fetchAll = useCallback(() => {
+        fetchUser();
+        fetchConsultations();
+        fetchTransactions();
+    }, [fetchUser, fetchConsultations, fetchTransactions]);
 
     const handleResetPassword = () => {
         setIsResetModalOpen(true);
@@ -89,7 +205,7 @@ export default function UserDetails() {
         setKycUpdating(true);
         try {
             await api.put(`/admin/astrologers/${id}/kyc`, { kyc_verified: verified });
-            fetchData();
+            fetchUser();
         } catch (err) {
             alert(err.response?.data?.detail || 'Failed to update KYC verification status');
         } finally {
@@ -100,18 +216,47 @@ export default function UserDetails() {
     const handleWalletAdjust = async () => {
         const amount = parseFloat(walletAmount);
         if (isNaN(amount) || amount === 0) { alert('Enter a valid non-zero amount'); return; }
+        // Reused across retries of the same intended adjustment so a double
+        // click or a retry after a network error can't double-credit; a fresh
+        // key is minted the next time the modal is opened.
+        const key = walletIdempotencyKey || crypto.randomUUID();
+        setWalletIdempotencyKey(key);
         setWalletLoading(true);
         try {
-            await api.post(`/admin/users/${id}/wallet/credit`, { amount, description: walletDesc });
+            await api.post(`/admin/users/${id}/wallet/credit`, { amount, description: walletDesc, idempotency_key: key });
             alert('Wallet adjusted successfully!');
             setWalletModal(false);
             setWalletAmount('');
-            fetchData();
+            setWalletIdempotencyKey(null);
+            fetchAll();
         } catch (err) {
-            alert(err.message || 'Failed to adjust wallet');
+            alert(err.response?.data?.detail || 'Failed to adjust wallet');
         } finally {
             setWalletLoading(false);
         }
+    };
+
+    const handleDownloadConsultations = async () => {
+        setConsultPdfLoading(true);
+        await downloadFile(`/admin/users/${id}/consultations/export`, {
+            search: consultSearch || undefined,
+            consultation_type: consultType || undefined,
+            status: consultStatus || undefined,
+            date_from: consultDateFrom || undefined,
+            date_to: consultDateTo || undefined,
+        }, `consultation-history-user-${id}.pdf`);
+        setConsultPdfLoading(false);
+    };
+
+    const handleDownloadTransactions = async () => {
+        setTxnPdfLoading(true);
+        await downloadFile(`/admin/users/${id}/wallet-history/export`, {
+            search: txnSearch || undefined,
+            transaction_type: txnType || undefined,
+            date_from: txnDateFrom || undefined,
+            date_to: txnDateTo || undefined,
+        }, `wallet-history-user-${id}.pdf`);
+        setTxnPdfLoading(false);
     };
 
     if (loading) return <div className="p-8 text-center text-gray-900">Loading details...</div>;
@@ -128,9 +273,9 @@ export default function UserDetails() {
                         <ArrowLeft size={20} />
                     </Button>
                     <div className="flex items-center gap-4">
-                        <Avatar 
-                            src={profile.profile_picture_url} 
-                            className="w-16 h-16 border-2 border-white shadow-sm" 
+                        <Avatar
+                            src={profile.profile_picture_url}
+                            className="w-16 h-16 border-2 border-white shadow-sm"
                             iconSize={32}
                             alt="Profile"
                         />
@@ -197,246 +342,330 @@ export default function UserDetails() {
                 </div>
             </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left Column: Profile Details */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                        <h3 className="font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-50">Profile Details</h3>
+            {/* Profile Details - full width, laid out horizontally */}
+            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-50">Profile Details</h3>
 
-                        <div className="space-y-4">
-                            <div>
-                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Full Name</span>
-                                <span className="font-medium text-gray-900">{profile.full_name || "-"}</span>
-                            </div>
-
-                            {user?.role === 'SEEKER' && (
-                                <>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Date of Birth</span>
-                                        <span className="font-medium text-gray-900">{profile.date_of_birth || "-"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Time of Birth</span>
-                                        <span className="font-medium text-gray-900">{profile.time_of_birth || "-"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Place of Birth</span>
-                                        <span className="font-medium text-gray-900">{profile.place_of_birth || "-"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Gender</span>
-                                        <span className="font-medium text-gray-900">{profile.gender || "-"}</span>
-                                    </div>
-                                </>
-                            )}
-
-                            {user?.role === 'ASTROLOGER' && (
-                                <>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Experience (Years)</span>
-                                        <span className="font-medium text-gray-900">{profile.experience_years !== undefined ? `${profile.experience_years} years` : "-"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Languages</span>
-                                        <span className="font-medium text-gray-900">{profile.languages || "-"}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Specialties</span>
-                                        <span className="font-medium text-gray-900">{profile.specialties || "-"}</span>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                <div className="flex flex-wrap gap-x-10 gap-y-4">
+                    <div>
+                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Full Name</span>
+                        <span className="font-medium text-gray-900">{profile.full_name || "-"}</span>
                     </div>
+
+                    {user?.role === 'SEEKER' && (
+                        <>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Date of Birth</span>
+                                <span className="font-medium text-gray-900">{profile.date_of_birth || "-"}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Time of Birth</span>
+                                <span className="font-medium text-gray-900">{profile.time_of_birth || "-"}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Place of Birth</span>
+                                <span className="font-medium text-gray-900">{profile.place_of_birth || "-"}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Gender</span>
+                                <span className="font-medium text-gray-900">{profile.gender || "-"}</span>
+                            </div>
+                        </>
+                    )}
 
                     {user?.role === 'ASTROLOGER' && (
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
-                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <CreditCard size={16} className="text-indigo-600" /> KYC &amp; Documents
-                                </h3>
-                                {profile.kyc_verified ? (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
-                                        <ShieldCheck size={11} /> Verified
-                                    </span>
-                                ) : (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-200">
-                                        Not Verified
-                                    </span>
-                                )}
+                        <>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Experience (Years)</span>
+                                <span className="font-medium text-gray-900">{profile.experience_years !== undefined ? `${profile.experience_years} years` : "-"}</span>
                             </div>
-
-                            <div className="space-y-3 text-sm">
-                                <div className="flex items-center gap-2 text-xs text-gray-900">
-                                    <FileSignature size={14} className="text-gray-400 flex-shrink-0" />
-                                    {profile.contract_signed_at ? (
-                                        <span>Contract signed by <strong>{profile.contract_signature_name}</strong> on {new Date(profile.contract_signed_at).toLocaleDateString()}</span>
-                                    ) : (
-                                        <span className="text-gray-400">Contract not signed yet</span>
-                                    )}
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50">
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">PAN Number</span>
-                                        <span className="font-medium text-gray-900 text-sm">{profile.pan_number || '-'}</span>
-                                        <div className="mt-0.5"><DocLink url={profile.pan_doc_url} label="View PAN doc" /></div>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide block">Aadhaar Number</span>
-                                        <span className="font-medium text-gray-900 text-sm">{profile.aadhaar_number || '-'}</span>
-                                        <div className="mt-0.5"><DocLink url={profile.aadhaar_doc_url} label="View Aadhaar doc" /></div>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-50">
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
-                                            <Landmark size={12} /> Bank Details
-                                        </span>
-                                        <span className="text-gray-700 text-xs block">{profile.bank_account_holder_name || '-'}</span>
-                                        <span className="text-gray-700 text-xs block">Bank: {profile.bank_name || '-'}</span>
-                                        <span className="text-gray-700 text-xs block">A/C: {profile.bank_account_number || '-'}</span>
-                                        <span className="text-gray-700 text-xs block">IFSC: {profile.bank_ifsc || '-'}</span>
-                                        <span className="text-gray-700 text-xs block">Branch: {profile.bank_address || '-'}</span>
-                                    </div>
-                                    <div>
-                                        <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
-                                            <Award size={12} /> Certificates
-                                        </span>
-                                        {profile.certificate_urls?.length > 0 ? (
-                                            <div className="flex flex-col gap-1">
-                                                {profile.certificate_urls.map((url, i) => (
-                                                    <DocLink key={url} url={url} label={`Certificate ${i + 1}`} />
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <span className="text-gray-400 text-xs">None uploaded</span>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="pt-3 border-t border-gray-50">
-                                    <button
-                                        onClick={() => handleKycVerify(!profile.kyc_verified)}
-                                        disabled={kycUpdating}
-                                        className={clsx(
-                                            "w-full text-xs font-semibold py-2 rounded-lg transition-colors disabled:opacity-50",
-                                            profile.kyc_verified
-                                                ? "bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200"
-                                                : "bg-green-600 hover:bg-green-700 text-white"
-                                        )}
-                                    >
-                                        {kycUpdating ? 'Updating…' : profile.kyc_verified ? 'Mark Unverified' : 'Mark KYC Verified'}
-                                    </button>
-                                </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Languages</span>
+                                <span className="font-medium text-gray-900">{profile.languages || "-"}</span>
                             </div>
-                        </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Specialties</span>
+                                <span className="font-medium text-gray-900">{profile.specialties || "-"}</span>
+                            </div>
+                        </>
                     )}
                 </div>
+            </div>
 
-                {/* Right Column: consultations and wallet */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                        <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                            <h3 className="font-semibold text-gray-900">Consultation History</h3>
-                        </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-900 font-medium">
-                                    <tr>
-                                        <th className="px-4 py-3">Date</th>
-                                        <th className="px-4 py-3">Type</th>
-                                        <th className="px-4 py-3">Astrologer ID</th>
-                                        <th className="px-4 py-3">Duration</th>
-                                        <th className="px-4 py-3">Cost</th>
-                                        <th className="px-4 py-3">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {consultations.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="6" className="px-4 py-8 text-center text-gray-900">No consultations found.</td>
-                                        </tr>
-                                    ) : (
-                                        consultations.map((c) => (
-                                            <tr key={c.id} className="hover:bg-gray-50/50">
-                                                <td className="px-4 py-3 text-gray-600">
-                                                    {new Date(c.created_at).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                        {c.consultation_type}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-600">
-                                                    {c.astrologer_name}
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-600">
-                                                    {Math.floor(c.duration_seconds / 60)}m {c.duration_seconds % 60}s
-                                                </td>
-                                                <td className="px-4 py-3 font-medium text-gray-900">
-                                                    ₹{c.total_cost}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <StatusBadge status={c.status} />
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+            {user?.role === 'ASTROLOGER' && (
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+                        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                            <CreditCard size={16} className="text-indigo-600" /> KYC &amp; Documents
+                        </h3>
+                        {profile.kyc_verified ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-700 border border-green-200">
+                                <ShieldCheck size={11} /> Verified
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-50 text-gray-500 border border-gray-200">
+                                Not Verified
+                            </span>
+                        )}
                     </div>
 
-                    {/* Wallet History Card */}
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mt-6">
-                        <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
-                            <h3 className="font-semibold text-gray-900">Wallet Transaction History</h3>
+                    <div className="space-y-3 text-sm">
+                        <div className="flex items-center gap-2 text-xs text-gray-900">
+                            <FileSignature size={14} className="text-gray-400 flex-shrink-0" />
+                            {profile.contract_signed_at ? (
+                                <span>Contract signed by <strong>{profile.contract_signature_name}</strong> on {new Date(profile.contract_signed_at).toLocaleDateString()}</span>
+                            ) : (
+                                <span className="text-gray-400">Contract not signed yet</span>
+                            )}
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-gray-50 text-gray-900 font-medium">
-                                    <tr>
-                                        <th className="px-4 py-3">Date</th>
-                                        <th className="px-4 py-3">Type</th>
-                                        <th className="px-4 py-3">Reference/Description</th>
-                                        <th className="px-4 py-3 text-right">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {transactions.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="4" className="px-4 py-8 text-center text-gray-900">No transactions found.</td>
-                                        </tr>
-                                    ) : (
-                                        transactions.map((t) => (
-                                            <tr key={t.id} className="hover:bg-gray-50/50">
-                                                <td className="px-4 py-3 text-gray-600">
-                                                    {new Date(t.created_at).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <TransactionBadge type={t.transaction_type} />
-                                                </td>
-                                                <td className="px-4 py-3 text-gray-900">
-                                                    <div className="text-xs font-medium text-gray-700">{t.reference_id || "-"}</div>
-                                                    <div className="text-[10px] text-gray-400 max-w-[250px] truncate" title={t.description}>{t.description}</div>
-                                                </td>
-                                                <td className={clsx(
-                                                    "px-4 py-3 text-right font-medium",
-                                                    parseFloat(t.amount) > 0 ? "text-green-600" : "text-red-600"
-                                                )}>
-                                                    {parseFloat(t.amount) > 0 ? "+" : ""}₹{Math.abs(parseFloat(t.amount)).toFixed(2)}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-t border-gray-50">
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">PAN Number</span>
+                                <span className="font-medium text-gray-900 text-sm">{profile.pan_number || '-'}</span>
+                                <div className="mt-0.5"><DocLink url={profile.pan_doc_url} label="View PAN doc" /></div>
+                            </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide block">Aadhaar Number</span>
+                                <span className="font-medium text-gray-900 text-sm">{profile.aadhaar_number || '-'}</span>
+                                <div className="mt-0.5"><DocLink url={profile.aadhaar_doc_url} label="View Aadhaar doc" /></div>
+                            </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
+                                    <Landmark size={12} /> Bank Details
+                                </span>
+                                <span className="text-gray-700 text-xs block">{profile.bank_account_holder_name || '-'}</span>
+                                <span className="text-gray-700 text-xs block">Bank: {profile.bank_name || '-'}</span>
+                                <span className="text-gray-700 text-xs block">A/C: {profile.bank_account_number || '-'}</span>
+                                <span className="text-gray-700 text-xs block">IFSC: {profile.bank_ifsc || '-'}</span>
+                                <span className="text-gray-700 text-xs block">Branch: {profile.bank_address || '-'}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-900 text-xs uppercase tracking-wide flex items-center gap-1 mb-1">
+                                    <Award size={12} /> Certificates
+                                </span>
+                                {profile.certificate_urls?.length > 0 ? (
+                                    <div className="flex flex-col gap-1">
+                                        {profile.certificate_urls.map((url, i) => (
+                                            <DocLink key={url} url={url} label={`Certificate ${i + 1}`} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <span className="text-gray-400 text-xs">None uploaded</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-gray-50">
+                            <button
+                                onClick={() => handleKycVerify(!profile.kyc_verified)}
+                                disabled={kycUpdating}
+                                className={clsx(
+                                    "text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50",
+                                    profile.kyc_verified
+                                        ? "bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200"
+                                        : "bg-green-600 hover:bg-green-700 text-white"
+                                )}
+                            >
+                                {kycUpdating ? 'Updating…' : profile.kyc_verified ? 'Mark Unverified' : 'Mark KYC Verified'}
+                            </button>
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Consultation History - full width */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex flex-wrap gap-3 justify-between items-center">
+                    <h3 className="font-semibold text-gray-900">Consultation History</h3>
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <div className="relative">
+                            <Search size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                            <input
+                                type="text"
+                                value={consultSearchInput}
+                                onChange={e => setConsultSearchInput(e.target.value)}
+                                placeholder="Search astrologer..."
+                                className="pl-8 pr-2 py-1.5 text-xs border border-gray-200 rounded-lg w-40 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            />
+                        </div>
+                        <select
+                            value={consultType}
+                            onChange={e => { setConsultType(e.target.value); setConsultPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        >
+                            <option value="">All Types</option>
+                            {CONSULTATION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                        <select
+                            value={consultStatus}
+                            onChange={e => { setConsultStatus(e.target.value); setConsultPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        >
+                            <option value="">All Statuses</option>
+                            {CONSULTATION_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <input
+                            type="date"
+                            value={consultDateFrom}
+                            onChange={e => { setConsultDateFrom(e.target.value); setConsultPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        />
+                        <span className="text-xs text-gray-400">to</span>
+                        <input
+                            type="date"
+                            value={consultDateTo}
+                            onChange={e => { setConsultDateTo(e.target.value); setConsultPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        />
+                        <button
+                            onClick={handleDownloadConsultations}
+                            disabled={consultPdfLoading}
+                            className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                            <Download size={13} /> {consultPdfLoading ? 'Generating...' : 'PDF'}
+                        </button>
+                    </div>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-gray-50 text-gray-900 font-medium">
+                            <tr>
+                                <th className="px-4 py-3">Date</th>
+                                <th className="px-4 py-3">Type</th>
+                                <th className="px-4 py-3">Astrologer</th>
+                                <th className="px-4 py-3">Duration</th>
+                                <th className="px-4 py-3">Cost</th>
+                                <th className="px-4 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {consultLoading ? (
+                                <tr><td colSpan="6" className="px-4 py-8 text-center text-gray-900">Loading...</td></tr>
+                            ) : consultations.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="px-4 py-8 text-center text-gray-900">No consultations found.</td>
+                                </tr>
+                            ) : (
+                                consultations.map((c) => (
+                                    <tr key={c.id} className="hover:bg-gray-50/50">
+                                        <td className="px-4 py-3 text-gray-600">
+                                            {new Date(c.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                {c.consultation_type}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-600">
+                                            {c.astrologer_name}
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-600">
+                                            {Math.floor(c.duration_seconds / 60)}m {c.duration_seconds % 60}s
+                                        </td>
+                                        <td className="px-4 py-3 font-medium text-gray-900">
+                                            ₹{c.total_cost}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <StatusBadge status={c.status} />
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <Pagination page={consultPage} total={consultTotal} pageSize={PAGE_SIZE} onPageChange={setConsultPage} />
+            </div>
+
+            {/* Wallet History - full width */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex flex-wrap gap-3 justify-between items-center">
+                    <h3 className="font-semibold text-gray-900">Wallet Transaction History</h3>
+                    <div className="flex flex-wrap gap-2 items-center">
+                        <div className="relative">
+                            <Search size={14} className="absolute left-2.5 top-2.5 text-gray-400" />
+                            <input
+                                type="text"
+                                value={txnSearchInput}
+                                onChange={e => setTxnSearchInput(e.target.value)}
+                                placeholder="Search description/ref..."
+                                className="pl-8 pr-2 py-1.5 text-xs border border-gray-200 rounded-lg w-48 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            />
+                        </div>
+                        <select
+                            value={txnType}
+                            onChange={e => { setTxnType(e.target.value); setTxnPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        >
+                            <option value="">All Types</option>
+                            {TRANSACTION_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                        </select>
+                        <input
+                            type="date"
+                            value={txnDateFrom}
+                            onChange={e => { setTxnDateFrom(e.target.value); setTxnPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        />
+                        <span className="text-xs text-gray-400">to</span>
+                        <input
+                            type="date"
+                            value={txnDateTo}
+                            onChange={e => { setTxnDateTo(e.target.value); setTxnPage(1); }}
+                            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                        />
+                        <button
+                            onClick={handleDownloadTransactions}
+                            disabled={txnPdfLoading}
+                            className="flex items-center gap-1 text-xs font-medium px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                        >
+                            <Download size={13} /> {txnPdfLoading ? 'Generating...' : 'PDF'}
+                        </button>
+                    </div>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-gray-50 text-gray-900 font-medium">
+                            <tr>
+                                <th className="px-4 py-3">Date</th>
+                                <th className="px-4 py-3">Type</th>
+                                <th className="px-4 py-3">Reference/Description</th>
+                                <th className="px-4 py-3 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {txnLoading ? (
+                                <tr><td colSpan="4" className="px-4 py-8 text-center text-gray-900">Loading...</td></tr>
+                            ) : transactions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="px-4 py-8 text-center text-gray-900">No transactions found.</td>
+                                </tr>
+                            ) : (
+                                transactions.map((t) => (
+                                    <tr key={t.id} className="hover:bg-gray-50/50">
+                                        <td className="px-4 py-3 text-gray-600">
+                                            {new Date(t.created_at).toLocaleDateString()}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <TransactionBadge type={t.transaction_type} />
+                                        </td>
+                                        <td className="px-4 py-3 text-gray-900">
+                                            <div className="text-xs font-medium text-gray-700">{t.reference_id || "-"}</div>
+                                            <div className="text-[10px] text-gray-400 max-w-[250px] truncate" title={t.description}>{t.description}</div>
+                                        </td>
+                                        <td className={clsx(
+                                            "px-4 py-3 text-right font-medium",
+                                            parseFloat(t.amount) > 0 ? "text-green-600" : "text-red-600"
+                                        )}>
+                                            {parseFloat(t.amount) > 0 ? "+" : ""}₹{Math.abs(parseFloat(t.amount)).toFixed(2)}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <Pagination page={txnPage} total={txnTotal} pageSize={PAGE_SIZE} onPageChange={setTxnPage} />
             </div>
 
             <ResetPasswordModal
@@ -451,7 +680,7 @@ export default function UserDetails() {
                 onClose={() => setIsEditModalOpen(false)}
                 user={user}
                 profile={profile}
-                onSuccess={fetchData}
+                onSuccess={fetchUser}
             />
 
             {walletModal && (
@@ -487,7 +716,7 @@ export default function UserDetails() {
                                 {walletLoading ? 'Processing...' : 'Apply'}
                             </button>
                             <button
-                                onClick={() => { setWalletModal(false); setWalletAmount(''); }}
+                                onClick={() => { setWalletModal(false); setWalletAmount(''); setWalletIdempotencyKey(null); }}
                                 className="px-4 py-2 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
                             >
                                 Cancel

@@ -209,9 +209,6 @@ class WalletTransactionBase(BaseModel):
     reference_id: Optional[str] = None
     description: Optional[str] = None
 
-class WalletTransactionCreate(WalletTransactionBase):
-    user_id: int
-
 class WalletTransaction(WalletTransactionBase):
     id: int
     user_id: int

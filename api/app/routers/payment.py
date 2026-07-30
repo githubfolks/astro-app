@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from .. import models, schemas, database, audit
 from .auth import get_current_user, get_current_admin
+from ..services.wallet_limits import get_wallet_cap
 import razorpay
 import uuid
 import os
@@ -55,6 +56,19 @@ def create_payment_order(
 ):
     if order.amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")
+
+    # Enforce the wallet balance cap before charging the card — checking
+    # post-capture (in /verify or the webhook) would leave a seeker's money
+    # taken but un-creditable, which is worse than rejecting the top-up here.
+    cap = get_wallet_cap(current_user)
+    if cap is not None:
+        wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == current_user.id).first()
+        current_balance = wallet.balance if wallet else Decimal("0")
+        if Decimal(str(current_balance)) + Decimal(str(order.amount)) > cap:
+            raise HTTPException(
+                status_code=400,
+                detail=f"This top-up would exceed the maximum wallet balance of ₹{cap} allowed for your account. Please recharge a smaller amount or use it before adding more."
+            )
 
     # Razorpay expects amount in paise (1 INR = 100 paise)
     amount_paise = int(order.amount * 100)
@@ -184,6 +198,17 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             db.rollback()
             return {"message": "Payment already processed", "status": "success"}
 
+        # The order-creation cap check already blocks most overages; this
+        # only catches the rare race of two concurrent orders each individually
+        # under the cap. Money's already captured by Razorpay at this point,
+        # so we flag for review rather than reject the credit.
+        cap = get_wallet_cap(current_user)
+        if cap is not None and wallet.balance > cap:
+            audit.log(db, "WALLET_CAP_EXCEEDED", actor_id=current_user.id, resource_type="user",
+                      resource_id=current_user.id,
+                      details={"balance": float(wallet.balance), "cap": float(cap), "order_id": data.razorpay_order_id})
+            db.commit()
+
         return {"message": "Payment successful", "status": "success", "new_balance": wallet.balance}
 
     except HTTPException as he:
@@ -257,6 +282,17 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
     db.add(txn)
     audit.log(db, "WALLET_TOPPED_UP_VIA_WEBHOOK", resource_type="user", resource_id=user_id,
               details={"amount": amount_inr, "order_id": order_id, "payment_id": payment_id})
+
+    # See /verify: the order-creation cap check already blocks most overages;
+    # this only catches the rare race of two concurrent orders. Money's
+    # already captured by Razorpay, so flag for review rather than reject.
+    credited_user = db.query(models.User).filter(models.User.id == int(user_id)).first()
+    cap = get_wallet_cap(credited_user) if credited_user else None
+    if cap is not None and wallet.balance > cap:
+        audit.log(db, "WALLET_CAP_EXCEEDED", actor_id=int(user_id), resource_type="user",
+                  resource_id=user_id,
+                  details={"balance": float(wallet.balance), "cap": float(cap), "order_id": order_id})
+
     try:
         db.commit()
     except IntegrityError:

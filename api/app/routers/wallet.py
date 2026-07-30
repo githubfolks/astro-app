@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from .. import models, schemas, database
-from .auth import get_current_user, get_current_admin
-from datetime import datetime
+from .auth import get_current_user
 
 router = APIRouter(
     prefix="/wallet",
@@ -17,35 +16,6 @@ def get_balance(current_user: models.User = Depends(get_current_user), db: Sessi
         wallet = models.UserWallet(user_id=current_user.id, balance=0.0)
         db.add(wallet)
         db.commit()
-    return wallet
-
-@router.post("/add-money", response_model=schemas.UserWallet)
-def add_money(transaction: schemas.WalletTransactionCreate, current_admin: models.User = Depends(get_current_admin), db: Session = Depends(database.get_db)):
-    if transaction.amount <= 0:
-        raise HTTPException(status_code=400, detail="Amount must be positive")
-    
-    # Update Balance for the target user (from transaction object)
-    target_user_id = transaction.user_id
-    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == target_user_id).first()
-    if not wallet:
-         wallet = models.UserWallet(user_id=target_user_id, balance=0.0)
-         db.add(wallet)
-    
-    # Update Balance
-    wallet.balance += transaction.amount
-    
-    # Record Transaction
-    txn = models.WalletTransaction(
-        user_id=target_user_id,
-        amount=transaction.amount,
-        transaction_type=models.TransactionType.DEPOSIT,
-        description=transaction.description or "Admin Credit",
-        reference_id=transaction.reference_id
-    )
-    db.add(txn)
-    
-    db.commit()
-    db.refresh(wallet)
     return wallet
 
 @router.get("/transactions", response_model=list[schemas.WalletTransaction])

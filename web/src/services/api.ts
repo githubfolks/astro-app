@@ -319,17 +319,6 @@ export const api = {
                 headers: await authHeaders()
             });
             return handleResponse(response, 'Failed to fetch balance');
-        },
-        addMoney: async (amount: number) => {
-            const response = await customFetch(`${API_URL}/wallet/add-money`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(await authHeaders())
-                },
-                body: JSON.stringify({ amount, transaction_type: 'DEPOSIT', description: 'Recharge' })
-            });
-            return handleResponse(response, 'Failed to add money');
         }
     },
 

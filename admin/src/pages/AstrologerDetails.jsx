@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle, Wifi, ThumbsDown, Repeat, Heart, CreditCard, Landmark, FileSignature, Award, ShieldCheck, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Edit2, Mail, Phone, Calendar, Clock, DollarSign, MessageCircle, Wifi, ThumbsDown, Repeat, Heart, CreditCard, Landmark, FileSignature, Award, ShieldCheck, ExternalLink, X } from 'lucide-react';
 import api from '../services/api';
 import { Button, Avatar } from '../components/ui';
 import clsx from 'clsx';

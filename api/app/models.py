@@ -165,6 +165,11 @@ class WalletTransaction(Base):
     # separately from reference_id (which stores the order id).
     gateway_payment_id = Column(String, nullable=True)
     description = Column(String)
+    # Client-supplied key so retried/duplicated requests (e.g. a double-clicked
+    # admin adjustment) don't create a second transaction. NULL for rows
+    # created before this existed or that don't need dedup (Postgres allows
+    # multiple NULLs under a unique index).
+    idempotency_key = Column(String, unique=True, nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", back_populates="wallet_transactions")

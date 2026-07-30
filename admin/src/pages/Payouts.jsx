@@ -1,7 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { payouts } from '../services/api';
-import { DollarSign, CheckCircle, Clock, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { DollarSign, CheckCircle, Clock, ChevronDown, ChevronUp, Search, Download } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+
+function downloadCsv(rows, headers, filename) {
+    const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = [headers.map(escape).join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+}
 
 export default function Payouts() {
     const [stats, setStats] = useState([]);
@@ -138,6 +152,24 @@ export default function Payouts() {
 
     const groupedHistory = getGroupedPayouts();
 
+    const handleExportHistoryCsv = () => {
+        const headers = ['Astrologer', 'Phone', 'Payment Date', 'Transaction Ref', 'Status', 'TDS Deducted', 'PG Charge Deducted', 'Net Amount', 'Comments'];
+        const rows = groupedHistory.flatMap(group =>
+            group.payouts.map(p => [
+                group.astrologer_name,
+                group.phone_number || '',
+                new Date(p.processed_at || p.created_at).toLocaleDateString(),
+                p.transaction_reference || '',
+                p.status,
+                p.tds_deducted.toFixed(2),
+                (p.pg_charge_deducted ?? 0).toFixed(2),
+                p.amount.toFixed(2),
+                p.admin_comments || '',
+            ])
+        );
+        downloadCsv(rows, headers, 'payout-history.csv');
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -226,17 +258,22 @@ export default function Payouts() {
             ) : (
                 <div className="space-y-4">
                     {/* Search Bar */}
-                    <div className="relative max-w-md">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                            <Search size={18} />
-                        </span>
-                        <input
-                            type="text"
-                            placeholder="Search astrologer by name or mobile number..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E91E63] text-sm text-gray-900"
-                        />
+                    <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                        <div className="relative max-w-md w-full">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <Search size={18} />
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Search astrologer by name or mobile number..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#E91E63] text-sm text-gray-900"
+                            />
+                        </div>
+                        <Button variant="outlined" onClick={handleExportHistoryCsv} disabled={groupedHistory.length === 0}>
+                            <Download size={16} className="mr-2" /> Export CSV
+                        </Button>
                     </div>
 
                     <div className="space-y-4">
