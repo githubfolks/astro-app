@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Enum, DECIMAL, Text, Date, Time, JSON, Index
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, Enum, DECIMAL, Text, Date, Time, JSON, Index, UniqueConstraint
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
@@ -145,7 +145,25 @@ class AstrologerProfile(Base):
     # Certificates — optional, for internal verification only (never shown publicly)
     certificate_urls = Column(JSON, nullable=True)
 
+    # Restricted-visibility astrologers are hidden from the public listing and
+    # profile-page lookup; only seekers in AstrologerAllowedSeeker can see them.
+    is_restricted = Column(Boolean, default=False, nullable=False, server_default='false')
+
     user = relationship("User", back_populates="astrologer_profile")
+    allowed_seekers = relationship("AstrologerAllowedSeeker", cascade="all, delete-orphan")
+
+
+class AstrologerAllowedSeeker(Base):
+    __tablename__ = "astrologer_allowed_seekers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    astrologer_id = Column(Integer, ForeignKey("astrologer_profiles.user_id"), nullable=False, index=True)
+    seeker_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (
+        UniqueConstraint("astrologer_id", "seeker_id", name="uq_astrologer_allowed_seeker"),
+    )
 
 class UserWallet(Base):
     __tablename__ = "user_wallets"

@@ -48,7 +48,6 @@ export default function AstrologerForm() {
         specialties: '',
         consultation_fee_per_min: 0,
         commission_percentage: 70,
-        availability_hours: '',
         availability_start_time: '',
         availability_end_time: '',
         profile_picture_url: '',
@@ -75,7 +74,6 @@ export default function AstrologerForm() {
                     specialties: found.profile?.specialties || '',
                     consultation_fee_per_min: found.profile?.consultation_fee_per_min || 0,
                     commission_percentage: found.profile?.commission_percentage ?? 70,
-                    availability_hours: found.profile?.availability_hours || '',
                     availability_start_time: (found.profile?.availability_start_time || '').slice(0, 5),
                     availability_end_time: (found.profile?.availability_end_time || '').slice(0, 5),
                     profile_picture_url: found.profile?.profile_picture_url || '',
@@ -337,14 +335,6 @@ export default function AstrologerForm() {
                                 placeholder="Vedic, Tarot, Numerology"
                             />
                         </div>
-                    </div>
-
-                    <div className="md:col-span-2">
-                        <Input
-                            label="Availability Hours" name="availability_hours"
-                            value={formData.availability_hours} onChange={handleChange}
-                            placeholder="e.g. Mon-Fri 10am-6pm"
-                        />
                     </div>
 
                     <Input

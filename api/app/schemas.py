@@ -129,6 +129,7 @@ class AstrologerProfileBase(BaseModel):
     id_proof_url: Optional[str] = None
     astrology_types: Optional[List[str]] = None
     is_approved: bool = False
+    is_restricted: bool = False
     is_premium: bool = False
     is_vip: bool = False
     is_trending: bool = False
@@ -164,7 +165,8 @@ class AstrologerProfileUPDATE(BaseModel):
     languages: Optional[str] = None
     specialties: Optional[str] = None
     consultation_fee_per_min: Optional[Decimal] = None
-    availability_hours: Optional[str] = None
+    # availability_hours is NOT here — it's derived server-side from the two
+    # fields below (see update_astrologer_profile), never entered directly.
     availability_start_time: Optional[time] = None
     availability_end_time: Optional[time] = None
     whatsapp_number: Optional[str] = None

@@ -5,7 +5,7 @@ from typing import List
 from .. import models, schemas, database
 from ..services import email_service
 from ..limiter import limiter
-from .auth import get_current_user, get_password_hash, create_access_token
+from .auth import get_current_user, get_current_user_optional, get_password_hash, create_access_token
 import re, unicodedata, uuid, os, io
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -245,13 +245,36 @@ def astrologer_onboarding(
 
     return {"message": "Onboarding request submitted successfully. Please wait for admin approval."}
 
+def _restricted_visibility_filter(db: Session, current_user):
+    """Restricted astrologers are hidden from everyone except the seekers
+    explicitly allow-listed for them (see AstrologerAllowedSeeker)."""
+    if current_user is not None and current_user.role == models.UserRole.SEEKER:
+        allowed_ids = [
+            row[0] for row in db.query(models.AstrologerAllowedSeeker.astrologer_id)
+            .filter(models.AstrologerAllowedSeeker.seeker_id == current_user.id)
+            .all()
+        ]
+        if allowed_ids:
+            return (models.AstrologerProfile.is_restricted == False) | (
+                models.AstrologerProfile.user_id.in_(allowed_ids)
+            )
+    return models.AstrologerProfile.is_restricted == False
+
+
 @router.get("/", response_model=List[schemas.AstrologerProfile])
-def list_astrologers(skip: int = 0, limit: int = 20, sort_by: str = None, db: Session = Depends(database.get_db)):
+def list_astrologers(
+    skip: int = 0,
+    limit: int = 20,
+    sort_by: str = None,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user_optional),
+):
     query = db.query(models.AstrologerProfile).join(models.User).filter(
         models.AstrologerProfile.is_approved == True,
         models.AstrologerProfile.onboarding_stage == models.OnboardingStage.COMPLETED,
         models.User.is_active == True,
-        models.User.is_verified == True
+        models.User.is_verified == True,
+        _restricted_visibility_filter(db, current_user),
     )
 
     # Premium astrologers always surface first, regardless of the secondary sort.
@@ -301,6 +324,16 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
 
     for key, value in update_fields.items():
         setattr(db_profile, key, value)
+
+    # Seeker-facing display text is always derived from the Knock window,
+    # never entered directly (see AstrologerProfileUPDATE).
+    if "availability_start_time" in update_fields or "availability_end_time" in update_fields:
+        if db_profile.availability_start_time and db_profile.availability_end_time:
+            db_profile.availability_hours = _format_availability_hours(
+                db_profile.availability_start_time, db_profile.availability_end_time
+            )
+        else:
+            db_profile.availability_hours = None
 
     db.commit()
     db.refresh(db_profile)
@@ -531,13 +564,18 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
     return {"status": "subscribed"}
 
 @router.get("/{identifier}", response_model=schemas.AstrologerProfile)
-def get_astrologer_by_identifier(identifier: str, db: Session = Depends(database.get_db)):
+def get_astrologer_by_identifier(
+    identifier: str,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user_optional),
+):
     """Fetch an astrologer profile by numeric user_id (legacy) or slug."""
     base_query = db.query(models.AstrologerProfile).join(models.User).filter(
         models.AstrologerProfile.is_approved == True,
         models.AstrologerProfile.onboarding_stage == models.OnboardingStage.COMPLETED,
         models.User.is_active == True,
-        models.User.is_verified == True
+        models.User.is_verified == True,
+        _restricted_visibility_filter(db, current_user),
     )
     if identifier.isdigit():
         profile = base_query.filter(models.AstrologerProfile.user_id == int(identifier)).first()

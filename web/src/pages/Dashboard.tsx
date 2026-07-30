@@ -24,7 +24,6 @@ export const Dashboard: React.FC = () => {
 
     // Astrologer specific state
     const [isOnline, setIsOnline] = useState(false);
-    const [availabilityText, setAvailabilityText] = useState('');
     const [availabilityStart, setAvailabilityStart] = useState('');
     const [availabilityEnd, setAvailabilityEnd] = useState('');
     const [updatingProfile, setUpdatingProfile] = useState(false);
@@ -94,7 +93,6 @@ export const Dashboard: React.FC = () => {
                     const profile = await api.astrologers.getProfile();
 
                     setIsOnline(profile.is_online);
-                    setAvailabilityText(profile.availability_hours || '');
                     setAvailabilityStart((profile.availability_start_time || '').slice(0, 5));
                     setAvailabilityEnd((profile.availability_end_time || '').slice(0, 5));
                     setAstrologerProfile(profile);
@@ -186,7 +184,6 @@ export const Dashboard: React.FC = () => {
         try {
             setUpdatingProfile(true);
             await api.astrologers.updateProfile({
-                availability_hours: availabilityText,
                 availability_start_time: availabilityStart || null,
                 availability_end_time: availabilityEnd || null,
             });
@@ -204,7 +201,7 @@ export const Dashboard: React.FC = () => {
         if (astrologerProfile) {
             if (!astrologerProfile.contract_signed_at) missingOnboardingItems.push('sign your contract');
             if (!astrologerProfile.profile_picture_url) missingOnboardingItems.push('upload a profile photo');
-            if (!astrologerProfile.availability_hours) missingOnboardingItems.push('set your availability hours');
+            if (!astrologerProfile.availability_start_time || !astrologerProfile.availability_end_time) missingOnboardingItems.push('set your availability hours');
             if (!astrologerProfile.short_bio) missingOnboardingItems.push('add a short bio');
             if (!astrologerProfile.about_me) missingOnboardingItems.push('write about yourself');
             if (!astrologerProfile.specialties) missingOnboardingItems.push('list your specialties');
@@ -412,16 +409,26 @@ export const Dashboard: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Availability Hours</label>
-                                        <textarea
-                                            value={availabilityText}
-                                            onChange={(e) => setAvailabilityText(e.target.value)}
-                                            placeholder="e.g. Mon-Fri: 2pm - 6pm"
-                                            className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
-                                            rows={3}
-                                        />
-                                        <p className="text-xs text-gray-400 mt-1">Seekers will see this text on your profile.</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Knock Window Start</label>
+                                            <input
+                                                type="time"
+                                                value={availabilityStart}
+                                                onChange={(e) => setAvailabilityStart(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Knock Window End</label>
+                                            <input
+                                                type="time"
+                                                value={availabilityEnd}
+                                                onChange={(e) => setAvailabilityEnd(e.target.value)}
+                                                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-400 col-span-2 mt-1">Seekers will see this as your availability hours on your profile.</p>
                                     </div>
 
                                     <button

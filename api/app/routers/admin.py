@@ -13,6 +13,7 @@ from ..schemas import _validate_strong_password
 from .. import models_edu, schemas_edu
 from decimal import Decimal
 from .auth import get_current_admin, get_password_hash
+from .astrologers import _format_availability_hours
 from ..services.wallet_limits import get_wallet_cap
 from ..services.email_service import (
     send_email,
@@ -336,6 +337,67 @@ def update_astrologer_kyc_verification(user_id: int, update: KycVerifyUpdate, db
     db.commit()
     return {"message": f"Astrologer KYC {'verified' if update.kyc_verified else 'unverified'}"}
 
+class VisibilityUpdate(BaseModel):
+    is_restricted: bool
+
+@router.put("/astrologers/{user_id}/visibility")
+def update_astrologer_visibility(user_id: int, update: VisibilityUpdate, db: Session = Depends(database.get_db)):
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Astrologer profile not found")
+
+    profile.is_restricted = update.is_restricted
+    db.commit()
+    return {"message": "Visibility updated successfully", "is_restricted": profile.is_restricted}
+
+@router.get("/astrologers/{user_id}/allowed-seekers")
+def list_astrologer_allowed_seekers(user_id: int, db: Session = Depends(database.get_db)):
+    rows = db.query(models.AstrologerAllowedSeeker, models.User).join(
+        models.User, models.User.id == models.AstrologerAllowedSeeker.seeker_id
+    ).filter(models.AstrologerAllowedSeeker.astrologer_id == user_id).all()
+    return [
+        {"id": row.AstrologerAllowedSeeker.id, "seeker_id": row.User.id, "email": row.User.email, "phone_number": row.User.phone_number}
+        for row in rows
+    ]
+
+class AllowedSeekerCreate(BaseModel):
+    seeker_email: str
+
+@router.post("/astrologers/{user_id}/allowed-seekers")
+def add_astrologer_allowed_seeker(user_id: int, request: AllowedSeekerCreate, db: Session = Depends(database.get_db)):
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user_id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Astrologer profile not found")
+
+    seeker = db.query(models.User).filter(
+        models.User.email == request.seeker_email, models.User.role == models.UserRole.SEEKER
+    ).first()
+    if not seeker:
+        raise HTTPException(status_code=404, detail="Seeker not found with that email")
+
+    existing = db.query(models.AstrologerAllowedSeeker).filter(
+        models.AstrologerAllowedSeeker.astrologer_id == user_id,
+        models.AstrologerAllowedSeeker.seeker_id == seeker.id,
+    ).first()
+    if existing:
+        return {"message": "Seeker already allow-listed", "seeker_id": seeker.id}
+
+    db.add(models.AstrologerAllowedSeeker(astrologer_id=user_id, seeker_id=seeker.id))
+    db.commit()
+    return {"message": "Seeker added to allow-list", "seeker_id": seeker.id}
+
+@router.delete("/astrologers/{user_id}/allowed-seekers/{seeker_id}")
+def remove_astrologer_allowed_seeker(user_id: int, seeker_id: int, db: Session = Depends(database.get_db)):
+    row = db.query(models.AstrologerAllowedSeeker).filter(
+        models.AstrologerAllowedSeeker.astrologer_id == user_id,
+        models.AstrologerAllowedSeeker.seeker_id == seeker_id,
+    ).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Allow-list entry not found")
+    db.delete(row)
+    db.commit()
+    return {"message": "Seeker removed from allow-list"}
+
 class RequestMissingInfoRequest(BaseModel):
     missing_items: str
 
@@ -414,7 +476,7 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
         languages=astrologer.languages,
         specialties=astrologer.specialties,
         consultation_fee_per_min=astrologer.consultation_fee_per_min,
-        availability_hours=astrologer.availability_hours,
+        availability_hours=_format_availability_hours(astrologer.availability_start_time, astrologer.availability_end_time) if astrologer.availability_start_time and astrologer.availability_end_time else None,
         availability_start_time=astrologer.availability_start_time,
         availability_end_time=astrologer.availability_end_time,
         profile_picture_url=astrologer.profile_picture_url,
@@ -514,9 +576,12 @@ def update_astrologer_full(user_id: int, data: schemas.AdminCreateAstrologer, db
     profile.specialties = data.specialties
     profile.consultation_fee_per_min = data.consultation_fee_per_min
     profile.commission_percentage = data.commission_percentage
-    profile.availability_hours = data.availability_hours
     profile.availability_start_time = data.availability_start_time
     profile.availability_end_time = data.availability_end_time
+    profile.availability_hours = (
+        _format_availability_hours(data.availability_start_time, data.availability_end_time)
+        if data.availability_start_time and data.availability_end_time else None
+    )
     profile.profile_picture_url = data.profile_picture_url
 
     db.commit()
