@@ -88,3 +88,53 @@ def test_transactions_are_isolated_per_user(client, make_user):
     # seeker_b must not see seeker_a's transactions.
     txns = client.get("/wallet/transactions", headers=auth_headers(seeker_b))
     assert txns.json() == []
+
+
+def test_add_money_rejects_invalid_transaction_type(client, make_user):
+    seeker = make_user(models.UserRole.SEEKER)
+    admin = make_user(models.UserRole.ADMIN)
+    resp = client.post(
+        "/wallet/add-money",
+        headers=auth_headers(admin),
+        json={"user_id": seeker.id, "amount": "10.00", "transaction_type": "NOT_A_REAL_TYPE"},
+    )
+    assert resp.status_code == 400
+
+
+def test_add_money_rejects_amount_exceeding_wallet_cap(client, make_user):
+    seeker = make_user(models.UserRole.SEEKER, balance=0.0)
+    admin = make_user(models.UserRole.ADMIN)
+    resp = client.post(
+        "/wallet/add-money",
+        headers=auth_headers(admin),
+        json={"user_id": seeker.id, "amount": "100000.00", "transaction_type": "DEPOSIT"},
+    )
+    assert resp.status_code == 400
+    assert "maximum wallet balance" in resp.json()["detail"]
+
+    # Balance must be unchanged.
+    bal = client.get("/wallet/balance", headers=auth_headers(seeker))
+    assert float(bal.json()["balance"]) == 0.0
+
+
+def test_add_money_idempotency_key_prevents_double_credit(client, make_user):
+    seeker = make_user(models.UserRole.SEEKER, balance=0.0)
+    admin = make_user(models.UserRole.ADMIN)
+    payload = {
+        "user_id": seeker.id,
+        "amount": "50.00",
+        "transaction_type": "DEPOSIT",
+        "idempotency_key": "add-money-key-1",
+    }
+
+    resp1 = client.post("/wallet/add-money", headers=auth_headers(admin), json=payload)
+    assert resp1.status_code == 200
+    assert float(resp1.json()["balance"]) == 50.0
+
+    resp2 = client.post("/wallet/add-money", headers=auth_headers(admin), json=payload)
+    assert resp2.status_code == 200
+    assert "already added" in resp2.json()["message"]
+    assert float(resp2.json()["balance"]) == 50.0
+
+    bal = client.get("/wallet/balance", headers=auth_headers(seeker))
+    assert float(bal.json()["balance"]) == 50.0

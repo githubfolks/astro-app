@@ -11,6 +11,7 @@ import string
 from pydantic import EmailStr
 from ..limiter import limiter
 from ..services import email_service
+from ..security_utils import validate_password_strength
 from fastapi import Request
 
 router = APIRouter()
@@ -94,6 +95,7 @@ def signup(request: Request, user: schemas.UserCreate, background_tasks: Backgro
     if db_user:
         raise HTTPException(status_code=400, detail="Phone or Email already registered")
     
+    validate_password_strength(user.password)
     hashed_password = get_password_hash(user.password)
     new_user = models.User(
         email=user.email,
@@ -313,6 +315,7 @@ def reset_password(request: schemas.ResetPasswordRequest, db: Session = Depends(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    validate_password_strength(request.new_password)
     # Update password
     user.hashed_password = get_password_hash(request.new_password)
     db.commit()

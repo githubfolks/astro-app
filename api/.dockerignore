@@ -13,3 +13,6 @@ alembic/__pycache__
 db-backup
 *.md
 .DS_Store
+tests
+requirements-dev.txt
+scripts/stress_test.py
