@@ -315,20 +315,6 @@ export const Chat: React.FC = () => {
                 return;
             }
             const orderData = await api.payment.createOrder(amt);
-            if (orderData.key_id === 'mock_key' || !orderData.key_id) {
-                const ok = confirm(`[DEV] Simulate ₹${amt} payment?`);
-                if (ok) {
-                    await api.payment.verifyPayment({
-                        razorpay_order_id: orderData.order_id,
-                        razorpay_payment_id: 'pay_mock_' + Date.now(),
-                        razorpay_signature: 'mock_signature'
-                    });
-                    setRechargeAmount('');
-                    resumeChat();
-                }
-                setIsRecharging(false);
-                return;
-            }
             const options = {
                 key: orderData.key_id,
                 amount: orderData.amount,

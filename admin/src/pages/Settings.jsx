@@ -36,18 +36,6 @@ const GROUPS = [
         ],
     },
     {
-        title: 'Payments',
-        desc: 'Controls how /payment/order and /payment/verify behave.',
-        fields: [
-            {
-                key: 'enable_mock_payments',
-                label: 'Enable Mock Payments',
-                boolean: true,
-                warning: 'When on, ANY signed-in user can credit their own wallet without paying — Razorpay is bypassed entirely. Never leave this on in production.',
-            },
-        ],
-    },
-    {
         title: 'Razorpay Payment Gateway',
         desc: 'Test and live key pairs from https://dashboard.razorpay.com/app/keys. New orders use whichever mode is selected below; orders already placed keep using the key pair they were created under, even if you switch modes afterward.',
         fields: [
@@ -472,7 +460,7 @@ export default function Settings() {
                         error={waError}
                     />
 
-                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions', 'Payments', 'Razorpay Payment Gateway'].includes(g.title)).map(renderGroup)}
+                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions', 'Razorpay Payment Gateway'].includes(g.title)).map(renderGroup)}
                 </div>
 
                 {/* Right Column */}

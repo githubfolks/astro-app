@@ -38,27 +38,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
             // 1. Create Order
             const orderData = await api.payment.createOrder(amount);
 
-            // Mock Mode Handling
-            if (orderData.key_id === "mock_key" || !orderData.key_id) {
-                const confirmMock = confirm(`[DEV MODE] Simulate successful payment of ₹${orderData.amount / 100}?`);
-                if (confirmMock) {
-                    await api.payment.verifyPayment({
-                        razorpay_order_id: orderData.order_id,
-                        razorpay_payment_id: "pay_mock_" + Date.now(),
-                        razorpay_signature: "mock_signature"
-                    });
-                    setSuccess(true);
-                    setTimeout(() => {
-                        onSuccess(amount);
-                        setSuccess(false);
-                        setAmount(100);
-                    }, 1500);
-                } else {
-                    setProcessing(false);
-                }
-                return;
-            }
-
             // 2. Open Razorpay
             const options = {
                 key: orderData.key_id,

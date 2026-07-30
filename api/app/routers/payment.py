@@ -5,8 +5,6 @@ from .. import models, schemas, database, audit
 from .auth import get_current_user, get_current_admin
 from ..services.wallet_limits import get_wallet_cap
 import razorpay
-import uuid
-import os
 import hmac
 import hashlib
 import json
@@ -19,17 +17,10 @@ router = APIRouter(
 )
 
 # Razorpay credentials are admin-configurable (test vs. live key pair) via
-# /admin/settings > Payments, backed by settings_service — see DEFAULTS there
-# for the env vars that seed each key on first run. Read per-request (not at
-# import time) so an admin flipping "razorpay_mode" takes effect without a
-# redeploy, same as enable_mock_payments below.
-
-def mock_payments_enabled() -> bool:
-    # Admin-toggleable via /admin/settings (settings_service caches for ~30s,
-    # not a hard restart, so flipping it takes effect almost immediately).
-    from ..services.settings_service import get_setting
-    return (get_setting("enable_mock_payments") or "").strip().lower() == "true"
-
+# /admin/settings > Razorpay Payment Gateway, backed by settings_service —
+# see DEFAULTS there for the env vars that seed each key on first run. Read
+# per-request (not at import time) so an admin flipping "razorpay_mode" takes
+# effect without a redeploy.
 
 def get_razorpay_mode() -> str:
     """The key pair currently selected for new orders: 'test' or 'live'."""
@@ -94,21 +85,11 @@ def create_payment_order(
     mode = get_razorpay_mode()
     key_id, key_secret = get_razorpay_keys(mode)
     client = razorpay.Client(auth=(key_id, key_secret)) if key_id and key_secret else None
-
-    # Mock Mode: explicit opt-in via the admin-toggleable "enable_mock_payments"
-    # setting, or automatic fallback when the active mode's keys aren't configured.
-    if mock_payments_enabled() or not client:
-        order_id = f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}"
-        db.add(models.PaymentOrder(
-            order_id=order_id, user_id=current_user.id, amount_paise=amount_paise, is_mock=True,
-        ))
-        db.commit()
-        return {
-            "order_id": order_id,
-            "amount": amount_paise,
-            "currency": "INR",
-            "key_id": "mock_key"
-        }
+    if not client:
+        raise HTTPException(
+            status_code=503,
+            detail=f"Razorpay {mode} keys are not configured. Set them in Admin > Settings > Razorpay Payment Gateway.",
+        )
 
     data = {
         "amount": amount_paise,
@@ -140,9 +121,9 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
     try:
         amount_paid_inr = 0.0
 
-        # Every order (mock or real) is persisted at creation time in
-        # POST /payment/order — look it up rather than trusting anything
-        # derived from the client-supplied order id string.
+        # Every order is persisted at creation time in POST /payment/order —
+        # look it up rather than trusting anything derived from the
+        # client-supplied order id string.
         order = db.query(models.PaymentOrder).filter(
             models.PaymentOrder.order_id == data.razorpay_order_id
         ).first()
@@ -153,45 +134,37 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
         if order.consumed:
             return {"message": "Payment already processed", "status": "success"}
 
-        # Check if Mock Order
-        if data.razorpay_order_id.startswith("order_mock_"):
-            if not mock_payments_enabled():
-                raise HTTPException(status_code=400, detail="Mock payments are disabled in this environment")
-            print(f"Processing Mock Payment: {data.razorpay_order_id}")
-            amount_paid_inr = order.amount_paise / 100.0
+        # Use the key pair this order was actually created under (recorded at
+        # creation time) rather than whatever mode is active *now* — an admin
+        # may have flipped test/live in Settings in between.
+        order_mode = order.razorpay_mode or get_razorpay_mode()
+        _, key_secret = get_razorpay_keys(order_mode)
+        client = get_razorpay_client(order_mode)
+        if not key_secret or not client:
+            raise HTTPException(status_code=500, detail="Razorpay is not configured for this order's mode")
 
-        else:
-            # Use the key pair this order was actually created under (recorded
-            # at creation time) rather than whatever mode is active *now* —
-            # an admin may have flipped test/live in Settings in between.
-            order_mode = order.razorpay_mode or get_razorpay_mode()
-            _, key_secret = get_razorpay_keys(order_mode)
-            client = get_razorpay_client(order_mode)
-            if not key_secret or not client:
-                raise HTTPException(status_code=500, detail="Razorpay is not configured for this order's mode")
+        # Verify Signature
+        params_dict = {
+            'razorpay_order_id': data.razorpay_order_id,
+            'razorpay_payment_id': data.razorpay_payment_id,
+            'razorpay_signature': data.razorpay_signature
+        }
 
-            # Verify Signature
-            params_dict = {
-                'razorpay_order_id': data.razorpay_order_id,
-                'razorpay_payment_id': data.razorpay_payment_id,
-                'razorpay_signature': data.razorpay_signature
-            }
+        # client.utility.verify_payment_signature(params_dict) # This method raises error if invalid
 
-            # client.utility.verify_payment_signature(params_dict) # This method raises error if invalid
+        # Manual verification to be extra sure or if client util issues arise
+        msg = f"{data.razorpay_order_id}|{data.razorpay_payment_id}"
+        generated_signature = hmac.new(
+            bytes(key_secret, 'utf-8'),
+            bytes(msg, 'utf-8'),
+            hashlib.sha256
+        ).hexdigest()
 
-            # Manual verification to be extra sure or if client util issues arise
-            msg = f"{data.razorpay_order_id}|{data.razorpay_payment_id}"
-            generated_signature = hmac.new(
-                bytes(key_secret, 'utf-8'),
-                bytes(msg, 'utf-8'),
-                hashlib.sha256
-            ).hexdigest()
+        if generated_signature != data.razorpay_signature:
+             raise HTTPException(status_code=400, detail="Invalid Payment Signature")
 
-            if generated_signature != data.razorpay_signature:
-                 raise HTTPException(status_code=400, detail="Invalid Payment Signature")
-
-            order_details = client.order.fetch(data.razorpay_order_id)
-            amount_paid_inr = order_details['amount'] / 100.0
+        order_details = client.order.fetch(data.razorpay_order_id)
+        amount_paid_inr = order_details['amount'] / 100.0
 
         # Payment Successful -> Update Wallet
         # 1. Check if transaction already recorded (idempotency check using order_id as ref)
@@ -214,7 +187,7 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             user_id=current_user.id,
             amount=amount_paid_inr,
             transaction_type=models.TransactionType.PAYMENT_GATEWAY,
-            description=f"Razorpay Payment: {data.razorpay_payment_id} {'(MOCK)' if data.razorpay_order_id.startswith('order_mock') else ''}",
+            description=f"Razorpay Payment: {data.razorpay_payment_id}",
             reference_id=data.razorpay_order_id,
             gateway_payment_id=data.razorpay_payment_id
         )

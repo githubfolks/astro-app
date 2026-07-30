@@ -37,15 +37,11 @@ DEFAULTS: dict[str, str] = {
     "google_tts_api_key": "",
     "content_studio_public_base_url": "",  # e.g. https://api.aadikarta.org — where /static video files are publicly reachable, needed for Facebook/Instagram to fetch them when posting
     "content_studio_caption_cta": "Chat with a certified astrologer on Aadikarta - just ₹10/min ✨\n\nLink in bio | Book your reading now",
-    # Lets /payment/order and /payment/verify skip Razorpay entirely and credit
-    # the wallet directly — for staging/test only. Defaults off; a payment-
-    # bypass feature should never be on because of a forgotten env var.
-    # Admin-toggleable via /admin/settings without a redeploy.
-    "enable_mock_payments": "false",
     # Which Razorpay key pair below is actually used for new orders: "test" or
     # "live". Admin-toggleable via /admin/settings > Payments so switching
     # between the test and live Razorpay dashboards doesn't need a redeploy.
-    "razorpay_mode": os.getenv("RAZORPAY_MODE", "live"),
+    # No env var fallback on purpose — one control surface, not two.
+    "razorpay_mode": "live",
     "razorpay_key_id_test": os.getenv("RAZORPAY_KEY_TEST_ID", ""),
     "razorpay_key_secret_test": os.getenv("RAZORPAY_KEY_TEST_SECRET", ""),
     # Falls back to the old single-pair env var names for anyone who hasn't
