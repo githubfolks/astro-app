@@ -40,7 +40,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         if (heartbeatTimer.current) { clearInterval(heartbeatTimer.current); heartbeatTimer.current = null; }
     };
 
-    const connect = useCallback((currentToken: string) => {
+    const connect = useCallback((currentToken: string | null) => {
         if (!shouldReconnect.current) return;
         const socket = new WebSocket(WS_URL);
         ws.current = socket;
@@ -48,6 +48,10 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         socket.onopen = () => {
             // Auth token goes in the first message, not the URL — a `?token=`
             // query string ends up in access logs/proxies/browser history.
+            // Logged-out visitors send no token and are kept as a "guest"
+            // connection server-side — they still get public broadcasts
+            // (e.g. ASTRO_ONLINE/OFFLINE) so the astrologer list/profile
+            // pages update live even before signing in.
             socket.send(JSON.stringify({ token: currentToken }));
             reconnectAttempt.current = 0;
             clearHeartbeat();
@@ -76,14 +80,10 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, []);
 
     useEffect(() => {
-        if (!token) {
-            shouldReconnect.current = false;
-            clearHeartbeat();
-            if (reconnectTimer.current) { clearTimeout(reconnectTimer.current); reconnectTimer.current = null; }
-            ws.current?.close();
-            return;
-        }
-
+        // Connect regardless of auth state — logged-out visitors get a "guest"
+        // connection (see connect()/onopen above) so public status broadcasts
+        // still reach them. Reconnects fresh whenever `token` changes (login/
+        // logout) so the socket picks up (or drops) the authenticated identity.
         shouldReconnect.current = true;
         reconnectAttempt.current = 0;
         connect(token);

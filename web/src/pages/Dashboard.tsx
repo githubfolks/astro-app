@@ -14,6 +14,7 @@ import SeekerChatTranscriptModal from '../components/SeekerChatTranscriptModal';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
+import { playNotificationSound } from '../utils/notificationSound';
 import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart, AlertTriangle, Eye } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
@@ -152,6 +153,12 @@ export const Dashboard: React.FC = () => {
         if (['NEW_REQUEST', 'QUEUE_UPDATE'].includes(event.type)) {
             api.consultations.getHistory().then(setHistory).catch(console.error);
         }
+        // Ring a bell alongside a new request while the Dashboard is already
+        // open (foreground) — push notifications (backgrounded/closed app)
+        // get their own sound via android_channel_id="knock_alerts".
+        if (event.type === 'NEW_REQUEST') {
+            playNotificationSound();
+        }
     });
 
     // One chat at a time: is the astrologer already in a live session? (Q4)
@@ -197,6 +204,16 @@ export const Dashboard: React.FC = () => {
         if (astrologerProfile) {
             if (!astrologerProfile.contract_signed_at) missingOnboardingItems.push('sign your contract');
             if (!astrologerProfile.profile_picture_url) missingOnboardingItems.push('upload a profile photo');
+            if (!astrologerProfile.availability_hours) missingOnboardingItems.push('set your availability hours');
+            if (!astrologerProfile.short_bio) missingOnboardingItems.push('add a short bio');
+            if (!astrologerProfile.about_me) missingOnboardingItems.push('write about yourself');
+            if (!astrologerProfile.specialties) missingOnboardingItems.push('list your specialties');
+            if (!astrologerProfile.languages) missingOnboardingItems.push('list the languages you speak');
+            if (!astrologerProfile.bank_account_number || !astrologerProfile.bank_ifsc || !astrologerProfile.bank_account_holder_name) {
+                missingOnboardingItems.push('add your bank details');
+            }
+            if (!astrologerProfile.pan_number || !astrologerProfile.pan_doc_url) missingOnboardingItems.push('add your PAN details and upload your PAN card');
+            if (!astrologerProfile.aadhaar_number || !astrologerProfile.aadhaar_doc_url) missingOnboardingItems.push('add your Aadhaar details and upload your Aadhaar card');
             if (!astrologerProfile.kyc_verified) missingOnboardingItems.push('complete KYC verification');
         }
 
@@ -405,26 +422,6 @@ export const Dashboard: React.FC = () => {
                                             rows={3}
                                         />
                                         <p className="text-xs text-gray-400 mt-1">Seekers will see this text on your profile.</p>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Knock Window</label>
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="time"
-                                                value={availabilityStart}
-                                                onChange={(e) => setAvailabilityStart(e.target.value)}
-                                                className="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
-                                            />
-                                            <span className="text-gray-400 text-sm">to</span>
-                                            <input
-                                                type="time"
-                                                value={availabilityEnd}
-                                                onChange={(e) => setAvailabilityEnd(e.target.value)}
-                                                className="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
-                                            />
-                                        </div>
-                                        <p className="text-xs text-gray-400 mt-1">Seekers can only "Knock" to alert you while you're offline during this window.</p>
                                     </div>
 
                                     <button
@@ -758,6 +755,13 @@ export const Dashboard: React.FC = () => {
         setProfileSaving(false);
     };
 
+    const missingSeekerItems: string[] = [];
+    if (!seekerProfile.full_name) missingSeekerItems.push('your name');
+    if (!seekerProfile.date_of_birth) missingSeekerItems.push('date of birth');
+    if (!seekerProfile.time_of_birth) missingSeekerItems.push('time of birth');
+    if (!seekerProfile.place_of_birth) missingSeekerItems.push('place of birth');
+    if (!seekerProfile.gender) missingSeekerItems.push('gender');
+
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <Header />
@@ -783,6 +787,20 @@ export const Dashboard: React.FC = () => {
                 </div>
             )}
             <main className={`dashboard-main flex-1 container mx-auto p-6 md:p-8`}>
+                {missingSeekerItems.length > 0 && (
+                    <a
+                        href="#seeker-my-profile-card"
+                        className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 hover:bg-amber-100 transition-colors group"
+                    >
+                        <AlertTriangle size={20} className="text-amber-600 flex-shrink-0" />
+                        <span className="text-sm font-medium flex-1">
+                            Your birth details are incomplete — please add your {missingSeekerItems.join(', ')} so astrologers can give you an accurate reading.
+                        </span>
+                        <span className="text-sm font-bold underline group-hover:no-underline whitespace-nowrap">
+                            Complete Profile →
+                        </span>
+                    </a>
+                )}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-8 order-2 lg:order-none">
@@ -1076,7 +1094,7 @@ export const Dashboard: React.FC = () => {
                         </div>
 
                         {/* My Profile Card */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div id="seeker-my-profile-card" className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 scroll-mt-24">
                             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                                 <User className="text-[#E91E63]" size={20} />
                                 My Profile

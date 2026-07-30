@@ -68,6 +68,10 @@ class NotificationManager:
     def __init__(self):
         # user_id -> list[WebSocket]
         self.connections: dict[int, list[WebSocket]] = {}
+        # Unauthenticated sockets (logged-out visitors browsing the astrologer
+        # list/profile) — they get public broadcasts (ASTRO_ONLINE/OFFLINE) only,
+        # never per-user sends, and never affect presence.
+        self.guest_connections: list[WebSocket] = []
 
     def is_user_connected(self, user_id: int) -> bool:
         return user_id in self.connections
@@ -86,6 +90,13 @@ class NotificationManager:
             del self.connections[user_id]
             clear_present(user_id)
 
+    def connect_guest(self, websocket: WebSocket):
+        self.guest_connections.append(websocket)
+
+    def disconnect_guest(self, websocket: WebSocket):
+        if websocket in self.guest_connections:
+            self.guest_connections.remove(websocket)
+
     async def send(self, user_id: int, payload: dict):
         for ws in list(self.connections.get(user_id, [])):
             try:
@@ -100,6 +111,11 @@ class NotificationManager:
                     await ws.send_text(json.dumps(payload))
                 except Exception as e:
                     logger.error(f"broadcast send failed to user {uid}: {e}")
+        for ws in list(self.guest_connections):
+            try:
+                await ws.send_text(json.dumps(payload))
+            except Exception as e:
+                logger.error(f"broadcast send failed to guest: {e}")
 
 
 notifier = NotificationManager()
@@ -165,18 +181,36 @@ def broadcast_event(payload: dict):
 @router.websocket("/ws")
 async def realtime_endpoint(websocket: WebSocket):
     token = await receive_ws_token(websocket)
-    if token is None:
-        await websocket.close(code=4003)
-        return
 
-    db = database.SessionLocal()
-    try:
-        user = await get_user_from_token(token, db)
-    finally:
-        db.close()
+    user = None
+    if token is not None:
+        db = database.SessionLocal()
+        try:
+            user = await get_user_from_token(token, db)
+        finally:
+            db.close()
 
     if not user:
-        await websocket.close(code=4003)
+        # Guest connection (logged-out visitor, or an expired/invalid token) —
+        # kept open (instead of closed) so the astrologer list/profile pages
+        # still get live ASTRO_ONLINE/OFFLINE updates without a page refresh,
+        # same as an authenticated seeker would.
+        notifier.connect_guest(websocket)
+        try:
+            while True:
+                data = await websocket.receive_text()
+                try:
+                    msg = json.loads(data)
+                except json.JSONDecodeError:
+                    continue
+                if msg.get("type") == "PING":
+                    await websocket.send_text(json.dumps({"type": "PONG"}))
+        except WebSocketDisconnect:
+            pass
+        except Exception as e:
+            logger.error(f"Realtime guest socket error: {e}")
+        finally:
+            notifier.disconnect_guest(websocket)
         return
 
     await notifier.connect(user.id, websocket)

@@ -22,6 +22,13 @@ router = APIRouter(
 )
 
 
+def _format_availability_hours(start, end) -> str:
+    """Renders a start/end time pair as the display string shown on seeker-facing
+    cards/profiles, e.g. "9:00 AM - 6:00 PM"."""
+    fmt = lambda t: t.strftime('%I:%M %p').lstrip('0')
+    return f"{fmt(start)} - {fmt(end)}"
+
+
 def _slugify(text: str) -> str:
     text = unicodedata.normalize('NFKD', text)
     text = text.encode('ascii', 'ignore').decode('ascii')
@@ -216,7 +223,9 @@ def astrologer_onboarding(
         experience_years=request.experience_years,
         languages=request.languages,
         astrology_types=request.astrology_types,
-        availability_hours=request.preferred_working_hours,
+        availability_hours=_format_availability_hours(request.availability_start_time, request.availability_end_time),
+        availability_start_time=request.availability_start_time,
+        availability_end_time=request.availability_end_time,
         city=request.city,
         id_proof_url=request.id_proof_url,
         is_approved=False,

@@ -343,7 +343,8 @@ class AstrologerOnboardingRequest(BaseModel):
     astrology_types: List[str]
     experience_years: int
     languages: str
-    preferred_working_hours: str
+    availability_start_time: time
+    availability_end_time: time
     city: Optional[str] = None
     short_bio: str
     profile_photo_url: str

@@ -39,7 +39,8 @@ interface AstrologerForm {
     astrology_types: string[];
     experience_years: string;
     languages: string;
-    preferred_working_hours: string;
+    availability_start_time: string;
+    availability_end_time: string;
     city: string;
     short_bio: string;
     profile_photo_url: string;
@@ -58,7 +59,8 @@ export const JoinAsAstrologer: React.FC = () => {
         astrology_types: [],
         experience_years: '',
         languages: '',
-        preferred_working_hours: '',
+        availability_start_time: '',
+        availability_end_time: '',
         city: '',
         short_bio: '',
         profile_photo_url: '',
@@ -147,7 +149,7 @@ export const JoinAsAstrologer: React.FC = () => {
             setError('Please select at least one astrology type');
             return;
         }
-        if (!formData.experience_years || !formData.languages || !formData.preferred_working_hours || !formData.short_bio) {
+        if (!formData.experience_years || !formData.languages || !formData.availability_start_time || !formData.availability_end_time || !formData.short_bio) {
             setError('All professional details are mandatory');
             return;
         }
@@ -273,7 +275,21 @@ export const JoinAsAstrologer: React.FC = () => {
                                 </div>
                                 <div className="form-group">
                                     <label><Clock size={14} /> Preferred Working Hours</label>
-                                    <input type="text" placeholder="9 AM - 6 PM" value={formData.preferred_working_hours} onChange={e => setFormData({ ...formData, preferred_working_hours: e.target.value })} />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <input
+                                            type="time"
+                                            value={formData.availability_start_time}
+                                            onChange={e => setFormData({ ...formData, availability_start_time: e.target.value })}
+                                            style={{ flex: 1 }}
+                                        />
+                                        <span style={{ color: '#9ca3af', fontSize: 13 }}>to</span>
+                                        <input
+                                            type="time"
+                                            value={formData.availability_end_time}
+                                            onChange={e => setFormData({ ...formData, availability_end_time: e.target.value })}
+                                            style={{ flex: 1 }}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="form-group">
                                     <label><MapPin size={14} /> City</label>

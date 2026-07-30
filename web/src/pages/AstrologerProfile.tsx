@@ -95,11 +95,18 @@ const AstrologerProfile: React.FC = () => {
     }, [isAuthenticated, user]);
 
     useRealtime((event) => {
-        if (event.type === 'ASTRO_ONLINE' && event.astrologer_id && (String(event.astrologer_id) === String(astrologer?.user_id) || String(event.astrologer_id) === String(id))) {
+        const isThisAstrologer = event.astrologer_id && (String(event.astrologer_id) === String(astrologer?.user_id) || String(event.astrologer_id) === String(id));
+        if (event.type === 'ASTRO_ONLINE' && isThisAstrologer) {
             setAstrologer(prev => prev ? {
                 ...prev,
                 is_online: true,
                 availability_status: 'ONLINE'
+            } : null);
+        } else if (event.type === 'ASTRO_OFFLINE' && isThisAstrologer) {
+            setAstrologer(prev => prev ? {
+                ...prev,
+                is_online: false,
+                availability_status: 'OFFLINE'
             } : null);
         }
     });

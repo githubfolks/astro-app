@@ -17,6 +17,7 @@ export interface Astrologer {
     knockable?: boolean;
     queue_length?: number;
     about_me?: string;
+    short_bio?: string | null;
     availability_hours?: string | null;
     availability_start_time?: string | null;
     availability_end_time?: string | null;

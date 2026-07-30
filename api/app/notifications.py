@@ -31,15 +31,20 @@ def send_push_notification(token: str, title: str, body: str, data: dict = None,
         return
 
     try:
-        android_config = None
-        if android_channel_id:
-            android_config = messaging.AndroidConfig(
-                priority="high",
-                notification=messaging.AndroidNotification(
-                    channel_id=android_channel_id,
-                    sound="default",
-                ),
-            )
+        # Always request the default sound so every push rings, not just the
+        # ones that pass a specific (loud) android_channel_id — channel_id may
+        # be None, in which case Android/FCM falls back to the app's default
+        # notification channel, still with sound requested.
+        android_config = messaging.AndroidConfig(
+            priority="high",
+            notification=messaging.AndroidNotification(
+                channel_id=android_channel_id,
+                sound="default",
+            ),
+        )
+        apns_config = messaging.APNSConfig(
+            payload=messaging.APNSPayload(aps=messaging.Aps(sound="default"))
+        )
 
         message = messaging.Message(
             notification=messaging.Notification(
@@ -49,6 +54,7 @@ def send_push_notification(token: str, title: str, body: str, data: dict = None,
             data=data or {},
             token=token,
             android=android_config,
+            apns=apns_config,
         )
         response = messaging.send(message)
         logger.info(f"Successfully sent message: {response}")
