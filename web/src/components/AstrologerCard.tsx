@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Languages, Award, Clock, Bell, Crown } from 'lucide-react';
+import { Star, Languages, Award, Clock, Bell, Crown, User } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { api } from '../services/api';
@@ -36,19 +36,25 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
     return (
         <div className="card astro-card">
             <div className="astro-main-row">
-                <Link to={`/astrologers/${astro.slug || astro.id}`} className="astro-image-container">
-                    <img
-                        src={resolveImageUrl(astro.profile_picture_url, displayName)}
-                        alt={displayName}
-                        className="astro-img"
-                        width="84"
-                        height="84"
-                        loading="lazy"
-                    />
-                    <span className={`status-badge ${badgeClass}`}>
-                        {badgeText}
-                    </span>
-                </Link>
+                <div className="astro-image-container">
+                    <Link to={`/astrologers/${astro.slug || astro.id}`} className="astro-image-link">
+                        <img
+                            src={resolveImageUrl(astro.profile_picture_url, displayName)}
+                            alt={displayName}
+                            className="astro-img"
+                            width="84"
+                            height="84"
+                            loading="lazy"
+                        />
+                        <span className={`status-badge ${badgeClass}`}>
+                            {badgeText}
+                        </span>
+                    </Link>
+                    <div className="rating">
+                        <Star size={14} fill="currentColor" />
+                        <span>{Number(astro.rating_avg).toFixed(1)}</span>
+                    </div>
+                </div>
 
                 <div className="astro-info">
                     <p className="astro-spec">{astro.specialties}</p>
@@ -73,30 +79,26 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                         <Award size={14} />
                         <span>{astro.experience_years} Years Exp</span>
                     </div>
+                </div>
+            </div>
+
+            <div className="astro-action-row">
+                <div className="astro-hours-wrap">
                     {astro.availability_hours && (
-                        <div className="astro-hours flex items-center gap-1.5 mt-2 bg-indigo-50/50 text-indigo-600 px-2 py-1 rounded-md text-[10px] font-bold inline-flex">
+                        <div className="astro-hours flex items-center gap-1.5 bg-indigo-50/50 text-indigo-600 px-2 py-1 rounded-md text-[10px] font-bold inline-flex">
                             <Clock size={12} />
                             <span>{astro.availability_hours}</span>
                         </div>
                     )}
                 </div>
-            </div>
-
-            <div className="astro-footer-row">
-                <div className="astro-stats">
-                    <div className="rating">
-                        <Star size={16} fill="currentColor" />
-                        <span>{Number(astro.rating_avg).toFixed(1)}</span>
-                    </div>
-                    <span className="price">₹{Number(astro.consultation_fee_per_min)}/min</span>
-                </div>
 
                 <div className="action-buttons">
                     <Link
                         to={`/astrologers/${astro.slug || astro.id}`}
-                        className="view-profile-link"
+                        className="view-profile-icon"
+                        title="View Profile"
                     >
-                        Profile
+                        <User size={16} />
                     </Link>
                     {status === 'ONLINE' ? (
                         <button
@@ -123,6 +125,10 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                         <span className="offline-badge">Offline</span>
                     )}
                 </div>
+            </div>
+
+            <div className="astro-footer-row">
+                <span className="price">₹{Number(astro.consultation_fee_per_min)}/min</span>
             </div>
         </div>
     );

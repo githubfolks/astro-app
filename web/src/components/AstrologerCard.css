@@ -45,8 +45,16 @@
 }
 
 .astro-image-container {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     flex-shrink: 0;
+}
+
+.astro-image-link {
+    position: relative;
+    display: block;
 }
 
 .astro-img {
@@ -150,27 +158,35 @@
     margin-bottom: 2px;
 }
 
-.astro-footer-row {
+.astro-action-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(99, 102, 241, 0.1);
-    padding-top: 18px;
+    gap: 8px;
     margin-top: auto;
 }
 
-.astro-stats {
+.astro-hours-wrap {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.astro-footer-row {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    justify-content: flex-end;
+    align-items: center;
+    border-top: 1px solid rgba(99, 102, 241, 0.1);
+    padding-top: 14px;
+    margin-top: 14px;
 }
 
 .rating {
     color: #f59e0b;
-    font-weight: 400;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 13px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
 }
 
@@ -185,20 +201,23 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.view-profile-link {
-    padding: 10px 16px;
+.view-profile-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
     background: rgba(99, 102, 241, 0.05);
     color: #4f46e5;
-    border-radius: 14px;
-    font-size: 13px;
-    font-weight: 600;
+    border-radius: 12px;
     transition: all 0.3s ease;
     border: 1px solid rgba(99, 102, 241, 0.1);
 }
 
-.view-profile-link:hover {
+.view-profile-icon:hover {
     background: rgba(99, 102, 241, 0.1);
     transform: translateY(-2px);
 }
