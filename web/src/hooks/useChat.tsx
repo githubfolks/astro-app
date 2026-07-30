@@ -2,6 +2,7 @@ import type { ChatHistoryItem } from '../types';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
+import { getErrorMessage } from '../utils/errors';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const WS_URL = API_URL.replace(/^http/, 'ws') + '/chat/ws';
@@ -33,6 +34,7 @@ export const useChat = (consultationId: string) => {
     const [moderationAlert, setModerationAlert] = useState<string | null>(null);
     const [sessionError, setSessionError] = useState<string | null>(null);
     const [endedReason, setEndedReason] = useState<string | null>(null);
+    const [resumeError, setResumeError] = useState<string | null>(null);
 
     // Reconnection state
     const shouldReconnect = useRef(true);
@@ -128,17 +130,24 @@ export const useChat = (consultationId: string) => {
                     setStatus('PAUSED');
                     setTimerActive(false);
                     setPauseReason(data.reason ?? null);
+                    setResumeError(null);
                     break;
                 case 'CONSULTATION_RESUMED':
                     setStatus('ACTIVE');
                     setTimerActive(true);
                     setLowBalance(false);
                     setPauseReason(null);
+                    setResumeError(null);
                     if (data.balance !== undefined) {
                         setBillingInfo(prev => ({ ...prev, balance: data.balance }));
                     }
                     break;
                 case 'RESUME_FAILED':
+                    setResumeError(
+                        data.reason === 'insufficient_balance'
+                            ? "The seeker's wallet balance is too low to resume. Waiting for them to add funds."
+                            : 'Unable to resume the chat. Please try again.'
+                    );
                     break;
                 case 'MODERATION_ALERT':
                     setModerationAlert(data.message || 'Sharing personal contact details is not allowed. This chat is monitored.');
@@ -265,11 +274,13 @@ export const useChat = (consultationId: string) => {
     };
 
     const resumeChat = () => {
+        setResumeError(null);
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
             ws.current.send(JSON.stringify({ type: 'RESUME_CHAT' }));
         } else {
             api.consultations.resumeConsultation(consultationId).catch(err => {
                 console.error('Failed to resume consultation via REST:', err);
+                setResumeError(getErrorMessage(err) || 'Unable to resume the chat. Please try again.');
             });
         }
     };
@@ -279,6 +290,6 @@ export const useChat = (consultationId: string) => {
         billingInfo, timerActive, lowBalance, talkTimeSeconds, isTyping,
         moderationAlert, dismissModerationAlert: () => setModerationAlert(null),
         sessionError, dismissSessionError: () => setSessionError(null),
-        endedReason,
+        endedReason, resumeError,
     };
 };

@@ -237,7 +237,7 @@ export const Chat: React.FC = () => {
     }, [activeConsultationId, token, user]);
 
 
-    const { messages, sendMessage, sendTyping, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, isTyping, moderationAlert, dismissModerationAlert, sessionError, endedReason } = useChat(activeConsultationId || '');
+    const { messages, sendMessage, sendTyping, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, isTyping, moderationAlert, dismissModerationAlert, sessionError, endedReason, resumeError } = useChat(activeConsultationId || '');
 
     // Groq-generated coaching hint for the astrologer: refreshed whenever the seeker sends a new message.
     const [coachHint, setCoachHint] = useState<string | null>(null);
@@ -1165,6 +1165,7 @@ export const Chat: React.FC = () => {
                                     {endedReason === 'insufficient_balance' && "Chat ended — seeker's balance ran out."}
                                     {endedReason === 'package_time_exhausted' && 'Chat ended — package time exhausted.'}
                                     {endedReason === 'seeker_logged_out' && 'Chat ended — seeker logged out.'}
+                                    {endedReason === 'paused_timeout' && 'Chat ended — nobody resumed after it was paused.'}
                                     {(endedReason === 'user_ended' || !endedReason) && 'This chat has ended.'}
                                     {user?.role === 'ASTROLOGER' && ' Returning to dashboard…'}
                                 </span>
@@ -1249,16 +1250,24 @@ export const Chat: React.FC = () => {
                                         >
                                             Resume with current balance
                                         </button>
+                                        {resumeError && (
+                                            <p className="text-sm text-red-600 text-center">{resumeError}</p>
+                                        )}
                                     </div>
                                 )}
 
                                 {user?.role === 'ASTROLOGER' && (
-                                    <button
-                                        onClick={resumeChat}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-colors"
-                                    >
-                                        Resume Chat
-                                    </button>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <button
+                                            onClick={resumeChat}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition-colors"
+                                        >
+                                            Resume Chat
+                                        </button>
+                                        {resumeError && (
+                                            <p className="text-sm text-red-600 max-w-xs text-center">{resumeError}</p>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         )}

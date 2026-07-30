@@ -51,6 +51,11 @@ async def startup_event():
     # Background sweep: expire stale REQUESTED consultations (seeker waiting on a no-show)
     asyncio.create_task(_stale_request_sweep())
 
+    # Background sweep: end PAUSED consultations nobody has come back to resume
+    # (otherwise a disconnected/abandoned chat sits paused forever, blocking the
+    # astrologer's queue and the seeker's one-active-chat slot indefinitely).
+    asyncio.create_task(_stale_paused_sweep())
+
 
 async def _stale_request_sweep():
     """Periodically mark unanswered REQUESTED consultations as MISSED and notify the seeker."""
@@ -93,6 +98,71 @@ async def _stale_request_sweep():
                         )
         except Exception as e:
             print(f"Stale request sweep error: {e}")
+
+
+async def _stale_paused_sweep():
+    """Periodically end PAUSED consultations that have sat disconnected too long.
+
+    PAUSED only ever gets set in one place (chat.py's disconnect handler), which
+    always stamps disconnection_snapshot.paused_at at the same time — so that
+    field is a reliable "how long has this been paused" clock without needing a
+    dedicated updated_at column.
+    """
+    from datetime import datetime, timedelta
+    from .database import SessionLocal
+    from . import models, audit
+    from .services.settings_service import get_setting
+    from .routers.chat import manager, promote_next_in_queue
+    from .routers.realtime import notify_user
+    from .notifications import send_push_notification
+
+    while True:
+        try:
+            await asyncio.sleep(60)
+            try:
+                stale_minutes = int(get_setting("paused_stale_minutes") or 15)
+            except (TypeError, ValueError):
+                stale_minutes = 15
+            cutoff = datetime.utcnow() - timedelta(minutes=stale_minutes)
+            with SessionLocal() as db:
+                paused = db.query(models.Consultation).filter(
+                    models.Consultation.status == models.ConsultationStatus.PAUSED,
+                ).all()
+                for cons in paused:
+                    paused_at = None
+                    if cons.disconnection_snapshot:
+                        try:
+                            paused_at = datetime.fromisoformat(json.loads(cons.disconnection_snapshot)["paused_at"])
+                        except (ValueError, KeyError, TypeError):
+                            paused_at = None
+                    # Missing/unparseable snapshot shouldn't happen (PAUSED is only
+                    # ever set alongside one) — treat it as already-stale rather
+                    # than let a session with no timestamp linger forever.
+                    if paused_at is not None and paused_at >= cutoff:
+                        continue
+
+                    cons.status = models.ConsultationStatus.AUTO_ENDED
+                    cons.end_time = datetime.utcnow()
+                    audit.log(db, "CHAT_AUTO_ENDED", resource_type="consultation",
+                              resource_id=cons.id,
+                              details={"reason": "paused_timeout", "total_cost": float(cons.total_cost or 0)})
+                    db.commit()
+                    await manager.broadcast(cons.id, {"type": "CHAT_ENDED", "reason": "paused_timeout"})
+                    promote_next_in_queue(db, cons.astrologer_id)
+                    notify_user(cons.seeker_id, {
+                        "type": "CHAT_ENDED",
+                        "consultation_id": cons.id,
+                        "reason": "paused_timeout",
+                    })
+                    for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == cons.seeker_id).all():
+                        send_push_notification(
+                            token=tok.fcm_token,
+                            title="Chat ended",
+                            body="Your paused consultation timed out and was ended.",
+                            data={"consultation_id": str(cons.id), "type": "CHAT_ENDED"},
+                        )
+        except Exception as e:
+            print(f"Stale paused sweep error: {e}")
 
 
 async def _recover_active_billing_loops():

@@ -61,3 +61,18 @@ Aadikarta Astrology (aadikarta.org), by Aadikarta Vedic Astro Pvt Ltd, connects 
 Aadikarta Astrology (aadikarta.org) is Aadikarta Vedic Astro Pvt Ltd's official platform for secure consultations with verified Vedic astrologers. (139 chars)
 
 We're Aadikarta Vedic Astro Pvt Ltd, running aadikarta.org to connect users worldwide with authentic, verified Vedic astrologers and tarot readers. (146 chars)
+
+
+
+
+
+max concurrent chat support
+Hinglish words collection
+compatible contents of Privacy Policy, Refund Policy, Disclaimer, Terms of Service
+
+
+Astrolger card:
+1. keep star and rate belo to profile image
+2. Keep icon for profile and Chat/Offline. Keep in the same line of Availability Time
+
+

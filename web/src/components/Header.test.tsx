@@ -5,8 +5,8 @@ import Header from './Header';
 import { AuthProvider } from '../context/AuthContext';
 
 function renderHeaderWithUser(user: Record<string, unknown>) {
-    localStorage.setItem('token', 'tok');
-    localStorage.setItem('user', JSON.stringify(user));
+    sessionStorage.setItem('token', 'tok');
+    sessionStorage.setItem('user', JSON.stringify(user));
     return render(
         <MemoryRouter>
             <AuthProvider>

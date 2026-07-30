@@ -37,8 +37,8 @@ describe('AuthContext', () => {
 
         await waitFor(() => expect(screen.getByTestId('name')).toHaveTextContent('Asha Rao'));
         expect(screen.getByTestId('authed')).toHaveTextContent('true');
-        expect(localStorage.getItem('token')).toBe('tok');
-        expect(JSON.parse(localStorage.getItem('user')!).full_name).toBe('Asha Rao');
+        expect(sessionStorage.getItem('token')).toBe('tok');
+        expect(JSON.parse(sessionStorage.getItem('user')!).full_name).toBe('Asha Rao');
     });
 
     it('clears user and storage on logout', async () => {
@@ -48,13 +48,13 @@ describe('AuthContext', () => {
 
         await userEvent.click(screen.getByText('logout'));
         await waitFor(() => expect(screen.getByTestId('authed')).toHaveTextContent('false'));
-        expect(localStorage.getItem('token')).toBeNull();
-        expect(localStorage.getItem('user')).toBeNull();
+        expect(sessionStorage.getItem('token')).toBeNull();
+        expect(sessionStorage.getItem('user')).toBeNull();
     });
 
     it('rehydrates an existing session from storage', async () => {
-        localStorage.setItem('token', 'tok');
-        localStorage.setItem('user', JSON.stringify(seeker));
+        sessionStorage.setItem('token', 'tok');
+        sessionStorage.setItem('user', JSON.stringify(seeker));
 
         renderHarness();
         await waitFor(() => expect(screen.getByTestId('name')).toHaveTextContent('Asha Rao'));

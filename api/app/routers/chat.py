@@ -802,24 +802,7 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, consultation_id)
-        # Pause billing whenever either participant disconnects during an ACTIVE session
-        with database.SessionLocal() as db_disc:
-            cons = db_disc.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
-            if cons and cons.status == models.ConsultationStatus.ACTIVE:
-                cons.status = models.ConsultationStatus.PAUSED
-                # Populate disconnection_snapshot for crash recovery
-                seeker_wallet = db_disc.query(models.UserWallet).filter(models.UserWallet.user_id == cons.seeker_id).first()
-                cons.disconnection_snapshot = json.dumps({
-                    "paused_at": datetime.utcnow().isoformat(),
-                    "paused_by": user.role.value,
-                    "balance_at_pause": float(seeker_wallet.balance) if seeker_wallet else 0,
-                    "total_cost_at_pause": float(cons.total_cost or 0),
-                    "duration_seconds_at_pause": cons.duration_seconds or 0
-                })
-                db_disc.commit()
-                reason = "astrologer_disconnected" if user.role == models.UserRole.ASTROLOGER else "seeker_disconnected"
-                asyncio.create_task(manager.broadcast(consultation_id, {"type": "CONSULTATION_PAUSED", "reason": reason}))
-                logger.info(f"Consultation {consultation_id} paused due to {reason}")
+        await _pause_active_consultation_on_disconnect(consultation_id, user.role)
 
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")
@@ -828,9 +811,38 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
         except:
             pass
         manager.disconnect(websocket, consultation_id)
+        # Any other socket-level failure means the connection is just as gone as a
+        # clean disconnect — billing must not keep running against an empty room.
+        await _pause_active_consultation_on_disconnect(consultation_id, user.role)
 
     finally:
         db.close()
+
+
+async def _pause_active_consultation_on_disconnect(consultation_id: int, disconnected_role: "models.UserRole"):
+    """Flip an ACTIVE consultation to PAUSED when its socket drops, regardless of
+    whether that surfaces as a clean WebSocketDisconnect or some other error —
+    a dead connection is a dead connection either way, and billing_loop must stop
+    deducting from the seeker's wallet once nobody is actually connected."""
+    with database.SessionLocal() as db_disc:
+        cons = db_disc.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+        if not cons or cons.status != models.ConsultationStatus.ACTIVE:
+            return
+        cons.status = models.ConsultationStatus.PAUSED
+        # Populate disconnection_snapshot for crash recovery (and for the
+        # stale-paused sweep in main.py, which reads paused_at from it).
+        seeker_wallet = db_disc.query(models.UserWallet).filter(models.UserWallet.user_id == cons.seeker_id).first()
+        cons.disconnection_snapshot = json.dumps({
+            "paused_at": datetime.utcnow().isoformat(),
+            "paused_by": disconnected_role.value,
+            "balance_at_pause": float(seeker_wallet.balance) if seeker_wallet else 0,
+            "total_cost_at_pause": float(cons.total_cost or 0),
+            "duration_seconds_at_pause": cons.duration_seconds or 0
+        })
+        db_disc.commit()
+        reason = "astrologer_disconnected" if disconnected_role == models.UserRole.ASTROLOGER else "seeker_disconnected"
+        await manager.broadcast(consultation_id, {"type": "CONSULTATION_PAUSED", "reason": reason})
+        logger.info(f"Consultation {consultation_id} paused due to {reason}")
 
 
 # --- Message translation (Hindi <-> English) ---

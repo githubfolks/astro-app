@@ -39,7 +39,7 @@ test.describe('Auth journeys', () => {
         // (The "Hi, <name>" greeting itself is covered by the Header unit test,
         // which doesn't depend on the data-heavy home page rendering under mocks.)
         await expect(page).toHaveURL('/');
-        await expect.poll(() => page.evaluate(() => localStorage.getItem('token'))).toBe('tok');
+        await expect.poll(() => page.evaluate(() => sessionStorage.getItem('token'))).toBe('tok');
     });
 
     test('signup routes to email verification (not an immediate login)', async ({ page }) => {
