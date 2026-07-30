@@ -1,6 +1,41 @@
 {
   "components": {
     "schemas": {
+      "AddMoneyRequest": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "Admin credit",
+            "title": "Description"
+          },
+          "transaction_type": {
+            "default": "DEPOSIT",
+            "title": "Transaction Type",
+            "type": "string"
+          },
+          "user_id": {
+            "title": "User Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "user_id",
+          "amount"
+        ],
+        "title": "AddMoneyRequest",
+        "type": "object"
+      },
       "AdminCreateAstrologer": {
         "properties": {
           "about_me": {
@@ -28,6 +63,18 @@
             ],
             "title": "Astrology Types"
           },
+          "availability_end_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability End Time"
+          },
           "availability_hours": {
             "anyOf": [
               {
@@ -38,6 +85,18 @@
               }
             ],
             "title": "Availability Hours"
+          },
+          "availability_start_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Start Time"
           },
           "city": {
             "anyOf": [
@@ -488,6 +547,19 @@
         "title": "AiChatResponse",
         "type": "object"
       },
+      "AllowedSeekerCreate": {
+        "properties": {
+          "seeker_email": {
+            "title": "Seeker Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "seeker_email"
+        ],
+        "title": "AllowedSeekerCreate",
+        "type": "object"
+      },
       "ApproveAstrologerRequest": {
         "properties": {
           "consultation_fee_per_min": {
@@ -513,6 +585,16 @@
             },
             "title": "Astrology Types",
             "type": "array"
+          },
+          "availability_end_time": {
+            "format": "time",
+            "title": "Availability End Time",
+            "type": "string"
+          },
+          "availability_start_time": {
+            "format": "time",
+            "title": "Availability Start Time",
+            "type": "string"
           },
           "city": {
             "anyOf": [
@@ -567,10 +649,6 @@
             "title": "Phone Number",
             "type": "string"
           },
-          "preferred_working_hours": {
-            "title": "Preferred Working Hours",
-            "type": "string"
-          },
           "profile_photo_url": {
             "title": "Profile Photo Url",
             "type": "string"
@@ -588,7 +666,8 @@
           "astrology_types",
           "experience_years",
           "languages",
-          "preferred_working_hours",
+          "availability_start_time",
+          "availability_end_time",
           "short_bio",
           "profile_photo_url"
         ],
@@ -655,6 +734,18 @@
             ],
             "title": "Astrology Types"
           },
+          "availability_end_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability End Time"
+          },
           "availability_hours": {
             "anyOf": [
               {
@@ -665,6 +756,18 @@
               }
             ],
             "title": "Availability Hours"
+          },
+          "availability_start_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Start Time"
           },
           "availability_status": {
             "anyOf": [
@@ -836,6 +939,11 @@
             "title": "Is Premium",
             "type": "boolean"
           },
+          "is_restricted": {
+            "default": false,
+            "title": "Is Restricted",
+            "type": "boolean"
+          },
           "is_trending": {
             "default": false,
             "title": "Is Trending",
@@ -845,6 +953,17 @@
             "default": false,
             "title": "Is Vip",
             "type": "boolean"
+          },
+          "knockable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Knockable"
           },
           "kyc_verified": {
             "default": false,
@@ -1064,16 +1183,29 @@
             ],
             "title": "Astrology Types"
           },
-          "availability_hours": {
+          "availability_end_time": {
             "anyOf": [
               {
+                "format": "time",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Availability Hours"
+            "title": "Availability End Time"
+          },
+          "availability_start_time": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Availability Start Time"
           },
           "bank_account_holder_name": {
             "anyOf": [
@@ -2261,6 +2393,31 @@
         ],
         "title": "ConsultationCreate",
         "type": "object"
+      },
+      "ConsultationStatus": {
+        "enum": [
+          "REQUESTED",
+          "ONGOING",
+          "COMPLETED",
+          "CANCELLED",
+          "ACCEPTED",
+          "ACTIVE",
+          "PAUSED",
+          "AUTO_ENDED",
+          "REJECTED",
+          "MISSED"
+        ],
+        "title": "ConsultationStatus",
+        "type": "string"
+      },
+      "ConsultationType": {
+        "enum": [
+          "CHAT",
+          "VOICE",
+          "VIDEO"
+        ],
+        "title": "ConsultationType",
+        "type": "string"
       },
       "ContactInquiry": {
         "properties": {
@@ -4673,6 +4830,20 @@
         "title": "TopicSuggestion",
         "type": "object"
       },
+      "TransactionType-Input": {
+        "enum": [
+          "DEPOSIT",
+          "WITHDRAWAL",
+          "CHAT_DEDUCTION",
+          "CHAT_REFUND",
+          "PAYMENT_GATEWAY",
+          "PAYMENT_REFUND",
+          "COURSE_PURCHASE",
+          "PACKAGE_PURCHASE"
+        ],
+        "title": "TransactionType",
+        "type": "string"
+      },
       "TransactionType-Output": {
         "enum": [
           "DEPOSIT",
@@ -5047,6 +5218,19 @@
         "title": "VerifyOTPRequest",
         "type": "object"
       },
+      "VisibilityUpdate": {
+        "properties": {
+          "is_restricted": {
+            "title": "Is Restricted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_restricted"
+        ],
+        "title": "VisibilityUpdate",
+        "type": "object"
+      },
       "VoiceGender": {
         "enum": [
           "MALE",
@@ -5065,6 +5249,17 @@
             "default": "Admin adjustment",
             "title": "Description",
             "type": "string"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
           }
         },
         "required": [
@@ -5129,58 +5324,6 @@
         "title": "WalletTransaction",
         "type": "object"
       },
-      "WalletTransactionCreate": {
-        "properties": {
-          "amount": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
-                "type": "string"
-              }
-            ],
-            "title": "Amount"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "reference_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reference Id"
-          },
-          "transaction_type": {
-            "$ref": "#/components/schemas/app__schemas__TransactionType"
-          },
-          "user_id": {
-            "title": "User Id",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "amount",
-          "transaction_type",
-          "user_id"
-        ],
-        "title": "WalletTransactionCreate",
-        "type": "object"
-      },
       "ZodiacSign": {
         "enum": [
           "ARIES",
@@ -5199,20 +5342,6 @@
         "title": "ZodiacSign",
         "type": "string"
       },
-      "app__models__TransactionType": {
-        "enum": [
-          "DEPOSIT",
-          "WITHDRAWAL",
-          "CHAT_DEDUCTION",
-          "CHAT_REFUND",
-          "PAYMENT_GATEWAY",
-          "PAYMENT_REFUND",
-          "COURSE_PURCHASE",
-          "PACKAGE_PURCHASE"
-        ],
-        "title": "TransactionType",
-        "type": "string"
-      },
       "app__models__UserRole": {
         "enum": [
           "ADMIN",
@@ -5221,19 +5350,6 @@
           "TUTOR"
         ],
         "title": "UserRole",
-        "type": "string"
-      },
-      "app__schemas__TransactionType": {
-        "enum": [
-          "DEPOSIT",
-          "WITHDRAWAL",
-          "CHAT_DEDUCTION",
-          "CHAT_REFUND",
-          "PAYMENT_GATEWAY",
-          "PAYMENT_REFUND",
-          "COURSE_PURCHASE"
-        ],
-        "title": "TransactionType",
         "type": "string"
       },
       "app__schemas__UserRole": {
@@ -5425,6 +5541,158 @@
           }
         ],
         "summary": "Update Astrologer Full",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/astrologers/{user_id}/allowed-seekers": {
+      "get": {
+        "operationId": "list_astrologer_allowed_seekers_admin_astrologers__user_id__allowed_seekers_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Astrologer Allowed Seekers",
+        "tags": [
+          "Admin"
+        ]
+      },
+      "post": {
+        "operationId": "add_astrologer_allowed_seeker_admin_astrologers__user_id__allowed_seekers_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllowedSeekerCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Add Astrologer Allowed Seeker",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/astrologers/{user_id}/allowed-seekers/{seeker_id}": {
+      "delete": {
+        "operationId": "remove_astrologer_allowed_seeker_admin_astrologers__user_id__allowed_seekers__seeker_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "seeker_id",
+            "required": true,
+            "schema": {
+              "title": "Seeker Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Remove Astrologer Allowed Seeker",
         "tags": [
           "Admin"
         ]
@@ -5946,6 +6214,61 @@
           }
         ],
         "summary": "Get Astrologer Stats",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/astrologers/{user_id}/visibility": {
+      "put": {
+        "operationId": "update_astrologer_visibility_admin_astrologers__user_id__visibility_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilityUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Astrologer Visibility",
         "tags": [
           "Admin"
         ]
@@ -6774,7 +7097,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "$ref": "#/components/schemas/app__models__TransactionType"
+                  "$ref": "#/components/schemas/TransactionType-Input"
                 },
                 {
                   "type": "null"
@@ -6826,6 +7149,84 @@
           }
         ],
         "summary": "List All Transactions",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/transactions/export": {
+      "get": {
+        "description": "CSV export of the (filtered, unpaginated) transaction list \u2014 for handing\ndata to accounting/audit rather than reading it off the admin UI.",
+        "operationId": "export_all_transactions_admin_transactions_export_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/app__models__UserRole",
+              "default": "SEEKER"
+            }
+          },
+          {
+            "in": "query",
+            "name": "transaction_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TransactionType-Input"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Transaction Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Export All Transactions",
         "tags": [
           "Admin"
         ]
@@ -7038,6 +7439,108 @@
               "title": "User Id",
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "consultation_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConsultationType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Consultation Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConsultationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
           }
         ],
         "responses": {
@@ -7066,6 +7569,133 @@
           }
         ],
         "summary": "Get User Consultations",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/consultations/export": {
+      "get": {
+        "operationId": "export_user_consultations_admin_users__user_id__consultations_export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "consultation_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConsultationType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Consultation Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConsultationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Export User Consultations",
         "tags": [
           "Admin"
         ]
@@ -7339,19 +7969,99 @@
               "title": "User Id",
               "type": "integer"
             }
+          },
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "transaction_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TransactionType-Input"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Transaction Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
           }
         ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WalletTransaction"
-                  },
-                  "title": "Response Get User Wallet History Admin Users  User Id  Wallet History Get",
-                  "type": "array"
-                }
+                "schema": {}
               }
             },
             "description": "Successful Response"
@@ -7373,6 +8083,117 @@
           }
         ],
         "summary": "Get User Wallet History",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/users/{user_id}/wallet-history/export": {
+      "get": {
+        "operationId": "export_user_wallet_history_admin_users__user_id__wallet_history_export_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "transaction_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TransactionType-Input"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Transaction Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Export User Wallet History",
         "tags": [
           "Admin"
         ]
@@ -7429,6 +8250,63 @@
           }
         ],
         "summary": "Admin Wallet Credit",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/wallets/reconciliation": {
+      "get": {
+        "description": "Compares each wallet's stored balance against the sum of its own\ntransaction ledger, to catch drift from a bug or a manual DB edit that\nthe two would otherwise hide from each other. Not a substitute for\nreconciling against Razorpay's settlement reports (out of scope here),\njust an internal self-consistency check.",
+        "operationId": "get_wallet_reconciliation_admin_wallets_reconciliation_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "only_mismatches",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Only Mismatches",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tolerance",
+            "required": false,
+            "schema": {
+              "default": 0.01,
+              "title": "Tolerance",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Wallet Reconciliation",
         "tags": [
           "Admin"
         ]
@@ -12316,7 +13194,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WalletTransactionCreate"
+                "$ref": "#/components/schemas/AddMoneyRequest"
               }
             }
           },
@@ -12326,9 +13204,7 @@
           "200": {
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserWallet"
-                }
+                "schema": {}
               }
             },
             "description": "Successful Response"
