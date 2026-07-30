@@ -112,6 +112,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 rating_avg: profile.rating_avg || 5.0,
                 is_online: profile.is_online || false,
                 availability_status: profile.availability_status || (profile.is_online ? 'ONLINE' : 'OFFLINE'),
+                knockable: profile.knockable ?? true,
                 queue_length: profile.queue_length || 0,
                 availability_hours: profile.availability_hours || null,
                 is_premium: profile.is_premium || false

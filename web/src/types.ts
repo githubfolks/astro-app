@@ -14,9 +14,12 @@ export interface Astrologer {
     rating_avg: number;
     is_online: boolean;
     availability_status?: AvailabilityStatus;
+    knockable?: boolean;
     queue_length?: number;
     about_me?: string;
     availability_hours?: string | null;
+    availability_start_time?: string | null;
+    availability_end_time?: string | null;
     whatsapp_number?: string | null;
     is_premium?: boolean;
 }
@@ -56,6 +59,7 @@ export interface AstrologerListItem {
     rating_avg?: number;
     is_online?: boolean;
     availability_status?: AvailabilityStatus;
+    knockable?: boolean;
     queue_length?: number;
     availability_hours?: string | null;
     is_premium?: boolean;

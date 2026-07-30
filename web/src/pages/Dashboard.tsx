@@ -24,6 +24,8 @@ export const Dashboard: React.FC = () => {
     // Astrologer specific state
     const [isOnline, setIsOnline] = useState(false);
     const [availabilityText, setAvailabilityText] = useState('');
+    const [availabilityStart, setAvailabilityStart] = useState('');
+    const [availabilityEnd, setAvailabilityEnd] = useState('');
     const [updatingProfile, setUpdatingProfile] = useState(false);
     const [astrologerProfile, setAstrologerProfile] = useState<AstrologerProfileType | null>(null);
     const [payoutHistory, setPayoutHistory] = useState<PayoutHistoryItem[]>([]);
@@ -92,6 +94,8 @@ export const Dashboard: React.FC = () => {
 
                     setIsOnline(profile.is_online);
                     setAvailabilityText(profile.availability_hours || '');
+                    setAvailabilityStart((profile.availability_start_time || '').slice(0, 5));
+                    setAvailabilityEnd((profile.availability_end_time || '').slice(0, 5));
                     setAstrologerProfile(profile);
 
                     // Load payout history
@@ -174,7 +178,11 @@ export const Dashboard: React.FC = () => {
     const saveAvailability = async () => {
         try {
             setUpdatingProfile(true);
-            await api.astrologers.updateProfile({ availability_hours: availabilityText });
+            await api.astrologers.updateProfile({
+                availability_hours: availabilityText,
+                availability_start_time: availabilityStart || null,
+                availability_end_time: availabilityEnd || null,
+            });
             alert('Availability updated successfully!');
         } catch (e) {
             console.error(e);
@@ -397,6 +405,26 @@ export const Dashboard: React.FC = () => {
                                             rows={3}
                                         />
                                         <p className="text-xs text-gray-400 mt-1">Seekers will see this text on your profile.</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Knock Window</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="time"
+                                                value={availabilityStart}
+                                                onChange={(e) => setAvailabilityStart(e.target.value)}
+                                                className="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                            />
+                                            <span className="text-gray-400 text-sm">to</span>
+                                            <input
+                                                type="time"
+                                                value={availabilityEnd}
+                                                onChange={(e) => setAvailabilityEnd(e.target.value)}
+                                                className="flex-1 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-gray-400 mt-1">Seekers can only "Knock" to alert you while you're offline during this window.</p>
                                     </div>
 
                                     <button

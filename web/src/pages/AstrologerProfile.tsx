@@ -40,6 +40,7 @@ const AstrologerProfile: React.FC = () => {
     // else) — gate the Knock button on this instead of showing it to everyone and
     // letting the request fail.
     const canNotify = isAuthenticated && user?.role === 'SEEKER';
+    const canKnock = canNotify && !!astrologer?.knockable;
 
     const getStructuredData = (ast: AstrologerProfile) => ({
         "@context": "https://schema.org",
@@ -284,7 +285,7 @@ const AstrologerProfile: React.FC = () => {
                                 </div>
 
                                 {status === 'OFFLINE' ? (
-                                    canNotify ? (
+                                    canKnock ? (
                                         <button
                                             onClick={handleNotify}
                                             disabled={notified}
@@ -432,13 +433,13 @@ const AstrologerProfile: React.FC = () => {
                                 <h3 className="font-normal text-lg mb-2">Ready to get insights?</h3>
                                 <p className="text-white/80 text-sm mb-4">
                                     {status === 'OFFLINE'
-                                        ? (canNotify
+                                        ? (canKnock
                                             ? "This astrologer is offline. Get notified the moment they're back online."
                                             : "This astrologer is currently offline.")
                                         : 'Start your consultation now and get personalized guidance.'}
                                 </p>
                                 {status === 'OFFLINE' ? (
-                                    canNotify && (
+                                    canKnock && (
                                         <button
                                             onClick={handleNotify}
                                             disabled={notified}

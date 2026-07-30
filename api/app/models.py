@@ -101,6 +101,10 @@ class AstrologerProfile(Base):
     rating_avg = Column(DECIMAL(3, 2), default=0.0)
     total_consultations = Column(Integer, default=0)
     availability_hours = Column(String, nullable=True)
+    # Daily window (same every day) during which Knock is allowed; availability_hours above
+    # stays a freeform display label and is not parsed for this check.
+    availability_start_time = Column(Time, nullable=True)
+    availability_end_time = Column(Time, nullable=True)
     whatsapp_number = Column(String, nullable=True)  # Alternate contact number, entered post-login during onboarding
     city = Column(String, nullable=True)
     id_proof_url = Column(String, nullable=True)

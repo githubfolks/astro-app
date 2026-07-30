@@ -49,6 +49,8 @@ export default function AstrologerForm() {
         consultation_fee_per_min: 0,
         commission_percentage: 70,
         availability_hours: '',
+        availability_start_time: '',
+        availability_end_time: '',
         profile_picture_url: '',
         is_verified: true
     });
@@ -74,6 +76,8 @@ export default function AstrologerForm() {
                     consultation_fee_per_min: found.profile?.consultation_fee_per_min || 0,
                     commission_percentage: found.profile?.commission_percentage ?? 70,
                     availability_hours: found.profile?.availability_hours || '',
+                    availability_start_time: (found.profile?.availability_start_time || '').slice(0, 5),
+                    availability_end_time: (found.profile?.availability_end_time || '').slice(0, 5),
                     profile_picture_url: found.profile?.profile_picture_url || '',
                     is_verified: found.is_verified
                 });
@@ -159,10 +163,16 @@ export default function AstrologerForm() {
         if (!validate()) return;
         setLoading(true);
         try {
+            // Pydantic rejects "" for Optional[time] fields — send null when unset.
+            const payload = {
+                ...formData,
+                availability_start_time: formData.availability_start_time || null,
+                availability_end_time: formData.availability_end_time || null,
+            };
             if (isEditMode) {
-                await api.put(`/admin/astrologers/${id}`, formData);
+                await api.put(`/admin/astrologers/${id}`, payload);
             } else {
-                await api.post('/admin/astrologers', formData);
+                await api.post('/admin/astrologers', payload);
             }
             navigate('/astrologers');
         } catch (error) {
@@ -336,6 +346,15 @@ export default function AstrologerForm() {
                             placeholder="e.g. Mon-Fri 10am-6pm"
                         />
                     </div>
+
+                    <Input
+                        label="Knock Window Start" name="availability_start_time" type="time"
+                        value={formData.availability_start_time} onChange={handleChange}
+                    />
+                    <Input
+                        label="Knock Window End" name="availability_end_time" type="time"
+                        value={formData.availability_end_time} onChange={handleChange}
+                    />
 
                     <div className="md:col-span-2">
                         <TextArea

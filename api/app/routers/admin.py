@@ -415,6 +415,8 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
         specialties=astrologer.specialties,
         consultation_fee_per_min=astrologer.consultation_fee_per_min,
         availability_hours=astrologer.availability_hours,
+        availability_start_time=astrologer.availability_start_time,
+        availability_end_time=astrologer.availability_end_time,
         profile_picture_url=astrologer.profile_picture_url,
         is_online=False,
         is_approved=True,
@@ -454,6 +456,8 @@ def list_astrologers_full(skip: int = 0, limit: int = 100, db: Session = Depends
                 "specialties": profile.specialties,
                 "consultation_fee_per_min": profile.consultation_fee_per_min,
                 "availability_hours": profile.availability_hours,
+                "availability_start_time": profile.availability_start_time,
+                "availability_end_time": profile.availability_end_time,
                 "rating_avg": profile.rating_avg,
                 "commission_percentage": float(profile.commission_percentage),
                 "is_approved": profile.is_approved,
@@ -511,6 +515,8 @@ def update_astrologer_full(user_id: int, data: schemas.AdminCreateAstrologer, db
     profile.consultation_fee_per_min = data.consultation_fee_per_min
     profile.commission_percentage = data.commission_percentage
     profile.availability_hours = data.availability_hours
+    profile.availability_start_time = data.availability_start_time
+    profile.availability_end_time = data.availability_end_time
     profile.profile_picture_url = data.profile_picture_url
 
     db.commit()

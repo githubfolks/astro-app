@@ -115,7 +115,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                         </button>
                     ) : notified ? (
                         <span className="offline-badge">Knocked</span>
-                    ) : canNotify ? (
+                    ) : canNotify && astro.knockable ? (
                         <button className="notify-btn" onClick={handleNotify}>
                             <Bell size={14} /> Knock
                         </button>

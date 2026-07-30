@@ -8,6 +8,7 @@ from ..limiter import limiter
 from .auth import get_current_user, get_password_hash, create_access_token
 import re, unicodedata, uuid, os, io
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from PIL import Image
 import pillow_heif
 
@@ -42,6 +43,20 @@ _BUSY_STATUSES = [
     models.ConsultationStatus.PAUSED,
 ]
 
+_IST = ZoneInfo("Asia/Kolkata")
+
+
+def is_within_availability_window(profile: models.AstrologerProfile) -> bool:
+    """Whether right now falls inside the astrologer's daily availability window.
+    An astrologer who hasn't set a window is treated as always available for Knock."""
+    start, end = profile.availability_start_time, profile.availability_end_time
+    if not start or not end:
+        return True
+    now = datetime.now(_IST).time()
+    if start <= end:
+        return start <= now <= end
+    return now >= start or now <= end  # window spans midnight, e.g. 22:00-06:00
+
 
 def _apply_availability(profile: models.AstrologerProfile, queue_length: int, is_busy: bool):
     """Attach computed availability_status + queue_length to a profile instance
@@ -56,10 +71,13 @@ def _apply_availability(profile: models.AstrologerProfile, queue_length: int, is
 
     if not profile.is_online or not is_present(profile.user_id):
         profile.availability_status = "OFFLINE"
+        profile.knockable = is_within_availability_window(profile)
     elif is_busy:
         profile.availability_status = "BUSY"
+        profile.knockable = False
     else:
         profile.availability_status = "ONLINE"
+        profile.knockable = False
     return profile
 
 
@@ -469,6 +487,12 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
     astro = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == astrologer_id).first()
     if not astro:
         raise HTTPException(status_code=404, detail="Astrologer not found")
+
+    from .realtime import is_present
+    if astro.is_online and is_present(astrologer_id):
+        raise HTTPException(status_code=400, detail="Astrologer is already online")
+    if not is_within_availability_window(astro):
+        raise HTTPException(status_code=400, detail="Astrologer is outside their availability window")
 
     # Ring the astrologer's phone via a loud push notification (always triggered on click)
     try:

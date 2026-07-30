@@ -122,6 +122,8 @@ class AstrologerProfileBase(BaseModel):
     specialties: Optional[str] = None
     consultation_fee_per_min: Decimal
     availability_hours: Optional[str] = None
+    availability_start_time: Optional[time] = None
+    availability_end_time: Optional[time] = None
     whatsapp_number: Optional[str] = None
     city: Optional[str] = None
     id_proof_url: Optional[str] = None
@@ -163,6 +165,8 @@ class AstrologerProfileUPDATE(BaseModel):
     specialties: Optional[str] = None
     consultation_fee_per_min: Optional[Decimal] = None
     availability_hours: Optional[str] = None
+    availability_start_time: Optional[time] = None
+    availability_end_time: Optional[time] = None
     whatsapp_number: Optional[str] = None
     is_online: Optional[bool] = None
     city: Optional[str] = None
@@ -199,6 +203,7 @@ class AstrologerProfile(AstrologerProfileBase):
     # Computed at response time (not DB columns):
     availability_status: Optional[str] = None  # ONLINE | BUSY | OFFLINE
     queue_length: Optional[int] = None         # seekers currently waiting (REQUESTED)
+    knockable: Optional[bool] = None           # OFFLINE and within the astrologer's availability window
     class Config:
         from_attributes = True
 
@@ -320,6 +325,8 @@ class AdminCreateAstrologer(BaseModel):
     consultation_fee_per_min: Decimal
     commission_percentage: Optional[Decimal] = Decimal("70.0")
     availability_hours: Optional[str] = None
+    availability_start_time: Optional[time] = None
+    availability_end_time: Optional[time] = None
     profile_picture_url: Optional[str] = None
     is_verified: bool = True
     city: Optional[str] = None
