@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Languages, Award, Clock, Bell, Crown, User } from 'lucide-react';
+import { Star, Languages, Award, Clock, Bell, Crown, User, WifiOff } from 'lucide-react';
 import type { Astrologer } from '../types';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { api } from '../services/api';
@@ -75,9 +75,12 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                         <Languages size={14} />
                         <span>{astro.languages}</span>
                     </div>
-                    <div className="astro-exp">
-                        <Award size={14} />
-                        <span>{astro.experience_years} Years Exp</span>
+                    <div className="astro-exp-row">
+                        <div className="astro-exp">
+                            <Award size={14} />
+                            <span>{astro.experience_years} Years Exp</span>
+                        </div>
+                        <span className="price">₹{Number(astro.consultation_fee_per_min)}/min</span>
                     </div>
                 </div>
             </div>
@@ -122,13 +125,11 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                             <Bell size={14} /> Knock
                         </button>
                     ) : (
-                        <span className="offline-badge">Offline</span>
+                        <span className="offline-badge">
+                            <WifiOff size={14} /> Offline
+                        </span>
                     )}
                 </div>
-            </div>
-
-            <div className="astro-footer-row">
-                <span className="price">₹{Number(astro.consultation_fee_per_min)}/min</span>
             </div>
         </div>
     );

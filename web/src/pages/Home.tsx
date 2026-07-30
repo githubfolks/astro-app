@@ -12,7 +12,6 @@ import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
-import AiAstrologerBanner from '../components/AiAstrologerBanner';
 import PanchangSection from '../components/PanchangSection';
 import { useSupportContact } from '../hooks/useSupportContact';
 
@@ -100,7 +99,6 @@ const Home: React.FC = () => {
             <Header />
             <main id="main-content">
                 <Hero />
-                <AiAstrologerBanner />
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <MemoryGuruBanner />

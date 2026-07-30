@@ -5,7 +5,6 @@ import AstrologerList from '../components/AstrologerList';
 import Footer from '../components/Footer';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
-import AiAstrologerBanner from '../components/AiAstrologerBanner';
 import PanchangSection from '../components/PanchangSection';
 
 const MobileHome: React.FC = () => {
@@ -13,7 +12,6 @@ const MobileHome: React.FC = () => {
         <div className="home-page">
             <Header />
             <main id="main-content">
-                <AiAstrologerBanner />
                 <AstrologerList limit={6} topRankingOnly={false} showFilters={false} />
                 <div className="text-center -mt-2 mb-2">
                     <Link to="/astrologers" className="text-indigo-600 font-semibold text-sm">

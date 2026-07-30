@@ -43,6 +43,35 @@ export const HINGLISH_WORDS: readonly string[] = [
     'shubh', 'ashubh', 'gun', 'milan', 'career', 'naukri', 'vyapar',
     'dhan', 'paisa', 'santan', 'pooja', 'puja', 'upay', 'totka', 'mantra',
     'jyotish', 'jyotishi', 'bhagya', 'karma', 'rog', 'swasthya',
+
+    // Additional Hinglish/Sanskrit terms from docs/hinglish-words.txt
+    'aage', 'aana', 'aayega', 'abhishek', 'agle', 'aisa', 'amatyakarak', 'anukul', 'anushthan',
+    'arghya', 'ashtakavarga', 'ashtakoot', 'atmakarak', 'ayushya', 'bachana', 'badhegi', 'badlega',
+    'banega', 'bata', 'bhakoot', 'bhav', 'bhavesh', 'bhavishya', 'bhavishyavani', 'bhratrukarak',
+    'bolna', 'brahmand', 'brihaspati', 'bura', 'chadhana', 'chahiye', 'chalega', 'chalisa',
+    'charan', 'cheezein', 'daan', 'darakarak', 'dasha', 'dekh', 'dekhna', 'dhaiya', 'dhyaan',
+    'dhyan', 'dikh', 'dikhana', 'dikkat', 'diya', 'dobara', 'drishti', 'ek', 'filhaal',
+    'gajakesari', 'gana', 'ghar', 'gochar', 'gomed', 'gyatikarak', 'hafte', 'havan', 'heera',
+    'hongi', 'hounga', 'jaana', 'jaap', 'jal', 'jalana', 'jald', 'jaldbazi', 'janam', 'jaunga',
+    'jaungi', 'kaal', 'kamzor', 'karak', 'karega', 'karu', 'karun', 'ke', 'kharcha', 'khatam',
+    'ki', 'kismat', 'lagegi', 'lagnesh', 'lahsuniya', 'maitri', 'mandal', 'mandir', 'manglik',
+    'manik', 'marak', 'margi', 'matrukarak', 'mohabbat', 'moonga', 'moti', 'mrityunjaya', 'nadi',
+    'naseeb', 'navamsa', 'navgraha', 'nazar', 'neech', 'neelam', 'nikalna', 'pada', 'padhai',
+    'padhna', 'pandit', 'pareshaan', 'patri', 'patrika', 'peepal', 'phir', 'pitra', 'pitru',
+    'prabhav', 'pratikool', 'pratyantar', 'pukhraj', 'purva', 'putrakarak', 'pyaar', 'raha',
+    'rahe', 'rahi', 'rakhna', 'ratna', 'rehna', 'rudrabhishek', 'rudraksha', 'rukawat', 'rukna',
+    'saavdhan', 'sach', 'sadhana', 'sakte', 'sakti', 'samay', 'sanket', 'sarp', 'sati', 'sehat',
+    'seva', 'shadbala', 'shanti', 'shatru', 'shri', 'shuru', 'soch', 'sthan', 'swarashi', 'tak',
+    'tareekh', 'tel', 'uchcha', 'upvas', 'vakri', 'vasya', 'vimshottari', 'vipreet', 'vrat',
+    'wapas', 'waqt', 'yagya', 'yantra', 'yog', 'yogini', 'yoni', 'yuti',
+
+    // English words seekers commonly mix into Hinglish chat (from docs/hinglish-words.txt)
+    'arranged', 'boyfriend', 'caste', 'challenging', 'chances', 'emotions', 'employment',
+    'expected', 'extramarital', 'feelings', 'freelancing', 'funding', 'gemstone', 'ghosting',
+    'girlfriend', 'ignoring', 'iit', 'inherited', 'inter', 'liabilities', 'long', 'malefic',
+    'marks', 'non', 'okay', 'one', 'online', 'onsite', 'patch', 'personalized', 'planning', 'plz',
+    'pr', 'religion', 'sales', 'savings', 'self', 'short', 'sided', 'soulmate', 'ssc', 'startup',
+    'stressed', 'studies', 'term', 'up', 'upsc', 'wellbeing',
 ] as const;
 
 let cachedSet: Set<string> | null = null;

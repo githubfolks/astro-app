@@ -158,6 +158,13 @@
     margin-bottom: 2px;
 }
 
+.astro-exp-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
 .astro-action-row {
     display: flex;
     justify-content: space-between;
@@ -169,15 +176,6 @@
 .astro-hours-wrap {
     flex-grow: 1;
     min-width: 0;
-}
-
-.astro-footer-row {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    border-top: 1px solid rgba(99, 102, 241, 0.1);
-    padding-top: 14px;
-    margin-top: 14px;
 }
 
 .rating {
@@ -242,6 +240,9 @@
 }
 
 .offline-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 10px 20px;
     background: #f1f5f9;
     color: #94a3b8;
