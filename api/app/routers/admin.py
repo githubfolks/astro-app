@@ -852,6 +852,63 @@ def export_user_consultations(
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
+def _collapse_chat_deduction_sessions(rows):
+    """rows: list of tuples `(WalletTransaction, *extra)` ordered ascending by
+    created_at. The chat billing loop writes one WalletTransaction per billed
+    minute (chat.py), which is the right granularity for the ledger but reads
+    as noise in the admin UI — a seeker doesn't care that minute 28, 29 and 30
+    were separate debits, they want to see what one chat session cost in
+    total. This collapses consecutive CHAT_DEDUCTION rows sharing the same
+    consultation (reference_id) into a single row carrying the session's total
+    deduction; every other transaction type passes through unchanged. Returns
+    dicts with keys id/user_id/amount/transaction_type/reference_id/
+    description/created_at/extra (the passed-through tuple tail), sorted
+    newest-first.
+    """
+    sessions = {}
+    result = []
+    for row in rows:
+        txn, extra = row[0], row[1:]
+        if txn.transaction_type == models.TransactionType.CHAT_DEDUCTION and txn.reference_id:
+            entry = sessions.get(txn.reference_id)
+            if entry is None:
+                entry = {
+                    "id": txn.id,
+                    "user_id": txn.user_id,
+                    "amount": Decimal("0"),
+                    "transaction_type": txn.transaction_type,
+                    "reference_id": txn.reference_id,
+                    "description": None,
+                    "created_at": txn.created_at,
+                    "extra": extra,
+                    "_minutes": 0,
+                }
+                sessions[txn.reference_id] = entry
+                result.append(entry)
+            entry["amount"] += txn.amount
+            entry["_minutes"] += 1
+            entry["created_at"] = txn.created_at
+        else:
+            result.append({
+                "id": txn.id,
+                "user_id": txn.user_id,
+                "amount": txn.amount,
+                "transaction_type": txn.transaction_type,
+                "reference_id": txn.reference_id,
+                "description": txn.description,
+                "created_at": txn.created_at,
+                "extra": extra,
+                "_minutes": None,
+            })
+
+    for entry in result:
+        if entry["_minutes"] is not None:
+            entry["description"] = f"Chat session deduction ({entry['_minutes']} min)"
+        del entry["_minutes"]
+
+    result.sort(key=lambda e: e["created_at"], reverse=True)
+    return result
+
 def _query_user_wallet_history(
     db: Session,
     user_id: int,
@@ -887,9 +944,11 @@ def get_user_wallet_history(
     db: Session = Depends(database.get_db),
 ):
     query = _query_user_wallet_history(db, user_id, search, transaction_type, date_from, date_to)
-    total = query.count()
-    rows = query.order_by(models.WalletTransaction.created_at.desc()).offset(skip).limit(limit).all()
-    transactions = [schemas.WalletTransaction.model_validate(t) for t in rows]
+    rows = query.order_by(models.WalletTransaction.created_at.asc()).all()
+    grouped = _collapse_chat_deduction_sessions([(t,) for t in rows])
+    total = len(grouped)
+    page = grouped[skip:skip + limit]
+    transactions = [schemas.WalletTransaction.model_validate(g) for g in page]
     return {"total": total, "transactions": transactions}
 
 @router.get("/users/{user_id}/wallet-history/export")
@@ -902,18 +961,19 @@ def export_user_wallet_history(
     db: Session = Depends(database.get_db),
 ):
     query = _query_user_wallet_history(db, user_id, search, transaction_type, date_from, date_to)
-    rows = query.order_by(models.WalletTransaction.created_at.desc()).all()
+    rows = query.order_by(models.WalletTransaction.created_at.asc()).all()
+    grouped = _collapse_chat_deduction_sessions([(t,) for t in rows])
 
     name = _user_display_name(db, user_id)
     period = f"{date_from or 'Start'} to {date_to or 'Today'}"
     table_rows = []
-    for t in rows:
-        amount = float(t.amount)
+    for g in grouped:
+        amount = float(g["amount"])
         table_rows.append([
-            t.created_at.strftime("%Y-%m-%d %H:%M") if t.created_at else "-",
-            t.transaction_type.value if hasattr(t.transaction_type, "value") else t.transaction_type,
-            t.reference_id or "-",
-            t.description or "-",
+            g["created_at"].strftime("%Y-%m-%d %H:%M") if g["created_at"] else "-",
+            g["transaction_type"].value if hasattr(g["transaction_type"], "value") else g["transaction_type"],
+            g["reference_id"] or "-",
+            g["description"] or "-",
             f"{'+' if amount > 0 else ''}Rs. {amount:.2f}",
         ])
 
@@ -957,6 +1017,8 @@ def _query_all_transactions(
         )
     return query
 
+MAX_TRANSACTION_ROWS_TO_GROUP = 50_000
+
 @router.get("/transactions")
 def list_all_transactions(
     skip: int = 0,
@@ -969,27 +1031,28 @@ def list_all_transactions(
     """All wallet transactions for a given role (defaults to seekers), for admin auditing."""
     query = _query_all_transactions(db, role, transaction_type, search)
 
-    total = query.count()
-    rows = query.order_by(models.WalletTransaction.created_at.desc()).offset(skip).limit(limit).all()
+    rows = query.order_by(models.WalletTransaction.created_at.asc()).limit(MAX_TRANSACTION_ROWS_TO_GROUP).all()
+    grouped = _collapse_chat_deduction_sessions(rows)
+    total = len(grouped)
+    page = grouped[skip:skip + limit]
 
     transactions = []
-    for txn, email, phone_number, full_name in rows:
+    for g in page:
+        email, phone_number, full_name = g["extra"]
         transactions.append({
-            "id": txn.id,
-            "user_id": txn.user_id,
-            "user_name": full_name or f"User #{txn.user_id}",
+            "id": g["id"],
+            "user_id": g["user_id"],
+            "user_name": full_name or f"User #{g['user_id']}",
             "email": email,
             "phone_number": phone_number,
-            "amount": float(txn.amount),
-            "transaction_type": txn.transaction_type,
-            "reference_id": txn.reference_id,
-            "description": txn.description,
-            "created_at": txn.created_at,
+            "amount": float(g["amount"]),
+            "transaction_type": g["transaction_type"],
+            "reference_id": g["reference_id"],
+            "description": g["description"],
+            "created_at": g["created_at"],
         })
 
     return {"total": total, "transactions": transactions}
-
-MAX_TRANSACTION_EXPORT_ROWS = 50_000
 
 @router.get("/transactions/export")
 def export_all_transactions(
@@ -1001,23 +1064,25 @@ def export_all_transactions(
     """CSV export of the (filtered, unpaginated) transaction list — for handing
     data to accounting/audit rather than reading it off the admin UI."""
     query = _query_all_transactions(db, role, transaction_type, search)
-    rows = query.order_by(models.WalletTransaction.created_at.desc()).limit(MAX_TRANSACTION_EXPORT_ROWS).all()
+    rows = query.order_by(models.WalletTransaction.created_at.asc()).limit(MAX_TRANSACTION_ROWS_TO_GROUP).all()
+    grouped = _collapse_chat_deduction_sessions(rows)
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
     writer.writerow(["ID", "User ID", "User Name", "Email", "Phone", "Amount", "Type", "Reference", "Description", "Created At"])
-    for txn, email, phone_number, full_name in rows:
+    for g in grouped:
+        email, phone_number, full_name = g["extra"]
         writer.writerow([
-            txn.id,
-            txn.user_id,
-            full_name or f"User #{txn.user_id}",
+            g["id"],
+            g["user_id"],
+            full_name or f"User #{g['user_id']}",
             email or "",
             phone_number or "",
-            float(txn.amount),
-            txn.transaction_type.value if hasattr(txn.transaction_type, "value") else txn.transaction_type,
-            txn.reference_id or "",
-            txn.description or "",
-            txn.created_at.strftime("%Y-%m-%d %H:%M:%S") if txn.created_at else "",
+            float(g["amount"]),
+            g["transaction_type"].value if hasattr(g["transaction_type"], "value") else g["transaction_type"],
+            g["reference_id"] or "",
+            g["description"] or "",
+            g["created_at"].strftime("%Y-%m-%d %H:%M:%S") if g["created_at"] else "",
         ])
     buffer.seek(0)
     filename = f"transactions-{role.value.lower()}.csv"
