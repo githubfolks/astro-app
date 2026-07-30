@@ -40,15 +40,35 @@ const Book: React.FC = () => {
         error: string | null;
     }>({ loading: false, success: false, error: null });
 
+    // AOS is a single shared module instance across the whole app, and its config
+    // is merged (not replaced) on every AOS.init() call. AstrologerList.tsx inits
+    // it with `disable: 'mobile'`, which then silently sticks for every other
+    // page's AOS.init() too (since they don't pass `disable` at all) if that
+    // component mounted first (e.g. via the home page) - AOS then tears down
+    // data-aos attributes instead of animating them. Passing `disable: false`
+    // explicitly here resets it back regardless of what ran before.
+    const aosOptions = {
+        duration: 1000,
+        once: false,
+        mirror: true,
+        offset: 100,
+        disable: false,
+    };
+
     useEffect(() => {
-        AOS.init({
-            duration: 1000,
-            once: false,
-            mirror: true,
-            offset: 100
-        });
+        AOS.init(aosOptions);
         loadCourses();
     }, []);
+
+    // Course cards mount asynchronously after the fetch resolves, i.e. after the
+    // page's initial AOS.init() already ran and only saw the (still-empty) course
+    // list in the DOM. Re-running init() rescans the DOM for the newly rendered
+    // data-aos nodes; without it they stay stuck at the library's opacity:0 default.
+    useEffect(() => {
+        if (!loading) {
+            AOS.init(aosOptions);
+        }
+    }, [courses, loading]);
 
     const loadCourses = async () => {
         try {
@@ -133,7 +153,7 @@ const Book: React.FC = () => {
 
             <main className="flex-1">
                 {/* Hero Section */}
-                <section className="relative py-20 bg-indigo-900 overflow-hidden">
+                <section className="relative pt-8 pb-14 md:py-20 bg-indigo-900 overflow-hidden">
                     <div className="absolute inset-0 opacity-20">
                         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.4),transparent_70%)]"></div>
                     </div>
@@ -141,10 +161,10 @@ const Book: React.FC = () => {
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-12 text-left">
                             <div className="w-full md:w-2/3">
-                                <h1 className="hero-title mt-2 font-bold text-4xl text-white mb-6" data-aos="fade-right" data-aos-delay="100">
+                                <h1 className="hero-title font-bold text-3xl md:text-4xl text-white mb-6" data-aos="fade-right" data-aos-delay="100">
                                     Our <span className="text-yellow-400">Courses</span>
                                 </h1>
-                                <p className="text-xl text-indigo-100 leading-relaxed" data-aos="fade-right" data-aos-delay="200">
+                                <p className="text-lg text-indigo-100 leading-relaxed text-justify" data-aos="fade-right" data-aos-delay="200">
                                     Rajesh Chaudhary (Memory Guru) is an India Book of Records recognized memory trainer and motivational speaker who has conducted thousands of memory enhancement sessions for students and educators. His programs focus on concentration, rapid recall, and scientific memory techniques that improve academic and professional performance.
                                 </p>
                             </div>
@@ -190,30 +210,31 @@ const Book: React.FC = () => {
                                         data-aos-delay={index * 100}
                                     >
                                         <div className="p-8 flex-1">
-                                            <div className="mb-6 bg-indigo-100/50 w-16 h-16 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-600 group-hover:text-white">
-                                                <BookIcon size={32} />
-                                            </div>
-
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="flex text-yellow-400">
-                                                    {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < 4 ? "currentColor" : "none"} />)}
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="bg-indigo-100/50 w-16 h-16 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-600 group-hover:text-white">
+                                                    <BookIcon size={32} />
                                                 </div>
-                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Top Rated</span>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex text-yellow-400">
+                                                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < 4 ? "currentColor" : "none"} />)}
+                                                    </div>
+                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Top Rated</span>
+                                                </div>
                                             </div>
 
-                                            <h3 className="step-title font-bold mb-1">
+                                            <h3 className="step-title font-bold mb-1 text-center">
                                                 {course.title}
                                             </h3>
-                                            <div className="mb-6 flex items-baseline gap-1">
+                                            <div className="mb-2 flex items-baseline justify-center gap-1">
                                                 <span className="text-2xl font-black text-indigo-600">₹{course.price}</span>
                                                 {course.price === 0 && <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded-md">Free</span>}
                                             </div>
 
-                                            <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">
+                                            <p className="text-gray-600 leading-snug mb-2 line-clamp-3">
                                                 {course.description || "Unlock the secrets of cosmic wisdom with this comprehensive course guided by our verified experts."}
                                             </p>
 
-                                            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-100 mt-auto">
+                                            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100 mt-auto">
                                                 <div className="flex items-center gap-2 text-gray-900">
                                                     <Users size={16} />
                                                     <span className="text-sm font-medium">1.2k+ Students</span>
@@ -257,25 +278,25 @@ const Book: React.FC = () => {
                             </svg>
                         </button>
 
-                        <div className="p-8 md:p-12">
-                            <div className="inline-flex items-center gap-2 text-indigo-600 text-sm uppercase tracking-widest mb-6 px-4 py-2 bg-indigo-50 rounded-xl">
+                        <div className="p-8 md:p-12 text-center">
+                            <div className="inline-flex items-center gap-2 text-indigo-600 text-sm uppercase tracking-widest mb-3 px-4 py-2 bg-indigo-50 rounded-xl">
                                 <BookIcon size={16} /> Course Curriculum
                             </div>
 
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-4 leading-tight">
+                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-3 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
                                 {selectedCourse.title}
                             </h2>
 
-                            <div className="bg-indigo-50 inline-flex flex-col px-6 py-3 rounded-2xl border border-indigo-100 mb-8">
+                            <div className="bg-indigo-50 inline-flex flex-col items-center px-6 py-3 rounded-2xl border border-indigo-100 mb-4 mx-auto">
                                 <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-0.5">Course Fee</span>
                                 <span className="text-2xl font-black text-indigo-600">₹{selectedCourse.price}</span>
                             </div>
 
-                            <div className="prose prose-indigo max-w-none text-gray-600 mb-10 text-lg leading-relaxed">
+                            <div className="prose prose-indigo max-w-none text-gray-600 mb-4 text-base leading-snug text-left">
                                 {selectedCourse.description || "Detailed course overview goes here..."}
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-3 text-left">
                                 <h4 className="text-gray-900 text-xl flex items-center gap-2">
                                     <Users className="text-indigo-600" size={24} />
                                     What's included in this course:
@@ -307,7 +328,7 @@ const Book: React.FC = () => {
                                 )}
                             </div>
 
-                            <div className="mt-12 flex flex-col sm:flex-row gap-4">
+                            <div className="mt-6 flex flex-col sm:flex-row gap-4">
                                 {(enrollmentStatus.success || selectedCourse.is_enrolled) ? (
                                     <div className="flex-1 bg-green-50 text-green-700 py-4 px-6 rounded-xl font-bold text-center flex items-center justify-center gap-2 border border-green-200">
                                         <CheckCircle size={20} /> Already Enrolled

@@ -41,18 +41,18 @@ const MemoryGuruAbout: React.FC = () => {
             />
             <Header />
 
-            <main className="flex-grow container mx-auto px-4 py-20 max-w-5xl">
-                <div className="bg-white/80 backdrop-blur-xl shadow-2xl rounded-[3rem] p-10 md:p-20 border border-white relative overflow-hidden">
+            <main className="flex-grow w-full px-4 py-8 md:container md:mx-auto md:py-20 md:max-w-5xl">
+                <div className="bg-white/80 backdrop-blur-xl shadow-2xl rounded-[2rem] md:rounded-[3rem] p-5 md:p-20 border border-white relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500"></div>
 
-                    <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-6 block" data-aos="fade-down">
+                    <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block" data-aos="fade-down">
                         Biography & Profile
                     </span>
-                    <h1 className="text-4xl md:text-5xl text-gray-900 mb-10 leading-tight">
+                    <h1 className="text-3xl md:text-4xl text-gray-900 mb-6 leading-tight">
                         Rajesh Chaudhary – <span className="gradient-text">Memory Guru</span>
                     </h1>
 
-                    <div className="space-y-16">
+                    <div className="space-y-10">
                         {/* Intro Section with Image */}
                         <div className="flex flex-col md:flex-row gap-12 items-center md:items-start">
                             <div className="w-full md:w-1/3 flex-shrink-0" data-aos="fade-right">
@@ -69,7 +69,7 @@ const MemoryGuruAbout: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-grow space-y-8 text-gray-600 text-xl leading-relaxed">
+                            <div className="flex-grow space-y-4 text-gray-600 text-base leading-normal">
                                 <p>
                                     <strong className="text-gray-900">Rajesh Chaudhary</strong>, popularly known as <strong className="text-indigo-600">Memory Guru</strong>, is one of India's recognized memory trainers and motivational educators, known for transforming the way students and professionals learn, retain, and perform.
                                 </p>
@@ -96,10 +96,10 @@ const MemoryGuruAbout: React.FC = () => {
                             </Link>
                         </div>
                         {/* Public Identity Section */}
-                        <div className="pt-10 border-t border-gray-100" data-aos="fade-up">
+                        <div className="pt-6 border-t border-gray-100" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Identity</span>
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-8">Public Identity & <span className="gradient-text">Recognition</span></h2>
-                            <p className="mb-8 text-xl text-gray-600 leading-relaxed">
+                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-4">Public Identity & <span className="gradient-text">Recognition</span></h2>
+                            <p className="mb-5 text-base text-gray-600 leading-normal">
                                 Rajesh Chaudhary has built his identity as a high-impact educational speaker whose sessions combine:
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -113,16 +113,16 @@ const MemoryGuruAbout: React.FC = () => {
                                     </div>
                                 ))}
                             </div>
-                            <p className="mt-8 text-lg italic text-indigo-600/80">
+                            <p className="mt-5 text-base italic text-indigo-600/80">
                                 "His seminars are known for producing instant audience engagement because learners can directly experience memory improvement during the session itself."
                             </p>
                         </div>
 
                         {/* Professional Overview Section */}
-                        <div className="pt-10 border-t border-gray-100" data-aos="fade-up">
+                        <div className="pt-6 border-t border-gray-100" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Specialization</span>
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-8">Professional <span className="gradient-text">Overview</span></h2>
-                            <p className="mb-8 text-xl text-gray-600 leading-relaxed">
+                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-4">Professional <span className="gradient-text">Overview</span></h2>
+                            <p className="mb-5 text-base text-gray-600 leading-normal">
                                 Rajesh Chaudhary specializes in helping learners unlock higher brain performance through:
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,10 +140,10 @@ const MemoryGuruAbout: React.FC = () => {
                         </div>
 
                         {/* Why Memory Guru Section */}
-                        <div className="pt-10 border-t border-gray-100" data-aos="fade-up">
+                        <div className="pt-6 border-t border-gray-100" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Unique Approach</span>
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-8">Why He Is Called <span className="gradient-text">"Memory Guru"</span></h2>
-                            <p className="mb-8 text-xl text-gray-600 leading-relaxed">
+                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-4">Why He Is Called <span className="gradient-text">"Memory Guru"</span></h2>
+                            <p className="mb-5 text-base text-gray-600 leading-normal">
                                 His programs focus on turning difficult learning into effortless retention through science-backed systems.
                             </p>
 
@@ -174,9 +174,9 @@ const MemoryGuruAbout: React.FC = () => {
                         </div>
 
                         {/* Videos Section */}
-                        <div className="pt-10 border-t border-gray-100" data-aos="fade-up">
+                        <div className="pt-6 border-t border-gray-100" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Watch in Action</span>
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-10">Workshop & <span className="gradient-text">Stage Videos</span></h2>
+                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-5">Workshop & <span className="gradient-text">Stage Videos</span></h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 {[
                                     { url: "https://www.youtube.com/embed/NrX2DzcYa3A", title: "Scientific Memory Systems: Live Institutional Demo" },
@@ -194,16 +194,16 @@ const MemoryGuruAbout: React.FC = () => {
                                                 allowFullScreen
                                             ></iframe>
                                         </div>
-                                        <p className="text-gray-900 font-bold text-lg px-2">{video.title}</p>
+                                        <p className="text-gray-900 font-bold text-base px-2">{video.title}</p>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
                         {/* Media Gallery */}
-                        <div className="pt-10 border-t border-gray-100" data-aos="fade-up">
+                        <div className="pt-6 border-t border-gray-100" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Moments</span>
-                            <h2 className="text-3xl md:text-4xl text-gray-900 mb-10">Event <span className="gradient-text">Gallery</span></h2>
+                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-5">Event <span className="gradient-text">Gallery</span></h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 {[
                                     { img: '/assets/memory_guru/mixcollage-1.webp', title: 'Seminar Photographs' },
@@ -214,33 +214,41 @@ const MemoryGuruAbout: React.FC = () => {
                                     <div key={i} className="group relative overflow-hidden rounded-[2rem] shadow-lg hover:shadow-2xl transition-all duration-500 h-128 border border-white">
                                         <img src={item.img} alt={item.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-indigo-900/90 via-indigo-900/20 to-transparent flex items-end p-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <p className="text-white text-xl">{item.title}</p>
+                                            <p className="text-white text-lg">{item.title}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
                             {/* Audience Testimonials */}
-                            <div className="mt-12 bg-indigo-50/50 backdrop-blur-md rounded-[2.5rem] p-10 border border-indigo-100/50 relative overflow-hidden">
+                            <div className="mt-8 bg-indigo-50/50 backdrop-blur-md rounded-[2rem] p-5 md:p-10 border border-indigo-100/50 relative overflow-hidden">
                                 <div className="absolute top-0 right-10 text-9xl text-indigo-200/20 font-serif leading-none">"</div>
-                                <h3 className="text-2xl text-gray-900 mb-10 flex items-center gap-3">
-                                    <span className="text-3xl">✨</span> Audience Testimonials
+                                <h3 className="text-xl text-gray-900 mb-5 flex items-center gap-3">
+                                    <span className="text-2xl">✨</span> Audience Testimonials
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div className="bg-white/80 p-8 rounded-3xl shadow-sm italic text-gray-700 relative group hover:shadow-md transition-shadow">
-                                        <p className="relative z-10 text-lg">"The memory coding systems Rajesh taught are simply life-changing. I could memorize 50 words in order in just minutes!"</p>
-                                        <div className="mt-6 flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">B</div>
-                                            <p className="not-italic text-gray-900">Board Exam Student</p>
+                                <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 -mx-5 px-5 md:mx-0 md:px-0 pb-2 scrollbar-hide">
+                                    {[
+                                        {
+                                            quote: "The memory coding systems Rajesh taught are simply life-changing. I could memorize 50 words in order in just minutes!",
+                                            initial: 'B',
+                                            name: 'Board Exam Student',
+                                            avatarClass: 'bg-indigo-100 text-indigo-600',
+                                        },
+                                        {
+                                            quote: "A high-impact session. The techniques for name-face association are extremely practical for networking and professional growth.",
+                                            initial: 'C',
+                                            name: 'Corporate Professional',
+                                            avatarClass: 'bg-purple-100 text-purple-600',
+                                        },
+                                    ].map((t, i) => (
+                                        <div key={i} className="bg-white/80 p-6 rounded-3xl shadow-sm italic text-gray-700 relative group hover:shadow-md transition-shadow snap-center shrink-0 w-[85%] sm:w-[420px]">
+                                            <p className="relative z-10 text-base">"{t.quote}"</p>
+                                            <div className="mt-5 flex items-center gap-4">
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${t.avatarClass}`}>{t.initial}</div>
+                                                <p className="not-italic text-gray-900">{t.name}</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="bg-white/80 p-8 rounded-3xl shadow-sm italic text-gray-700 relative group hover:shadow-md transition-shadow">
-                                        <p className="relative z-10 text-lg">"A high-impact session. The techniques for name-face association are extremely practical for networking and professional growth."</p>
-                                        <div className="mt-6 flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">C</div>
-                                            <p className="not-italic text-gray-900">Corporate Professional</p>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
