@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import RatingModal from '../components/RatingModal';
+import ConfirmEndChatModal from '../components/ConfirmEndChatModal';
 import { KundliContent } from '../components/KundliPanel';
 import { MatchContent } from '../components/MatchPanel';
 import PreChatQuestionsModal, { type PreChatAnswers } from '../components/PreChatQuestionsModal';
@@ -68,6 +69,7 @@ export const Chat: React.FC = () => {
         }
     };
     const [showRatingModal, setShowRatingModal] = useState(false);
+    const [showEndChatConfirm, setShowEndChatConfirm] = useState(false);
     const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
     const [showKundli, setShowKundli] = useState(false);
     const [kundliData, setKundliData] = useState<ChartData | null>(null);
@@ -456,6 +458,11 @@ export const Chat: React.FC = () => {
     };
 
     const handleEndChat = () => {
+        setShowEndChatConfirm(true);
+    };
+
+    const confirmEndChat = () => {
+        setShowEndChatConfirm(false);
         endChat();
         // Side effects (rating modal / redirect) are handled by the status-watching
         // effect above so they fire the same way whether I ended the chat or the
@@ -1418,6 +1425,14 @@ export const Chat: React.FC = () => {
                 astrologerName={astrologer?.full_name || 'Astrologer'}
                 onSubmit={handleSubmitReview}
                 onSkip={handleSkipReview}
+            />
+
+            {/* End Chat Confirmation for Seekers */}
+            <ConfirmEndChatModal
+                isOpen={showEndChatConfirm}
+                astrologerName={astrologer?.full_name}
+                onConfirm={confirmEndChat}
+                onCancel={() => setShowEndChatConfirm(false)}
             />
 
             {/* Shared-image preview — opened in-app instead of a new browser tab,

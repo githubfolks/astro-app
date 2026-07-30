@@ -64,7 +64,7 @@ We're Aadikarta Vedic Astro Pvt Ltd, running aadikarta.org to connect users worl
 
 
 
-
+=====================================
 
 max concurrent chat support
 Hinglish words collection
@@ -72,7 +72,7 @@ compatible contents of Privacy Policy, Refund Policy, Disclaimer, Terms of Servi
 
 
 Astrolger card:
-1. keep star and rate belo to profile image
+1. keep star and rate below to profile image
 2. Keep icon for profile and Chat/Offline. Keep in the same line of Availability Time
 
 
