@@ -162,11 +162,15 @@ export const api = {
             });
             if (sort_by) params.append('sort_by', sort_by);
 
-            const response = await customFetch(`${API_URL}/astrologers/?${params.toString()}`);
+            const response = await customFetch(`${API_URL}/astrologers/?${params.toString()}`, {
+                headers: await authHeaders()
+            });
             return handleResponse(response, 'Failed to fetch astrologers');
         },
         getOne: async (id: number | string) => {
-            const response = await customFetch(`${API_URL}/astrologers/${id}`);
+            const response = await customFetch(`${API_URL}/astrologers/${id}`, {
+                headers: await authHeaders()
+            });
             return handleResponse(response, 'Failed to fetch astrologer details');
         },
         notifyWhenOnline: async (astrologerId: number | string) => {
