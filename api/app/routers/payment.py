@@ -18,12 +18,11 @@ router = APIRouter(
     tags=["Payment"]
 )
 
-# Initialize Razorpay Client
-# Access credentials from environment variables. The project's .env uses the
-# RZP_KEY_ID / RZP_KEY_SECRET names; RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are
-# also accepted for compatibility with Razorpay's own docs/tooling.
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID") or os.getenv("RZP_KEY_ID")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET") or os.getenv("RZP_KEY_SECRET")
+# Razorpay credentials are admin-configurable (test vs. live key pair) via
+# /admin/settings > Payments, backed by settings_service — see DEFAULTS there
+# for the env vars that seed each key on first run. Read per-request (not at
+# import time) so an admin flipping "razorpay_mode" takes effect without a
+# redeploy, same as enable_mock_payments below.
 
 def mock_payments_enabled() -> bool:
     # Admin-toggleable via /admin/settings (settings_service caches for ~30s,
@@ -31,10 +30,29 @@ def mock_payments_enabled() -> bool:
     from ..services.settings_service import get_setting
     return (get_setting("enable_mock_payments") or "").strip().lower() == "true"
 
-if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
-    print("WARNING: Razorpay keys not found in environment variables.")
 
-client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET)) if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET else None
+def get_razorpay_mode() -> str:
+    """The key pair currently selected for new orders: 'test' or 'live'."""
+    from ..services.settings_service import get_setting
+    mode = (get_setting("razorpay_mode") or "live").strip().lower()
+    return "test" if mode == "test" else "live"
+
+
+def get_razorpay_keys(mode: str | None = None) -> tuple[str | None, str | None]:
+    """The key_id/key_secret pair for `mode` (defaults to the active mode)."""
+    from ..services.settings_service import get_setting
+    mode = mode or get_razorpay_mode()
+    key_id = get_setting(f"razorpay_key_id_{mode}")
+    key_secret = get_setting(f"razorpay_key_secret_{mode}")
+    return key_id, key_secret
+
+
+def get_razorpay_client(mode: str | None = None):
+    """A Client for `mode` (defaults to the active mode), or None if that mode's keys aren't configured."""
+    key_id, key_secret = get_razorpay_keys(mode)
+    if not key_id or not key_secret:
+        return None
+    return razorpay.Client(auth=(key_id, key_secret))
 
 class OrderCreate(BaseModel):
     amount: float # In Rupees
@@ -73,8 +91,12 @@ def create_payment_order(
     # Razorpay expects amount in paise (1 INR = 100 paise)
     amount_paise = int(order.amount * 100)
 
+    mode = get_razorpay_mode()
+    key_id, key_secret = get_razorpay_keys(mode)
+    client = razorpay.Client(auth=(key_id, key_secret)) if key_id and key_secret else None
+
     # Mock Mode: explicit opt-in via the admin-toggleable "enable_mock_payments"
-    # setting, or automatic fallback when no live keys are configured at all.
+    # setting, or automatic fallback when the active mode's keys aren't configured.
     if mock_payments_enabled() or not client:
         order_id = f"order_mock_{amount_paise}_{uuid.uuid4().hex[:10]}"
         db.add(models.PaymentOrder(
@@ -100,13 +122,14 @@ def create_payment_order(
         db.add(models.PaymentOrder(
             order_id=razorpay_order['id'], user_id=current_user.id,
             amount_paise=razorpay_order['amount'], is_mock=False,
+            razorpay_mode=mode,
         ))
         db.commit()
         return {
             "order_id": razorpay_order['id'],
             "amount": razorpay_order['amount'],
             "currency": razorpay_order['currency'],
-            "key_id": RAZORPAY_KEY_ID
+            "key_id": key_id
         }
     except Exception as e:
         print(f"Error creating Razorpay order: {e}")
@@ -138,26 +161,35 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             amount_paid_inr = order.amount_paise / 100.0
 
         else:
+            # Use the key pair this order was actually created under (recorded
+            # at creation time) rather than whatever mode is active *now* —
+            # an admin may have flipped test/live in Settings in between.
+            order_mode = order.razorpay_mode or get_razorpay_mode()
+            _, key_secret = get_razorpay_keys(order_mode)
+            client = get_razorpay_client(order_mode)
+            if not key_secret or not client:
+                raise HTTPException(status_code=500, detail="Razorpay is not configured for this order's mode")
+
             # Verify Signature
             params_dict = {
                 'razorpay_order_id': data.razorpay_order_id,
                 'razorpay_payment_id': data.razorpay_payment_id,
                 'razorpay_signature': data.razorpay_signature
             }
-            
+
             # client.utility.verify_payment_signature(params_dict) # This method raises error if invalid
-            
+
             # Manual verification to be extra sure or if client util issues arise
             msg = f"{data.razorpay_order_id}|{data.razorpay_payment_id}"
             generated_signature = hmac.new(
-                bytes(RAZORPAY_KEY_SECRET, 'utf-8'),
+                bytes(key_secret, 'utf-8'),
                 bytes(msg, 'utf-8'),
                 hashlib.sha256
             ).hexdigest()
-            
+
             if generated_signature != data.razorpay_signature:
                  raise HTTPException(status_code=400, detail="Invalid Payment Signature")
-            
+
             order_details = client.order.fetch(data.razorpay_order_id)
             amount_paid_inr = order_details['amount'] / 100.0
 
@@ -225,17 +257,26 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
     as a reliable backup to the client-side /verify flow.
     """
     raw_body = await request.body()
-    webhook_secret = os.getenv("RAZORPAY_WEBHOOK_SECRET")
-    if not webhook_secret:
-        raise RuntimeError("RAZORPAY_WEBHOOK_SECRET is not configured.")
+    from ..services.settings_service import get_setting
+    # Razorpay's test and live dashboards each have their own webhook secret;
+    # accept either since we don't know which mode fired this event until
+    # after the signature is verified.
+    webhook_secrets = [
+        s for s in (get_setting("razorpay_webhook_secret_live"), get_setting("razorpay_webhook_secret_test"))
+        if s
+    ]
+    if not webhook_secrets:
+        raise RuntimeError("Razorpay webhook secret is not configured.")
 
     received_sig = request.headers.get("X-Razorpay-Signature", "")
-    expected_sig = hmac.new(
-        webhook_secret.encode("utf-8"),
-        raw_body,
-        hashlib.sha256
-    ).hexdigest()
-    if not hmac.compare_digest(expected_sig, received_sig):
+    signature_valid = any(
+        hmac.compare_digest(
+            hmac.new(s.encode("utf-8"), raw_body, hashlib.sha256).hexdigest(),
+            received_sig,
+        )
+        for s in webhook_secrets
+    )
+    if not signature_valid:
         raise HTTPException(status_code=400, detail="Invalid webhook signature")
 
     try:
@@ -315,9 +356,6 @@ def refund_payment(
     for a wallet top-up, e.g. when the top-up itself was erroneous or duplicated.
     This is distinct from a dispute resolution, which only credits the wallet.
     """
-    if not client:
-        raise HTTPException(status_code=503, detail="Razorpay is not configured")
-
     original = db.query(models.WalletTransaction).filter(
         models.WalletTransaction.id == transaction_id
     ).first()
@@ -329,6 +367,16 @@ def refund_payment(
 
     if not original.gateway_payment_id or original.gateway_payment_id.startswith("pay_mock_"):
         raise HTTPException(status_code=400, detail="Mock/test payments cannot be refunded through Razorpay")
+
+    # Refund through whichever key pair (test/live) the original order was
+    # placed under, not whatever mode is active now.
+    original_order = db.query(models.PaymentOrder).filter(
+        models.PaymentOrder.order_id == original.reference_id
+    ).first()
+    order_mode = original_order.razorpay_mode if original_order else None
+    client = get_razorpay_client(order_mode)
+    if not client:
+        raise HTTPException(status_code=503, detail="Razorpay is not configured for this transaction's mode")
 
     already_refunded = db.query(models.WalletTransaction).filter(
         models.WalletTransaction.transaction_type == models.TransactionType.PAYMENT_REFUND,

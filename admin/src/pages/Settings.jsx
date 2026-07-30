@@ -48,6 +48,28 @@ const GROUPS = [
         ],
     },
     {
+        title: 'Razorpay Payment Gateway',
+        desc: 'Test and live key pairs from https://dashboard.razorpay.com/app/keys. New orders use whichever mode is selected below; orders already placed keep using the key pair they were created under, even if you switch modes afterward.',
+        fields: [
+            {
+                key: 'razorpay_mode',
+                label: 'Active Mode',
+                select: true,
+                options: [
+                    { value: 'test', label: 'Test' },
+                    { value: 'live', label: 'Live' },
+                ],
+                warning: '"Live" charges real money. Double-check this is set to "Test" before trying out payments.',
+            },
+            { key: 'razorpay_key_id_test', label: 'Test Key ID (rzp_test_...)' },
+            { key: 'razorpay_key_secret_test', label: 'Test Key Secret', secret: true },
+            { key: 'razorpay_key_id_live', label: 'Live Key ID (rzp_live_...)' },
+            { key: 'razorpay_key_secret_live', label: 'Live Key Secret', secret: true },
+            { key: 'razorpay_webhook_secret_test', label: 'Test Webhook Secret', secret: true },
+            { key: 'razorpay_webhook_secret_live', label: 'Live Webhook Secret', secret: true },
+        ],
+    },
+    {
         title: 'Facebook & Instagram Integration',
         desc: 'Configure Facebook Page ID and Instagram Business Account details for automated post sharing.',
         fields: [
@@ -350,6 +372,19 @@ export default function Settings() {
                 </label>
             );
         }
+        if (f.select) {
+            return (
+                <select
+                    value={values[f.key] ?? ''}
+                    onChange={e => onChange(f.key, e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                    {f.options.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                </select>
+            );
+        }
         if (f.textarea) {
             return (
                 <textarea
@@ -437,7 +472,7 @@ export default function Settings() {
                         error={waError}
                     />
 
-                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions', 'Payments'].includes(g.title)).map(renderGroup)}
+                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions', 'Payments', 'Razorpay Payment Gateway'].includes(g.title)).map(renderGroup)}
                 </div>
 
                 {/* Right Column */}

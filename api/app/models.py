@@ -192,6 +192,11 @@ class PaymentOrder(Base):
     amount_paise = Column(Integer, nullable=False)
     is_mock = Column(Boolean, default=False, nullable=False, server_default='false')
     consumed = Column(Boolean, default=False, nullable=False, server_default='false')
+    # 'test' or 'live' — the Razorpay key mode active when this order was created.
+    # Recorded so /verify and refunds use the same key pair even if an admin
+    # flips the mode in Settings while the order is still in flight. Null for
+    # mock orders, where it's irrelevant.
+    razorpay_mode = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class ChatPackage(Base):

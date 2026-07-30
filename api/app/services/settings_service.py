@@ -42,10 +42,30 @@ DEFAULTS: dict[str, str] = {
     # bypass feature should never be on because of a forgotten env var.
     # Admin-toggleable via /admin/settings without a redeploy.
     "enable_mock_payments": "false",
+    # Which Razorpay key pair below is actually used for new orders: "test" or
+    # "live". Admin-toggleable via /admin/settings > Payments so switching
+    # between the test and live Razorpay dashboards doesn't need a redeploy.
+    "razorpay_mode": os.getenv("RAZORPAY_MODE", "live"),
+    "razorpay_key_id_test": os.getenv("RAZORPAY_KEY_TEST_ID", ""),
+    "razorpay_key_secret_test": os.getenv("RAZORPAY_KEY_TEST_SECRET", ""),
+    # Falls back to the old single-pair env var names for anyone who hasn't
+    # migrated their .env to the *_LIVE_* naming yet.
+    "razorpay_key_id_live": (
+        os.getenv("RAZORPAY_KEY_LIVE_ID") or os.getenv("RAZORPAY_KEY_ID") or os.getenv("RZP_KEY_ID", "")
+    ),
+    "razorpay_key_secret_live": (
+        os.getenv("RAZORPAY_KEY_LIVE_SECRET") or os.getenv("RAZORPAY_KEY_SECRET") or os.getenv("RZP_KEY_SECRET", "")
+    ),
+    "razorpay_webhook_secret_live": os.getenv("RAZORPAY_WEBHOOK_SECRET", ""),
+    "razorpay_webhook_secret_test": os.getenv("RAZORPAY_WEBHOOK_SECRET_TEST", ""),
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.
-SECRET_KEYS = {"waplex_api_key", "facebook_access_token", "instagram_access_token", "bhashini_api_key", "google_tts_api_key"}
+SECRET_KEYS = {
+    "waplex_api_key", "facebook_access_token", "instagram_access_token", "bhashini_api_key", "google_tts_api_key",
+    "razorpay_key_secret_test", "razorpay_key_secret_live",
+    "razorpay_webhook_secret_live", "razorpay_webhook_secret_test",
+}
 
 _CACHE: dict[str, str] = {}
 _CACHE_TS: float = 0.0

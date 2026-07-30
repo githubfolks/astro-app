@@ -115,7 +115,7 @@ def test_refund_requires_admin(client, make_user):
 
 
 def test_refund_credits_back_to_gateway_and_debits_wallet(client, make_user, db_session, monkeypatch):
-    monkeypatch.setattr(payment_router, "client", _FakeRazorpayClient())
+    monkeypatch.setattr(payment_router, "get_razorpay_client", lambda mode=None: _FakeRazorpayClient())
     admin = make_user(models.UserRole.ADMIN)
     seeker = make_user(models.UserRole.SEEKER, balance=50.0)
 
@@ -142,7 +142,7 @@ def test_refund_credits_back_to_gateway_and_debits_wallet(client, make_user, db_
 
 
 def test_refund_cannot_exceed_remaining_amount(client, make_user, db_session, monkeypatch):
-    monkeypatch.setattr(payment_router, "client", _FakeRazorpayClient())
+    monkeypatch.setattr(payment_router, "get_razorpay_client", lambda mode=None: _FakeRazorpayClient())
     admin = make_user(models.UserRole.ADMIN)
     seeker = make_user(models.UserRole.SEEKER, balance=100.0)
 
@@ -163,7 +163,7 @@ def test_refund_cannot_exceed_remaining_amount(client, make_user, db_session, mo
 
 
 def test_refund_blocks_mock_payment(client, make_user, db_session, monkeypatch):
-    monkeypatch.setattr(payment_router, "client", _FakeRazorpayClient())
+    monkeypatch.setattr(payment_router, "get_razorpay_client", lambda mode=None: _FakeRazorpayClient())
     admin = make_user(models.UserRole.ADMIN)
     seeker = make_user(models.UserRole.SEEKER)
 
