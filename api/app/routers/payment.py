@@ -22,8 +22,16 @@ router = APIRouter(
 # per-request (not at import time) so an admin flipping "razorpay_mode" takes
 # effect without a redeploy.
 
-def get_razorpay_mode() -> str:
+# Reviewer test accounts (see api/create_test_accounts.py) must never be
+# charged real money, even while the platform-wide mode is "live" — they
+# always order under the test key pair regardless of the admin setting.
+TEST_MODE_FORCED_EMAILS = {"seeker1@aadikarta.org", "seeker2@aadikarta.org"}
+
+
+def get_razorpay_mode(user: models.User | None = None) -> str:
     """The key pair currently selected for new orders: 'test' or 'live'."""
+    if user is not None and user.email in TEST_MODE_FORCED_EMAILS:
+        return "test"
     from ..services.settings_service import get_setting
     mode = (get_setting("razorpay_mode") or "live").strip().lower()
     return "test" if mode == "test" else "live"
@@ -82,7 +90,7 @@ def create_payment_order(
     # Razorpay expects amount in paise (1 INR = 100 paise)
     amount_paise = int(order.amount * 100)
 
-    mode = get_razorpay_mode()
+    mode = get_razorpay_mode(current_user)
     key_id, key_secret = get_razorpay_keys(mode)
     client = razorpay.Client(auth=(key_id, key_secret)) if key_id and key_secret else None
     if not client:
