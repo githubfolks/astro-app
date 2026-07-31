@@ -5,7 +5,8 @@ from typing import List
 from .. import models, schemas, database
 from ..services import email_service
 from ..limiter import limiter
-from .auth import get_current_user, get_current_user_optional, get_password_hash, create_access_token
+from .auth import get_current_user, get_current_user_optional, get_password_hash, create_access_token, SECRET_KEY, ALGORITHM
+from jose import JWTError, jwt
 import re, unicodedata, uuid, os, io
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -358,6 +359,45 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
         broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": current_user.id})
 
     return db_profile
+
+
+@router.post("/force-offline", status_code=204)
+def force_offline(request: Request, db: Session = Depends(database.get_db)):
+    """Flips an astrologer offline even when their access token has expired.
+
+    The frontend's global 401 handler hits this when a normal `PUT /profile`
+    call would itself 401 (token already expired/invalid) and can't reach the
+    usual logout flow — without it, `is_online` stays stuck true forever after
+    a silent session expiry. Signature is still verified; only the expiry
+    claim is ignored, so a tampered or forged token is rejected same as usual.
+    """
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return
+    token = auth_header[len("Bearer "):]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM], options={"verify_exp": False})
+        user_id = payload.get("sub")
+    except JWTError:
+        return
+    if user_id is None:
+        return
+
+    db_profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == int(user_id)).first()
+    if not db_profile or not db_profile.is_online:
+        return
+
+    db_profile.is_online = False
+    open_session = db.query(models.AstrologerOnlineSession).filter(
+        models.AstrologerOnlineSession.astrologer_id == db_profile.user_id,
+        models.AstrologerOnlineSession.ended_at.is_(None)
+    ).order_by(models.AstrologerOnlineSession.started_at.desc()).first()
+    if open_session:
+        open_session.ended_at = datetime.utcnow()
+    db.commit()
+
+    from .realtime import broadcast_event
+    broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": db_profile.user_id})
 
 
 # --- Post-login onboarding checklist: KYC docs, gallery, certificates -------

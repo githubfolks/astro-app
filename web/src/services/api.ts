@@ -71,10 +71,23 @@ const handleResponse = async (response: Response, defaultError: string) => {
         // Only treat a 401 as an expired session (clear auth + redirect) when we
         // actually had a token. A 401 on the login request itself just means the
         // credentials were wrong, and should surface as an inline error instead.
-        if (response.status === 401 && (await getAuthToken())) {
-            await storage.removeItem('token');
-            await storage.removeItem('user');
-            window.location.href = '/login';
+        if (response.status === 401) {
+            const staleToken = await getAuthToken();
+            if (staleToken) {
+                // Best-effort: a normal authenticated call would itself 401 here
+                // (the token is already expired/invalid), so this never goes
+                // through AuthContext.logout() — flip the astrologer offline via
+                // a dedicated endpoint that tolerates an expired-but-valid token
+                // instead, or `is_online` stays stuck true after a silent expiry.
+                customFetch(`${API_URL}/astrologers/force-offline`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${staleToken}` },
+                }).catch(() => {});
+
+                await storage.removeItem('token');
+                await storage.removeItem('user');
+                window.location.href = '/login';
+            }
         }
         const errorData = await response.json().catch(() => ({}));
         let errorMessage = errorData.detail || defaultError;
