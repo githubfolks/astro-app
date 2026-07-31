@@ -42,3 +42,4 @@ yarn-debug.log*
 .vercel
 store-graphics/output/
 store-graphics/node_modules/
+api/secrets/aadikarta-vedic-astrology-firebase-adminsdk-fbsvc-0f4829e306.json

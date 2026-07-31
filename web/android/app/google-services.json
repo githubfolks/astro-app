@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "735123081946",
+    "project_id": "aadikarta-vedic-astrology",
+    "storage_bucket": "aadikarta-vedic-astrology.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:735123081946:android:a3b341273d1a782ed0b3e3",
+        "android_client_info": {
+          "package_name": "com.aadikarta.web"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBA_BwRHXC_3RhrwM6yF4iQ2xJMOHRenc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

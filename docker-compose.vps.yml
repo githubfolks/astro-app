@@ -15,10 +15,12 @@ services:
   api:
     environment:
       APP_ENV: production
+      GOOGLE_APPLICATION_CREDENTIALS: /app/secrets/firebase-adminsdk.json
     networks:
       - default
       - global-proxy-network
-
+    volumes:
+      - ./api/secrets/aadikarta-vedic-astrology-firebase-adminsdk-fbsvc-0f4829e306.json:/app/secrets/firebase-adminsdk.json:ro
   web:
     build:
       args:
