@@ -3,6 +3,14 @@ import { Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import FAQSection from '../../components/FAQSection';
+
+const faqs = [
+    { question: 'What is the difference between a sun sign and moon sign horoscope?', answer: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' },
+    { question: 'How is a personalized horoscope different from a generic one?', answer: 'A personalized horoscope is based on your exact birth date, time, and location, giving predictions tailored to your unique planetary positions. Generic sun-sign horoscopes apply to everyone born in the same month.' },
+    { question: 'Which zodiac sign has the best horoscope today?', answer: 'Daily planetary transits affect each sign differently. Rather than a "best" sign, each sign has favorable days based on its ruling planet\'s position. An astrologer can identify your power days each week.' },
+    { question: 'How much does a daily horoscope consultation cost on Aadikarta Vedic Astrology?', answer: 'Daily horoscope consultations on Aadikarta Vedic Astrology start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' },
+];
 
 const SIGNS = [
     { slug: 'aries', name: 'Aries', hindi: 'मेष', symbol: '♈', glyph: '🐏', dates: 'Mar 21 – Apr 19', element: 'Fire' },
@@ -31,9 +39,9 @@ const structuredData = {
     '@graph': [
         {
             '@type': 'CollectionPage',
-            '@id': 'https://aadikarta.org/horoscope#page',
+            '@id': 'https://aadikarta.org/services/horoscope#page',
             name: 'Horoscope by Zodiac Sign | Aadikarta Vedic Astrology',
-            url: 'https://aadikarta.org/horoscope',
+            url: 'https://aadikarta.org/services/horoscope',
             description: 'Daily and monthly horoscope readings for all 12 zodiac signs. Personalized Vedic astrology predictions from expert astrologers on Aadikarta Vedic Astrology.',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
         },
@@ -41,7 +49,7 @@ const structuredData = {
             '@type': 'BreadcrumbList',
             itemListElement: [
                 { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
-                { '@type': 'ListItem', position: 2, name: 'Horoscope', item: 'https://aadikarta.org/horoscope' },
+                { '@type': 'ListItem', position: 2, name: 'Horoscope', item: 'https://aadikarta.org/services/horoscope' },
             ],
         },
         {
@@ -51,8 +59,16 @@ const structuredData = {
                 '@type': 'ListItem',
                 position: i + 1,
                 name: `${s.name} Horoscope`,
-                url: `https://aadikarta.org/horoscope/${s.slug}`,
+                url: `https://aadikarta.org/services/horoscope/${s.slug}`,
             })),
+        },
+        {
+            '@type': 'FAQPage',
+            mainEntity: faqs.map(faq => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+            }))
         },
     ],
 };
@@ -83,7 +99,7 @@ const HoroscopeListing: React.FC = () => {
                         {SIGNS.map((sign) => (
                             <Link
                                 key={sign.slug}
-                                to={`/horoscope/${sign.slug}`}
+                                to={`/services/horoscope/${sign.slug}`}
                                 className="group flex flex-col items-center p-5 rounded-2xl border border-slate-100 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center"
                             >
                                 <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${ELEMENT_COLORS[sign.element]} flex items-center justify-center text-3xl mb-3 shadow-md group-hover:scale-110 transition-transform duration-300`} role="img" aria-label={`${sign.name} icon`}>
@@ -119,6 +135,10 @@ const HoroscopeListing: React.FC = () => {
                             ))}
                         </div>
                     </div>
+                </section>
+
+                <section className="faq-wrapper-section py-8 bg-gradient-to-b from-[#0f0927] to-[#03010b]">
+                    <FAQSection faqs={faqs} title="Daily Horoscope FAQs" />
                 </section>
 
                 <section className="bg-indigo-700 text-white py-16 px-6 text-center">

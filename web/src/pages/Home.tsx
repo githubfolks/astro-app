@@ -6,14 +6,55 @@ import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
 import HowItWorks from '../components/HowItWorks';
+import ServicesGrid from '../components/ServicesGrid';
 import AstrologerList from '../components/AstrologerList';
-// import Testimonials from '../components/Testimonials';
+import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
 import PanchangSection from '../components/PanchangSection';
+import FAQSection from '../components/FAQSection';
 import { useSupportContact } from '../hooks/useSupportContact';
+
+const homeFaqs = [
+    {
+        question: 'How does an online astrology consultation work?',
+        answer: "Pick an astrologer based on their specialization, ratings, and price, then start a live chat. Share your birth date, time, and place, and the astrologer reads your kundli to answer your questions in real time.",
+    },
+    {
+        question: 'How are astrologers verified on Aadikarta?',
+        answer: 'Every astrologer goes through a screening process covering their background, expertise, and communication skills before being approved, so you only connect with genuine, qualified experts.',
+    },
+    {
+        question: 'Is my personal information kept private?',
+        answer: 'Yes. Your birth details and chat conversations are kept strictly confidential and are never shared with third parties.',
+    },
+    {
+        question: 'What can I ask an astrologer about?',
+        answer: 'You can ask about love and relationships, marriage compatibility, career and finance, health, and general life guidance using Vedic astrology, kundli matching, and tarot reading.',
+    },
+    {
+        question: 'How much does a consultation cost?',
+        answer: "Pricing varies by astrologer and starts from ₹10/min. You can see each astrologer's exact per-minute rate on their profile before you start chatting.",
+    },
+    {
+        question: 'Is the Kundli generator free?',
+        answer: 'Yes, generating your Vedic birth chart (Kundli) on Aadikarta is completely free. You only pay if you choose to start a live consultation with an astrologer.',
+    },
+    {
+        question: 'What if I’m not satisfied with my consultation?',
+        answer: 'We offer a hassle-free refund policy if you’re not satisfied with your consultation — see our Refund Policy page for full details.',
+    },
+    {
+        question: 'Which languages can I consult in?',
+        answer: 'Aadikarta and our astrologers support both English and Hindi consultations.',
+    },
+    {
+        question: 'How do I become an astrologer on Aadikarta?',
+        answer: 'Visit the "Join as Astrologer" page, submit your details and credentials, and our team will review your application as part of our verification process.',
+    },
+];
 
 const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => ({
     "@context": "https://schema.org",
@@ -102,6 +143,7 @@ const Home: React.FC = () => {
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <MemoryGuruBanner />
+                <ServicesGrid />
                 <HoroscopeSection />
 
                 {/* Daily Panchang Section */}
@@ -130,25 +172,28 @@ const Home: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                             <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="100">
                                 <div className="text-5xl mb-8 bg-indigo-100/50 w-20 h-20 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-600 group-hover:text-white">🔒</div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">100% Privacy</h3>
+                                <h3 className="text-2xl text-gray-900 mb-4">100% Privacy</h3>
                                 <p className="text-gray-600 leading-relaxed text-lg">Your personal details and conversations are kept strictly confidential. We use military-grade encryption to protect your data.</p>
                             </div>
                             <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="200">
                                 <div className="text-5xl mb-8 bg-purple-100/50 w-20 h-20 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 group-hover:bg-purple-600 group-hover:text-white">✅</div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">Verified Experts</h3>
+                                <h3 className="text-2xl text-gray-900 mb-4">Verified Experts</h3>
                                 <p className="text-gray-600 leading-relaxed text-lg">Every astrologer undergoes a rigorous 4-step screening process. We ensure only genuine, compassionate experts join our circle.</p>
                             </div>
                             <div className="bg-white/70 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group" data-aos="fade-up" data-aos-delay="300">
                                 <div className="text-5xl mb-8 bg-orange-100/50 w-20 h-20 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500 group-hover:bg-orange-600 group-hover:text-white">💰</div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">Satisfaction Guaranteed</h3>
+                                <h3 className="text-2xl text-gray-900 mb-4">Satisfaction Guaranteed</h3>
                                 <p className="text-gray-600 leading-relaxed text-lg">Not satisfied with your consultation? We offer a hassle-free refund policy. Your spiritual peace is our absolute priority.</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                {/* Testimonials temporarily hidden */}
+                <Testimonials />
 
+                <section className="faq-wrapper-section py-8 relative overflow-hidden bg-gradient-to-b from-[#0f0927] to-[#03010b]">
+                    <FAQSection faqs={homeFaqs} title="Frequently Asked Questions" />
+                </section>
 
                 <section className="join-astrologer-section py-32 relative overflow-hidden">
                     {/* Midnight Celestial Background */}

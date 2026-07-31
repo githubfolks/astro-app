@@ -659,6 +659,54 @@ class MuhuratSearch(Base):
     seeker = relationship("User", foreign_keys=[seeker_id])
 
 
+class ManglikCheck(Base):
+    """Cached free, public Manglik/Yoga dosha check, keyed by birth details so
+    repeat lookups for the same person don't re-hit FreeAstroAPI."""
+    __tablename__ = "manglik_checks"
+    __table_args__ = (
+        Index("ix_manglik_checks_lookup", "date_of_birth", "time_of_birth", "place_of_birth", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=False)
+    time_of_birth = Column(Time, nullable=False)
+    place_of_birth = Column(String, nullable=False)
+    yogas_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class NavamsaChart(Base):
+    """Cached free, public divisional (varga) chart lookup, keyed by birth details."""
+    __tablename__ = "navamsa_charts"
+    __table_args__ = (
+        Index("ix_navamsa_charts_lookup", "date_of_birth", "time_of_birth", "place_of_birth", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=False)
+    time_of_birth = Column(Time, nullable=False)
+    place_of_birth = Column(String, nullable=False)
+    vargas_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class NumerologyProfile(Base):
+    """Cached free, public numerology profile lookup, keyed by name + date of birth."""
+    __tablename__ = "numerology_profiles"
+    __table_args__ = (
+        Index("ix_numerology_profiles_lookup", "subject_name", "date_of_birth", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    subject_name = Column(String, nullable=False)
+    date_of_birth = Column(Date, nullable=False)
+    method = Column(String, nullable=False)
+    profile_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class ContentType(str, enum.Enum):
     SHORT_VIDEO = "SHORT_VIDEO"
     VOICE_OVER_IMAGE = "VOICE_OVER_IMAGE"

@@ -17,7 +17,7 @@ const ROUTE_TITLES: Record<string, string> = {
     '/join-as-astrologer': 'Join as Astrologer',
     '/how-it-works': 'How It Works',
     '/pricing': 'Pricing',
-    '/horoscope': 'Horoscope',
+    '/services/horoscope': 'Horoscope',
     '/blog': 'Blog',
     '/memory-guru': 'Memory Guru',
     '/book': 'Book a Session',
@@ -32,12 +32,15 @@ const ROUTE_TITLES: Record<string, string> = {
     '/services/vedic-astrology': 'Vedic Astrology',
     '/services/tarot-reading': 'Tarot Reading',
     '/services/vastu-shastra': 'Vastu Shastra',
+    '/tools/manglik-dosha-checker': 'Manglik Dosha Checker',
+    '/tools/navamsa-chart': 'Navamsa (D9) Chart',
+    '/tools/numerology-calculator': 'Numerology Calculator',
 };
 
 const PREFIX_TITLES: Array<[string, string]> = [
     ['/astrologers/', 'Astrologer Profile'],
     ['/astrologer/', 'Astrologer Profile'],
-    ['/horoscope/', 'Horoscope'],
+    ['/services/horoscope/', 'Horoscope'],
     ['/blog/', 'Blog Post'],
     ['/chat/', 'Chat'],
     ['/classroom/', 'Classroom'],

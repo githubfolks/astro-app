@@ -1,0 +1,127 @@
+import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import SEO from '../../components/SEO';
+import FreeToolResult from '../../components/FreeToolResult';
+import ConnectExpertCTA from '../../components/ConnectExpertCTA';
+import { api } from '../../services/api';
+import { getErrorMessage } from '../../utils/errors';
+import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
+import '../services/ServicesDetail.css';
+
+const NumerologyCalculator: React.FC = () => {
+    const [formData, setFormData] = useState({
+        full_name: '',
+        date_of_birth: '',
+    });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [result, setResult] = useState<unknown>(null);
+
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Free Numerology Calculator | Aadikarta Vedic Astrology",
+        "applicationCategory": "SpiritualApplication",
+        "operatingSystem": "Web",
+        "description": "Calculate your free numerology profile online using just your name and date of birth.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        setResult(null);
+        try {
+            const data = await api.freeTools.numerology(formData);
+            setResult(data.profile_data);
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to generate numerology profile');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="service-detail-page min-h-screen">
+            <SEO
+                title="Free Numerology Calculator | Aadikarta Vedic Astrology"
+                description="Calculate your free numerology profile with just your name and date of birth on Aadikarta Vedic Astrology. No birth time or place needed."
+                keywords="free numerology calculator, life path number, name numerology, numerology profile online, Aadikarta Vedic Astrology"
+                structuredData={structuredData}
+            />
+            <Header />
+
+            <main className="container mx-auto p-4 md:p-6 pt-10">
+                <div className="max-w-2xl mx-auto">
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-normal text-white">🔢 Free Numerology Calculator</h1>
+                        <p className="text-gray-300 mt-2">Enter your name and date of birth to calculate your numerology profile — no birth time or place needed.</p>
+                    </div>
+
+                    <div className="service-glass-panel p-6">
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className={TOOL_LABEL_CLASS}>Full Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    autoComplete="off"
+                                    value={formData.full_name}
+                                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                                    className={TOOL_INPUT_CLASS}
+                                    placeholder="Enter your full name"
+                                />
+                            </div>
+                            <div>
+                                <label className={TOOL_LABEL_CLASS}>Date of Birth *</label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={formData.date_of_birth}
+                                    onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                                    className={TOOL_INPUT_CLASS}
+                                />
+                            </div>
+
+                            {error && (
+                                <div className={TOOL_ERROR_CLASS}>{error}</div>
+                            )}
+
+                            <button type="submit" disabled={loading} className={TOOL_BUTTON_CLASS}>
+                                {loading ? (<><Loader2 size={18} className="animate-spin" /> Calculating...</>) : (<>🔢 Calculate Numerology</>)}
+                            </button>
+                        </form>
+                    </div>
+
+                    {result !== null ? (
+                        <div className="mt-8">
+                            <h2 className="text-lg font-normal text-white mb-4">Your Numerology Profile</h2>
+                            <FreeToolResult data={result} />
+                        </div>
+                    ) : null}
+
+                    <section className="mt-16 service-glass-panel p-8">
+                        <h2 className="text-2xl font-normal text-white mb-4">Why Numerology Matters</h2>
+                        <div className="space-y-3 text-gray-300 leading-relaxed">
+                            <p>
+                                Numerology reduces your name and date of birth to a set of core numbers — like your Life Path number — each believed to carry its own personality traits, strengths, and challenges. It's a system many people use alongside astrology to understand themselves and time decisions.
+                            </p>
+                            <p>
+                                People commonly turn to it for career direction, understanding compatibility with a partner, or even choosing an auspicious spelling of a name for a business or a newborn.
+                            </p>
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+            <ConnectExpertCTA variant="dark" text="Want your numerology combined with a full astrology reading? Talk to an expert." />
+
+            <Footer />
+        </div>
+    );
+};
+
+export default NumerologyCalculator;

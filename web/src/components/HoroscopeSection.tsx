@@ -47,14 +47,10 @@ const HoroscopeSection: React.FC = () => {
 
                 <div className="zodiac-grid" data-aos="fade-up" data-aos-delay="100">
                     {zodiacSigns.map((sign) => (
-                        <Link to={`/horoscope/${sign.slug}`} key={sign.slug} className="zodiac-card">
+                        <Link to={`/services/horoscope/${sign.slug}`} key={sign.slug} className="zodiac-card">
                             {getZodiacSVG(sign.glyph, sign.name)}
                             <h3 className="zodiac-name">{sign.name}</h3>
-                            <span className="zodiac-translation">{sign.translation}</span>
                             <span className="zodiac-dates">{sign.dates}</span>
-                            <span className={`zodiac-element ${sign.element.toLowerCase()}`}>
-                                {sign.element}
-                            </span>
                         </Link>
                     ))}
                 </div>

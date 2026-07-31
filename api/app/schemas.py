@@ -462,3 +462,47 @@ class MuhuratSearchResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
+# Free public tools (Manglik check, Navamsa chart, Numerology) — no auth required
+class FreeToolBirthRequest(BaseModel):
+    full_name: Optional[str] = None
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+
+class ManglikCheckResponse(BaseModel):
+    id: int
+    full_name: Optional[str]
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+    yogas_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class NavamsaChartResponse(BaseModel):
+    id: int
+    full_name: Optional[str]
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+    vargas_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class NumerologyRequest(BaseModel):
+    full_name: str
+    date_of_birth: date
+
+class NumerologyProfileResponse(BaseModel):
+    id: int
+    subject_name: str
+    date_of_birth: date
+    method: str
+    profile_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+

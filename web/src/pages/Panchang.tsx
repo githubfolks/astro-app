@@ -3,6 +3,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import PanchangSection from '../components/PanchangSection';
+import ConnectExpertCTA from '../components/ConnectExpertCTA';
+import './services/ServicesDetail.css';
 
 const panchangStructuredData = {
     '@context': 'https://schema.org',
@@ -32,7 +34,7 @@ const panchangStructuredData = {
 
 const Panchang: React.FC = () => {
     return (
-        <div className="min-h-screen bg-[#03010b]">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Today's Panchang & Hindu Almanac | Aadikarta Vedic Astrology"
                 description="Real-time daily Panchang on Aadikarta Vedic Astrology — Tithi, Nakshatra, Yoga, Rahu Kalam & Abhijit Muhurat calculated with accurate Vedic astronomy."
@@ -48,9 +50,26 @@ const Panchang: React.FC = () => {
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-4xl mx-auto">
                         <PanchangSection />
+
+                        <section className="mt-16 service-glass-panel p-8">
+                            <h2 className="text-2xl font-normal text-white mb-4">Why Panchang Matters</h2>
+                            <div className="space-y-3 text-gray-300 leading-relaxed">
+                                <p>
+                                    Panchang is the traditional Hindu almanac describing five elements of each day — Tithi, Nakshatra, Yoga, Karana, and Vaara — used for centuries to plan daily life around the sky's rhythms rather than just the calendar date.
+                                </p>
+                                <p>
+                                    People check it before starting something important, scheduling a journey, or simply to know which hours (like Rahu Kalam) are best avoided today. It turns abstract planetary movement into practical, day-to-day guidance.
+                                </p>
+                            </div>
+                        </section>
                     </div>
                 </div>
             </section>
+
+            <ConnectExpertCTA
+                variant="dark"
+                text="Want today's Panchang interpreted for your specific birth chart? Talk to an expert astrologer."
+            />
 
             <Footer />
         </div>

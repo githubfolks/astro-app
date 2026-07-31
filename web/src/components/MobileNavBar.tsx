@@ -13,7 +13,7 @@ export const MobileNavBar: React.FC = () => {
 
     const navItems = user?.role === 'ASTROLOGER'
         ? [
-            { name: 'Home', icon: Home, path: '/' },
+            { name: 'Home', icon: Home, path: '/dashboard' },
             { name: 'Chats', icon: History, path: '/chat-history' },
             { name: 'Payouts', icon: Receipt, path: '/transaction-history' },
             { name: 'Profile', icon: UserIcon, path: '/dashboard' },

@@ -100,7 +100,7 @@ const PanchangSection: React.FC = () => {
         <div className="panchang-widget relative z-10" data-aos="fade-up">
             <div className="panchang-heading mb-12 text-center">
                 <span className="text-amber-500 font-semibold uppercase tracking-widest text-sm mb-3 block">Daily Almanac</span>
-                <h2 className="panchang-title text-3xl md:text-4xl font-bold text-white mb-4">
+                <h2 className="panchang-title text-3xl md:text-4xl text-white mb-4">
                     Today's <span className="text-amber-500">Panchang</span>
                 </h2>
                 <p className="panchang-description text-gray-400 max-w-xl mx-auto">

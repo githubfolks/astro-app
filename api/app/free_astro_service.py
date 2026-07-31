@@ -37,6 +37,30 @@ async def _post(path: str, payload: dict) -> dict:
         return response.json()
 
 
+async def _get(path: str, params: Optional[dict] = None) -> dict:
+    if not FREE_ASTRO_API_KEY:
+        raise ValueError(
+            "FREE_ASTRO_API_KEY is not configured. "
+            "Please set it in your .env file. "
+            "Get a key from https://www.freeastroapi.com"
+        )
+
+    async with httpx.AsyncClient(timeout=45.0) as client:
+        response = await client.get(
+            f"{FREE_ASTRO_API_BASE_URL}{path}",
+            params=params or {},
+            headers={"x-api-key": FREE_ASTRO_API_KEY},
+        )
+
+        if response.status_code == 401:
+            raise ValueError("Invalid FreeAstroAPI key. Please check your FREE_ASTRO_API_KEY.")
+        elif response.status_code == 429:
+            raise ValueError("FreeAstroAPI daily quota exceeded. Please try again tomorrow or upgrade your plan.")
+
+        response.raise_for_status()
+        return response.json()
+
+
 async def generate_chart(
     year: int,
     month: int,
@@ -250,3 +274,77 @@ async def search_personalized_muhurat(
     if purpose:
         payload["purpose"] = purpose
     return await _post("/api/v2/vedic/muhurat/personalized-search", payload)
+
+
+async def generate_yogas(
+    birth_date: str,
+    birth_time: str,
+    birth_place: str,
+    timezone: str = "AUTO",
+) -> dict:
+    """
+    Detect Vedic yogas (Manglik/Mangal Dosha, Kala Sarpa, Raj Yogas, etc.) for a birth
+    chart using FreeAstroAPI's dedicated yogas endpoint. Unlike the other functions in
+    this module this is a v1 endpoint that geocodes `birth_place` itself, so no separate
+    geocode_place() call is needed. `birth_date` is "YYYY-MM-DD", `birth_time` is "HH:MM:SS".
+    """
+    payload = {
+        "birth_date": birth_date,
+        "birth_time": birth_time,
+        "birth_place": birth_place,
+        "timezone": timezone,
+    }
+    return await _post("/api/v1/vedic/yogas", payload)
+
+
+async def generate_vargas(
+    birth_date: str,
+    birth_time: str,
+    birth_place: str,
+    vargas: Optional[list] = None,
+    timezone: str = "AUTO",
+) -> dict:
+    """
+    Generate divisional (varga) charts, e.g. Navamsa (D9), for a birth chart using
+    FreeAstroAPI's dedicated vargas endpoint. Same v1 request shape as generate_yogas —
+    `birth_place` is geocoded by the API itself. `vargas` is an optional list restricting
+    which divisional charts are returned; omit to get the API's default set.
+    """
+    payload = {
+        "birth_date": birth_date,
+        "birth_time": birth_time,
+        "birth_place": birth_place,
+        "timezone": timezone,
+    }
+    if vargas:
+        payload["vargas"] = vargas
+    return await _post("/api/v1/vedic/vargas", payload)
+
+
+async def get_numerology_methods() -> dict:
+    """List numerology calculation methods supported by FreeAstroAPI."""
+    return await _get("/api/v1/numerology/methods")
+
+
+async def generate_numerology_profile(
+    subject_name: str,
+    birth_date: str,
+    method: str,
+    alphabet: Optional[str] = None,
+    policy: Optional[str] = None,
+) -> dict:
+    """
+    Generate a numerology profile (life path, name numbers, etc.) for a name and date of
+    birth using FreeAstroAPI. `method` must be a valid method id from
+    get_numerology_methods(). `birth_date` is "YYYY-MM-DD".
+    """
+    payload = {
+        "subject_name": subject_name,
+        "birth_date": birth_date,
+        "method": method,
+    }
+    if alphabet:
+        payload["alphabet"] = alphabet
+    if policy:
+        payload["policy"] = policy
+    return await _post("/api/v1/numerology/profile", payload)

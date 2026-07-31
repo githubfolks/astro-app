@@ -48,7 +48,7 @@ const AboutUs: React.FC = () => {
             <Header />
 
             {/* Hero Section */}
-            <div className="relative h-[220px] md:h-[480px] flex items-center justify-center text-white overflow-hidden">
+            <div className="relative h-[220px] md:h-[300px] flex items-center justify-center text-white overflow-hidden">
                 <div
                     className="absolute inset-0 celestial-bg z-0"
                 >
@@ -58,7 +58,7 @@ const AboutUs: React.FC = () => {
                     <h1 className="text-3xl sm:text-4xl md:text-7xl mb-6 tracking-tight" data-aos="fade-down">
                         About <span className="gradient-text">Aadikarta</span>
                     </h1>
-                    <p className="text-base sm:text-lg md:text-2xl font-light opacity-90 max-w-2xl mx-auto leading-relaxed text-justify" data-aos="fade-up" data-aos-delay="200">
+                    <p className="text-base sm:text-lg md:text-2xl font-light opacity-90 max-w-2xl mx-auto leading-relaxed text-justify" data-aos="fade-up" data-aos-delay="200" text-align="center">
                         Bridging ancient wisdom with modern technology for your spiritual journey.
                     </p>
                 </div>
@@ -66,10 +66,9 @@ const AboutUs: React.FC = () => {
 
             <main className="flex-1">
                 {/* Mission Section */}
-                <div className="container mx-auto px-4 py-12 md:py-32">
+                <div className="container mx-auto px-4 py-12 md:py-8">
                     <div className="flex flex-col md:flex-row items-center gap-16 md:gap-24">
                         <div className="w-full md:w-1/2" data-aos="fade-right">
-                            <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Our Story</span>
                             <h2 className="text-2xl sm:text-3xl md:text-5xl text-gray-900 mb-8 relative">
                                 Our <span className="text-indigo-600">Mission</span>
                             </h2>
@@ -145,7 +144,7 @@ const AboutUs: React.FC = () => {
                 <div className="bg-indigo-950 text-indigo-100 py-12 md:py-20 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-30"></div>
                     <div className="container mx-auto px-4 text-center relative z-10" data-aos="zoom-in">
-                        <h3 className="text-xl sm:text-2xl font-bold mb-6 text-white tracking-wide">Our Commitment to Reality</h3>
+                        <h3 className="text-xl sm:text-2xl mb-6 text-white tracking-wide">Our Commitment to Reality</h3>
                         <p className="max-w-3xl mx-auto opacity-80 text-sm sm:text-base md:text-lg leading-relaxed font-light text-justify sm:text-center">
                             We do not promote superstition or guarantee outcomes. Our platform encourages seekers to use astrological insights as supportive guidance while making their own informed choices.
                         </p>

@@ -9,6 +9,11 @@ import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search } from 'lucide-react';
 
 import SEO from '../components/SEO';
+import ConnectExpertCTA from '../components/ConnectExpertCTA';
+import './services/ServicesDetail.css';
+
+const INPUT_CLASS = "w-full border border-white/10 rounded-xl px-4 py-2.5 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm";
+const LABEL_CLASS = "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1";
 
 const KundliGenerator: React.FC = () => {
     const navigate = useNavigate();
@@ -86,7 +91,7 @@ const KundliGenerator: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Free Kundli Generator | Birth Chart Online | Aadikarta Vedic Astrology"
                 description="Generate your free Vedic Kundli online. Detailed birth chart (Janam Patrika), planetary positions & predictions with Aadikarta Vedic Astrology's accurate Kundli generator."
@@ -95,35 +100,35 @@ const KundliGenerator: React.FC = () => {
             />
             <Header />
 
-            <main className="flex-1 container mx-auto p-4 md:p-6">
+            <main className="container mx-auto p-4 md:p-6 pt-10">
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="mb-4 flex items-center gap-2 text-gray-600 hover:text-[#E91E63] transition-colors font-medium w-fit"
+                    className="mb-4 flex items-center gap-2 text-gray-400 hover:text-amber-500 transition-colors font-medium w-fit"
                 >
                     <ArrowLeft size={20} />
                     Back to Dashboard
                 </button>
 
                 <div className="max-w-4xl mx-auto flex gap-2 mb-2 text-xs font-semibold">
-                    <span className="px-3 py-1.5 rounded-full bg-purple-100 text-purple-700">Kundli Generator</span>
-                    <Link to="/kundli/matching" className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Kundli Matching</Link>
-                    <Link to="/kundli/muhurat" className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Muhurat Search</Link>
+                    <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500">Kundli Generator</span>
+                    <Link to="/kundli/matching" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Kundli Matching</Link>
+                    <Link to="/kundli/muhurat" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Muhurat Search</Link>
                 </div>
 
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">🔮 Kundli Generator</h1>
-                        <p className="text-gray-900 mt-2">Generate Vedic birth charts for seekers</p>
+                        <h1 className="text-3xl font-normal text-white">🔮 Kundli Generator</h1>
+                        <p className="text-gray-300 mt-2">Generate Vedic birth charts for seekers</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
                         {/* Generate Form */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Enter Birth Details</h2>
+                        <div className="service-glass-panel p-6">
+                            <h2 className="text-lg font-normal text-white mb-4">Enter Birth Details</h2>
 
                             <form onSubmit={handleGenerate} className="space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
+                                    <label className={LABEL_CLASS}>
                                         Full Name
                                     </label>
                                     <input
@@ -131,13 +136,13 @@ const KundliGenerator: React.FC = () => {
                                         autoComplete="off"
                                         value={formData.full_name}
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                                        className={INPUT_CLASS}
                                         placeholder="Enter name"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
+                                    <label className={LABEL_CLASS}>
                                         Date of Birth *
                                     </label>
                                     <input
@@ -146,12 +151,12 @@ const KundliGenerator: React.FC = () => {
                                         autoComplete="off"
                                         value={formData.date_of_birth}
                                         onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                                        className={INPUT_CLASS}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
+                                    <label className={LABEL_CLASS}>
                                         Time of Birth *
                                     </label>
                                     <input
@@ -161,12 +166,12 @@ const KundliGenerator: React.FC = () => {
                                         autoComplete="off"
                                         value={formData.time_of_birth}
                                         onChange={(e) => setFormData({ ...formData, time_of_birth: e.target.value })}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                                        className={INPUT_CLASS}
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">
+                                    <label className={LABEL_CLASS}>
                                         Place of Birth *
                                     </label>
                                     <input
@@ -175,13 +180,13 @@ const KundliGenerator: React.FC = () => {
                                         autoComplete="off"
                                         value={formData.place_of_birth}
                                         onChange={(e) => setFormData({ ...formData, place_of_birth: e.target.value })}
-                                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                                        className={INPUT_CLASS}
                                         placeholder="e.g., Delhi, Mumbai, Varanasi"
                                     />
                                 </div>
 
                                 {error && (
-                                    <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-200">
+                                    <div className="bg-red-500/10 text-red-400 p-3 rounded-xl text-sm border border-red-500/20">
                                         {error}
                                     </div>
                                 )}
@@ -189,7 +194,7 @@ const KundliGenerator: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white py-3 px-4 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-200 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 hover:brightness-110 text-indigo-950 py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {loading ? (
                                         <>
@@ -204,8 +209,8 @@ const KundliGenerator: React.FC = () => {
                         </div>
 
                         {/* History */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Recent Kundli Reports</h2>
+                        <div className="service-glass-panel p-6">
+                            <h2 className="text-lg font-normal text-white mb-4">Recent Kundli Reports</h2>
 
                             {historyLoading ? (
                                 <div className="flex items-center justify-center py-8 text-gray-400">
@@ -222,15 +227,15 @@ const KundliGenerator: React.FC = () => {
                                         <button
                                             key={report.id}
                                             onClick={() => handleViewHistoryReport(report)}
-                                            className="w-full text-left bg-gray-50 hover:bg-purple-50 p-3 rounded-xl border border-gray-100 hover:border-purple-200 transition-all"
+                                            className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
                                         >
-                                            <div className="font-semibold text-gray-800 text-sm">
+                                            <div className="font-semibold text-white text-sm">
                                                 {report.full_name || 'Unknown'}
                                             </div>
-                                            <div className="text-xs text-gray-900 mt-1">
+                                            <div className="text-xs text-gray-400 mt-1">
                                                 {new Date(report.date_of_birth || "").toLocaleDateString()} • {report.place_of_birth}
                                             </div>
-                                            <div className="text-[10px] text-gray-400 mt-0.5">
+                                            <div className="text-[10px] text-gray-500 mt-0.5">
                                                 Generated {new Date(report.created_at || "").toLocaleString()}
                                             </div>
                                         </button>
@@ -239,8 +244,22 @@ const KundliGenerator: React.FC = () => {
                             )}
                         </div>
                     </div>
+
+                    <section className="mt-16 service-glass-panel p-8">
+                        <h2 className="text-2xl font-normal text-white mb-4">Why Your Kundli Matters</h2>
+                        <div className="space-y-3 text-gray-300 leading-relaxed">
+                            <p>
+                                A Kundli (Janam Patrika) is a map of the sky at the exact moment you were born — the positions of the Sun, Moon, and planets across the twelve houses. In Vedic astrology, this chart is treated as a blueprint of your personality, strengths, and the broad timing of major life events.
+                            </p>
+                            <p>
+                                It's the foundation almost every other Vedic reading builds on — from marriage compatibility and career timing to identifying doshas and the planetary periods (Dashas) currently shaping your life. Most people generate their Kundli once and refer back to it whenever they need guidance on a big decision.
+                            </p>
+                        </div>
+                    </section>
                 </div>
             </main>
+
+            <ConnectExpertCTA variant="dark" text="Want your Kundli explained in plain language? Talk to a verified astrologer." />
 
             <Footer />
 

@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Home, Users, BookOpen, ChevronDown, LayoutDashboard, LogOut, User as UserIcon, ArrowLeft, Sun, Heart, Info, Star, HelpCircle, Briefcase, Phone } from 'lucide-react';
+import { Menu, X, Home, Users, BookOpen, ChevronDown, LayoutDashboard, LogOut, User as UserIcon, ArrowLeft, Info, Star, HelpCircle, Briefcase, Phone, Sparkles } from 'lucide-react';
 import './Header.css';
 
 import { useAuth } from '../context/AuthContext';
 import { isNative } from '../utils/platform';
 import { getPageTitle } from '../utils/pageTitles';
+import { SERVICES_LIST } from '../data/servicesList';
 
 const NATIVE_TAB_ROOTS = ['/', '/astrologers', '/dashboard'];
 
@@ -65,9 +66,10 @@ const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <button onClick={() => go('/astrologers')}><Star size={18} /> Our Astrologers</button>
                             <button onClick={() => go('/how-it-works')}><HelpCircle size={18} /> How It Works</button>
                             <button onClick={() => go('/join-as-astrologer')}><Briefcase size={18} /> Join as Astrologer</button>
-                            <button onClick={() => go('/services/daily-horoscope')}><Sun size={18} /> Daily Horoscope</button>
-                            <button onClick={() => go('/services/kundli-matching')}><Users size={18} /> Kundli Matching</button>
-                            <button onClick={() => go('/services/love-advice')}><Heart size={18} /> Love Advice</button>
+                            <div className="native-drawer-section-label"><Sparkles size={14} /> Services</div>
+                            {SERVICES_LIST.map((service) => (
+                                <button key={service.to} onClick={() => go(service.to)} className="native-drawer-subitem">{service.title}</button>
+                            ))}
                         </>
                     )}
                 </nav>
@@ -127,15 +129,20 @@ const NativeAppBar: React.FC = () => {
 const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isServicesOpen, setIsServicesOpen] = useState(false);
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const servicesRef = useRef<HTMLLIElement>(null);
 
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
+            }
+            if (servicesRef.current && !servicesRef.current.contains(event.target as Node)) {
+                setIsServicesOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -186,7 +193,7 @@ const Header: React.FC = () => {
                 <nav className={`main-nav ${isMenuOpen ? 'open' : ''}`}>
                     <ul>
                         <li>
-                            <Link to="/" onClick={() => setIsMenuOpen(false)}>
+                            <Link to={user?.role === 'ASTROLOGER' ? '/dashboard' : '/'} onClick={() => setIsMenuOpen(false)}>
                                 <Home size={18} /> Home
                             </Link>
                         </li>
@@ -199,6 +206,30 @@ const Header: React.FC = () => {
                             <Link to="/blog" onClick={() => setIsMenuOpen(false)}>
                                 <BookOpen size={18} /> Blog
                             </Link>
+                        </li>
+                        <li className="services-dropdown-wrapper" ref={servicesRef}>
+                            <button
+                                type="button"
+                                className="services-dropdown-trigger"
+                                onClick={() => setIsServicesOpen((open) => !open)}
+                                aria-expanded={isServicesOpen}
+                            >
+                                <Sparkles size={18} /> Services
+                                <ChevronDown size={14} className={`services-dropdown-chevron ${isServicesOpen ? 'rotate-180' : ''}`} />
+                            </button>
+                            {isServicesOpen && (
+                                <div className="services-dropdown-panel">
+                                    {SERVICES_LIST.map((service) => (
+                                        <Link
+                                            key={service.to}
+                                            to={service.to}
+                                            onClick={() => { setIsServicesOpen(false); setIsMenuOpen(false); }}
+                                        >
+                                            {service.title}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
                         </li>
                     </ul>
                     <div className="mobile-actions">

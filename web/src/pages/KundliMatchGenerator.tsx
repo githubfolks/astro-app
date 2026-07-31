@@ -8,6 +8,11 @@ import { MatchContent } from '../components/MatchPanel';
 import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search } from 'lucide-react';
 import SEO from '../components/SEO';
+import ConnectExpertCTA from '../components/ConnectExpertCTA';
+import './services/ServicesDetail.css';
+
+const INPUT_CLASS = "w-full border border-white/10 rounded-xl px-4 py-2.5 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm";
+const LABEL_CLASS = "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1";
 
 interface PersonForm {
     full_name: string;
@@ -20,31 +25,31 @@ const emptyPerson: PersonForm = { full_name: '', date_of_birth: '', time_of_birt
 
 const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: PersonForm) => void }> = ({ title, value, onChange }) => (
     <div className="space-y-3">
-        <h3 className="text-sm font-bold text-gray-700">{title}</h3>
+        <h3 className="text-sm font-bold text-gray-300">{title}</h3>
         <div>
-            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Full Name</label>
+            <label className={LABEL_CLASS}>Full Name</label>
             <input
                 type="text"
                 autoComplete="off"
                 value={value.full_name}
                 onChange={(e) => onChange({ ...value, full_name: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                className={INPUT_CLASS}
                 placeholder="Enter name"
             />
         </div>
         <div>
-            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Date of Birth *</label>
+            <label className={LABEL_CLASS}>Date of Birth *</label>
             <input
                 type="date"
                 required
                 autoComplete="off"
                 value={value.date_of_birth}
                 onChange={(e) => onChange({ ...value, date_of_birth: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                className={INPUT_CLASS}
             />
         </div>
         <div>
-            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Time of Birth *</label>
+            <label className={LABEL_CLASS}>Time of Birth *</label>
             <input
                 type="time"
                 required
@@ -52,18 +57,18 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
                 autoComplete="off"
                 value={value.time_of_birth}
                 onChange={(e) => onChange({ ...value, time_of_birth: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                className={INPUT_CLASS}
             />
         </div>
         <div>
-            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-1">Place of Birth *</label>
+            <label className={LABEL_CLASS}>Place of Birth *</label>
             <input
                 type="text"
                 required
                 autoComplete="off"
                 value={value.place_of_birth}
                 onChange={(e) => onChange({ ...value, place_of_birth: e.target.value })}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm"
+                className={INPUT_CLASS}
                 placeholder="e.g., Delhi, Mumbai, Varanasi"
             />
         </div>
@@ -116,7 +121,7 @@ const KundliMatchGenerator: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+        <div className="service-detail-page min-h-screen">
             <SEO
                 title="Kuta Matching (Guna Milan) Calculator | Aadikarta Vedic Astrology"
                 description="Generate a detailed Kuta (Guna Milan) compatibility report between two birth charts on Aadikarta Vedic Astrology."
@@ -124,37 +129,37 @@ const KundliMatchGenerator: React.FC = () => {
             />
             <Header />
 
-            <main className="flex-1 container mx-auto p-4 md:p-6">
+            <main className="container mx-auto p-4 md:p-6 pt-10">
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="mb-4 flex items-center gap-2 text-gray-600 hover:text-[#E91E63] transition-colors font-medium w-fit"
+                    className="mb-4 flex items-center gap-2 text-gray-400 hover:text-amber-500 transition-colors font-medium w-fit"
                 >
                     <ArrowLeft size={20} />
                     Back to Dashboard
                 </button>
 
                 <div className="max-w-5xl mx-auto flex gap-2 mb-2 text-xs font-semibold">
-                    <Link to="/kundli" className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Kundli Generator</Link>
-                    <span className="px-3 py-1.5 rounded-full bg-purple-100 text-purple-700">Kundli Matching</span>
-                    <Link to="/kundli/muhurat" className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-purple-50 hover:text-purple-700 transition-colors">Muhurat Search</Link>
+                    <Link to="/kundli" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Kundli Generator</Link>
+                    <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500">Kundli Matching</span>
+                    <Link to="/kundli/muhurat" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Muhurat Search</Link>
                 </div>
 
                 <div className="max-w-5xl mx-auto">
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">💞 Kundli Matching</h1>
-                        <p className="text-gray-900 mt-2">Generate Kuta (Guna Milan) compatibility reports for seekers</p>
+                        <h1 className="text-3xl font-normal text-white">💞 Kundli Matching</h1>
+                        <p className="text-gray-300 mt-2">Generate Kuta (Guna Milan) compatibility reports for seekers</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
                         {/* Generate Form */}
-                        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                        <div className="service-glass-panel p-6">
                             <form onSubmit={handleGenerate} className="space-y-6">
                                 <PersonFields title="Boy" value={boy} onChange={setBoy} />
-                                <div className="border-t border-gray-100" />
+                                <div className="border-t border-white/10" />
                                 <PersonFields title="Girl" value={girl} onChange={setGirl} />
 
                                 {error && (
-                                    <div className="bg-red-50 text-red-600 p-3 rounded-xl text-sm border border-red-200">
+                                    <div className="bg-red-500/10 text-red-400 p-3 rounded-xl text-sm border border-red-500/20">
                                         {error}
                                     </div>
                                 )}
@@ -162,7 +167,7 @@ const KundliMatchGenerator: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white py-3 px-4 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-200 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    className="w-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 hover:brightness-110 text-indigo-950 py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {loading ? (
                                         <>
@@ -190,8 +195,8 @@ const KundliMatchGenerator: React.FC = () => {
                                 </div>
                             )}
 
-                            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                                <h2 className="text-lg font-bold text-gray-800 mb-4">Recent Match Reports</h2>
+                            <div className="service-glass-panel p-6">
+                                <h2 className="text-lg font-normal text-white mb-4">Recent Match Reports</h2>
 
                                 {historyLoading ? (
                                     <div className="flex items-center justify-center py-8 text-gray-400">
@@ -208,15 +213,15 @@ const KundliMatchGenerator: React.FC = () => {
                                             <button
                                                 key={r.id}
                                                 onClick={() => setReport(r)}
-                                                className="w-full text-left bg-gray-50 hover:bg-purple-50 p-3 rounded-xl border border-gray-100 hover:border-purple-200 transition-all"
+                                                className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
                                             >
-                                                <div className="font-semibold text-gray-800 text-sm">
+                                                <div className="font-semibold text-white text-sm">
                                                     {(r.boy_full_name || 'Boy')} & {(r.girl_full_name || 'Girl')}
                                                 </div>
-                                                <div className="text-xs text-gray-900 mt-1">
+                                                <div className="text-xs text-gray-400 mt-1">
                                                     {r.match_data?.ashtakoota?.score}/{r.match_data?.ashtakoota?.max_score} · {r.match_data?.ashtakoota?.recommendation}
                                                 </div>
-                                                <div className="text-[10px] text-gray-400 mt-0.5">
+                                                <div className="text-[10px] text-gray-500 mt-0.5">
                                                     Generated {new Date(r.created_at || "").toLocaleString()}
                                                 </div>
                                             </button>
@@ -226,8 +231,22 @@ const KundliMatchGenerator: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    <section className="mt-16 service-glass-panel p-8">
+                        <h2 className="text-2xl font-normal text-white mb-4">Why Kundli Matching Matters</h2>
+                        <div className="space-y-3 text-gray-300 leading-relaxed">
+                            <p>
+                                Kundli Matching (Guna Milan) compares the birth charts of two people across 8 Kutas covering temperament, mental compatibility, health, and progeny — scored out of 36 points. It's a long-standing practice before marriage in Indian families, meant to gauge how naturally two people are likely to get along.
+                            </p>
+                            <p>
+                                Beyond the score itself, matching also surfaces doshas — like Manglik Dosha — that a couple may want to understand and address together, so decisions around marriage are made with full information rather than surprises later.
+                            </p>
+                        </div>
+                    </section>
                 </div>
             </main>
+
+            <ConnectExpertCTA variant="dark" text="Want your match score explained, with remedies if a dosha shows up? Talk to an expert astrologer." />
 
             <Footer />
         </div>

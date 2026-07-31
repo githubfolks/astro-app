@@ -56,6 +56,9 @@ const Pricing = lazy(() => import('./pages/Pricing'));
 const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
 const AiAstrologer = lazy(() => import('./pages/AiAstrologer'));
 const HoroscopeListing = lazy(() => import('./pages/horoscope/HoroscopeListing'));
+const ManglikChecker = lazy(() => import('./pages/tools/ManglikChecker'));
+const NavamsaViewer = lazy(() => import('./pages/tools/NavamsaViewer'));
+const NumerologyCalculator = lazy(() => import('./pages/tools/NumerologyCalculator'));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -69,6 +72,12 @@ const VastuShastra = lazy(() => import('./pages/services/VastuShastra'));
 const AstrologerRedirect: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     return <Navigate to={`/astrologers/${id}`} replace />;
+};
+
+// Redirect /horoscope/:sign → /services/horoscope/:sign preserving the param
+const HoroscopeSignRedirect: React.FC = () => {
+    const { sign } = useParams<{ sign: string }>();
+    return <Navigate to={`/services/horoscope/${sign}`} replace />;
 };
 
 // Loading component
@@ -210,8 +219,10 @@ function App() {
                             <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
                             <Route path="/how-it-works" element={<HowItWorks />} />
                             <Route path="/pricing" element={<Pricing />} />
-                            <Route path="/horoscope" element={<HoroscopeListing />} />
-                            <Route path="/horoscope/:sign" element={<HoroscopeSign />} />
+                            <Route path="/services/horoscope" element={<HoroscopeListing />} />
+                            <Route path="/services/horoscope/:sign" element={<HoroscopeSign />} />
+                            <Route path="/horoscope" element={<Navigate to="/services/horoscope" replace />} />
+                            <Route path="/horoscope/:sign" element={<HoroscopeSignRedirect />} />
                             <Route path="/blog" element={<Blog />} />
                             <Route path="/blog/:slug" element={<BlogPost />} />
 
@@ -225,6 +236,9 @@ function App() {
                             <Route path="/memory-guru" element={<MemoryGuruAbout />} />
                             <Route path="/book" element={<Book />} />
                             <Route path="/panchang" element={<Panchang />} />
+                            <Route path="/tools/manglik-dosha-checker" element={<ManglikChecker />} />
+                            <Route path="/tools/navamsa-chart" element={<NavamsaViewer />} />
+                            <Route path="/tools/numerology-calculator" element={<NumerologyCalculator />} />
 
                             {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
                             <Route path="/:slug" element={<PageViewer />} />

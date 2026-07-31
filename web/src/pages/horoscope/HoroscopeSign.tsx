@@ -183,7 +183,7 @@ const HoroscopeSign: React.FC = () => {
                 '@type': 'WebPage',
                 name: `${data.name} Horoscope (${data.hindi}) – Daily, Monthly & Yearly | Aadikarta Vedic Astrology`,
                 description: `${data.name} horoscope — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. Get personalized ${data.name} predictions from expert Vedic astrologers on Aadikarta Vedic Astrology.`,
-                url: `https://aadikarta.org/horoscope/${sign}`,
+                url: `https://aadikarta.org/services/horoscope/${sign}`,
             },
             {
                 '@type': 'FAQPage',
@@ -219,8 +219,8 @@ const HoroscopeSign: React.FC = () => {
                 '@type': 'BreadcrumbList',
                 itemListElement: [
                     { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
-                    { '@type': 'ListItem', position: 2, name: 'Horoscope', item: 'https://aadikarta.org/horoscope' },
-                    { '@type': 'ListItem', position: 3, name: `${data.name} Horoscope`, item: `https://aadikarta.org/horoscope/${sign}` },
+                    { '@type': 'ListItem', position: 2, name: 'Horoscope', item: 'https://aadikarta.org/services/horoscope' },
+                    { '@type': 'ListItem', position: 3, name: `${data.name} Horoscope`, item: `https://aadikarta.org/services/horoscope/${sign}` },
                 ],
             },
         ],
@@ -386,7 +386,7 @@ const HoroscopeSign: React.FC = () => {
                             {Object.entries(SIGNS).map(([slug, s]) => (
                                 <Link
                                     key={slug}
-                                    to={`/horoscope/${slug}`}
+                                    to={`/services/horoscope/${slug}`}
                                     className={`zodiac-nav-card flex flex-col items-center p-4 rounded-xl border text-center transition-all ${slug === sign?.toLowerCase()
                                         ? 'active'
                                         : 'text-gray-300 border-white/5 hover:border-amber-500/30'

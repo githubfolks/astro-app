@@ -668,6 +668,32 @@ export const api = {
             return handleResponse(response, 'Failed to fetch daily panchang');
         }
     },
+    freeTools: {
+        manglikCheck: async (data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
+            const response = await customFetch(`${API_URL}/free-tools/manglik-check`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to check Manglik Dosha');
+        },
+        navamsa: async (data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
+            const response = await customFetch(`${API_URL}/free-tools/navamsa`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to generate Navamsa chart');
+        },
+        numerology: async (data: { full_name: string; date_of_birth: string }) => {
+            const response = await customFetch(`${API_URL}/free-tools/numerology`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to generate numerology profile');
+        },
+    },
     edu: {
         getCourses: async () => {
             const response = await customFetch(`${API_URL}/edu/courses`);

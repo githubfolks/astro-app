@@ -1,0 +1,56 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Sparkles, Heart, Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Clock, Star, AlertTriangle, Grid3x3, Hash } from 'lucide-react';
+import { SERVICES_LIST } from '../data/servicesList';
+
+const ICONS_AND_COLORS: Record<string, { icon: React.ReactNode; color: string }> = {
+    'Free Kundli': { icon: <Sparkles size={28} />, color: 'from-amber-400 to-orange-500' },
+    'Kundli Matching': { icon: <Heart size={28} />, color: 'from-pink-400 to-rose-500' },
+    'Daily Horoscope': { icon: <Sun size={28} />, color: 'from-yellow-400 to-amber-500' },
+    'Tarot Reading': { icon: <Layers size={28} />, color: 'from-purple-400 to-indigo-500' },
+    'Vastu Shastra': { icon: <HomeIcon size={28} />, color: 'from-emerald-400 to-teal-500' },
+    'Love Advice': { icon: <HeartHandshake size={28} />, color: 'from-red-400 to-pink-500' },
+    'Daily Panchang': { icon: <CalendarDays size={28} />, color: 'from-indigo-400 to-violet-500' },
+    'Shubh Muhurat': { icon: <Clock size={28} />, color: 'from-cyan-400 to-blue-500' },
+    'Vedic Astrology': { icon: <Star size={28} />, color: 'from-amber-400 to-yellow-500' },
+    'Manglik Dosha Checker': { icon: <AlertTriangle size={28} />, color: 'from-red-500 to-orange-600' },
+    'Navamsa (D9) Chart': { icon: <Grid3x3 size={28} />, color: 'from-fuchsia-400 to-purple-600' },
+    'Numerology Calculator': { icon: <Hash size={28} />, color: 'from-sky-400 to-blue-600' },
+};
+
+const services = SERVICES_LIST.map((s) => ({ ...s, ...ICONS_AND_COLORS[s.title] }));
+
+const ServicesGrid: React.FC = () => {
+    return (
+        <section className="services-grid-section py-24 bg-white relative overflow-hidden">
+            <div className="container mx-auto px-4 relative z-10">
+                <div className="max-w-3xl mx-auto mb-16 text-center" data-aos="fade-up">
+                    <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Explore</span>
+                    <h2 className="text-3xl md:text-4xl text-gray-900 mb-6">
+                        All Our <span className="text-indigo-600">Services</span>
+                    </h2>
+                    <p className="text-xl text-gray-600 leading-relaxed">Everything you need for guidance on love, career, health, and life &mdash; in one place.</p>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {services.map((service, idx) => (
+                        <Link
+                            key={service.title}
+                            to={service.to}
+                            className="group flex flex-col items-center text-center p-6 rounded-3xl border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-xl transition-all duration-500 hover:-translate-y-1"
+                            data-aos="fade-up"
+                            data-aos-delay={idx * 50}
+                        >
+                            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.color} text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-500 shadow-lg`}>
+                                {service.icon}
+                            </div>
+                            <h3 className="font-semibold text-gray-900">{service.title}</h3>
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+};
+
+export default ServicesGrid;
