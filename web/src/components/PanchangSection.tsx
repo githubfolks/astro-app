@@ -4,6 +4,7 @@ import { getBrowserLocation, getIpBasedLocation } from '../utils/location';
 import type { UserCoords } from '../utils/location';
 import { api } from '../services/api';
 import { MapPin, Sun, Moon, RefreshCw } from 'lucide-react';
+import PageHeading from './PageHeading';
 import './PanchangSection.css';
 
 interface DailyPanchangData {
@@ -98,14 +99,14 @@ const PanchangSection: React.FC = () => {
 
     return (
         <div className="panchang-widget relative z-10" data-aos="fade-up">
-            <div className="panchang-heading mb-12 text-center">
-                <span className="text-amber-500 font-semibold uppercase tracking-widest text-sm mb-3 block">Daily Almanac</span>
-                <h2 className="panchang-title text-3xl md:text-4xl text-white mb-4">
-                    Today's <span className="text-amber-500">Panchang</span>
-                </h2>
-                <p className="panchang-description text-gray-400 max-w-xl mx-auto">
-                    Real-time Vedic calculations for your location including Tithi, Nakshatra, and auspicious timings.
-                </p>
+            <div className="panchang-heading mb-12">
+                <PageHeading
+                    eyebrow="Daily Almanac"
+                    title={<>Today's <span className="text-amber-500">Panchang</span></>}
+                    subtitle="Real-time Vedic calculations for your location including Tithi, Nakshatra, and auspicious timings."
+                    titleClassName="panchang-title"
+                    subtitleClassName="panchang-description"
+                />
 
                 <div className="flex items-center justify-center gap-3 mt-6 bg-white/5 border border-white/10 backdrop-blur-md rounded-full px-5 py-2 w-fit mx-auto">
                     <MapPin size={16} className="text-amber-500" />

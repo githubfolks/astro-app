@@ -4,6 +4,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import PageHeading from '../../components/PageHeading';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { Sparkles, Layers, Eye, Compass, Clock } from 'lucide-react';
@@ -63,16 +64,16 @@ const TarotReading: React.FC = () => {
             <Header />
             
             {/* Hero Section */}
-            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                 <div className="max-w-4xl mx-auto relative z-10">
-                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
-                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Tarot Reading</h1>
-                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
-                        Unlock the subconscious through the symbolic language of the divine deck.
-                    </p>
+                    <PageHeading
+                        eyebrow="Service Details"
+                        title="Tarot Reading"
+                        subtitle="Unlock the subconscious through the symbolic language of the divine deck."
+                    />
                 </div>
             </header>
 

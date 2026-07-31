@@ -16,7 +16,7 @@ const ConnectExpertCTA: React.FC<ConnectExpertCTAProps> = ({
             <p className={`text-lg mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{text}</p>
             <Link
                 to="/astrologers"
-                className="inline-block bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-200 hover:scale-105 active:scale-95 transition-all"
+                className="inline-block bg-amber-500 text-indigo-950 px-10 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all"
             >
                 Connect with Expert
             </Link>

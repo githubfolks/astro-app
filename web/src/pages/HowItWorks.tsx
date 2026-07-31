@@ -101,7 +101,7 @@ const HowItWorks: React.FC = () => {
 
             <main>
                 {/* Hero */}
-                <section className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <section className="relative pt-16 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
                     <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                     <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 

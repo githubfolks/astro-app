@@ -43,7 +43,7 @@ const Panchang: React.FC = () => {
             />
             <Header />
 
-            <section className="panchang-section pt-32 pb-24 relative overflow-hidden bg-gradient-to-b from-[#0f0927] to-[#03010b]">
+            <section className="panchang-section pt-16 pb-24 relative overflow-hidden bg-gradient-to-b from-[#0f0927] to-[#03010b]">
                 <div className="absolute top-[20%] left-[-150px] w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[20%] right-[-150px] w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 

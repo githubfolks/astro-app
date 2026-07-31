@@ -5,6 +5,7 @@ import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
+import PageHeading from '../../components/PageHeading';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
@@ -55,14 +56,21 @@ const NavamsaViewer: React.FC = () => {
                 structuredData={structuredData}
             />
             <Header />
+            {/* Hero Section */}
+            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+                <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+                <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-            <main className="container mx-auto p-4 md:p-6 pt-10">
-                <div className="max-w-2xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-normal text-white">🪷 Free Navamsa (D9) Chart</h1>
-                        <p className="text-gray-300 mt-2">Enter your birth details to generate your Navamsa divisional chart, used for marriage and relationship insights.</p>
-                    </div>
-
+                <div className="max-w-4xl mx-auto relative z-10">
+                       <PageHeading
+                            eyebrow="Free Tool"
+                            title="Free Navamsa (D9) Chart"
+                            subtitle="Enter your birth details to generate your Navamsa divisional chart, used for marriage and relationship insights."
+                        />
+                </div>
+            </header>
+             <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+                <div className="max-w-4xl mx-auto">
                     <div className="service-glass-panel p-6">
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>

@@ -7,7 +7,7 @@ import './Header.css';
 import { useAuth } from '../context/AuthContext';
 import { isNative } from '../utils/platform';
 import { getPageTitle } from '../utils/pageTitles';
-import { SERVICES_LIST } from '../data/servicesList';
+import { SERVICES_LIST, ASTROLOGER_TOOLS_LIST } from '../data/servicesList';
 
 const NATIVE_TAB_ROOTS = ['/', '/astrologers', '/dashboard'];
 
@@ -61,7 +61,14 @@ const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <button onClick={() => go('/about-us')}><Info size={18} /> About Us</button>
                     <button onClick={() => go('/blog')}><BookOpen size={18} /> Blog</button>
                     <button onClick={() => go('/contact-us')}><Phone size={18} /> Contact Us</button>
-                    {user?.role !== 'ASTROLOGER' && (
+                    {user?.role === 'ASTROLOGER' ? (
+                        <>
+                            <div className="native-drawer-section-label"><Sparkles size={14} /> Tools</div>
+                            {ASTROLOGER_TOOLS_LIST.map((tool) => (
+                                <button key={tool.to} onClick={() => go(tool.to)} className="native-drawer-subitem">{tool.title}</button>
+                            ))}
+                        </>
+                    ) : (
                         <>
                             <button onClick={() => go('/astrologers')}><Star size={18} /> Our Astrologers</button>
                             <button onClick={() => go('/how-it-works')}><HelpCircle size={18} /> How It Works</button>
@@ -214,12 +221,12 @@ const Header: React.FC = () => {
                                 onClick={() => setIsServicesOpen((open) => !open)}
                                 aria-expanded={isServicesOpen}
                             >
-                                <Sparkles size={18} /> Services
+                                <Sparkles size={18} /> {user?.role === 'ASTROLOGER' ? 'Tools' : 'Services'}
                                 <ChevronDown size={14} className={`services-dropdown-chevron ${isServicesOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {isServicesOpen && (
                                 <div className="services-dropdown-panel">
-                                    {SERVICES_LIST.map((service) => (
+                                    {(user?.role === 'ASTROLOGER' ? ASTROLOGER_TOOLS_LIST : SERVICES_LIST).map((service) => (
                                         <Link
                                             key={service.to}
                                             to={service.to}

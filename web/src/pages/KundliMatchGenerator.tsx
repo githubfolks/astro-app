@@ -150,13 +150,14 @@ const KundliMatchGenerator: React.FC = () => {
                         <p className="text-gray-300 mt-2">Generate Kuta (Guna Milan) compatibility reports for seekers</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-6">
                         {/* Generate Form */}
                         <div className="service-glass-panel p-6">
                             <form onSubmit={handleGenerate} className="space-y-6">
-                                <PersonFields title="Boy" value={boy} onChange={setBoy} />
-                                <div className="border-t border-white/10" />
-                                <PersonFields title="Girl" value={girl} onChange={setGirl} />
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <PersonFields title="Boy" value={boy} onChange={setBoy} />
+                                    <PersonFields title="Girl" value={girl} onChange={setGirl} />
+                                </div>
 
                                 {error && (
                                     <div className="bg-red-500/10 text-red-400 p-3 rounded-xl text-sm border border-red-500/20">
@@ -181,54 +182,53 @@ const KundliMatchGenerator: React.FC = () => {
                             </form>
                         </div>
 
-                        {/* Result / History */}
-                        <div className="space-y-6">
-                            {(loading || error || report) && (
-                                <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-                                    <MatchContent
-                                        matchData={report?.match_data}
-                                        boyName={report?.boy_full_name || boy.full_name || 'Boy'}
-                                        girlName={report?.girl_full_name || girl.full_name || 'Girl'}
-                                        loading={loading}
-                                        error={error}
-                                    />
+                        {/* Result */}
+                        {(loading || error || report) && (
+                            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                                <MatchContent
+                                    matchData={report?.match_data}
+                                    boyName={report?.boy_full_name || boy.full_name || 'Boy'}
+                                    girlName={report?.girl_full_name || girl.full_name || 'Girl'}
+                                    loading={loading}
+                                    error={error}
+                                />
+                            </div>
+                        )}
+
+                        {/* History */}
+                        <div className="service-glass-panel p-6">
+                            <h2 className="text-lg font-normal text-white mb-4">Recent Match Reports</h2>
+
+                            {historyLoading ? (
+                                <div className="flex items-center justify-center py-8 text-gray-400">
+                                    <Loader2 size={24} className="animate-spin" />
+                                </div>
+                            ) : history.length === 0 ? (
+                                <div className="text-center py-8 text-gray-400">
+                                    <Search size={40} className="mx-auto mb-2 opacity-50" />
+                                    <p className="text-sm">No Match reports yet</p>
+                                </div>
+                            ) : (
+                                <div className="grid md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
+                                    {history.map((r: MatchReport) => (
+                                        <button
+                                            key={r.id}
+                                            onClick={() => setReport(r)}
+                                            className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
+                                        >
+                                            <div className="font-semibold text-white text-sm">
+                                                {(r.boy_full_name || 'Boy')} & {(r.girl_full_name || 'Girl')}
+                                            </div>
+                                            <div className="text-xs text-gray-400 mt-1">
+                                                {r.match_data?.ashtakoota?.score}/{r.match_data?.ashtakoota?.max_score} · {r.match_data?.ashtakoota?.recommendation}
+                                            </div>
+                                            <div className="text-[10px] text-gray-500 mt-0.5">
+                                                Generated {new Date(r.created_at || "").toLocaleString()}
+                                            </div>
+                                        </button>
+                                    ))}
                                 </div>
                             )}
-
-                            <div className="service-glass-panel p-6">
-                                <h2 className="text-lg font-normal text-white mb-4">Recent Match Reports</h2>
-
-                                {historyLoading ? (
-                                    <div className="flex items-center justify-center py-8 text-gray-400">
-                                        <Loader2 size={24} className="animate-spin" />
-                                    </div>
-                                ) : history.length === 0 ? (
-                                    <div className="text-center py-8 text-gray-400">
-                                        <Search size={40} className="mx-auto mb-2 opacity-50" />
-                                        <p className="text-sm">No Match reports yet</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                                        {history.map((r: MatchReport) => (
-                                            <button
-                                                key={r.id}
-                                                onClick={() => setReport(r)}
-                                                className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
-                                            >
-                                                <div className="font-semibold text-white text-sm">
-                                                    {(r.boy_full_name || 'Boy')} & {(r.girl_full_name || 'Girl')}
-                                                </div>
-                                                <div className="text-xs text-gray-400 mt-1">
-                                                    {r.match_data?.ashtakoota?.score}/{r.match_data?.ashtakoota?.max_score} · {r.match_data?.ashtakoota?.recommendation}
-                                                </div>
-                                                <div className="text-[10px] text-gray-500 mt-0.5">
-                                                    Generated {new Date(r.created_at || "").toLocaleString()}
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
 

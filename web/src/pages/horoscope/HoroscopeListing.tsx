@@ -4,6 +4,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
+import PageHeading from '../../components/PageHeading';
 
 const faqs = [
     { question: 'What is the difference between a sun sign and moon sign horoscope?', answer: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' },
@@ -85,12 +86,13 @@ const HoroscopeListing: React.FC = () => {
             <Header />
 
             <main>
-                <section className="spiritual-bg text-white py-20 px-6 text-center">
-                    <div className="max-w-3xl mx-auto">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Horoscope by Zodiac Sign</h1>
-                        <p className="text-indigo-100 text-lg mt-4 max-w-xl mx-auto">
-                            Select your zodiac sign for personalised Vedic astrology insights — personality, predictions, and live readings from expert astrologers.
-                        </p>
+                <section className="spiritual-bg text-white pt-16 pb-12 px-6 text-center">
+                    <div className="max-w-4xl mx-auto">
+                        <PageHeading
+                            eyebrow="Zodiac Signs"
+                            title="Horoscope by Zodiac Sign"
+                            subtitle="Select your zodiac sign for personalised Vedic astrology insights — personality, predictions, and live readings from expert astrologers."
+                        />
                     </div>
                 </section>
 
@@ -125,7 +127,7 @@ const HoroscopeListing: React.FC = () => {
                                     <ul className="space-y-1">
                                         {SIGNS.filter((s) => s.element === element).map((s) => (
                                             <li key={s.slug}>
-                                                <Link to={`/horoscope/${s.slug}`} className="text-sm text-slate-700 hover:text-indigo-600 transition-colors">
+                                                <Link to={`/services/horoscope/${s.slug}`} className="text-sm text-slate-700 hover:text-indigo-600 transition-colors">
                                                     {s.symbol} {s.name}
                                                 </Link>
                                             </li>
@@ -148,7 +150,7 @@ const HoroscopeListing: React.FC = () => {
                     </p>
                     <Link
                         to="/astrologers"
-                        className="inline-block bg-white text-indigo-700 font-bold px-12 py-4 rounded-full shadow-xl hover:scale-105 transition-transform"
+                        className="inline-block bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all"
                     >
                         Chat with an Astrologer
                     </Link>

@@ -1,17 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Heart, Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Clock, Star, AlertTriangle, Grid3x3, Hash } from 'lucide-react';
+import { Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Star, AlertTriangle, Grid3x3, Hash } from 'lucide-react';
 import { SERVICES_LIST } from '../data/servicesList';
 
 const ICONS_AND_COLORS: Record<string, { icon: React.ReactNode; color: string }> = {
-    'Free Kundli': { icon: <Sparkles size={28} />, color: 'from-amber-400 to-orange-500' },
-    'Kundli Matching': { icon: <Heart size={28} />, color: 'from-pink-400 to-rose-500' },
     'Daily Horoscope': { icon: <Sun size={28} />, color: 'from-yellow-400 to-amber-500' },
     'Tarot Reading': { icon: <Layers size={28} />, color: 'from-purple-400 to-indigo-500' },
     'Vastu Shastra': { icon: <HomeIcon size={28} />, color: 'from-emerald-400 to-teal-500' },
     'Love Advice': { icon: <HeartHandshake size={28} />, color: 'from-red-400 to-pink-500' },
     'Daily Panchang': { icon: <CalendarDays size={28} />, color: 'from-indigo-400 to-violet-500' },
-    'Shubh Muhurat': { icon: <Clock size={28} />, color: 'from-cyan-400 to-blue-500' },
     'Vedic Astrology': { icon: <Star size={28} />, color: 'from-amber-400 to-yellow-500' },
     'Manglik Dosha Checker': { icon: <AlertTriangle size={28} />, color: 'from-red-500 to-orange-600' },
     'Navamsa (D9) Chart': { icon: <Grid3x3 size={28} />, color: 'from-fuchsia-400 to-purple-600' },

@@ -4,9 +4,18 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import PageHeading from '../../components/PageHeading';
 import SEO from '../../components/SEO';
+import FAQSection from '../../components/FAQSection';
 import { Sun, Sparkles, ShieldAlert, Eye, Compass, Heart } from 'lucide-react';
 import './ServicesDetail.css';
+
+const faqs = [
+    { question: 'How accurate is a daily horoscope?', answer: 'A daily horoscope based on your sun sign gives a general outlook shared by everyone born under that sign. For accuracy tailored to you specifically, a reading based on your full birth chart (date, time, and place) is far more precise.' },
+    { question: 'Should I read my sun sign or moon sign horoscope?', answer: 'In Vedic astrology, the moon sign (Rashi) is considered more important for daily predictions since it reflects your mind and emotions, which change moment to moment. Western horoscopes typically use the sun sign instead.' },
+    { question: 'Can my daily horoscope change based on where I live?', answer: 'Yes. Planetary transits are calculated relative to your location and local time, so the exact timing of favorable or challenging periods can shift slightly depending on where you are.' },
+    { question: 'How much does a personalized daily horoscope reading cost on Aadikarta Vedic Astrology?', answer: 'Personalized daily horoscope consultations on Aadikarta Vedic Astrology start from ₹10 per minute, with most quick readings taking 10–15 minutes.' },
+];
 
 const horoscopeStructuredData = {
     '@context': 'https://schema.org',
@@ -19,6 +28,14 @@ const horoscopeStructuredData = {
             description: 'Personalized daily horoscope readings on Aadikarta Vedic Astrology from expert astrologers covering love, career, health, and finance predictions for all 12 zodiac signs.',
             areaServed: 'IN',
             offers: { '@type': 'Offer', priceCurrency: 'INR', price: '10', priceSpecification: { '@type': 'UnitPriceSpecification', price: '10', priceCurrency: 'INR', unitText: 'per minute' } },
+        },
+        {
+            '@type': 'FAQPage',
+            mainEntity: faqs.map(faq => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+            }))
         },
         {
             '@type': 'BreadcrumbList',
@@ -62,16 +79,16 @@ const DailyHoroscope: React.FC = () => {
             <Header />
             
             {/* Hero Section */}
-            <header className="relative pt-32 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                 <div className="max-w-4xl mx-auto relative z-10">
-                    <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Service Details</span>
-                    <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">Daily Horoscope</h1>
-                    <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
-                        Align your actions with the cosmic rhythm every single day.
-                    </p>
+                    <PageHeading
+                        eyebrow="Service Details"
+                        title="Daily Horoscope"
+                        subtitle="Align your actions with the cosmic rhythm every single day."
+                    />
                 </div>
             </header>
 
@@ -155,6 +172,8 @@ const DailyHoroscope: React.FC = () => {
                         Get Your Full Reading
                     </Link>
                 </section>
+
+                <FAQSection faqs={faqs} />
             </main>
             <Footer />
         </div>
