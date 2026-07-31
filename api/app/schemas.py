@@ -65,6 +65,9 @@ class UserCreate(UserBase):
     password: StrongPassword
     role: UserRole
 
+class PhoneNumberUpdate(BaseModel):
+    phone_number: str = Field(..., pattern=r'^\d{10,15}$')
+
 class UserLogin(BaseModel):
     username: str # Can be email or phone
     password: str

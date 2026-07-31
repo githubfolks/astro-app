@@ -15,7 +15,14 @@ import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { playNotificationSound } from '../utils/notificationSound';
-import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, Wifi, ThumbsDown, Repeat, Heart, AlertTriangle, Eye } from 'lucide-react';
+import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, AlertTriangle, Eye } from 'lucide-react';
+
+const formatDuration = (totalSeconds?: number) => {
+    const secs = totalSeconds || 0;
+    const minutes = Math.floor(secs / 60);
+    const seconds = secs % 60;
+    return `${minutes}m ${seconds}s`;
+};
 
 export const Dashboard: React.FC = () => {
     const [history, setHistory] = useState<Consultation[]>([]);
@@ -242,13 +249,15 @@ export const Dashboard: React.FC = () => {
                     {missingOnboardingItems.length > 0 && (
                         <a
                             href="#astrologer-onboarding-panel"
-                            className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 hover:bg-amber-100 transition-colors group"
+                            className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 hover:bg-amber-100 transition-colors group"
                         >
-                            <AlertTriangle size={20} className="text-amber-600 flex-shrink-0" />
-                            <span className="text-sm font-medium flex-1">
-                                Your profile isn't complete yet — you still need to {missingOnboardingItems.join(', ')}.
-                            </span>
-                            <span className="text-sm font-bold underline group-hover:no-underline whitespace-nowrap">
+                            <div className="flex items-start gap-3 flex-1">
+                                <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                                <span className="text-sm font-medium">
+                                    Your profile isn't complete yet — you still need to {missingOnboardingItems.join(', ')}.
+                                </span>
+                            </div>
+                            <span className="text-sm font-bold underline group-hover:no-underline whitespace-nowrap self-end sm:self-auto">
                                 Complete Profile →
                             </span>
                         </a>
@@ -449,42 +458,24 @@ export const Dashboard: React.FC = () => {
 
                     {/* Performance Stats */}
                     {performanceStats && (
-                        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-cyan-50 text-cyan-600 rounded-lg">
-                                        <Wifi size={20} />
-                                    </div>
-                                    <h3 className="text-sm font-medium text-gray-900">Avg Online Time (30d)</h3>
+                        <div className="mt-8 bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <div className="grid grid-cols-4 gap-2 sm:gap-4 divide-x divide-gray-100">
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-xl sm:text-2xl font-extrabold text-cyan-600">{performanceStats.avg_online_hours_per_day_30d}h</p>
+                                    <h3 className="text-[11px] sm:text-sm text-gray-500 leading-tight mt-1">Online Time</h3>
                                 </div>
-                                <p className="text-2xl font-bold text-gray-900">{performanceStats.avg_online_hours_per_day_30d} hrs/day</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-red-50 text-red-600 rounded-lg">
-                                        <ThumbsDown size={20} />
-                                    </div>
-                                    <h3 className="text-sm font-medium text-gray-900">Poor Chat %</h3>
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-xl sm:text-2xl font-extrabold text-red-500">{performanceStats.poor_chat_percentage}%</p>
+                                    <h3 className="text-[11px] sm:text-sm text-gray-500 leading-tight mt-1">Poor Chat<br className="sm:hidden" /> Percent</h3>
                                 </div>
-                                <p className="text-2xl font-bold text-gray-900">{performanceStats.poor_chat_percentage}%</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                                        <Repeat size={20} />
-                                    </div>
-                                    <h3 className="text-sm font-medium text-gray-900">First User Repeat %</h3>
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-xl sm:text-2xl font-extrabold text-indigo-600">{performanceStats.first_user_repeat_percentage}%</p>
+                                    <h3 className="text-[11px] sm:text-sm text-gray-500 leading-tight mt-1">First User<br className="sm:hidden" /> Repeat</h3>
                                 </div>
-                                <p className="text-2xl font-bold text-gray-900">{performanceStats.first_user_repeat_percentage}%</p>
-                            </div>
-                            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="p-2 bg-pink-50 text-pink-600 rounded-lg">
-                                        <Heart size={20} />
-                                    </div>
-                                    <h3 className="text-sm font-medium text-gray-900">Loyal User %</h3>
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-xl sm:text-2xl font-extrabold text-pink-600">{performanceStats.loyal_user_percentage}%</p>
+                                    <h3 className="text-[11px] sm:text-sm text-gray-500 leading-tight mt-1">Loyal User<br className="sm:hidden" /> Percent</h3>
                                 </div>
-                                <p className="text-2xl font-bold text-gray-900">{performanceStats.loyal_user_percentage}%</p>
                             </div>
                         </div>
                     )}
@@ -497,8 +488,8 @@ export const Dashboard: React.FC = () => {
                                 View All →
                             </button>
                         </div>
-                                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                                    <div className="overflow-x-auto">
+                                <div className="md:bg-white md:rounded-2xl md:shadow-sm md:overflow-hidden md:border md:border-gray-100">
+                                    <div className="hidden md:block overflow-x-auto">
                                         <table className="w-full min-w-[640px] text-left">
                                             <thead className="bg-gray-50 border-b border-gray-100">
                                                 <tr>
@@ -552,6 +543,39 @@ export const Dashboard: React.FC = () => {
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    <div className="md:hidden space-y-2">
+                                        {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).slice(0, 5).map((c: Consultation) => (
+                                            <button
+                                                key={c.id}
+                                                onClick={() => setDetailConsultation(c)}
+                                                className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                                            >
+                                                <img
+                                                    src={resolveImageUrl(c.seeker_profile?.profile_picture_url, c.seeker_profile?.full_name || String(c.seeker_id))}
+                                                    alt=""
+                                                    className="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-gray-900 text-sm truncate">
+                                                            {c.seeker_profile?.full_name || `User #${c.seeker_id}`}
+                                                        </span>
+                                                        <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${c.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                                            {c.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500 mt-0.5">
+                                                        {new Date(c.created_at).toLocaleDateString()} · {formatDuration(c.duration_seconds)}
+                                                    </p>
+                                                </div>
+                                                <span className="font-mono font-bold text-gray-900 text-sm flex-shrink-0">₹{c.total_cost || 0}</span>
+                                            </button>
+                                        ))}
+                                        {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 && (
+                                            <p className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">No past consultations.</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -566,8 +590,8 @@ export const Dashboard: React.FC = () => {
                                         View All →
                                     </button>
                                 </div>
-                                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                                    <div className="overflow-x-auto">
+                                <div className="md:bg-white md:rounded-2xl md:shadow-sm md:overflow-hidden md:border md:border-gray-100">
+                                    <div className="hidden md:block overflow-x-auto">
                                         <table className="w-full min-w-[720px] text-left">
                                             <thead className="bg-gray-50 border-b border-gray-100">
                                                 <tr>
@@ -613,6 +637,38 @@ export const Dashboard: React.FC = () => {
                                                 )}
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    <div className="md:hidden space-y-2">
+                                        {payoutHistory.slice(0, 5).map((p: PayoutHistoryItem) => (
+                                            <div key={p.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="text-sm font-mono font-bold text-gray-900 truncate">
+                                                        {p.transaction_reference || '—'}
+                                                    </span>
+                                                    <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${p.status === 'PROCESSED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                                        {p.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mt-0.5">
+                                                    {new Date(p.processed_at || p.created_at).toLocaleDateString()}
+                                                </p>
+                                                <div className="flex items-center justify-between mt-2">
+                                                    <span className="text-xs text-gray-500">
+                                                        TDS: <span className="font-mono font-semibold text-gray-900">₹{Number(p.tds_deducted || 0).toFixed(2)}</span>
+                                                    </span>
+                                                    <span className="text-sm font-mono font-bold text-green-600">
+                                                        ₹{Number(p.amount || 0).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                                {p.admin_comments && (
+                                                    <p className="text-xs text-gray-500 mt-1.5 truncate" title={p.admin_comments}>{p.admin_comments}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {payoutHistory.length === 0 && (
+                                            <p className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">No payout transactions found.</p>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -797,13 +853,15 @@ export const Dashboard: React.FC = () => {
                 {missingSeekerItems.length > 0 && (
                     <a
                         href="#seeker-my-profile-card"
-                        className="mb-6 flex items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 hover:bg-amber-100 transition-colors group"
+                        className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-4 hover:bg-amber-100 transition-colors group"
                     >
-                        <AlertTriangle size={20} className="text-amber-600 flex-shrink-0" />
-                        <span className="text-sm font-medium flex-1">
-                            Your birth details are incomplete — please add your {missingSeekerItems.join(', ')} so astrologers can give you an accurate reading.
-                        </span>
-                        <span className="text-sm font-bold underline group-hover:no-underline whitespace-nowrap">
+                        <div className="flex items-start gap-3 flex-1">
+                            <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm font-medium">
+                                Your birth details are incomplete — please add your {missingSeekerItems.join(', ')} so astrologers can give you an accurate reading.
+                            </span>
+                        </div>
+                        <span className="text-sm font-bold underline group-hover:no-underline whitespace-nowrap self-end sm:self-auto">
                             Complete Profile →
                         </span>
                     </a>

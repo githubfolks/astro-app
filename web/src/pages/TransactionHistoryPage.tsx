@@ -38,8 +38,8 @@ const TransactionHistoryPage: React.FC = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E91E63]"></div>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                        <div className="overflow-x-auto">
+                    <div className="md:bg-white md:rounded-2xl md:shadow-sm md:overflow-hidden md:border md:border-gray-100">
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="w-full min-w-[720px] text-left">
                                 <thead className="bg-gray-50 border-b border-gray-100">
                                     <tr>
@@ -87,8 +87,40 @@ const TransactionHistoryPage: React.FC = () => {
                             </table>
                         </div>
 
+                        <div className="md:hidden space-y-2">
+                            {paginated.map((p) => (
+                                <div key={p.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="text-sm font-mono font-bold text-gray-900 truncate">
+                                            {p.transaction_reference || '—'}
+                                        </span>
+                                        <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${p.status === 'PROCESSED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}`}>
+                                            {p.status}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                        {new Date(p.processed_at || p.created_at).toLocaleDateString()}
+                                    </p>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <span className="text-xs text-gray-500">
+                                            TDS: <span className="font-mono font-semibold text-gray-900">₹{Number(p.tds_deducted || 0).toFixed(2)}</span>
+                                        </span>
+                                        <span className="text-sm font-mono font-bold text-green-600">
+                                            ₹{Number(p.amount || 0).toFixed(2)}
+                                        </span>
+                                    </div>
+                                    {p.admin_comments && (
+                                        <p className="text-xs text-gray-500 mt-1.5 truncate" title={p.admin_comments}>{p.admin_comments}</p>
+                                    )}
+                                </div>
+                            ))}
+                            {paginated.length === 0 && (
+                                <p className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">No payout transactions found.</p>
+                            )}
+                        </div>
+
                         {totalPages > 1 && (
-                            <div className="flex items-center justify-center gap-2 py-5 border-t border-gray-100">
+                            <div className="flex items-center justify-center gap-2 py-5 mt-2 md:mt-0 md:border-t md:border-gray-100">
                                 <button
                                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}

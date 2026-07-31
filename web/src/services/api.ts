@@ -210,6 +210,17 @@ export const api = {
             });
             return handleResponse(response, 'Failed to update profile');
         },
+        updatePhoneNumber: async (phoneNumber: string) => {
+            const response = await customFetch(`${API_URL}/astrologers/phone-number`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ phone_number: phoneNumber })
+            });
+            return handleResponse(response, 'Failed to update phone number');
+        },
         onboarding: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/astrologers/onboarding`, {
                 method: 'POST',

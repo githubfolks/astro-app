@@ -15,7 +15,7 @@ interface Props {
 const TABS = [
     { key: 'personal', label: 'Personal Details', icon: User },
     { key: 'contract', label: 'Sign the Contract', icon: FileSignature },
-    { key: 'photo', label: 'Profile Photo', icon: Camera },
+    { key: 'photo', label: 'Profile', icon: Camera },
     { key: 'kyc', label: 'Document Upload (KYC)', icon: CreditCard },
     { key: 'certificates', label: 'Certificates', icon: Award },
 ] as const;

@@ -364,8 +364,7 @@ export const Chat: React.FC = () => {
         return () => clearTimeout(timer);
     }, [messages]);
 
-    const handleSend = (e: React.FormEvent) => {
-        e.preventDefault();
+    const sendCurrentInput = () => {
         if (input.trim()) {
             sendMessage(input);
             setInput('');
@@ -374,8 +373,13 @@ export const Chat: React.FC = () => {
         }
     };
 
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        sendCurrentInput();
+    };
+
     const lastTyped = useRef(0);
-    const messageInputRef = useRef<HTMLInputElement>(null);
+    const messageInputRef = useRef<HTMLTextAreaElement>(null);
     const { getSuggestions } = useTextSuggestions();
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [suggestionTarget, setSuggestionTarget] = useState<{ start: number; end: number } | null>(null);
@@ -403,7 +407,7 @@ export const Chat: React.FC = () => {
         setSuggestionTarget(null);
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
         setInput(value);
         updateSuggestions(value, e.target.selectionStart ?? value.length);
@@ -1379,23 +1383,29 @@ export const Chat: React.FC = () => {
                                         {speech.isListening ? <MicOff size={20} /> : <Mic size={20} />}
                                     </button>
                                 )}
-                                <input
+                                <textarea
                                     ref={messageInputRef}
-                                    type="text"
                                     value={input}
                                     onChange={handleInputChange}
                                     onSelect={(e) => updateSuggestions(input, e.currentTarget.selectionStart ?? input.length)}
                                     onBlur={() => { setSuggestions([]); setSuggestionTarget(null); }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            sendCurrentInput();
+                                        }
+                                    }}
                                     placeholder="Type your message..."
                                     spellCheck
                                     lang={chatLanguage === 'hi' ? 'hi' : 'en'}
-                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-6 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner"
+                                    rows={2}
+                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner resize-none max-h-24 overflow-y-auto"
                                     disabled={status === 'ENDED'}
                                 />
                                 <button
                                     type="submit"
                                     disabled={status === 'ENDED' || !input.trim()}
-                                    className="bg-[#E91E63] hover:bg-pink-700 w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95 shadow-lg shadow-pink-200"
+                                    className="bg-[#E91E63] hover:bg-pink-700 w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95 shadow-lg shadow-pink-200 self-end"
                                 >
                                     <Send size={20} />
                                 </button>

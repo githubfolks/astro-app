@@ -42,6 +42,11 @@ export function useSpeechToText() {
     const [error, setError] = useState<string | null>(null);
     const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     const onFinalRef = useRef<(text: string) => void>(() => {});
+    // Some Android/Chrome speech engines re-fire the same result index as
+    // final multiple times, each time with the cumulative transcript so far
+    // rather than just the new words. Track what's already been emitted per
+    // index so we only forward the new suffix, not the whole growing chunk.
+    const finalizedByIndexRef = useRef<string[]>([]);
 
     useEffect(() => {
         return () => {
@@ -58,6 +63,7 @@ export function useSpeechToText() {
         if (!Recognition) return;
 
         onFinalRef.current = onFinalTranscript;
+        finalizedByIndexRef.current = [];
         setError(null);
 
         const recognition = new Recognition();
@@ -70,10 +76,16 @@ export function useSpeechToText() {
             let interimChunk = '';
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 const result = event.results[i];
+                const transcript = result[0].transcript;
                 if (result.isFinal) {
-                    finalChunk += result[0].transcript;
+                    const alreadySent = finalizedByIndexRef.current[i] || '';
+                    const newPart = transcript.startsWith(alreadySent)
+                        ? transcript.slice(alreadySent.length)
+                        : transcript;
+                    finalizedByIndexRef.current[i] = transcript;
+                    finalChunk += newPart;
                 } else {
-                    interimChunk += result[0].transcript;
+                    interimChunk += transcript;
                 }
             }
             if (finalChunk) {
@@ -83,6 +95,7 @@ export function useSpeechToText() {
         };
 
         recognition.onerror = (event) => {
+            console.error('[speech-debug] onerror', event.error);
             setError(event.error === 'not-allowed'
                 ? 'Microphone access was denied.'
                 : `Voice input error: ${event.error}`);
@@ -95,8 +108,12 @@ export function useSpeechToText() {
         };
 
         recognitionRef.current = recognition;
-        recognition.start();
-        setIsListening(true);
+        try {
+            recognition.start();
+            setIsListening(true);
+        } catch (err) {
+            console.error('[speech-debug] start() threw', err);
+        }
     }, [isSupported]);
 
     const stop = useCallback(() => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Star, Wifi, ThumbsDown, Repeat, Heart } from 'lucide-react';
+import { MessageCircle, Star } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useRealtime } from '../context/RealtimeContext';
@@ -125,7 +125,7 @@ const AstrologerHome: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
+        <div className="flex flex-col min-h-screen bg-[#FFF9F0] pb-24 md:pb-0">
             <Header />
             <main className="flex-1 container mx-auto p-4 md:p-8 max-w-5xl">
               {activeSession && (
@@ -287,34 +287,24 @@ const AstrologerHome: React.FC = () => {
 
                 <div className="space-y-4">
                     {performanceStats && (
-                        <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-1.5 bg-cyan-50 text-cyan-600 rounded-lg"><Wifi size={16} /></div>
-                                    <h3 className="text-xs font-medium text-gray-600">Avg Online (30d)</h3>
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                            <div className="grid grid-cols-4 gap-2 divide-x divide-gray-100">
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-lg font-extrabold text-cyan-600">{performanceStats.avg_online_hours_per_day_30d}h</p>
+                                    <h3 className="text-[11px] text-gray-500 leading-tight mt-1">Online Time</h3>
                                 </div>
-                                <p className="text-lg font-bold text-gray-900">{performanceStats.avg_online_hours_per_day_30d} hrs/day</p>
-                            </div>
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-1.5 bg-red-50 text-red-600 rounded-lg"><ThumbsDown size={16} /></div>
-                                    <h3 className="text-xs font-medium text-gray-600">Poor Chat %</h3>
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-lg font-extrabold text-red-500">{performanceStats.poor_chat_percentage}%</p>
+                                    <h3 className="text-[11px] text-gray-500 leading-tight mt-1">Poor Chat<br />Percent</h3>
                                 </div>
-                                <p className="text-lg font-bold text-gray-900">{performanceStats.poor_chat_percentage}%</p>
-                            </div>
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><Repeat size={16} /></div>
-                                    <h3 className="text-xs font-medium text-gray-600">First User Repeat %</h3>
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-lg font-extrabold text-indigo-600">{performanceStats.first_user_repeat_percentage}%</p>
+                                    <h3 className="text-[11px] text-gray-500 leading-tight mt-1">First User<br />Repeat</h3>
                                 </div>
-                                <p className="text-lg font-bold text-gray-900">{performanceStats.first_user_repeat_percentage}%</p>
-                            </div>
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-1.5 bg-pink-50 text-pink-600 rounded-lg"><Heart size={16} /></div>
-                                    <h3 className="text-xs font-medium text-gray-600">Loyal User %</h3>
+                                <div className="flex flex-col items-center text-center px-1">
+                                    <p className="text-lg font-extrabold text-pink-600">{performanceStats.loyal_user_percentage}%</p>
+                                    <h3 className="text-[11px] text-gray-500 leading-tight mt-1">Loyal User<br />Percent</h3>
                                 </div>
-                                <p className="text-lg font-bold text-gray-900">{performanceStats.loyal_user_percentage}%</p>
                             </div>
                         </div>
                     )}

@@ -361,6 +361,28 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
     return db_profile
 
 
+@router.put("/phone-number")
+def update_own_phone_number(
+    body: schemas.PhoneNumberUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
+    if current_user.role != models.UserRole.ASTROLOGER:
+        raise HTTPException(status_code=400, detail="Not an astrologer account")
+
+    existing = db.query(models.User).filter(
+        models.User.phone_number == body.phone_number,
+        models.User.id != current_user.id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Phone number already in use")
+
+    current_user.phone_number = body.phone_number
+    db.commit()
+
+    return {"phone_number": current_user.phone_number}
+
+
 @router.post("/force-offline", status_code=204)
 def force_offline(request: Request, db: Session = Depends(database.get_db)):
     """Flips an astrologer offline even when their access token has expired.

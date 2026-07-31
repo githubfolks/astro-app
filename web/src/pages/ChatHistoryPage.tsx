@@ -4,8 +4,16 @@ import Header from '../components/Header';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import { api } from '../services/api';
 import type { Consultation } from '../types';
+import { resolveImageUrl } from '../utils/url';
 
 const ITEMS_PER_PAGE = 10;
+
+const formatDuration = (totalSeconds?: number) => {
+    const secs = totalSeconds || 0;
+    const minutes = Math.floor(secs / 60);
+    const seconds = secs % 60;
+    return `${minutes}m ${seconds}s`;
+};
 
 const ChatHistoryPage: React.FC = () => {
     const [history, setHistory] = useState<Consultation[]>([]);
@@ -40,8 +48,8 @@ const ChatHistoryPage: React.FC = () => {
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E91E63]"></div>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                        <div className="overflow-x-auto">
+                    <div className="md:bg-white md:rounded-2xl md:shadow-sm md:overflow-hidden md:border md:border-gray-100">
+                        <div className="hidden md:block overflow-x-auto">
                             <table className="w-full min-w-[640px] text-left">
                                 <thead className="bg-gray-50 border-b border-gray-100">
                                     <tr>
@@ -90,8 +98,41 @@ const ChatHistoryPage: React.FC = () => {
                             </table>
                         </div>
 
+                        <div className="md:hidden space-y-2">
+                            {paginated.map((c) => (
+                                <button
+                                    key={c.id}
+                                    onClick={() => setDetailConsultation(c)}
+                                    className="w-full text-left bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
+                                >
+                                    <img
+                                        src={resolveImageUrl(c.seeker_profile?.profile_picture_url, c.seeker_profile?.full_name || String(c.seeker_id))}
+                                        alt=""
+                                        className="w-10 h-10 rounded-full object-cover border border-gray-100 flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-gray-900 text-sm truncate">
+                                                {c.seeker_profile?.full_name || `User #${c.seeker_id}`}
+                                            </span>
+                                            <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${c.status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                                {c.status}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-0.5">
+                                            {new Date(c.created_at).toLocaleDateString()} · {formatDuration(c.duration_seconds)}
+                                        </p>
+                                    </div>
+                                    <span className="font-mono font-bold text-gray-900 text-sm flex-shrink-0">₹{c.total_cost || 0}</span>
+                                </button>
+                            ))}
+                            {paginated.length === 0 && (
+                                <p className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">No past consultations.</p>
+                            )}
+                        </div>
+
                         {totalPages > 1 && (
-                            <div className="flex items-center justify-center gap-2 py-5 border-t border-gray-100">
+                            <div className="flex items-center justify-center gap-2 py-5 mt-2 md:mt-0 md:border-t md:border-gray-100">
                                 <button
                                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
