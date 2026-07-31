@@ -138,7 +138,19 @@ async function main() {
         let failed = 0;
         for (const route of routes) {
             try {
-                await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 15000 });
+                try {
+                    await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 15000 });
+                } catch (e) {
+                    // Heavier pages (e.g. the homepage, with animations, live
+                    // astrologer status, and multiple data widgets) can have
+                    // background network activity that never goes fully quiet,
+                    // especially under a slower/resource-constrained build
+                    // container — failing here would silently drop the page's
+                    // most valuable route. `load` still guarantees the SPA has
+                    // mounted; the extra wait lets client-side data fetches settle.
+                    await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 15000 });
+                    await page.waitForTimeout(1500);
+                }
                 const html = await page.content();
                 const outDir = route === '/' ? DIST : join(DIST, route);
                 mkdirSync(outDir, { recursive: true });
