@@ -78,6 +78,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         }
 
+        // Login auto-flips is_online to true (auth.py), but nothing flips it back —
+        // without this, the astrologer stays "online"/chattable after logging out.
+        if (user?.role === 'ASTROLOGER') {
+            try {
+                await api.astrologers.updateProfile({ is_online: false });
+            } catch (e) {
+                console.error('Failed to set astrologer offline on logout:', e);
+            }
+        }
+
         setToken(null);
         setUser(null);
         await storage.removeItem('token');
