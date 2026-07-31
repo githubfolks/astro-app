@@ -140,7 +140,7 @@ const VedicAstrology: React.FC = () => {
                             <div key={idx} className="custom-list-item">
                                 <div className="icon-box">{item.icon}</div>
                                 <div>
-                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <h3 className="text-xl font-normal text-white mb-2">{item.title}</h3>
                                     <p className="text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>

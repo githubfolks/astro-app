@@ -61,11 +61,12 @@ const PanchangSection: React.FC = () => {
                 if (cached) {
                     activeCoords = JSON.parse(cached);
                 } else {
-                    try {
-                        activeCoords = await getBrowserLocation();
-                    } catch {
-                        activeCoords = await getIpBasedLocation();
-                    }
+                    // Don't prompt for the browser geolocation permission on
+                    // page load with no user gesture — silently fall back to
+                    // IP-based location instead. Precise browser location is
+                    // only requested via the explicit "Refresh Location"
+                    // button (forceBrowser=true), which is a real user action.
+                    activeCoords = await getIpBasedLocation();
                 }
             }
             setCoords(activeCoords);
