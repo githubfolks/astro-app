@@ -203,6 +203,7 @@ const AstrologerProfile: React.FC = () => {
                 keywords={`Aadikarta Vedic Astrology, ${displayName}, talk to ${displayName}, ${specialtiesArray.slice(0, 3).join(', ')}`}
                 image={resolveImageUrl(astrologer.profile_picture_url, displayName)}
                 structuredData={getStructuredData(astrologer)}
+                canonicalPath={`/astrologers/${astrologer.slug || astrologer.user_id}`}
             />
             <Header />
             <main className="flex-1">

@@ -15,6 +15,16 @@ interface SEOProps {
     noindex?: boolean;
     publishedTime?: string;
     modifiedTime?: string;
+    /**
+     * Overrides the auto-derived (from the current URL) canonical path.
+     * Needed for pages reachable under more than one URL for the same
+     * content (e.g. an astrologer profile at both its legacy numeric-ID
+     * path and its slug path) — without this, a crawler that reads the
+     * page before any client-side redirect fires sees a self-referencing
+     * canonical on the non-preferred URL, producing duplicate-content
+     * signals instead of a clear preferred-URL signal.
+     */
+    canonicalPath?: string;
 }
 
 const SEO: React.FC<SEOProps> = ({
@@ -28,9 +38,11 @@ const SEO: React.FC<SEOProps> = ({
     noindex = false,
     publishedTime,
     modifiedTime,
+    canonicalPath,
 }) => {
     const { pathname } = useLocation();
-    const canonical = `${BASE_URL}${pathname === '/' ? '/' : pathname}`;
+    const resolvedPath = canonicalPath ?? pathname;
+    const canonical = `${BASE_URL}${resolvedPath === '/' ? '/' : resolvedPath}`;
     
     let fullTitle = title;
     if (!title.includes('Aadikarta Vedic Astrology')) {
