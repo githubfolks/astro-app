@@ -582,6 +582,28 @@ export const api = {
                 credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch Dasha Insights');
+        },
+        update: async (id: number, data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
+            const response = await fetch(`${API_URL}/kundli/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to update Kundli report');
+        },
+        delete: async (id: number) => {
+            const response = await fetch(`${API_URL}/kundli/${id}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                await handleResponse(response, 'Failed to delete Kundli report');
+            }
         }
     },
     matching: {
@@ -666,6 +688,12 @@ export const api = {
             if (opts.place) params.append('place', opts.place);
             const response = await customFetch(`${API_URL}/panchang/daily?${params}`);
             return handleResponse(response, 'Failed to fetch daily panchang');
+        }
+    },
+    places: {
+        autocomplete: async (query: string): Promise<{ label: string; city: string; state: string; lat: number; lon: number }[]> => {
+            const response = await customFetch(`${API_URL}/places/autocomplete?q=${encodeURIComponent(query)}`);
+            return handleResponse(response, 'Failed to fetch place suggestions');
         }
     },
     freeTools: {

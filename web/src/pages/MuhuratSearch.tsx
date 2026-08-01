@@ -180,7 +180,7 @@ const MuhuratSearchPage: React.FC = () => {
                                 <div>
                                     <label className={LABEL_CLASS}>Place *</label>
                                     <input type="text" required value={place} onChange={(e) => setPlace(e.target.value)}
-                                        placeholder="e.g., Delhi, Mumbai, Varanasi"
+                                        placeholder="e.g., New Delhi, Delhi, India"
                                         className={INPUT_CLASS} />
                                 </div>
 

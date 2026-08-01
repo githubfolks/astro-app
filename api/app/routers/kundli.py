@@ -24,6 +24,35 @@ def _require_astrologer(current_user: models.User):
         raise HTTPException(status_code=403, detail="Only astrologers can access Kundli features")
 
 
+async def _geocode_and_generate(dob, tob, place: str):
+    """Shared geocode + FreeAstroAPI chart generation used by both create and edit."""
+    try:
+        lat, lon = await geocode_place(place)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
+
+    try:
+        chart_data = await generate_full_kundli(
+            year=dob.year,
+            month=dob.month,
+            day=dob.day,
+            hour=tob.hour,
+            minute=tob.minute,
+            latitude=lat,
+            longitude=lon,
+            timezone="Asia/Kolkata",
+            dasha_levels=3,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+    return lat, lon, chart_data
+
+
 @router.post("/generate", response_model=schemas.KundliReportResponse)
 async def generate_kundli_report(
     request: schemas.KundliGenerateRequest,
@@ -89,33 +118,31 @@ async def generate_kundli_report(
         and "chart" in existing.chart_data
         and _has_complete_dasha(existing.chart_data)
     ):
-        return existing
-
-    # Geocode place of birth
-    try:
-        lat, lon = await geocode_place(place)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
-
-    # Call FreeAstroAPI for the full Kundli (chart, vargas, dasha, yogas, panchang, shadbala, ashtakavarga)
-    try:
-        chart_data = await generate_full_kundli(
-            year=dob.year,
-            month=dob.month,
-            day=dob.day,
-            hour=tob.hour,
-            minute=tob.minute,
-            latitude=lat,
-            longitude=lon,
-            timezone="Asia/Kolkata",
-            dasha_levels=3,
+        # Reuse the already-computed chart (skip re-hitting FreeAstroAPI for
+        # identical birth details) but still record a fresh row for this
+        # request — mutating `existing` in place would silently rename it
+        # and reassign ownership away from whoever originally generated it,
+        # which is how a report can vanish from its original owner's history.
+        report = models.KundliReport(
+            seeker_id=request.seeker_id,
+            generated_by=current_user.id,
+            full_name=name,
+            date_of_birth=dob,
+            time_of_birth=tob,
+            place_of_birth=place,
+            latitude=existing.latitude,
+            longitude=existing.longitude,
+            timezone=existing.timezone,
+            chart_data=existing.chart_data,
         )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+        return report
+
+    # Geocode place of birth and call FreeAstroAPI for the full Kundli
+    # (chart, vargas, dasha, yogas, panchang, shadbala, ashtakavarga)
+    lat, lon, chart_data = await _geocode_and_generate(dob, tob, place)
 
     # Save to database — refresh the stale row in place if one exists, otherwise insert new
     if existing:
@@ -248,3 +275,63 @@ def get_astrologer_kundli_history(
     ).order_by(models.KundliReport.created_at.desc()).all()
 
     return reports
+
+
+@router.put("/{report_id}", response_model=schemas.KundliReportResponse)
+async def update_kundli_report(
+    report_id: int,
+    request: schemas.KundliUpdateRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    """Edit a Kundli report's birth details and regenerate its chart."""
+    _require_astrologer(current_user)
+
+    report = db.query(models.KundliReport).filter(
+        models.KundliReport.id == report_id,
+        models.KundliReport.generated_by == current_user.id,
+    ).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Kundli report not found")
+
+    lat, lon, chart_data = await _geocode_and_generate(
+        request.date_of_birth, request.time_of_birth, request.place_of_birth
+    )
+
+    report.full_name = request.full_name
+    report.date_of_birth = request.date_of_birth
+    report.time_of_birth = request.time_of_birth
+    report.place_of_birth = request.place_of_birth
+    report.latitude = lat
+    report.longitude = lon
+    report.chart_data = chart_data
+    # Birth details changed, so any cached narrative insights are stale.
+    report.dasha_insights_data = None
+    report.dasha_insights_date = None
+
+    db.commit()
+    db.refresh(report)
+
+    return report
+
+
+@router.delete("/{report_id}", status_code=204)
+def delete_kundli_report(
+    report_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    """Delete a Kundli report."""
+    _require_astrologer(current_user)
+
+    report = db.query(models.KundliReport).filter(
+        models.KundliReport.id == report_id,
+        models.KundliReport.generated_by == current_user.id,
+    ).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Kundli report not found")
+
+    db.delete(report)
+    db.commit()

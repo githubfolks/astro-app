@@ -368,6 +368,7 @@ export interface KundliReport {
     id: number;
     full_name?: string;
     date_of_birth?: string;
+    time_of_birth?: string;
     place_of_birth?: string;
     created_at?: string;
     chart_data?: ChartData;

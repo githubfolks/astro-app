@@ -244,7 +244,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                 )}
                                 {ascendant && (
                                     <p className="text-xs text-gray-900">
-                                        {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id})</span>
+                                        {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id}){ascendant.degree !== undefined ? ` ${ascendant.degree.toFixed(2)}°` : ''}</span>
                                         {ascendant.nakshatra && (
                                             <> · {hi(NAKSHATRA_HI, ascendant.nakshatra.name, lang)} {lang === 'hi' ? UI_HI.pada : 'Pada'} {ascendant.nakshatra.pada} ({lang === 'hi' ? UI_HI.lord : 'lord'} {hi(PLANET_NAME_HI, ascendant.nakshatra.lord, lang)})</>
                                         )}

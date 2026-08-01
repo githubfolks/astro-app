@@ -377,6 +377,12 @@ class KundliGenerateRequest(BaseModel):
     time_of_birth: time
     place_of_birth: str
 
+class KundliUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+
 class KundliReportResponse(BaseModel):
     id: int
     seeker_id: Optional[int]

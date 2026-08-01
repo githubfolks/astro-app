@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { MatchContent } from '../components/MatchPanel';
+import CityAutocomplete from '../components/CityAutocomplete';
 import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -62,14 +63,13 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
         </div>
         <div>
             <label className={LABEL_CLASS}>Place of Birth *</label>
-            <input
-                type="text"
+            <CityAutocomplete
                 required
-                autoComplete="off"
                 value={value.place_of_birth}
-                onChange={(e) => onChange({ ...value, place_of_birth: e.target.value })}
+                onChange={(place_of_birth) => onChange({ ...value, place_of_birth })}
                 className={INPUT_CLASS}
-                placeholder="e.g., Delhi, Mumbai, Varanasi"
+                placeholder="e.g., New Delhi, Delhi, India"
+                dropdownClassName="bg-[#1a1530] text-white divide-y divide-white/5"
             />
         </div>
     </div>

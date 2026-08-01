@@ -113,7 +113,7 @@ const ManglikChecker: React.FC = () => {
                                     value={formData.place_of_birth}
                                     onChange={(e) => setFormData({ ...formData, place_of_birth: e.target.value })}
                                     className={TOOL_INPUT_CLASS}
-                                    placeholder="e.g., Delhi, Mumbai, Varanasi"
+                                    placeholder="e.g., New Delhi, Delhi, India"
                                 />
                             </div>
 

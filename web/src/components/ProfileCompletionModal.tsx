@@ -3,6 +3,7 @@ import { getErrorMessage } from '../utils/errors';
 import React, { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
+import CityAutocomplete from './CityAutocomplete';
 
 interface ProfileCompletionModalProps {
     isOpen: boolean;
@@ -112,13 +113,11 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
 
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Place of Birth *</label>
-                        <input
-                            type="text"
-                            autoComplete="off"
+                        <CityAutocomplete
                             value={profile.place_of_birth}
-                            onChange={(e) => setProfile({ ...profile, place_of_birth: e.target.value })}
+                            onChange={(place_of_birth) => setProfile({ ...profile, place_of_birth })}
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
-                            placeholder="City, Country"
+                            placeholder="City, State, India"
                         />
                     </div>
 

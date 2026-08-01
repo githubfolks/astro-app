@@ -5,8 +5,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import KundliPanel from '../components/KundliPanel';
+import CityAutocomplete from '../components/CityAutocomplete';
 import { api } from '../services/api';
-import { ArrowLeft, Loader2, Search } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, Pencil, Trash2, X } from 'lucide-react';
 
 import SEO from '../components/SEO';
 import ConnectExpertCTA from '../components/ConnectExpertCTA';
@@ -32,6 +33,8 @@ const KundliGenerator: React.FC = () => {
     // History
     const [history, setHistory] = useState<KundliReport[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const structuredData = {
         "@context": "https://schema.org",
@@ -69,17 +72,22 @@ const KundliGenerator: React.FC = () => {
         setError(null);
 
         try {
-            const result = await api.kundli.generate({
+            const payload = {
                 full_name: formData.full_name,
                 date_of_birth: formData.date_of_birth,
                 time_of_birth: formData.time_of_birth,
                 place_of_birth: formData.place_of_birth,
-            });
+            };
+            const result = editingId
+                ? await api.kundli.update(editingId, payload)
+                : await api.kundli.generate(payload);
             setChartData(result.chart_data);
             setShowPanel(true);
+            setEditingId(null);
+            setFormData({ full_name: '', date_of_birth: '', time_of_birth: '', place_of_birth: '' });
             loadHistory(); // Refresh history
         } catch (err) {
-            setError(getErrorMessage(err) || 'Failed to generate Kundli');
+            setError(getErrorMessage(err) || (editingId ? 'Failed to update Kundli' : 'Failed to generate Kundli'));
         } finally {
             setLoading(false);
         }
@@ -88,6 +96,42 @@ const KundliGenerator: React.FC = () => {
     const handleViewHistoryReport = async (report: KundliReport) => {
         setChartData(report.chart_data ?? null);
         setShowPanel(true);
+    };
+
+    const handleEditHistoryReport = (report: KundliReport) => {
+        setEditingId(report.id);
+        setError(null);
+        setFormData({
+            full_name: report.full_name || '',
+            date_of_birth: report.date_of_birth || '',
+            time_of_birth: report.time_of_birth || '',
+            place_of_birth: report.place_of_birth || '',
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setError(null);
+        setFormData({ full_name: '', date_of_birth: '', time_of_birth: '', place_of_birth: '' });
+    };
+
+    const handleDeleteHistoryReport = async (report: KundliReport) => {
+        if (!window.confirm(`Delete the Kundli report for ${report.full_name || 'this seeker'}? This cannot be undone.`)) {
+            return;
+        }
+        setDeletingId(report.id);
+        try {
+            await api.kundli.delete(report.id);
+            setHistory((prev) => prev.filter((r) => r.id !== report.id));
+            if (editingId === report.id) {
+                handleCancelEdit();
+            }
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to delete Kundli report');
+        } finally {
+            setDeletingId(null);
+        }
     };
 
     return (
@@ -124,7 +168,21 @@ const KundliGenerator: React.FC = () => {
                     <div className="grid md:grid-cols-2 gap-6">
                         {/* Generate Form */}
                         <div className="service-glass-panel p-6">
-                            <h2 className="text-lg font-normal text-white mb-4">Enter Birth Details</h2>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-normal text-white">
+                                    {editingId ? 'Edit Birth Details' : 'Enter Birth Details'}
+                                </h2>
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <X size={14} />
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
 
                             <form onSubmit={handleGenerate} className="space-y-4">
                                 <div>
@@ -174,14 +232,13 @@ const KundliGenerator: React.FC = () => {
                                     <label className={LABEL_CLASS}>
                                         Place of Birth *
                                     </label>
-                                    <input
-                                        type="text"
+                                    <CityAutocomplete
                                         required
-                                        autoComplete="off"
                                         value={formData.place_of_birth}
-                                        onChange={(e) => setFormData({ ...formData, place_of_birth: e.target.value })}
+                                        onChange={(place_of_birth) => setFormData({ ...formData, place_of_birth })}
                                         className={INPUT_CLASS}
-                                        placeholder="e.g., Delhi, Mumbai, Varanasi"
+                                        placeholder="e.g., New Delhi, Delhi, India"
+                                        dropdownClassName="bg-[#1a1530] text-white divide-y divide-white/5"
                                     />
                                 </div>
 
@@ -199,10 +256,10 @@ const KundliGenerator: React.FC = () => {
                                     {loading ? (
                                         <>
                                             <Loader2 size={18} className="animate-spin" />
-                                            Generating...
+                                            {editingId ? 'Updating...' : 'Generating...'}
                                         </>
                                     ) : (
-                                        <>🔮 Generate Kundli</>
+                                        <>🔮 {editingId ? 'Update Kundli' : 'Generate Kundli'}</>
                                     )}
                                 </button>
                             </form>
@@ -224,10 +281,13 @@ const KundliGenerator: React.FC = () => {
                             ) : (
                                 <div className="space-y-3 max-h-[400px] overflow-y-auto">
                                     {history.map((report: KundliReport) => (
-                                        <button
+                                        <div
                                             key={report.id}
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => handleViewHistoryReport(report)}
-                                            className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
+                                            onKeyDown={(e) => { if (e.key === 'Enter') handleViewHistoryReport(report); }}
+                                            className="group relative w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 pr-16 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all cursor-pointer"
                                         >
                                             <div className="font-semibold text-white text-sm">
                                                 {report.full_name || 'Unknown'}
@@ -238,7 +298,31 @@ const KundliGenerator: React.FC = () => {
                                             <div className="text-[10px] text-gray-500 mt-0.5">
                                                 Generated {new Date(report.created_at || "").toLocaleString()}
                                             </div>
-                                        </button>
+
+                                            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); handleEditHistoryReport(report); }}
+                                                    title="Edit"
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-white/10 transition-colors"
+                                                >
+                                                    <Pencil size={14} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteHistoryReport(report); }}
+                                                    disabled={deletingId === report.id}
+                                                    title="Delete"
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-white/10 transition-colors disabled:opacity-50"
+                                                >
+                                                    {deletingId === report.id ? (
+                                                        <Loader2 size={14} className="animate-spin" />
+                                                    ) : (
+                                                        <Trash2 size={14} />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             )}

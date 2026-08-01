@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, HelpCircle } from 'lucide-react';
+import CityAutocomplete from './CityAutocomplete';
 
 export interface PreChatAnswers {
     topic: string;
@@ -150,11 +151,10 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">
                                     Place of Birth
                                 </label>
-                                <input
-                                    type="text"
+                                <CityAutocomplete
                                     value={spousePob}
-                                    onChange={(e) => setSpousePob(e.target.value)}
-                                    placeholder="City, State, Country"
+                                    onChange={setSpousePob}
+                                    placeholder="City, State, India"
                                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                 />
                             </div>
