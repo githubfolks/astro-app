@@ -7,9 +7,8 @@ import Footer from '../components/Footer';
 import { MatchContent } from '../components/MatchPanel';
 import CityAutocomplete from '../components/CityAutocomplete';
 import { api } from '../services/api';
-import { ArrowLeft, Loader2, Search } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, Pencil, Trash2, X } from 'lucide-react';
 import SEO from '../components/SEO';
-import ConnectExpertCTA from '../components/ConnectExpertCTA';
 import './services/ServicesDetail.css';
 
 const INPUT_CLASS = "w-full border border-white/10 rounded-xl px-4 py-2.5 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm";
@@ -86,6 +85,8 @@ const KundliMatchGenerator: React.FC = () => {
 
     const [history, setHistory] = useState<MatchReport[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     useEffect(() => {
         loadHistory();
@@ -110,13 +111,62 @@ const KundliMatchGenerator: React.FC = () => {
         setReport(null);
 
         try {
-            const result = await api.matching.generate({ boy, girl });
+            const result = editingId
+                ? await api.matching.update(editingId, { boy, girl })
+                : await api.matching.generate({ boy, girl });
             setReport(result);
+            setEditingId(null);
+            setBoy(emptyPerson);
+            setGirl(emptyPerson);
             loadHistory();
         } catch (err) {
-            setError(getErrorMessage(err) || 'Failed to generate Match report');
+            setError(getErrorMessage(err) || (editingId ? 'Failed to update Match report' : 'Failed to generate Match report'));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleEditHistoryReport = (r: MatchReport) => {
+        setEditingId(r.id);
+        setError(null);
+        setReport(null);
+        setBoy({
+            full_name: r.boy_full_name || '',
+            date_of_birth: r.boy_date_of_birth || '',
+            time_of_birth: r.boy_time_of_birth || '',
+            place_of_birth: r.boy_place_of_birth || '',
+        });
+        setGirl({
+            full_name: r.girl_full_name || '',
+            date_of_birth: r.girl_date_of_birth || '',
+            time_of_birth: r.girl_time_of_birth || '',
+            place_of_birth: r.girl_place_of_birth || '',
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setError(null);
+        setBoy(emptyPerson);
+        setGirl(emptyPerson);
+    };
+
+    const handleDeleteHistoryReport = async (r: MatchReport) => {
+        if (!window.confirm(`Delete the Match report for ${r.boy_full_name || 'Boy'} & ${r.girl_full_name || 'Girl'}? This cannot be undone.`)) {
+            return;
+        }
+        setDeletingId(r.id);
+        try {
+            await api.matching.delete(r.id);
+            setHistory((prev) => prev.filter((h) => h.id !== r.id));
+            if (editingId === r.id) {
+                handleCancelEdit();
+            }
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to delete Match report');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -153,6 +203,22 @@ const KundliMatchGenerator: React.FC = () => {
                     <div className="space-y-6">
                         {/* Generate Form */}
                         <div className="service-glass-panel p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-normal text-white">
+                                    {editingId ? 'Edit Birth Details' : 'Enter Birth Details'}
+                                </h2>
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <X size={14} />
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+
                             <form onSubmit={handleGenerate} className="space-y-6">
                                 <div className="grid md:grid-cols-2 gap-6">
                                     <PersonFields title="Boy" value={boy} onChange={setBoy} />
@@ -173,10 +239,10 @@ const KundliMatchGenerator: React.FC = () => {
                                     {loading ? (
                                         <>
                                             <Loader2 size={18} className="animate-spin" />
-                                            Generating...
+                                            {editingId ? 'Updating...' : 'Generating...'}
                                         </>
                                     ) : (
-                                        <>💞 Generate Match Report</>
+                                        <>💞 {editingId ? 'Update Match Report' : 'Generate Match Report'}</>
                                     )}
                                 </button>
                             </form>
@@ -211,10 +277,13 @@ const KundliMatchGenerator: React.FC = () => {
                             ) : (
                                 <div className="grid md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto">
                                     {history.map((r: MatchReport) => (
-                                        <button
+                                        <div
                                             key={r.id}
+                                            role="button"
+                                            tabIndex={0}
                                             onClick={() => setReport(r)}
-                                            className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
+                                            onKeyDown={(e) => { if (e.key === 'Enter') setReport(r); }}
+                                            className="group relative w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 pr-16 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all cursor-pointer"
                                         >
                                             <div className="font-semibold text-white text-sm">
                                                 {(r.boy_full_name || 'Boy')} & {(r.girl_full_name || 'Girl')}
@@ -225,7 +294,31 @@ const KundliMatchGenerator: React.FC = () => {
                                             <div className="text-[10px] text-gray-500 mt-0.5">
                                                 Generated {new Date(r.created_at || "").toLocaleString()}
                                             </div>
-                                        </button>
+
+                                            <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); handleEditHistoryReport(r); }}
+                                                    title="Edit"
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-white/10 transition-colors"
+                                                >
+                                                    <Pencil size={14} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => { e.stopPropagation(); handleDeleteHistoryReport(r); }}
+                                                    disabled={deletingId === r.id}
+                                                    title="Delete"
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-white/10 transition-colors disabled:opacity-50"
+                                                >
+                                                    {deletingId === r.id ? (
+                                                        <Loader2 size={14} className="animate-spin" />
+                                                    ) : (
+                                                        <Trash2 size={14} />
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             )}
@@ -245,8 +338,6 @@ const KundliMatchGenerator: React.FC = () => {
                     </section>
                 </div>
             </main>
-
-            <ConnectExpertCTA variant="dark" text="Want your match score explained, with remedies if a dosha shows up? Talk to an expert astrologer." />
 
             <Footer />
         </div>

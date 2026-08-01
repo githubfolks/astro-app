@@ -642,6 +642,31 @@ export const api = {
                 credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch Match history');
+        },
+        update: async (id: number, data: {
+            boy: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+            girl: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+        }) => {
+            const response = await fetch(`${API_URL}/matching/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to update Match report');
+        },
+        delete: async (id: number) => {
+            const response = await fetch(`${API_URL}/matching/${id}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                await handleResponse(response, 'Failed to delete Match report');
+            }
         }
     },
     muhurat: {
@@ -677,6 +702,35 @@ export const api = {
                 credentials: 'include'
             });
             return handleResponse(response, 'Failed to fetch Muhurat history');
+        },
+        update: async (id: number, data: {
+            purpose?: string;
+            start_date: string;
+            end_date: string;
+            place: string;
+            seeker_id?: number;
+            subject?: { seeker_id?: number; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+        }) => {
+            const response = await fetch(`${API_URL}/muhurat/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify(data),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to update Muhurat search');
+        },
+        delete: async (id: number) => {
+            const response = await fetch(`${API_URL}/muhurat/${id}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                await handleResponse(response, 'Failed to delete Muhurat search');
+            }
         }
     },
     panchang: {

@@ -5,9 +5,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
-import { ArrowLeft, Loader2, Search, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Search, Clock, AlertTriangle, CheckCircle2, Pencil, Trash2, X } from 'lucide-react';
 import SEO from '../components/SEO';
-import ConnectExpertCTA from '../components/ConnectExpertCTA';
 import './services/ServicesDetail.css';
 
 const INPUT_CLASS = "w-full border border-white/10 rounded-xl px-4 py-2.5 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm";
@@ -78,6 +77,8 @@ const MuhuratSearchPage: React.FC = () => {
 
     const [history, setHistory] = useState<MuhuratSearchRecord[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     useEffect(() => {
         loadHistory();
@@ -102,7 +103,7 @@ const MuhuratSearchPage: React.FC = () => {
         setResult(null);
 
         try {
-            const data = await api.muhurat.search({
+            const payload = {
                 purpose: purpose || undefined,
                 start_date: startDate,
                 end_date: endDate,
@@ -110,13 +111,63 @@ const MuhuratSearchPage: React.FC = () => {
                 subject: personalize
                     ? { date_of_birth: subjectDob, time_of_birth: subjectTob, place_of_birth: subjectPlace }
                     : undefined,
-            });
+            };
+            const data = editingId
+                ? await api.muhurat.update(editingId, payload)
+                : await api.muhurat.search(payload);
             setResult(data);
+            setEditingId(null);
             loadHistory();
         } catch (err) {
-            setError(getErrorMessage(err) || 'Failed to search Muhurat');
+            setError(getErrorMessage(err) || (editingId ? 'Failed to update Muhurat search' : 'Failed to search Muhurat'));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleEditHistoryReport = (h: MuhuratSearchRecord) => {
+        setEditingId(h.id);
+        setError(null);
+        setResult(null);
+        setPurpose(h.purpose || '');
+        setStartDate(h.start_date || '');
+        setEndDate(h.end_date || '');
+        setPlace(h.place || '');
+        setPersonalize(h.personalized);
+        setSubjectDob(h.subject_date_of_birth || '');
+        setSubjectTob(h.subject_time_of_birth || '');
+        setSubjectPlace(h.subject_place_of_birth || '');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancelEdit = () => {
+        setEditingId(null);
+        setError(null);
+        setPurpose('');
+        setStartDate('');
+        setEndDate('');
+        setPlace('');
+        setPersonalize(false);
+        setSubjectDob('');
+        setSubjectTob('');
+        setSubjectPlace('');
+    };
+
+    const handleDeleteHistoryReport = async (h: MuhuratSearchRecord) => {
+        if (!window.confirm('Delete this Muhurat search? This cannot be undone.')) {
+            return;
+        }
+        setDeletingId(h.id);
+        try {
+            await api.muhurat.delete(h.id);
+            setHistory((prev) => prev.filter((r) => r.id !== h.id));
+            if (editingId === h.id) {
+                handleCancelEdit();
+            }
+        } catch (err) {
+            setError(getErrorMessage(err) || 'Failed to delete Muhurat search');
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -153,6 +204,22 @@ const MuhuratSearchPage: React.FC = () => {
                     <div className="grid md:grid-cols-2 gap-6">
                         {/* Search Form */}
                         <div className="service-glass-panel p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-normal text-white">
+                                    {editingId ? 'Edit Search' : 'Search Parameters'}
+                                </h2>
+                                {editingId && (
+                                    <button
+                                        type="button"
+                                        onClick={handleCancelEdit}
+                                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        <X size={14} />
+                                        Cancel
+                                    </button>
+                                )}
+                            </div>
+
                             <form onSubmit={handleSearch} className="space-y-4">
                                 <div>
                                     <label className={LABEL_CLASS}>Purpose</label>
@@ -220,7 +287,11 @@ const MuhuratSearchPage: React.FC = () => {
                                     disabled={loading}
                                     className="w-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 hover:brightness-110 text-indigo-950 py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-amber-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
-                                    {loading ? (<><Loader2 size={18} className="animate-spin" /> Searching...</>) : (<>🗓️ Search Muhurat</>)}
+                                    {loading ? (
+                                        <><Loader2 size={18} className="animate-spin" /> {editingId ? 'Updating...' : 'Searching...'}</>
+                                    ) : (
+                                        <>🗓️ {editingId ? 'Update Search' : 'Search Muhurat'}</>
+                                    )}
                                 </button>
                             </form>
                         </div>
@@ -252,10 +323,13 @@ const MuhuratSearchPage: React.FC = () => {
                                 ) : (
                                     <div className="space-y-3 max-h-[300px] overflow-y-auto">
                                         {history.map((h) => (
-                                            <button
+                                            <div
                                                 key={h.id}
+                                                role="button"
+                                                tabIndex={0}
                                                 onClick={() => setResult(h)}
-                                                className="w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all"
+                                                onKeyDown={(e) => { if (e.key === 'Enter') setResult(h); }}
+                                                className="group relative w-full text-left bg-white/5 hover:bg-amber-500/10 p-3 pr-16 rounded-xl border border-white/10 hover:border-amber-500/30 transition-all cursor-pointer"
                                             >
                                                 <div className="font-semibold text-white text-sm">
                                                     {PURPOSES.find(p => p.value === h.purpose)?.label || h.purpose || 'General'} · {h.place}
@@ -266,7 +340,31 @@ const MuhuratSearchPage: React.FC = () => {
                                                 <div className="text-[10px] text-gray-500 mt-0.5">
                                                     Generated {new Date(h.created_at || "").toLocaleString()}
                                                 </div>
-                                            </button>
+
+                                                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); handleEditHistoryReport(h); }}
+                                                        title="Edit"
+                                                        className="p-1.5 rounded-lg text-gray-400 hover:text-amber-400 hover:bg-white/10 transition-colors"
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => { e.stopPropagation(); handleDeleteHistoryReport(h); }}
+                                                        disabled={deletingId === h.id}
+                                                        title="Delete"
+                                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-white/10 transition-colors disabled:opacity-50"
+                                                    >
+                                                        {deletingId === h.id ? (
+                                                            <Loader2 size={14} className="animate-spin" />
+                                                        ) : (
+                                                            <Trash2 size={14} />
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
@@ -287,8 +385,6 @@ const MuhuratSearchPage: React.FC = () => {
                     </section>
                 </div>
             </main>
-
-            <ConnectExpertCTA variant="dark" text="Want a Muhurat personalized to your own birth chart, explained in detail? Talk to an expert astrologer." />
 
             <Footer />
         </div>

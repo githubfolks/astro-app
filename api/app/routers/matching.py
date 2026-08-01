@@ -182,3 +182,95 @@ def get_astrologer_match_history(
     ).order_by(models.KundliMatchReport.created_at.desc()).all()
 
     return reports
+
+
+@router.put("/{report_id}", response_model=schemas.MatchReportResponse)
+async def update_match_report(
+    report_id: int,
+    request: schemas.MatchGenerateRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    """Edit a Match report's birth details and regenerate its compatibility data."""
+    _require_astrologer(current_user)
+
+    report = db.query(models.KundliMatchReport).filter(
+        models.KundliMatchReport.id == report_id,
+        models.KundliMatchReport.generated_by == current_user.id,
+    ).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Match report not found")
+
+    boy_dob, boy_tob, boy_place, boy_name = await _resolve_person(request.boy, db)
+    girl_dob, girl_tob, girl_place, girl_name = await _resolve_person(request.girl, db)
+
+    try:
+        boy_lat, boy_lon = await geocode_place(boy_place)
+        girl_lat, girl_lon = await geocode_place(girl_place)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
+
+    try:
+        match_data = await generate_kuta_match(
+            person1={
+                "year": boy_dob.year, "month": boy_dob.month, "day": boy_dob.day,
+                "hour": boy_tob.hour, "minute": boy_tob.minute,
+                "lat": boy_lat, "lng": boy_lon, "tz_str": "Asia/Kolkata",
+                "label": boy_name or "Boy",
+            },
+            person2={
+                "year": girl_dob.year, "month": girl_dob.month, "day": girl_dob.day,
+                "hour": girl_tob.hour, "minute": girl_tob.minute,
+                "lat": girl_lat, "lng": girl_lon, "tz_str": "Asia/Kolkata",
+                "label": girl_name or "Girl",
+            },
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+    report.boy_seeker_id = request.boy.seeker_id
+    report.girl_seeker_id = request.girl.seeker_id
+    report.boy_full_name = boy_name
+    report.boy_date_of_birth = boy_dob
+    report.boy_time_of_birth = boy_tob
+    report.boy_place_of_birth = boy_place
+    report.boy_latitude = boy_lat
+    report.boy_longitude = boy_lon
+    report.girl_full_name = girl_name
+    report.girl_date_of_birth = girl_dob
+    report.girl_time_of_birth = girl_tob
+    report.girl_place_of_birth = girl_place
+    report.girl_latitude = girl_lat
+    report.girl_longitude = girl_lon
+    report.match_data = match_data
+
+    db.commit()
+    db.refresh(report)
+
+    return report
+
+
+@router.delete("/{report_id}", status_code=204)
+def delete_match_report(
+    report_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db)
+):
+    """Delete a Match report."""
+    _require_astrologer(current_user)
+
+    report = db.query(models.KundliMatchReport).filter(
+        models.KundliMatchReport.id == report_id,
+        models.KundliMatchReport.generated_by == current_user.id,
+    ).first()
+
+    if not report:
+        raise HTTPException(status_code=404, detail="Match report not found")
+
+    db.delete(report)
+    db.commit()

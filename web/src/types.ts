@@ -453,11 +453,15 @@ export interface MatchData {
 
 export interface MatchReport {
     id: number;
+    boy_seeker_id?: number;
     boy_full_name?: string;
     boy_date_of_birth?: string;
+    boy_time_of_birth?: string;
     boy_place_of_birth?: string;
+    girl_seeker_id?: number;
     girl_full_name?: string;
     girl_date_of_birth?: string;
+    girl_time_of_birth?: string;
     girl_place_of_birth?: string;
     match_data: MatchData;
     created_at?: string;
@@ -492,6 +496,9 @@ export interface MuhuratSearchRecord {
     end_date: string;
     place: string;
     personalized: boolean;
+    subject_date_of_birth?: string;
+    subject_time_of_birth?: string;
+    subject_place_of_birth?: string;
     muhurat_data: MuhuratData;
     created_at?: string;
 }

@@ -10,7 +10,6 @@ import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search, Pencil, Trash2, X } from 'lucide-react';
 
 import SEO from '../components/SEO';
-import ConnectExpertCTA from '../components/ConnectExpertCTA';
 import './services/ServicesDetail.css';
 
 const INPUT_CLASS = "w-full border border-white/10 rounded-xl px-4 py-2.5 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm";
@@ -342,8 +341,6 @@ const KundliGenerator: React.FC = () => {
                     </section>
                 </div>
             </main>
-
-            <ConnectExpertCTA variant="dark" text="Want your Kundli explained in plain language? Talk to a verified astrologer." />
 
             <Footer />
 

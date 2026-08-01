@@ -463,6 +463,9 @@ class MuhuratSearchResponse(BaseModel):
     end_date: date
     place: str
     personalized: bool
+    subject_date_of_birth: Optional[date] = None
+    subject_time_of_birth: Optional[time] = None
+    subject_place_of_birth: Optional[str] = None
     muhurat_data: dict
     created_at: datetime
     class Config:
