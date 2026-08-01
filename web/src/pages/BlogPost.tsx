@@ -150,6 +150,16 @@ const BlogPost: React.FC = () => {
                         className="post-content prose prose-indigo max-w-none"
                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     />
+
+                    <aside className="mt-12 pt-8 border-t border-gray-100">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Related Services</h2>
+                        <div className="flex flex-wrap gap-3">
+                            <Link to="/services/kundli-matching" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Kundli Matching</Link>
+                            <Link to="/services/love-advice" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Love Advice</Link>
+                            <Link to="/services/tarot-reading" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Tarot Reading</Link>
+                            <Link to="/services/vastu-shastra" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Vastu Shastra</Link>
+                        </div>
+                    </aside>
                 </article>
             </main>
             <Footer />

@@ -10,6 +10,7 @@ export interface ServiceLink {
 // reports on behalf of seekers — see ASTROLOGER_TOOLS_LIST below.
 export const SERVICES_LIST: ServiceLink[] = [
     { title: 'Daily Horoscope', to: '/services/horoscope' },
+    { title: 'Kundli Matching', to: '/services/kundli-matching' },
     { title: 'Tarot Reading', to: '/services/tarot-reading' },
     { title: 'Vastu Shastra', to: '/services/vastu-shastra' },
     { title: 'Love Advice', to: '/services/love-advice' },

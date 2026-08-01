@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Star, AlertTriangle, Grid3x3, Hash } from 'lucide-react';
+import { Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Star, AlertTriangle, Grid3x3, Hash, FileHeart } from 'lucide-react';
 import { SERVICES_LIST } from '../data/servicesList';
 
 const ICONS_AND_COLORS: Record<string, { icon: React.ReactNode; color: string }> = {
     'Daily Horoscope': { icon: <Sun size={28} />, color: 'from-yellow-400 to-amber-500' },
+    'Kundli Matching': { icon: <FileHeart size={28} />, color: 'from-rose-400 to-purple-500' },
     'Tarot Reading': { icon: <Layers size={28} />, color: 'from-purple-400 to-indigo-500' },
     'Vastu Shastra': { icon: <HomeIcon size={28} />, color: 'from-emerald-400 to-teal-500' },
     'Love Advice': { icon: <HeartHandshake size={28} />, color: 'from-red-400 to-pink-500' },
