@@ -150,6 +150,9 @@ const NativeInitializer: React.FC = () => {
             pushHandler = PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
                 if (action.notification.data?.type === 'KNOCK' || action.notification.data?.type === 'NEW_REQUEST') {
                     navigate('/dashboard');
+                    // If the Dashboard is already mounted (app was in the foreground on
+                    // that route), navigate() alone won't remount it or refetch data.
+                    window.dispatchEvent(new Event('dashboard:refresh'));
                 }
             });
         }).catch(() => { });

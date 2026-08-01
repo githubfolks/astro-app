@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useCallback } from 'react';
+import { App as CapApp } from '@capacitor/app';
 import { useAuth } from './AuthContext';
+import { isNative } from '../utils/platform';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const WS_URL = API_URL.replace(/^http/, 'ws') + '/realtime/ws';
@@ -93,6 +95,43 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             clearHeartbeat();
             if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
             ws.current?.close();
+        };
+    }, [token, connect]);
+
+    // Backgrounding/locking the app freezes the heartbeat interval and the OS
+    // often drops the underlying socket outright — an astrologer's Redis presence
+    // key (60s TTL) then lapses and they show OFFLINE to every seeker until the
+    // socket reconnects. Left alone, that reconnect only happens via onclose's
+    // exponential backoff (up to 30s), which may not even fire promptly since the
+    // OS can kill the connection silently instead of closing it cleanly. Reconnect
+    // immediately on resume instead of waiting that out.
+    useEffect(() => {
+        const tryReconnectNow = () => {
+            if (!shouldReconnect.current) return;
+            const state = ws.current?.readyState;
+            if (state === WebSocket.OPEN || state === WebSocket.CONNECTING) return;
+            if (reconnectTimer.current) { clearTimeout(reconnectTimer.current); reconnectTimer.current = null; }
+            reconnectAttempt.current = 0;
+            connect(token);
+        };
+
+        const onVisibilityChange = () => { if (document.visibilityState === 'visible') tryReconnectNow(); };
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        window.addEventListener('online', tryReconnectNow);
+
+        // Android WebViews don't reliably fire visibilitychange on resume —
+        // appStateChange is the native-guaranteed signal.
+        let appStateHandle: { remove: () => void } | undefined;
+        if (isNative()) {
+            CapApp.addListener('appStateChange', ({ isActive }) => {
+                if (isActive) tryReconnectNow();
+            }).then(h => { appStateHandle = h; });
+        }
+
+        return () => {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('online', tryReconnectNow);
+            appStateHandle?.remove();
         };
     }, [token, connect]);
 

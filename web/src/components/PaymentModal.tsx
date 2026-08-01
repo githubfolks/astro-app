@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, CreditCard, Smartphone, Wallet, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
-import { loadRazorpay } from '../utils/loadRazorpay';
+import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
 import type { RazorpayResponse, RazorpayError } from '../types';
 import { getErrorMessage } from '../utils/errors';
 
@@ -34,6 +34,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                 setProcessing(false);
                 return;
             }
+            patchRazorpaySafeArea();
 
             // 1. Create Order
             const orderData = await api.payment.createOrder(amount);

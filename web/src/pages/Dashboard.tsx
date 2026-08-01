@@ -1,6 +1,6 @@
 import { getErrorMessage } from '../utils/errors';
 import type { Consultation, EduSession, Course, CourseMaterial, SeekerProfile, PayoutHistoryItem, PerformanceStats, AstrologerProfile as AstrologerProfileType } from '../types';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -89,58 +89,60 @@ export const Dashboard: React.FC = () => {
         return now >= startTimeWithBuffer && now <= end;
     };
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                if (user?.role === 'ASTROLOGER') {
-                    const data = await api.consultations.getHistory();
-                    setHistory(data);
+    const loadData = useCallback(async () => {
+        setLoading(true);
+        try {
+            if (user?.role === 'ASTROLOGER') {
+                const data = await api.consultations.getHistory();
+                setHistory(data);
 
-                    // Load own profile for settings
-                    const profile = await api.astrologers.getProfile();
+                // Load own profile for settings
+                const profile = await api.astrologers.getProfile();
 
-                    setIsOnline(profile.is_online);
-                    setAvailabilityStart((profile.availability_start_time || '').slice(0, 5));
-                    setAvailabilityEnd((profile.availability_end_time || '').slice(0, 5));
-                    setAstrologerProfile(profile);
+                setIsOnline(profile.is_online);
+                setAvailabilityStart((profile.availability_start_time || '').slice(0, 5));
+                setAvailabilityEnd((profile.availability_end_time || '').slice(0, 5));
+                setAstrologerProfile(profile);
 
-                    // Load payout history
-                    try {
-                        const payoutsData = await api.astrologers.getPayoutHistory();
-                        setPayoutHistory(payoutsData);
-                    } catch (err) {
-                        console.error('Failed to load payout history', err);
-                    }
-
-                    // Load performance stats
-                    try {
-                        const statsData = await api.astrologers.getPerformanceStats();
-                        setPerformanceStats(statsData);
-                    } catch (err) {
-                        console.error('Failed to load performance stats', err);
-                    }
-
-                    // Load live classes
-                    // Removed from ASTROLOGER as per new requirement
-                } else if (user?.role === 'SEEKER') {
-                    // Load live classes for students
-                    const sessionsData = await api.edu.getSessions();
-                    setSessions(sessionsData);
-                } else if (user?.role === 'TUTOR') {
-                    // Load live classes for tutors
-                    const sessionsData = await api.edu.getSessions();
-                    setSessions(sessionsData);
+                // Load payout history
+                try {
+                    const payoutsData = await api.astrologers.getPayoutHistory();
+                    setPayoutHistory(payoutsData);
+                } catch (err) {
+                    console.error('Failed to load payout history', err);
                 }
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoading(false);
+
+                // Load performance stats
+                try {
+                    const statsData = await api.astrologers.getPerformanceStats();
+                    setPerformanceStats(statsData);
+                } catch (err) {
+                    console.error('Failed to load performance stats', err);
+                }
+
+                // Load live classes
+                // Removed from ASTROLOGER as per new requirement
+            } else if (user?.role === 'SEEKER') {
+                // Load live classes for students
+                const sessionsData = await api.edu.getSessions();
+                setSessions(sessionsData);
+            } else if (user?.role === 'TUTOR') {
+                // Load live classes for tutors
+                const sessionsData = await api.edu.getSessions();
+                setSessions(sessionsData);
             }
-        };
-        loadData();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
     }, [user]);
 
     useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    const loadSeekerData = useCallback(() => {
         if (user?.role === 'SEEKER') {
             api.wallet.getBalance().then(w => setWalletBalance(Number(w.balance))).catch(console.error);
             api.consultations.getHistory().then(data => setSeekerHistory(data)).catch(console.error);
@@ -149,6 +151,22 @@ export const Dashboard: React.FC = () => {
         }
     }, [user]);
 
+    useEffect(() => {
+        loadSeekerData();
+    }, [loadSeekerData]);
+
+    // Tapping a knock/new-request push while Dashboard is already open (foreground)
+    // navigates here via App.tsx's pushNotificationActionPerformed handler, but since
+    // the route doesn't change, the mount effects above won't refire on their own —
+    // refetch explicitly when that happens.
+    useEffect(() => {
+        const handler = () => {
+            loadData();
+            loadSeekerData();
+        };
+        window.addEventListener('dashboard:refresh', handler);
+        return () => window.removeEventListener('dashboard:refresh', handler);
+    }, [loadData, loadSeekerData]);
 
 
     // Live updates: refresh the requests queue instantly when a seeker knocks
@@ -264,7 +282,9 @@ export const Dashboard: React.FC = () => {
                     )}
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <div className="w-full text-center md:w-auto md:text-left">
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">Astrologer Dashboard</h2>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                                {astrologerProfile ? getAstrologerDisplayName(astrologerProfile) : (user?.full_name || 'Astrologer Dashboard')}
+                            </h2>
                             <p className="text-gray-600">Manage your status and consultations.</p>
                         </div>
 
@@ -850,6 +870,12 @@ export const Dashboard: React.FC = () => {
                 </div>
             )}
             <main className={`dashboard-main flex-1 container mx-auto p-6 md:p-8`}>
+                <div className="text-center md:text-left mb-8">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        {seekerProfile.full_name || user?.full_name || 'My Dashboard'}
+                    </h2>
+                    <p className="text-gray-600">Manage your consultations and profile.</p>
+                </div>
                 {missingSeekerItems.length > 0 && (
                     <a
                         href="#seeker-my-profile-card"

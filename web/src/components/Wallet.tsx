@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { Wallet as WalletIcon, PlusCircle } from 'lucide-react';
 import type { RazorpayResponse, RazorpayError } from '../types';
-import { loadRazorpay } from '../utils/loadRazorpay';
+import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
 
 export const Wallet: React.FC = () => {
     const [balance, setBalance] = useState<number>(0);
@@ -41,6 +41,7 @@ export const Wallet: React.FC = () => {
                 setIsRecharging(false);
                 return;
             }
+            patchRazorpaySafeArea();
 
             // 1. Create Order
             const orderData = await api.payment.createOrder(amt);
