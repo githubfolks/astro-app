@@ -8,6 +8,10 @@ Thumbs.db
 # Mobile build artifacts
 *.apk
 *.aab
+*.ipa
+*.mobileprovision
+web/ios/App/Pods/
+web/ios/DerivedData/
 
 # Sensitive / credentials
 .env

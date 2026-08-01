@@ -15,7 +15,10 @@
     "mobile:build": "tsc && vite build --mode mobile",
     "mobile:sync": "npx cap sync android",
     "mobile:open": "npx cap open android",
-    "mobile:run": "npm run mobile:build && npm run mobile:sync"
+    "mobile:run": "npm run mobile:build && npm run mobile:sync",
+    "mobile:sync:ios": "npx cap sync ios",
+    "mobile:open:ios": "npx cap open ios",
+    "mobile:run:ios": "npm run mobile:build && npm run mobile:sync:ios"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -47,8 +50,9 @@
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/app": "^8.0.0",
-    "@capacitor/cli": "^8.0.0",
-    "@capacitor/core": "^8.0.0",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/ios": "^8.5.0",
     "@capacitor/keyboard": "^8.0.0",
     "@capacitor/network": "^8.0.0",
     "@capacitor/preferences": "^8.0.0",
