@@ -7,7 +7,10 @@ import asyncio
 import os
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from io import BytesIO
+
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
@@ -16,6 +19,14 @@ from ..database import SessionLocal
 from ..limiter import limiter
 from ..services import content_studio_llm, content_studio_tts, content_studio_images, content_studio_video, content_studio_social, content_studio_youtube
 from .auth import get_current_admin
+
+# Enforced on manual scene-image uploads (generated images are already JPEG
+# from Pollinations, so this only applies to the upload-image path below).
+MAX_SCENE_IMAGE_BYTES = 8 * 1024 * 1024
+ALLOWED_SCENE_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+# Ken Burns zoompan in content_studio_video.py upscales to 2x the final
+# WIDTH (1080) before zooming, so anything short of that softens visibly.
+MIN_SCENE_IMAGE_DIMENSION = 1080
 
 router = APIRouter(
     prefix="/content-studio",
@@ -119,6 +130,74 @@ async def generate_scene_image(
 
     scene["image_prompt_en"] = payload.image_prompt_en
     scene["full_image_prompt"] = content_studio_images.build_prompt(payload.image_prompt_en)
+    scene["image_url"] = f"/static/content_studio/{job_id}/scene_{scene_index}.jpg?v={int(datetime.now(timezone.utc).timestamp())}"
+    job.scenes = scenes
+    flag_modified(job, "scenes")
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+@router.post("/jobs/{job_id}/scenes/{scene_index}/upload-image", response_model=schemas_content_studio.Job)
+@limiter.limit("30/minute")
+async def upload_scene_image(
+    request: Request,
+    job_id: int,
+    scene_index: int,
+    db: Session = Depends(database.get_db),
+    file: UploadFile = File(...),
+):
+    """Lets the admin supply their own image for a scene instead of the
+    Pollinations auto-generated one -- same slot/URL convention as
+    generate_scene_image, so the rest of the pipeline (render, preview) can't
+    tell the difference.
+    """
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status == models.ContentJobStatus.RENDERING:
+        raise HTTPException(status_code=409, detail="Cannot edit scenes while rendering")
+    if not any(s["index"] == scene_index for s in job.scenes):
+        raise HTTPException(status_code=404, detail="Scene not found")
+
+    if file.content_type not in ALLOWED_SCENE_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed. Use JPEG, PNG, or WebP.")
+
+    content = await file.read()
+    if len(content) > MAX_SCENE_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail=f"File too large (max {MAX_SCENE_IMAGE_BYTES // (1024 * 1024)}MB)")
+
+    try:
+        img = Image.open(BytesIO(content))
+        img.load()
+    except UnidentifiedImageError:
+        raise HTTPException(status_code=400, detail="File is not a valid image")
+
+    if min(img.width, img.height) < MIN_SCENE_IMAGE_DIMENSION:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Image too small ({img.width}x{img.height}). "
+                f"Minimum {MIN_SCENE_IMAGE_DIMENSION}px on the shorter side "
+                f"-- recommended {MIN_SCENE_IMAGE_DIMENSION}x1920 (9:16 portrait) "
+                f"or {MIN_SCENE_IMAGE_DIMENSION}x{MIN_SCENE_IMAGE_DIMENSION} square."
+            ),
+        )
+
+    # Normalize to JPEG regardless of upload format -- render/_run_render_job
+    # hardcodes scene_{idx}.jpg, and the video filter chain assumes a single
+    # consistent input format.
+    job_dir = os.path.join("uploads", "content_studio", str(job_id))
+    os.makedirs(job_dir, exist_ok=True)
+    image_path = os.path.join(job_dir, f"scene_{scene_index}.jpg")
+    img.convert("RGB").save(image_path, format="JPEG", quality=92)
+
+    db.refresh(job)
+    scenes = [dict(s) for s in job.scenes]
+    scene = next((s for s in scenes if s["index"] == scene_index), None)
+    if scene is None:
+        raise HTTPException(status_code=404, detail="Scene not found")
+
     scene["image_url"] = f"/static/content_studio/{job_id}/scene_{scene_index}.jpg?v={int(datetime.now(timezone.utc).timestamp())}"
     job.scenes = scenes
     flag_modified(job, "scenes")

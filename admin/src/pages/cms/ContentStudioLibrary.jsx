@@ -6,7 +6,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
-import { Facebook, Instagram, Youtube, Download, X } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Download, X, RotateCw } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import clsx from 'clsx';
 
@@ -100,6 +100,7 @@ export default function ContentStudioLibrary() {
     const [page, setPage] = useState(1);
     const [posting, setPosting] = useState({}); // `${jobId}-${platform}` -> true while in flight
     const [captionModal, setCaptionModal] = useState(null); // { job, platform } | null
+    const [rerendering, setRerendering] = useState({}); // jobId -> true while render is in flight
     const limit = 20;
     const navigate = useNavigate();
 
@@ -139,6 +140,37 @@ export default function ContentStudioLibrary() {
         setCaptionModal(null);
     };
 
+    const pollJobUntilSettled = useCallback(async (jobId) => {
+        for (let i = 0; i < 60; i++) {
+            await new Promise(r => setTimeout(r, 3000));
+            let res;
+            try {
+                res = await contentStudio.getJob(jobId);
+            } catch {
+                continue;
+            }
+            setJobs(prev => prev.map(j => (j.id === jobId ? res.data : j)));
+            if (res.data.status !== 'RENDERING') return res.data;
+        }
+        return null;
+    }, []);
+
+    const handleRerender = async (job) => {
+        if (!window.confirm(`Re-render "${job.topic}"? This regenerates the video from its existing scenes (e.g. to pick up an encoding fix) and will overwrite the current file.`)) return;
+        setRerendering(prev => ({ ...prev, [job.id]: true }));
+        try {
+            await contentStudio.renderVideo(job.id);
+            const settled = await pollJobUntilSettled(job.id);
+            if (settled && settled.status === 'FAILED') {
+                alert(`Re-render failed: ${settled.error_message || 'unknown error'}`);
+            }
+        } catch (e) {
+            alert(e.message || 'Failed to start re-render.');
+        } finally {
+            setRerendering(prev => ({ ...prev, [job.id]: false }));
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -158,6 +190,7 @@ export default function ContentStudioLibrary() {
                             <TableHead>Voice</TableHead>
                             <TableHead>Status</TableHead>
                             {PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
+                            <TableHead className="text-right">Re-render</TableHead>
                             <TableHead className="text-right">Video</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -210,6 +243,18 @@ export default function ContentStudioLibrary() {
                                     );
                                 })}
                                 <TableCell className="text-right">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Re-render this video from its existing scenes"
+                                        disabled={job.status === 'RENDERING' || !!rerendering[job.id]}
+                                        onClick={() => handleRerender(job)}
+                                        className="cursor-pointer"
+                                    >
+                                        <RotateCw size={18} className={clsx("text-gray-600", (job.status === 'RENDERING' || rerendering[job.id]) && "animate-spin")} />
+                                    </Button>
+                                </TableCell>
+                                <TableCell className="text-right">
                                     {job.output_video_url && (
                                         <a href={toAbsoluteUrl(job.output_video_url)} download target="_blank" rel="noreferrer">
                                             <Button variant="ghost" size="icon"><Download size={18} className="text-gray-600" /></Button>
@@ -220,7 +265,7 @@ export default function ContentStudioLibrary() {
                         ))}
                         {jobs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4 + PLATFORMS.length + 1} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={4 + PLATFORMS.length + 2} className="text-center py-8 text-gray-900">
                                     No videos generated yet
                                 </TableCell>
                             </TableRow>

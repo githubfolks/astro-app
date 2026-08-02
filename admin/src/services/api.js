@@ -139,6 +139,8 @@ export const contentStudio = {
     updateScenes: (jobId, scenes) => api.put(`/content-studio/jobs/${jobId}/scenes`, { scenes }),
     generateSceneImage: (jobId, sceneIndex, imagePromptEn) =>
         api.post(`/content-studio/jobs/${jobId}/scenes/${sceneIndex}/generate-image`, { image_prompt_en: imagePromptEn }),
+    uploadSceneImage: (jobId, sceneIndex, formData) =>
+        api.post(`/content-studio/jobs/${jobId}/scenes/${sceneIndex}/upload-image`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     renderVideo: (jobId) => api.post(`/content-studio/jobs/${jobId}/render`),
     getJob: (jobId) => api.get(`/content-studio/jobs/${jobId}`),
     listJobs: (params) => api.get('/content-studio/jobs', { params }),

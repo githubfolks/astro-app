@@ -140,7 +140,11 @@ def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work
         # Instagram/YouTube on upload anyway.
         "-preset", "veryfast",
         "-pix_fmt", "yuv420p",
-        "-c:a", "aac",
+        # Explicit rate/channels/bitrate: without these ffmpeg's AAC encoder just
+        # inherits the narration WAV's native format (Bhashini TTS outputs 24kHz
+        # mono), which Facebook's Graph API also rejects as "corrupt"/"unreadable"
+        # even though the file plays back fine everywhere else.
+        "-c:a", "aac", "-ar", "48000", "-ac", "2", "-b:a", "128k",
         # Explicit trim instead of -shortest: with a looped image input, -shortest
         # was observed to overrun past zoompan's own frame count (e.g. 342 frames
         # instead of the requested 302) rather than cutting cleanly.

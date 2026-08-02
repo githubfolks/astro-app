@@ -139,16 +139,37 @@ export default function ContentStudio() {
                 scene_count: sceneCount ? Number(sceneCount) : null,
             });
             setJob(res.data);
-            const newScenes = res.data.scenes || [];
-            setScenes(newScenes);
-            // Kick off preview image generation for every scene right away --
-            // generateSceneImage spreads these across a bounded number of lanes,
-            // so this fires them concurrently without overwhelming the image API.
-            newScenes.forEach((scene) => generateSceneImage(res.data.id, scene));
+            setScenes(res.data.scenes || []);
+            // Images are no longer auto-generated here -- the admin picks per
+            // scene whether to generate one or upload their own.
         } catch (e) {
             alert(e.message || 'Failed to generate scenes.');
         } finally {
             setGenerating(false);
+        }
+    };
+
+    const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+
+    const handleUploadSceneImage = async (jobId, scene, file) => {
+        if (!file) return;
+        if (file.size > MAX_UPLOAD_BYTES) {
+            alert(`Image too large (${(file.size / (1024 * 1024)).toFixed(1)}MB). Max 8MB.`);
+            return;
+        }
+        setImageBusy(prev => ({ ...prev, [scene.index]: true }));
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await contentStudio.uploadSceneImage(jobId, scene.index, formData);
+            const updatedScene = (res.data.scenes || []).find(s => s.index === scene.index);
+            if (updatedScene) {
+                setScenes(prev => prev.map(s => (s.index === scene.index ? updatedScene : s)));
+            }
+        } catch (e) {
+            alert(e.response?.data?.detail || e.message || `Failed to upload image for scene ${scene.index + 1}.`);
+        } finally {
+            setImageBusy(prev => ({ ...prev, [scene.index]: false }));
         }
     };
 
@@ -294,6 +315,30 @@ export default function ContentStudio() {
                                     >
                                         {imageBusy[scene.index] ? 'Working...' : (scene.image_url ? 'Regenerate Image' : 'Generate Image')}
                                     </Button>
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/webp"
+                                        id={`scene-upload-${scene.index}`}
+                                        className="hidden"
+                                        disabled={!!imageBusy[scene.index]}
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            e.target.value = ''; // allow re-selecting the same file
+                                            handleUploadSceneImage(job.id, scene, file);
+                                        }}
+                                    />
+                                    <Button
+                                        variant="outlined"
+                                        size="sm"
+                                        onClick={() => document.getElementById(`scene-upload-${scene.index}`).click()}
+                                        disabled={!!imageBusy[scene.index]}
+                                        className="cursor-pointer mt-2 w-full max-w-[180px]"
+                                    >
+                                        Upload Image
+                                    </Button>
+                                    <p className="text-[11px] text-slate-400 mt-1 max-w-[180px]">
+                                        Recommended 1080×1920 (9:16) or 1080×1080, min 1080px shorter side. JPG/PNG/WebP, max 8MB.
+                                    </p>
                                 </div>
                                 <div className="flex-1 space-y-3">
                                     <TextArea
