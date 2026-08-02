@@ -212,6 +212,52 @@ async def upload_scene_image(
     return job
 
 
+@router.post("/jobs/{job_id}/scenes/{scene_index}/generate-audio", response_model=schemas_content_studio.Job)
+@limiter.limit("30/minute")
+async def generate_scene_audio(
+    request: Request,
+    job_id: int,
+    scene_index: int,
+    db: Session = Depends(database.get_db),
+):
+    """Generates just one scene's narration audio, same slot/URL convention
+    as generate_scene_image -- normally audio is only produced inline during
+    a full /render, this lets it be fetched standalone (e.g. by a script
+    building the video elsewhere) without also triggering the ffmpeg pass.
+    """
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status == models.ContentJobStatus.RENDERING:
+        raise HTTPException(status_code=409, detail="Cannot edit scenes while rendering")
+    scene = next((s for s in job.scenes if s["index"] == scene_index), None)
+    if scene is None:
+        raise HTTPException(status_code=404, detail="Scene not found")
+
+    audio_bytes = await asyncio.to_thread(
+        content_studio_tts.get_narration_audio, scene["narration_hi"], job.voice_gender.value
+    )
+
+    job_dir = os.path.join("uploads", "content_studio", str(job_id))
+    os.makedirs(job_dir, exist_ok=True)
+    audio_path = os.path.join(job_dir, f"scene_{scene_index}.wav")
+    with open(audio_path, "wb") as f:
+        f.write(audio_bytes)
+
+    db.refresh(job)
+    scenes = [dict(s) for s in job.scenes]
+    scene = next((s for s in scenes if s["index"] == scene_index), None)
+    if scene is None:
+        raise HTTPException(status_code=404, detail="Scene not found")
+
+    scene["audio_url"] = f"/static/content_studio/{job_id}/scene_{scene_index}.wav?v={int(datetime.now(timezone.utc).timestamp())}"
+    job.scenes = scenes
+    flag_modified(job, "scenes")
+    db.commit()
+    db.refresh(job)
+    return job
+
+
 @router.post("/jobs/{job_id}/render", response_model=schemas_content_studio.Job)
 @limiter.limit("5/minute")
 async def render_video(

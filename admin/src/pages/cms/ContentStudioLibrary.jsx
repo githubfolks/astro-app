@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
@@ -6,7 +6,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
-import { Facebook, Instagram, Youtube, Download, X, RotateCw, Trash2 } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Download, X, RotateCw, Trash2, Upload } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import clsx from 'clsx';
 
@@ -102,8 +102,11 @@ export default function ContentStudioLibrary() {
     const [captionModal, setCaptionModal] = useState(null); // { job, platform } | null
     const [rerendering, setRerendering] = useState({}); // jobId -> true while render is in flight
     const [deleting, setDeleting] = useState({}); // jobId -> true while delete is in flight
+    const [uploading, setUploading] = useState({}); // jobId -> true while a video upload is in flight
     const limit = 20;
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
+    const uploadTargetJobId = useRef(null);
 
     const fetchJobs = useCallback(async () => {
         try {
@@ -172,6 +175,30 @@ export default function ContentStudioLibrary() {
         }
     };
 
+    const handleUploadClick = (job) => {
+        uploadTargetJobId.current = job.id;
+        fileInputRef.current?.click();
+    };
+
+    const handleFileSelected = async (e) => {
+        const file = e.target.files?.[0];
+        const jobId = uploadTargetJobId.current;
+        e.target.value = ''; // allow re-selecting the same file later
+        if (!file || !jobId) return;
+
+        setUploading(prev => ({ ...prev, [jobId]: true }));
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await contentStudio.uploadVideo(jobId, formData);
+            setJobs(prev => prev.map(j => (j.id === jobId ? res.data : j)));
+        } catch (err) {
+            alert(err.message || 'Failed to upload video.');
+        } finally {
+            setUploading(prev => ({ ...prev, [jobId]: false }));
+        }
+    };
+
     const handleDelete = async (job) => {
         if (!window.confirm(`Delete "${job.topic}"? This permanently removes the video and all generated scene files.`)) return;
         setDeleting(prev => ({ ...prev, [job.id]: true }));
@@ -206,6 +233,7 @@ export default function ContentStudioLibrary() {
                             <TableHead>Status</TableHead>
                             {PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
                             <TableHead className="text-right">Re-render</TableHead>
+                            <TableHead className="text-right">Upload</TableHead>
                             <TableHead className="text-right">Video</TableHead>
                             <TableHead className="text-right">Delete</TableHead>
                         </TableRow>
@@ -271,6 +299,18 @@ export default function ContentStudioLibrary() {
                                     </Button>
                                 </TableCell>
                                 <TableCell className="text-right">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Upload a video rendered elsewhere (e.g. locally) as this job's output"
+                                        disabled={job.status === 'RENDERING' || !!uploading[job.id]}
+                                        onClick={() => handleUploadClick(job)}
+                                        className="cursor-pointer"
+                                    >
+                                        <Upload size={18} className={clsx("text-gray-600", uploading[job.id] && "animate-pulse")} />
+                                    </Button>
+                                </TableCell>
+                                <TableCell className="text-right">
                                     {job.output_video_url && (
                                         <a href={toAbsoluteUrl(job.output_video_url)} download target="_blank" rel="noreferrer">
                                             <Button variant="ghost" size="icon"><Download size={18} className="text-gray-600" /></Button>
@@ -293,7 +333,7 @@ export default function ContentStudioLibrary() {
                         ))}
                         {jobs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4 + PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={4 + PLATFORMS.length + 4} className="text-center py-8 text-gray-900">
                                     No videos generated yet
                                 </TableCell>
                             </TableRow>
@@ -327,6 +367,14 @@ export default function ContentStudioLibrary() {
                     </div>
                 )}
             </Card>
+
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4"
+                className="hidden"
+                onChange={handleFileSelected}
+            />
 
             {captionModal && (
                 <CaptionModal
