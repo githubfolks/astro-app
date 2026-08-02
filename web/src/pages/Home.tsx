@@ -227,7 +227,7 @@ const Home: React.FC = () => {
                                     </span>
                                 </Link>
                                 <Link
-                                    to="/about-us"
+                                    to="/astrologer-benefits"
                                     className="px-12 py-5 rounded-[2rem] font-bold text-xl text-white border-2 border-white/10 hover:border-amber-400/50 transition-all duration-500 hover:bg-white/5 backdrop-blur-sm"
                                 >
                                     Explore Benefits

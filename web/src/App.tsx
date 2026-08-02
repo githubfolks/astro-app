@@ -43,6 +43,7 @@ const RefundPolicy = lazy(() => import('./pages/RefundPolicy'));
 const Disclaimer = lazy(() => import('./pages/Disclaimer'));
 const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
+const AstrologerBenefits = lazy(() => import('./pages/AstrologerBenefits'));
 const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
 const KundliMatchGenerator = lazy(() => import('./pages/KundliMatchGenerator'));
 const LiveMuhurat = lazy(() => import('./pages/LiveMuhurat'));
@@ -220,6 +221,7 @@ function App() {
                             <Route path="/disclaimer" element={<Disclaimer />} />
                             <Route path="/terms-of-service" element={<TermsOfService />} />
                             <Route path="/join-as-astrologer" element={<JoinAsAstrologer />} />
+                            <Route path="/astrologer-benefits" element={<AstrologerBenefits />} />
                             <Route path="/how-it-works" element={<HowItWorks />} />
                             <Route path="/pricing" element={<Pricing />} />
                             <Route path="/services/horoscope" element={<HoroscopeListing />} />

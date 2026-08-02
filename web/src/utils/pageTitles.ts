@@ -15,6 +15,7 @@ const ROUTE_TITLES: Record<string, string> = {
     '/disclaimer': 'Disclaimer',
     '/terms-of-service': 'Terms of Service',
     '/join-as-astrologer': 'Join as Astrologer',
+    '/astrologer-benefits': 'Astrologer Benefits',
     '/how-it-works': 'How It Works',
     '/pricing': 'Pricing',
     '/services/horoscope': 'Horoscope',

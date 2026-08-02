@@ -4,6 +4,7 @@ Handles Kundli (Vedic birth chart) generation.
 """
 import httpx
 import os
+from datetime import date
 from typing import Optional
 
 FREE_ASTRO_API_BASE_URL = os.getenv("FREE_ASTRO_API_BASE_URL", "https://api.freeastroapi.com")
@@ -269,22 +270,19 @@ async def get_numerology_methods() -> dict:
 async def generate_numerology_profile(
     subject_name: str,
     birth_date: str,
-    method: str,
-    alphabet: Optional[str] = None,
-    policy: Optional[str] = None,
+    system: str,
 ) -> dict:
     """
     Generate a numerology profile (life path, name numbers, etc.) for a name and date of
-    birth using FreeAstroAPI. `method` must be a valid method id from
-    get_numerology_methods(). `birth_date` is "YYYY-MM-DD".
+    birth using FreeAstroAPI. `system` must be a valid numerology system id (e.g.
+    "pythagorean") from get_numerology_methods(). `birth_date` is "YYYY-MM-DD".
     """
     payload = {
-        "subject_name": subject_name,
-        "birth_date": birth_date,
-        "method": method,
+        "method": {"system": system},
+        "subject": {
+            "birth_date": birth_date,
+            "name": {"current": subject_name},
+        },
+        "date_context": {"reference_date": date.today().isoformat()},
     }
-    if alphabet:
-        payload["alphabet"] = alphabet
-    if policy:
-        payload["policy"] = policy
     return await _post("/api/v1/numerology/profile", payload)

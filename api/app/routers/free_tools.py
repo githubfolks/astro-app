@@ -17,15 +17,16 @@ from ..free_astro_service import (
 
 router = APIRouter(prefix="/free-tools", tags=["Free Tools"])
 
-# Numerology requires a `method` id that FreeAstroAPI defines; cache the first
-# available method in-process rather than calling GET /numerology/methods on
-# every request (it's static metadata, not worth spending quota on repeatedly).
-_numerology_method_cache: dict = {"method": None}
+# Numerology requires a `system` id that FreeAstroAPI defines (e.g. "pythagorean");
+# cache the first available system in-process rather than calling GET
+# /numerology/methods on every request (it's static metadata, not worth spending
+# quota on repeatedly).
+_numerology_method_cache: dict = {"system": None}
 
 
 async def _default_numerology_method() -> str:
-    if _numerology_method_cache["method"]:
-        return _numerology_method_cache["method"]
+    if _numerology_method_cache["system"]:
+        return _numerology_method_cache["system"]
 
     try:
         data = await get_numerology_methods()
@@ -34,15 +35,15 @@ async def _default_numerology_method() -> str:
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
 
-    methods = data.get("methods") if isinstance(data, dict) else data
-    first = methods[0] if methods else None
-    method_id = first.get("id") if isinstance(first, dict) else first
+    systems = data.get("systems") if isinstance(data, dict) else None
+    first = systems[0] if systems else None
+    system_id = first.get("system") if isinstance(first, dict) else None
 
-    if not method_id:
+    if not system_id:
         raise HTTPException(status_code=502, detail="Could not determine a numerology method from FreeAstroAPI")
 
-    _numerology_method_cache["method"] = method_id
-    return method_id
+    _numerology_method_cache["system"] = system_id
+    return system_id
 
 
 @router.post("/manglik-check", response_model=schemas.ManglikCheckResponse)
@@ -163,7 +164,7 @@ async def numerology_profile(
         profile_data = await generate_numerology_profile(
             subject_name=request.full_name,
             birth_date=request.date_of_birth.isoformat(),
-            method=method,
+            system=method,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -106,7 +106,6 @@ const Footer: React.FC = () => {
                             <ul className="footer-links">
                                 <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
                                 {!isAstrologer && <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>}
-                                <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
                                 {!isAstrologer && <li><Link to="/pricing" onClick={scrollToTop}>Pricing</Link></li>}
                                 {!isAstrologer && <li><Link to="/how-it-works" onClick={scrollToTop}>How It Works</Link></li>}
                                 {!isAstrologer && <li><Link to="/join-as-astrologer" onClick={scrollToTop}>Join as Astrologer</Link></li>}
