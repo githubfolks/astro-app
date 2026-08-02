@@ -1669,6 +1669,55 @@ def resolve_moderation_flag(flag_id: int, status: str = "REVIEWED", db: Session 
     return {"status": "ok", "flag_id": flag_id, "new_status": flag.status.value}
 
 
+# --- Review Moderation (public-display approval for testimonials) ---
+
+@router.get("/reviews")
+def list_reviews_for_moderation(status: Optional[str] = None, limit: int = 100, offset: int = 0, db: Session = Depends(database.get_db)):
+    q = db.query(models.Review).filter(
+        models.Review.rating >= 4, models.Review.comment.isnot(None), models.Review.comment != ""
+    )
+    if status:
+        q = q.filter(models.Review.display_status == status)
+    total = q.count()
+    reviews = q.order_by(models.Review.created_at.desc()).offset(offset).limit(limit).all()
+    return {"total": total, "reviews": [
+        {
+            "id": r.id,
+            "consultation_id": r.consultation_id,
+            "astrologer_id": r.astrologer_id,
+            "astrologer_name": (r.astrologer.astrologer_profile.display_name or r.astrologer.astrologer_profile.full_name) if r.astrologer and r.astrologer.astrologer_profile else None,
+            "seeker_id": r.seeker_id,
+            "seeker_name": r.seeker.seeker_profile.full_name if r.seeker and r.seeker.seeker_profile else None,
+            "rating": r.rating,
+            "comment": r.comment,
+            "moderation_reason": r.moderation_reason,
+            "display_status": r.display_status.value if hasattr(r.display_status, "value") else r.display_status,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        }
+        for r in reviews
+    ]}
+
+
+@router.post("/reviews/{review_id}/approve")
+def approve_review(review_id: int, db: Session = Depends(database.get_db)):
+    review = db.query(models.Review).filter(models.Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    review.display_status = models.ReviewDisplayStatus.APPROVED
+    db.commit()
+    return {"status": "ok", "review_id": review_id, "new_status": review.display_status.value}
+
+
+@router.post("/reviews/{review_id}/reject")
+def reject_review(review_id: int, db: Session = Depends(database.get_db)):
+    review = db.query(models.Review).filter(models.Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    review.display_status = models.ReviewDisplayStatus.REJECTED
+    db.commit()
+    return {"status": "ok", "review_id": review_id, "new_status": review.display_status.value}
+
+
 @router.patch("/astrologers/{user_id}/commission")
 def update_astrologer_commission(user_id: int, request: CommissionUpdateRequest, db: Session = Depends(database.get_db)):
     if not (0 < request.commission_percentage <= 100):

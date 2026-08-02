@@ -504,6 +504,16 @@ export const api = {
         getSupportContact: async (): Promise<{ support_email: string, support_phone: string }> => {
             const response = await customFetch(`${API_URL}/public/support-contact`);
             return handleResponse(response, 'Failed to fetch support contact');
+        },
+        getTrustStats: async (): Promise<{ verified_astrologers: number, total_consultations: number, total_reviews: number, average_rating: number }> => {
+            const response = await customFetch(`${API_URL}/public/trust-stats`);
+            return handleResponse(response, 'Failed to fetch trust stats');
+        },
+        getReviews: async (limit = 8, astrologerId?: number): Promise<Array<{ rating: number, comment: string, created_at: string, seeker_display_name: string, astrologer_display_name: string }>> => {
+            const params = new URLSearchParams({ limit: String(limit) });
+            if (astrologerId) params.append('astrologer_id', String(astrologerId));
+            const response = await customFetch(`${API_URL}/public/reviews?${params}`);
+            return handleResponse(response, 'Failed to fetch reviews');
         }
     },
     payment: {

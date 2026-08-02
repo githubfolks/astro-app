@@ -5,7 +5,17 @@ import './MemoryGuruBanner.css';
 
 const MemoryGuruBanner: React.FC = () => {
     return (
-        <section className="memory-guru-banner py-24 relative overflow-hidden bg-white">
+        <section className="memory-guru-banner py-24 relative overflow-hidden bg-slate-50 border-y-4 border-indigo-100">
+            {/* Section divider making clear this is a different offering, not an astrology feature */}
+            <div className="container mx-auto px-4 relative z-10 mb-14 text-center">
+                <span className="inline-flex items-center gap-2 bg-indigo-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full">
+                    Also From Aadikarta
+                </span>
+                <p className="text-gray-500 text-sm mt-3 max-w-xl mx-auto">
+                    Beyond astrology, we also run a memory-training vertical taught by our in-house guru — a separate offering, not part of your astrology consultation.
+                </p>
+            </div>
+
             {/* Background Decorations */}
             <div className="absolute top-0 right-0 w-1/2 h-full bg-indigo-50/50 rounded-l-[100px] transform translate-x-32"></div>
             <div className="absolute top-20 right-20 w-64 h-64 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>

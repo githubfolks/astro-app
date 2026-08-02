@@ -270,7 +270,7 @@ class Consultation(ConsultationBase):
 # Review Schemas
 class ReviewCreate(BaseModel):
     consultation_id: int
-    rating: int  # 1-5
+    rating: int = Field(ge=1, le=5)
     comment: Optional[str] = None
 
 class Review(ReviewCreate):
@@ -278,6 +278,19 @@ class Review(ReviewCreate):
     created_at: datetime
     class Config:
         from_attributes = True
+
+class PublicReview(BaseModel):
+    rating: int
+    comment: str
+    created_at: datetime
+    seeker_display_name: str
+    astrologer_display_name: str
+
+class TrustStats(BaseModel):
+    verified_astrologers: int
+    total_consultations: int
+    total_reviews: int
+    average_rating: float
 
 class ChatMessage(BaseModel):
     id: int

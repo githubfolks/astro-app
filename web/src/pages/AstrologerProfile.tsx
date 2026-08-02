@@ -36,6 +36,7 @@ const AstrologerProfile: React.FC = () => {
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
     const [notified, setNotified] = useState(false);
+    const [reviews, setReviews] = useState<Array<{ rating: number, comment: string, seeker_display_name: string }>>([]);
     // Only seekers can subscribe to availability alerts (backend rejects everyone
     // else) — gate the Knock button on this instead of showing it to everyone and
     // letting the request fail.
@@ -85,6 +86,13 @@ const AstrologerProfile: React.FC = () => {
                 });
         }
     }, [id, navigate]);
+
+    useEffect(() => {
+        if (!astrologer?.user_id) return;
+        api.cms.getReviews(6, astrologer.user_id)
+            .then(setReviews)
+            .catch(() => { /* section just won't render */ });
+    }, [astrologer?.user_id]);
 
     useEffect(() => {
         if (isAuthenticated && user?.role === 'SEEKER') {
@@ -247,10 +255,16 @@ const AstrologerProfile: React.FC = () => {
 
                                 {/* Rating & Stats */}
                                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-4">
-                                    <div className="flex items-center gap-1 bg-yellow-500/20 px-3 py-1 rounded-full">
-                                        <Star size={18} fill="#FFD700" stroke="#FFD700" />
-                                        <span className="font-bold text-yellow-400">{Number(astrologer.rating_avg || 5).toFixed(1)}</span>
-                                    </div>
+                                    {Number(astrologer.rating_avg) > 0 ? (
+                                        <div className="flex items-center gap-1 bg-yellow-500/20 px-3 py-1 rounded-full">
+                                            <Star size={18} fill="#FFD700" stroke="#FFD700" />
+                                            <span className="font-bold text-yellow-400">{Number(astrologer.rating_avg).toFixed(1)}</span>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1 bg-indigo-500/20 px-3 py-1 rounded-full">
+                                            <span className="font-bold text-indigo-300 text-sm">New</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-1 text-gray-300">
                                         <Clock size={16} />
                                         <span>{astrologer.experience_years || 5}+ Years</span>
@@ -406,6 +420,26 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Seeker Reviews */}
+                            {reviews.length > 0 && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <h2 className="text-xl font-normal text-gray-900 mb-4">What Seekers Say</h2>
+                                    <div className="space-y-4">
+                                        {reviews.map((review, idx) => (
+                                            <div key={idx} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="font-normal text-gray-900">{review.seeker_display_name}</span>
+                                                    <div className="text-amber-500 text-sm" aria-label={`${review.rating} out of 5 stars`}>
+                                                        {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
+                                                    </div>
+                                                </div>
+                                                <p className="text-gray-600 text-sm italic">&ldquo;{review.comment}&rdquo;</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Sidebar */}
@@ -424,10 +458,14 @@ const AstrologerProfile: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Rating</span>
-                                        <div className="flex items-center gap-1">
-                                            <Star size={16} fill="#FFD700" stroke="#FFD700" />
-                                            <span className="font-bold text-gray-900">{Number(astrologer.rating_avg || 5).toFixed(1)}</span>
-                                        </div>
+                                        {Number(astrologer.rating_avg) > 0 ? (
+                                            <div className="flex items-center gap-1">
+                                                <Star size={16} fill="#FFD700" stroke="#FFD700" />
+                                                <span className="font-bold text-gray-900">{Number(astrologer.rating_avg).toFixed(1)}</span>
+                                            </div>
+                                        ) : (
+                                            <span className="font-bold text-indigo-600">New</span>
+                                        )}
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Response Time</span>

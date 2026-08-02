@@ -50,10 +50,14 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                             {badgeText}
                         </span>
                     </Link>
-                    <div className="rating">
-                        <Star size={14} fill="currentColor" />
-                        <span>{Number(astro.rating_avg).toFixed(1)}</span>
-                    </div>
+                    {Number(astro.rating_avg) > 0 ? (
+                        <div className="rating">
+                            <Star size={14} fill="currentColor" />
+                            <span>{Number(astro.rating_avg).toFixed(1)}</span>
+                        </div>
+                    ) : (
+                        <div className="rating rating-new">New</div>
+                    )}
                 </div>
 
                 <div className="astro-info">

@@ -19,6 +19,17 @@
             "default": "Admin credit",
             "title": "Description"
           },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
           "transaction_type": {
             "default": "DEPOSIT",
             "title": "Transaction Type",
@@ -1860,6 +1871,46 @@
         "title": "ChatMessageCreate",
         "type": "object"
       },
+      "ChoghadiyaPeriod": {
+        "properties": {
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "is_current": {
+            "default": false,
+            "title": "Is Current",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nature": {
+            "title": "Nature",
+            "type": "string"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "nature",
+          "start",
+          "end",
+          "period"
+        ],
+        "title": "ChoghadiyaPeriod",
+        "type": "object"
+      },
       "ClassSessionCreate": {
         "properties": {
           "batch_id": {
@@ -2836,6 +2887,41 @@
         "title": "CourseUpdate",
         "type": "object"
       },
+      "CurrentLagna": {
+        "properties": {
+          "degree": {
+            "title": "Degree",
+            "type": "number"
+          },
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "sign": {
+            "title": "Sign",
+            "type": "string"
+          },
+          "sign_id": {
+            "title": "Sign Id",
+            "type": "integer"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "sign",
+          "sign_id",
+          "degree",
+          "start",
+          "end"
+        ],
+        "title": "CurrentLagna",
+        "type": "object"
+      },
       "DeviceTokenSchema": {
         "properties": {
           "platform": {
@@ -3002,6 +3088,42 @@
         "title": "ForgotPasswordRequest",
         "type": "object"
       },
+      "FreeToolBirthRequest": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth"
+        ],
+        "title": "FreeToolBirthRequest",
+        "type": "object"
+      },
       "GenderType": {
         "enum": [
           "MALE",
@@ -3133,6 +3255,41 @@
           "hint"
         ],
         "title": "HintResponse",
+        "type": "object"
+      },
+      "HoraPeriod": {
+        "properties": {
+          "end": {
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "is_current": {
+            "default": false,
+            "title": "Is Current",
+            "type": "boolean"
+          },
+          "period": {
+            "title": "Period",
+            "type": "string"
+          },
+          "planet": {
+            "title": "Planet",
+            "type": "string"
+          },
+          "start": {
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "planet",
+          "start",
+          "end",
+          "period"
+        ],
+        "title": "HoraPeriod",
         "type": "object"
       },
       "Horoscope": {
@@ -3520,6 +3677,42 @@
         "title": "KundliReportResponse",
         "type": "object"
       },
+      "KundliUpdateRequest": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth"
+        ],
+        "title": "KundliUpdateRequest",
+        "type": "object"
+      },
       "KycVerifyUpdate": {
         "properties": {
           "kyc_verified": {
@@ -3531,6 +3724,142 @@
           "kyc_verified"
         ],
         "title": "KycVerifyUpdate",
+        "type": "object"
+      },
+      "LiveMuhuratResponse": {
+        "properties": {
+          "choghadiyas": {
+            "items": {
+              "$ref": "#/components/schemas/ChoghadiyaPeriod"
+            },
+            "title": "Choghadiyas",
+            "type": "array"
+          },
+          "current_lagna": {
+            "$ref": "#/components/schemas/CurrentLagna"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "horas": {
+            "items": {
+              "$ref": "#/components/schemas/HoraPeriod"
+            },
+            "title": "Horas",
+            "type": "array"
+          },
+          "latitude": {
+            "title": "Latitude",
+            "type": "number"
+          },
+          "longitude": {
+            "title": "Longitude",
+            "type": "number"
+          },
+          "muhurtas": {
+            "items": {
+              "$ref": "#/components/schemas/MuhurtaPeriod"
+            },
+            "title": "Muhurtas",
+            "type": "array"
+          },
+          "now": {
+            "format": "date-time",
+            "title": "Now",
+            "type": "string"
+          },
+          "place_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Place Label"
+          },
+          "sunrise": {
+            "format": "date-time",
+            "title": "Sunrise",
+            "type": "string"
+          },
+          "sunset": {
+            "format": "date-time",
+            "title": "Sunset",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "place_label",
+          "latitude",
+          "longitude",
+          "now",
+          "sunrise",
+          "sunset",
+          "horas",
+          "choghadiyas",
+          "muhurtas",
+          "current_lagna"
+        ],
+        "title": "LiveMuhuratResponse",
+        "type": "object"
+      },
+      "ManglikCheckResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          },
+          "yogas_data": {
+            "additionalProperties": true,
+            "title": "Yogas Data",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth",
+          "yogas_data",
+          "created_at"
+        ],
+        "title": "ManglikCheckResponse",
         "type": "object"
       },
       "MatchGenerateRequest": {
@@ -3703,93 +4032,49 @@
         "title": "MatchReportResponse",
         "type": "object"
       },
-      "MuhuratSearchRequest": {
+      "MuhurtaPeriod": {
         "properties": {
-          "end_date": {
-            "format": "date",
-            "title": "End Date",
+          "end": {
+            "format": "date-time",
+            "title": "End",
             "type": "string"
           },
-          "place": {
-            "title": "Place",
+          "is_current": {
+            "default": false,
+            "title": "Is Current",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
             "type": "string"
           },
-          "purpose": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Purpose"
-          },
-          "seeker_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seeker Id"
-          },
-          "start_date": {
-            "format": "date",
-            "title": "Start Date",
+          "start": {
+            "format": "date-time",
+            "title": "Start",
             "type": "string"
-          },
-          "subject": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MuhuratSubjectInput"
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         },
         "required": [
-          "start_date",
-          "end_date",
-          "place"
+          "name",
+          "start",
+          "end"
         ],
-        "title": "MuhuratSearchRequest",
+        "title": "MuhurtaPeriod",
         "type": "object"
       },
-      "MuhuratSearchResponse": {
+      "NavamsaChartResponse": {
         "properties": {
           "created_at": {
             "format": "date-time",
             "title": "Created At",
             "type": "string"
           },
-          "end_date": {
+          "date_of_birth": {
             "format": "date",
-            "title": "End Date",
+            "title": "Date Of Birth",
             "type": "string"
           },
-          "id": {
-            "title": "Id",
-            "type": "integer"
-          },
-          "muhurat_data": {
-            "additionalProperties": true,
-            "title": "Muhurat Data",
-            "type": "object"
-          },
-          "personalized": {
-            "title": "Personalized",
-            "type": "boolean"
-          },
-          "place": {
-            "title": "Place",
-            "type": "string"
-          },
-          "purpose": {
+          "full_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -3798,73 +4083,97 @@
                 "type": "null"
               }
             ],
-            "title": "Purpose"
+            "title": "Full Name"
           },
-          "seeker_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seeker Id"
+          "id": {
+            "title": "Id",
+            "type": "integer"
           },
-          "start_date": {
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          },
+          "vargas_data": {
+            "additionalProperties": true,
+            "title": "Vargas Data",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth",
+          "vargas_data",
+          "created_at"
+        ],
+        "title": "NavamsaChartResponse",
+        "type": "object"
+      },
+      "NumerologyProfileResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "date_of_birth": {
             "format": "date",
-            "title": "Start Date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "profile_data": {
+            "additionalProperties": true,
+            "title": "Profile Data",
+            "type": "object"
+          },
+          "subject_name": {
+            "title": "Subject Name",
             "type": "string"
           }
         },
         "required": [
           "id",
-          "seeker_id",
-          "purpose",
-          "start_date",
-          "end_date",
-          "place",
-          "personalized",
-          "muhurat_data",
+          "subject_name",
+          "date_of_birth",
+          "method",
+          "profile_data",
           "created_at"
         ],
-        "title": "MuhuratSearchResponse",
+        "title": "NumerologyProfileResponse",
         "type": "object"
       },
-      "MuhuratSubjectInput": {
+      "NumerologyRequest": {
         "properties": {
           "date_of_birth": {
             "format": "date",
             "title": "Date Of Birth",
             "type": "string"
           },
-          "place_of_birth": {
-            "title": "Place Of Birth",
-            "type": "string"
-          },
-          "seeker_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Seeker Id"
-          },
-          "time_of_birth": {
-            "format": "time",
-            "title": "Time Of Birth",
+          "full_name": {
+            "title": "Full Name",
             "type": "string"
           }
         },
         "required": [
-          "date_of_birth",
-          "time_of_birth",
-          "place_of_birth"
+          "full_name",
+          "date_of_birth"
         ],
-        "title": "MuhuratSubjectInput",
+        "title": "NumerologyRequest",
         "type": "object"
       },
       "OnboardingStage": {
@@ -4111,6 +4420,20 @@
         "title": "PaymentVerification",
         "type": "object"
       },
+      "PhoneNumberUpdate": {
+        "properties": {
+          "phone_number": {
+            "pattern": "^\\d{10,15}$",
+            "title": "Phone Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone_number"
+        ],
+        "title": "PhoneNumberUpdate",
+        "type": "object"
+      },
       "Post": {
         "properties": {
           "author_id": {
@@ -4340,6 +4663,40 @@
         "title": "PostUpdate",
         "type": "object"
       },
+      "PublicReview": {
+        "properties": {
+          "astrologer_display_name": {
+            "title": "Astrologer Display Name",
+            "type": "string"
+          },
+          "comment": {
+            "title": "Comment",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "rating": {
+            "title": "Rating",
+            "type": "integer"
+          },
+          "seeker_display_name": {
+            "title": "Seeker Display Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rating",
+          "comment",
+          "created_at",
+          "seeker_display_name",
+          "astrologer_display_name"
+        ],
+        "title": "PublicReview",
+        "type": "object"
+      },
       "QuotaResponse": {
         "properties": {
           "questions_remaining": {
@@ -4469,6 +4826,8 @@
             "type": "integer"
           },
           "rating": {
+            "maximum": 5.0,
+            "minimum": 1.0,
             "title": "Rating",
             "type": "integer"
           }
@@ -4500,6 +4859,8 @@
             "type": "integer"
           },
           "rating": {
+            "maximum": 5.0,
+            "minimum": 1.0,
             "title": "Rating",
             "type": "integer"
           }
@@ -4897,6 +5258,34 @@
           "translated_text"
         ],
         "title": "TranslateResponse",
+        "type": "object"
+      },
+      "TrustStats": {
+        "properties": {
+          "average_rating": {
+            "title": "Average Rating",
+            "type": "number"
+          },
+          "total_consultations": {
+            "title": "Total Consultations",
+            "type": "integer"
+          },
+          "total_reviews": {
+            "title": "Total Reviews",
+            "type": "integer"
+          },
+          "verified_astrologers": {
+            "title": "Verified Astrologers",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "verified_astrologers",
+          "total_consultations",
+          "total_reviews",
+          "average_rating"
+        ],
+        "title": "TrustStats",
         "type": "object"
       },
       "UpdateScenesRequest": {
@@ -6964,6 +7353,168 @@
         ]
       }
     },
+    "/admin/reviews": {
+      "get": {
+        "operationId": "list_reviews_for_moderation_admin_reviews_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Reviews For Moderation",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/reviews/{review_id}/approve": {
+      "post": {
+        "operationId": "approve_review_admin_reviews__review_id__approve_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "title": "Review Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Approve Review",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/reviews/{review_id}/reject": {
+      "post": {
+        "operationId": "reject_review_admin_reviews__review_id__reject_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "title": "Review Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Reject Review",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/seo/analytics": {
       "get": {
         "operationId": "get_seo_analytics_admin_seo_analytics_get",
@@ -8678,6 +9229,21 @@
         ]
       }
     },
+    "/astrologers/force-offline": {
+      "post": {
+        "description": "Flips an astrologer offline even when their access token has expired.\n\nThe frontend's global 401 handler hits this when a normal `PUT /profile`\ncall would itself 401 (token already expired/invalid) and can't reach the\nusual logout flow \u2014 without it, `is_online` stays stuck true forever after\na silent session expiry. Signature is still verified; only the expiry\nclaim is ignored, so a tampered or forged token is rejected same as usual.",
+        "operationId": "force_offline_astrologers_force_offline_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Force Offline",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
     "/astrologers/onboarding": {
       "post": {
         "operationId": "astrologer_onboarding_astrologers_onboarding_post",
@@ -8777,6 +9343,50 @@
           }
         ],
         "summary": "Get Payout History",
+        "tags": [
+          "Astrologers"
+        ]
+      }
+    },
+    "/astrologers/phone-number": {
+      "put": {
+        "operationId": "update_own_phone_number_astrologers_phone_number_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhoneNumberUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Own Phone Number",
         "tags": [
           "Astrologers"
         ]
@@ -11402,6 +12012,132 @@
         "summary": "Forgot Password"
       }
     },
+    "/free-tools/manglik-check": {
+      "post": {
+        "description": "Detect Manglik/Mangal Dosha and other yogas for a birth chart.",
+        "operationId": "manglik_check_free_tools_manglik_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeToolBirthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManglikCheckResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Manglik Check",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
+    "/free-tools/navamsa": {
+      "post": {
+        "description": "Generate the Navamsa (D9) divisional chart for a birth chart.",
+        "operationId": "navamsa_chart_free_tools_navamsa_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeToolBirthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NavamsaChartResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Navamsa Chart",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
+    "/free-tools/numerology": {
+      "post": {
+        "description": "Generate a numerology profile from a name and date of birth.",
+        "operationId": "numerology_profile_free_tools_numerology_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NumerologyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumerologyProfileResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Numerology Profile",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
     "/kundli/generate": {
       "post": {
         "description": "Generate a Kundli report for a seeker.\nAccepts birth details directly or a seeker_id to auto-fetch from profile.\nGeocodes place of birth and calls AstroAPI.\nCaches the result in kundli_reports table.",
@@ -11533,6 +12269,45 @@
       }
     },
     "/kundli/{report_id}": {
+      "delete": {
+        "description": "Delete a Kundli report.",
+        "operationId": "delete_kundli_report_kundli__report_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Kundli Report",
+        "tags": [
+          "Kundli"
+        ]
+      },
       "get": {
         "description": "Get a specific Kundli report by ID.",
         "operationId": "get_kundli_report_kundli__report_id__get",
@@ -11575,6 +12350,62 @@
           }
         ],
         "summary": "Get Kundli Report",
+        "tags": [
+          "Kundli"
+        ]
+      },
+      "put": {
+        "description": "Edit a Kundli report's birth details and regenerate its chart.",
+        "operationId": "update_kundli_report_kundli__report_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KundliUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KundliReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Kundli Report",
         "tags": [
           "Kundli"
         ]
@@ -11797,6 +12628,45 @@
       }
     },
     "/matching/{report_id}": {
+      "delete": {
+        "description": "Delete a Match report.",
+        "operationId": "delete_match_report_matching__report_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Match Report",
+        "tags": [
+          "Matching"
+        ]
+      },
       "get": {
         "description": "Get a specific Match report by ID.",
         "operationId": "get_match_report_matching__report_id__get",
@@ -11842,48 +12712,26 @@
         "tags": [
           "Matching"
         ]
-      }
-    },
-    "/muhurat/history/all": {
-      "get": {
-        "description": "Get all Muhurat searches performed by the current astrologer.",
-        "operationId": "get_astrologer_muhurat_history_muhurat_history_all_get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/MuhuratSearchResponse"
-                  },
-                  "title": "Response Get Astrologer Muhurat History Muhurat History All Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "security": [
+      },
+      "put": {
+        "description": "Edit a Match report's birth details and regenerate its compatibility data.",
+        "operationId": "update_match_report_matching__report_id__put",
+        "parameters": [
           {
-            "OAuth2PasswordBearer": []
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "title": "Report Id",
+              "type": "integer"
+            }
           }
         ],
-        "summary": "Get Astrologer Muhurat History",
-        "tags": [
-          "Muhurat"
-        ]
-      }
-    },
-    "/muhurat/search": {
-      "post": {
-        "description": "Search for auspicious muhurat windows in a date range, optionally personalized\nto a seeker's birth chart. Caches the result in muhurat_searches, keyed by the\nsearch parameters, so repeat lookups don't re-hit FreeAstroAPI.",
-        "operationId": "search_muhurat_windows_muhurat_search_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MuhuratSearchRequest"
+                "$ref": "#/components/schemas/MatchGenerateRequest"
               }
             }
           },
@@ -11894,7 +12742,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MuhuratSearchResponse"
+                  "$ref": "#/components/schemas/MatchReportResponse"
                 }
               }
             },
@@ -11916,24 +12764,88 @@
             "OAuth2PasswordBearer": []
           }
         ],
-        "summary": "Search Muhurat Windows",
+        "summary": "Update Match Report",
         "tags": [
-          "Muhurat"
+          "Matching"
         ]
       }
     },
-    "/muhurat/{search_id}": {
+    "/muhurat/live": {
       "get": {
-        "description": "Get a specific Muhurat search by ID.",
-        "operationId": "get_muhurat_search_muhurat__search_id__get",
+        "description": "Current Hora, Choghadiya, 15-muhurta window, and Lagna for a location.\nPublic, no auth required (same access model as /panchang/daily).",
+        "operationId": "get_live_muhurat_muhurat_live_get",
         "parameters": [
           {
-            "in": "path",
-            "name": "search_id",
-            "required": true,
+            "description": "Defaults to today (Asia/Kolkata)",
+            "in": "query",
+            "name": "date",
+            "required": false,
             "schema": {
-              "title": "Search Id",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Defaults to today (Asia/Kolkata)",
+              "title": "Date"
+            }
+          },
+          {
+            "description": "Latitude \u2014 when provided with lon, skips geocoding",
+            "in": "query",
+            "name": "lat",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Latitude \u2014 when provided with lon, skips geocoding",
+              "title": "Lat"
+            }
+          },
+          {
+            "description": "Longitude \u2014 when provided with lat, skips geocoding",
+            "in": "query",
+            "name": "lon",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Longitude \u2014 when provided with lat, skips geocoding",
+              "title": "Lon"
+            }
+          },
+          {
+            "description": "Display label for the location; also used to geocode when lat/lon aren't provided",
+            "in": "query",
+            "name": "place",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Display label for the location; also used to geocode when lat/lon aren't provided",
+              "title": "Place"
             }
           }
         ],
@@ -11942,7 +12854,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MuhuratSearchResponse"
+                  "$ref": "#/components/schemas/LiveMuhuratResponse"
                 }
               }
             },
@@ -11959,12 +12871,7 @@
             "description": "Validation Error"
           }
         },
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "summary": "Get Muhurat Search",
+        "summary": "Get Live Muhurat",
         "tags": [
           "Muhurat"
         ]
@@ -12400,6 +13307,46 @@
         ]
       }
     },
+    "/places/autocomplete": {
+      "get": {
+        "operationId": "autocomplete_place_places_autocomplete_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Autocomplete Place",
+        "tags": [
+          "Places"
+        ]
+      }
+    },
     "/public/contact": {
       "post": {
         "operationId": "submit_contact_inquiry_public_contact_post",
@@ -12681,6 +13628,70 @@
         ]
       }
     },
+    "/public/reviews": {
+      "get": {
+        "description": "Recent, genuinely submitted reviews with written feedback, for homepage and profile testimonials.",
+        "operationId": "get_public_reviews_public_reviews_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 8,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "astrologer_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Astrologer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PublicReview"
+                  },
+                  "title": "Response Get Public Reviews Public Reviews Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Public Reviews",
+        "tags": [
+          "Public Content"
+        ]
+      }
+    },
     "/public/support-contact": {
       "get": {
         "description": "Support email/phone as configured in Admin > Settings > Support Contact.",
@@ -12696,6 +13707,28 @@
           }
         },
         "summary": "Get Support Contact",
+        "tags": [
+          "Public Content"
+        ]
+      }
+    },
+    "/public/trust-stats": {
+      "get": {
+        "description": "Real, aggregate platform numbers for homepage trust signals.",
+        "operationId": "get_trust_stats_public_trust_stats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustStats"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Trust Stats",
         "tags": [
           "Public Content"
         ]

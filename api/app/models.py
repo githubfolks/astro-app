@@ -268,6 +268,11 @@ class Consultation(Base):
     astrologer_profile = relationship("AstrologerProfile", primaryjoin="foreign(Consultation.astrologer_id) == AstrologerProfile.user_id", viewonly=True, uselist=False)
     package = relationship("ChatPackage", foreign_keys=[package_id])
 
+class ReviewDisplayStatus(str, enum.Enum):
+    PENDING = "PENDING"    # awaiting admin decision (moderation scan found something, or none run yet)
+    APPROVED = "APPROVED"  # eligible for public display (homepage/profile testimonials)
+    REJECTED = "REJECTED"  # admin declined to show this publicly
+
 class Review(Base):
     __tablename__ = "reviews"
 
@@ -278,6 +283,11 @@ class Review(Base):
     rating = Column(Integer)
     comment = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    # Public-display moderation: auto-approved when the comment passes the same
+    # rule-based scan used on chat messages; flagged comments stay PENDING for
+    # admin review instead of publishing straight to the homepage/profile.
+    display_status = Column(Enum(ReviewDisplayStatus), default=ReviewDisplayStatus.PENDING, nullable=False, server_default=ReviewDisplayStatus.PENDING.value)
+    moderation_reason = Column(String, nullable=True)
 
     consultation = relationship("Consultation", back_populates="review")
     astrologer = relationship("User", foreign_keys=[astrologer_id])

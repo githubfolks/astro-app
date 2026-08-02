@@ -283,13 +283,26 @@ def submit_review(review: schemas.ReviewCreate, current_user: models.User = Depe
         raise HTTPException(status_code=404, detail="Consultation not found")
     if consultation.seeker_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to review this consultation")
-    
+    if consultation.status != models.ConsultationStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Only completed consultations can be reviewed")
+    if db.query(models.Review).filter(models.Review.consultation_id == review.consultation_id).first():
+        raise HTTPException(status_code=409, detail="This consultation has already been reviewed")
+
+    # Auto-approve for public display when the comment passes the same rule-based
+    # scan used on chat messages; anything it flags stays PENDING for an admin to
+    # look at before it can appear on the homepage/profile testimonials.
+    from ..services import moderation
+    violations, _ = moderation.scan(review.comment or "")
+    display_status = models.ReviewDisplayStatus.PENDING if violations else models.ReviewDisplayStatus.APPROVED
+
     new_review = models.Review(
         consultation_id=review.consultation_id,
         astrologer_id=consultation.astrologer_id,
         seeker_id=current_user.id,
         rating=review.rating,
-        comment=review.comment
+        comment=review.comment,
+        display_status=display_status,
+        moderation_reason=",".join(violations) if violations else None,
     )
     db.add(new_review)
     db.flush()

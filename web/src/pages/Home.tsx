@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Hero from '../components/Hero';
+import TrustBar from '../components/TrustBar';
 import HowItWorks from '../components/HowItWorks';
 import ServicesGrid from '../components/ServicesGrid';
 import AstrologerList from '../components/AstrologerList';
@@ -140,6 +141,7 @@ const Home: React.FC = () => {
             <Header />
             <main id="main-content">
                 <Hero />
+                <TrustBar />
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <MemoryGuruBanner />

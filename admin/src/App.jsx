@@ -25,6 +25,7 @@ const EduReports = lazy(() => import('./pages/EduReports'));
 const Disputes = lazy(() => import('./pages/Disputes'));
 const Settings = lazy(() => import('./pages/Settings'));
 const ModerationFlags = lazy(() => import('./pages/ModerationFlags'));
+const ReviewModeration = lazy(() => import('./pages/ReviewModeration'));
 const SEOAnalytics = lazy(() => import('./pages/SEOAnalytics'));
 
 function RequireAuth({ children }) {
@@ -73,6 +74,7 @@ function App() {
             <Route path="/edu-reports" element={<EduReports />} />
             <Route path="/disputes" element={<Disputes />} />
             <Route path="/moderation" element={<ModerationFlags />} />
+            <Route path="/reviews" element={<ReviewModeration />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/seo-analytics" element={<SEOAnalytics />} />
           </Route>

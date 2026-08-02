@@ -127,6 +127,12 @@ export const moderation = {
     resolve: (id, status = 'REVIEWED') => api.post(`/admin/moderation-flags/${id}/resolve`, null, { params: { status } }),
 };
 
+export const reviewModeration = {
+    list: (params) => api.get('/admin/reviews', { params }),
+    approve: (id) => api.post(`/admin/reviews/${id}/approve`),
+    reject: (id) => api.post(`/admin/reviews/${id}/reject`),
+};
+
 export const contentStudio = {
     suggestTopic: () => api.post('/content-studio/suggest-topic'),
     generateScenes: (data) => api.post('/content-studio/jobs', data),

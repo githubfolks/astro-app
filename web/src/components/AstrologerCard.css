@@ -188,6 +188,13 @@
     gap: 4px;
 }
 
+.rating-new {
+    color: #6366f1;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
 .price {
     color: #1e1b4b;
     font-weight: 600;

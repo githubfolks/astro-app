@@ -79,6 +79,61 @@ def get_public_horoscopes(
     # Defaults: unique entry if all params present, else list
     return query.order_by(models.Horoscope.date.desc()).limit(50).all()
 
+# --- Trust Signals ---
+
+def _first_name_last_initial(full_name: Optional[str]) -> str:
+    parts = (full_name or "").split()
+    if not parts:
+        return "A Seeker"
+    if len(parts) == 1:
+        return parts[0]
+    return f"{parts[0]} {parts[-1][0]}."
+
+@router.get("/trust-stats", response_model=schemas.TrustStats)
+def get_trust_stats(db: Session = Depends(database.get_db)):
+    """Real, aggregate platform numbers for homepage trust signals."""
+    verified_astrologers = db.query(models.AstrologerProfile).filter(
+        models.AstrologerProfile.is_approved == True
+    ).count()
+    total_consultations = db.query(func.coalesce(func.sum(models.AstrologerProfile.total_consultations), 0)).scalar()
+    total_reviews = db.query(models.Review).count()
+    average_rating = db.query(func.coalesce(func.avg(models.Review.rating), 0)).scalar()
+    return schemas.TrustStats(
+        verified_astrologers=verified_astrologers,
+        total_consultations=int(total_consultations or 0),
+        total_reviews=total_reviews,
+        average_rating=round(float(average_rating or 0), 1),
+    )
+
+@router.get("/reviews", response_model=List[schemas.PublicReview])
+def get_public_reviews(limit: int = 8, astrologer_id: Optional[int] = None, db: Session = Depends(database.get_db)):
+    """Recent, genuinely submitted reviews with written feedback, for homepage and profile testimonials."""
+    limit = max(1, min(limit, 20))
+    query = db.query(models.Review).filter(
+        models.Review.rating >= 4,
+        models.Review.comment.isnot(None),
+        models.Review.comment != "",
+        models.Review.display_status == models.ReviewDisplayStatus.APPROVED,
+    )
+    if astrologer_id is not None:
+        query = query.filter(models.Review.astrologer_id == astrologer_id)
+    reviews = query.order_by(models.Review.created_at.desc()).limit(limit).all()
+    result = []
+    for r in reviews:
+        seeker_name = _first_name_last_initial(
+            r.seeker.seeker_profile.full_name if r.seeker and r.seeker.seeker_profile else None
+        )
+        astro_profile = r.astrologer.astrologer_profile if r.astrologer else None
+        astro_name = (astro_profile.display_name or astro_profile.full_name) if astro_profile else "our astrologer"
+        result.append(schemas.PublicReview(
+            rating=r.rating,
+            comment=r.comment,
+            created_at=r.created_at,
+            seeker_display_name=seeker_name,
+            astrologer_display_name=astro_name,
+        ))
+    return result
+
 # --- Contact ---
 
 @router.post("/contact", response_model=dict)
