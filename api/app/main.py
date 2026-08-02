@@ -314,8 +314,27 @@ async def log_requests(request: Request, call_next):
         )
 
 # Compress JSON responses when the API is reached without an nginx layer in front.
+# Excludes /static: GZipMiddleware doesn't correctly honor Range requests, so
+# wrapping it around StaticFiles corrupts ranged/chunked fetches of uploaded
+# files (e.g. Facebook's Graph API fetching a Content Studio video by URL,
+# which was failing with "corrupt video" errors because of this).
 from fastapi.middleware.gzip import GZipMiddleware
-app.add_middleware(GZipMiddleware, minimum_size=1024)
+
+
+class ConditionalGZipMiddleware:
+    def __init__(self, app, minimum_size=1024, excluded_prefixes=("/static/",)):
+        self.gzip_app = GZipMiddleware(app, minimum_size=minimum_size)
+        self.app = app
+        self.excluded_prefixes = excluded_prefixes
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http" and any(scope["path"].startswith(p) for p in self.excluded_prefixes):
+            await self.app(scope, receive, send)
+        else:
+            await self.gzip_app(scope, receive, send)
+
+
+app.add_middleware(ConditionalGZipMiddleware, minimum_size=1024)
 
 # CORS Middleware (Add LAST to be Outer-Most for responses)
 app.add_middleware(

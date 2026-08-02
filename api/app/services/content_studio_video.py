@@ -23,6 +23,14 @@ CAPTION_MARGIN_X = 60
 CAPTION_MARGIN_BOTTOM = 120
 CAPTION_LINE_SPACING = 14
 
+# Persistent small watermark on every scene (not just an end-card) so the
+# disclaimer survives if a clip gets trimmed/reposted separately.
+DISCLAIMER_TEXT = "भविष्यवाणियाँ केवल ज्योतिषीय आकलन हैं।"
+DISCLAIMER_FONT_SIZE = 24
+DISCLAIMER_MARGIN_TOP = 40
+# Rendered once and reused across all jobs/scenes since the text is static.
+DISCLAIMER_PNG_PATH = os.path.join("uploads", "content_studio", "_shared", "disclaimer.png")
+
 
 class VideoAssemblyError(RuntimeError):
     pass
@@ -85,13 +93,44 @@ def render_caption_png(narration_text: str, out_path: str):
     img.save(out_path)
 
 
+def render_disclaimer_png(out_path: str):
+    """Renders the small top-of-frame disclaimer watermark to a transparent
+    WIDTHxHEIGHT PNG, same style/technique as render_caption_png."""
+    font = ImageFont.truetype(CAPTION_FONT_PATH, DISCLAIMER_FONT_SIZE, layout_engine=ImageFont.Layout.RAQM)
+    img = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+
+    max_width = WIDTH - 2 * CAPTION_MARGIN_X
+    lines = _wrap_lines(draw, DISCLAIMER_TEXT, font, max_width)
+
+    line_height = DISCLAIMER_FONT_SIZE + CAPTION_LINE_SPACING
+    y = DISCLAIMER_MARGIN_TOP
+
+    for line in lines:
+        bbox = draw.textbbox((0, 0), line, font=font)
+        x = (WIDTH - (bbox[2] - bbox[0])) / 2
+        draw.text((x, y), line, font=font, fill="white", stroke_width=2, stroke_fill="black")
+        y += line_height
+
+    img.save(out_path)
+
+
+def _get_disclaimer_png() -> str:
+    if not os.path.exists(DISCLAIMER_PNG_PATH):
+        os.makedirs(os.path.dirname(DISCLAIMER_PNG_PATH), exist_ok=True)
+        render_disclaimer_png(DISCLAIMER_PNG_PATH)
+    return DISCLAIMER_PNG_PATH
+
+
 def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work_dir: str, out_path: str):
-    """Ken Burns zoom over the image, narration audio, overlaid Hindi caption."""
+    """Ken Burns zoom over the image, narration audio, overlaid Hindi caption
+    and disclaimer watermark."""
     duration_sec = get_audio_duration(audio_path)
     frames = max(int(round(duration_sec * FPS)), 1)
 
     caption_path = os.path.join(work_dir, os.path.basename(out_path) + "_caption.png")
     render_caption_png(narration_text, caption_path)
+    disclaimer_path = _get_disclaimer_png()
 
     # Pre-upscale modestly (not to some huge absolute size — that OOMs zoompan,
     # which materializes a full upscaled frame per output frame) just enough
@@ -117,7 +156,8 @@ def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work
         f"scale={upscale_width}:-2:out_range=tv,"
         f"zoompan=z='min(zoom+0.0015,1.5)':d={frames}:s={WIDTH}x{HEIGHT}:fps={FPS}:"
         f"x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'[bg];"
-        f"[bg][2:v]overlay=0:0,format=yuv420p[v]"
+        f"[bg][2:v]overlay=0:0[bg2];"
+        f"[bg2][3:v]overlay=0:0,format=yuv420p[v]"
     )
 
     _run([
@@ -130,6 +170,7 @@ def build_scene_clip(image_path: str, audio_path: str, narration_text: str, work
         "-loop", "1", "-i", image_path,
         "-i", audio_path,
         "-i", caption_path,
+        "-i", disclaimer_path,
         "-filter_complex", filter_complex,
         "-map", "[v]", "-map", "1:a",
         "-c:v", "libx264", "-threads", "1", "-x264-params", "threads=1",
@@ -163,4 +204,25 @@ def concat_clips(clip_paths: list[str], work_dir: str, out_path: str):
         for path in clip_paths:
             f.write(f"file '{os.path.abspath(path)}'\n")
 
-    _run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", list_path, "-c", "copy", "-movflags", "+faststart", out_path])
+    # Re-encode instead of "-c copy" -- each scene clip's frame count is
+    # round(duration_sec * FPS), so clip boundaries don't land on exact 1/FPS
+    # ticks. Stream-copying the concat just concatenates those raw timestamps,
+    # producing a non-standard time_base and a non-integer avg_frame_rate that
+    # ffprobe/VLC play back fine but that Facebook's Graph API video ingestion
+    # validator rejects outright as "corrupt". Re-encoding here normalizes to
+    # one continuous, strictly-CFR stream.
+    _run([
+        "ffmpeg", "-y",
+        "-threads", "1",
+        "-f", "concat", "-safe", "0", "-i", list_path,
+        "-r", str(FPS), "-vsync", "cfr",
+        # out_range=tv -- as in build_scene_clip, "-pix_fmt yuv420p" alone only
+        # fixes chroma subsampling, not color range; without this the decoded
+        # clips' full-range (pc) tag survives re-encoding into yuvj420p.
+        "-vf", "scale=out_range=tv",
+        "-c:v", "libx264", "-threads", "1", "-x264-params", "threads=1",
+        "-preset", "veryfast", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-ar", "48000", "-ac", "2", "-b:a", "128k",
+        "-movflags", "+faststart",
+        out_path,
+    ])
