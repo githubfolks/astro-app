@@ -6,7 +6,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
-import { Facebook, Instagram, Youtube, Download, X, RotateCw } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Download, X, RotateCw, Trash2 } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import clsx from 'clsx';
 
@@ -101,6 +101,7 @@ export default function ContentStudioLibrary() {
     const [posting, setPosting] = useState({}); // `${jobId}-${platform}` -> true while in flight
     const [captionModal, setCaptionModal] = useState(null); // { job, platform } | null
     const [rerendering, setRerendering] = useState({}); // jobId -> true while render is in flight
+    const [deleting, setDeleting] = useState({}); // jobId -> true while delete is in flight
     const limit = 20;
     const navigate = useNavigate();
 
@@ -171,6 +172,20 @@ export default function ContentStudioLibrary() {
         }
     };
 
+    const handleDelete = async (job) => {
+        if (!window.confirm(`Delete "${job.topic}"? This permanently removes the video and all generated scene files.`)) return;
+        setDeleting(prev => ({ ...prev, [job.id]: true }));
+        try {
+            await contentStudio.deleteJob(job.id);
+            setJobs(prev => prev.filter(j => j.id !== job.id));
+            setTotal(prev => prev - 1);
+        } catch (e) {
+            alert(e.message || 'Failed to delete video.');
+        } finally {
+            setDeleting(prev => ({ ...prev, [job.id]: false }));
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -192,6 +207,7 @@ export default function ContentStudioLibrary() {
                             {PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
                             <TableHead className="text-right">Re-render</TableHead>
                             <TableHead className="text-right">Video</TableHead>
+                            <TableHead className="text-right">Delete</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -261,11 +277,23 @@ export default function ContentStudioLibrary() {
                                         </a>
                                     )}
                                 </TableCell>
+                                <TableCell className="text-right">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        title="Delete this video and its generated files"
+                                        disabled={job.status === 'RENDERING' || !!deleting[job.id]}
+                                        onClick={() => handleDelete(job)}
+                                        className="cursor-pointer"
+                                    >
+                                        <Trash2 size={18} className="text-red-600" />
+                                    </Button>
+                                </TableCell>
                             </TableRow>
                         ))}
                         {jobs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4 + PLATFORMS.length + 2} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={4 + PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
                                     No videos generated yet
                                 </TableCell>
                             </TableRow>

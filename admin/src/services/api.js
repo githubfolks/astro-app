@@ -144,6 +144,7 @@ export const contentStudio = {
     renderVideo: (jobId) => api.post(`/content-studio/jobs/${jobId}/render`),
     getJob: (jobId) => api.get(`/content-studio/jobs/${jobId}`),
     listJobs: (params) => api.get('/content-studio/jobs', { params }),
+    deleteJob: (jobId) => api.delete(`/content-studio/jobs/${jobId}`),
     generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
     postFacebook: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption }),
     postInstagram: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption }),

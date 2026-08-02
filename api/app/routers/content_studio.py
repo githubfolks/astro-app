@@ -5,6 +5,7 @@ admin to preview, download, and post manually to Facebook/Instagram/YouTube.
 """
 import asyncio
 import os
+import shutil
 from datetime import datetime, timezone
 
 from io import BytesIO
@@ -242,6 +243,21 @@ def list_jobs(skip: int = 0, limit: int = 20, db: Session = Depends(database.get
     total = query.count()
     jobs = query.offset(skip).limit(limit).all()
     return schemas_content_studio.JobListResponse(total=total, jobs=jobs)
+
+
+@router.delete("/jobs/{job_id}", status_code=204)
+def delete_job(job_id: int, db: Session = Depends(database.get_db)):
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status == models.ContentJobStatus.RENDERING:
+        raise HTTPException(status_code=409, detail="Cannot delete while rendering")
+
+    job_dir = os.path.join("uploads", "content_studio", str(job_id))
+    shutil.rmtree(job_dir, ignore_errors=True)
+
+    db.delete(job)
+    db.commit()
 
 
 def _get_ready_job(job_id: int, db: Session) -> models.ContentStudioJob:
