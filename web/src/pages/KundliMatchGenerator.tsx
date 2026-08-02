@@ -191,6 +191,7 @@ const KundliMatchGenerator: React.FC = () => {
                 <div className="max-w-5xl mx-auto flex gap-2 mb-2 text-xs font-semibold">
                     <Link to="/kundli" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Kundli Generator</Link>
                     <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500">Kundli Matching</span>
+                    <Link to="/muhurat" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Live Hora & Muhurat</Link>
                 </div>
 
                 <div className="max-w-5xl mx-auto">

@@ -26,4 +26,5 @@ export const SERVICES_LIST: ServiceLink[] = [
 export const ASTROLOGER_TOOLS_LIST: ServiceLink[] = [
     { title: 'Kundli Generator', to: '/kundli' },
     { title: 'Kundli Matching', to: '/kundli/matching' },
+    { title: 'Live Hora & Muhurat', to: '/muhurat' },
 ];

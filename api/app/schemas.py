@@ -410,6 +410,49 @@ class PanchangResponse(BaseModel):
         from_attributes = True
 
 
+# Live Muhurat Schemas (Hora, Choghadiya, 15-muhurta "Do Ghati", current Lagna)
+class HoraPeriod(BaseModel):
+    planet: str
+    start: datetime
+    end: datetime
+    period: str  # "day" | "night"
+    is_current: bool = False
+
+class ChoghadiyaPeriod(BaseModel):
+    name: str
+    nature: str
+    start: datetime
+    end: datetime
+    period: str  # "day" | "night"
+    is_current: bool = False
+
+class MuhurtaPeriod(BaseModel):
+    name: str
+    start: datetime
+    end: datetime
+    is_current: bool = False
+
+class CurrentLagna(BaseModel):
+    sign: str
+    sign_id: int
+    degree: float
+    start: datetime
+    end: datetime
+
+class LiveMuhuratResponse(BaseModel):
+    date: date
+    place_label: Optional[str]
+    latitude: float
+    longitude: float
+    now: datetime
+    sunrise: datetime
+    sunset: datetime
+    horas: List[HoraPeriod]
+    choghadiyas: List[ChoghadiyaPeriod]
+    muhurtas: List[MuhurtaPeriod]
+    current_lagna: CurrentLagna
+
+
 # Kundli Matching (Kuta / Guna Milan) Schemas
 class MatchPersonInput(BaseModel):
     seeker_id: Optional[int] = None

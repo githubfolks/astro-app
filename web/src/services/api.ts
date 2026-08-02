@@ -680,6 +680,17 @@ export const api = {
             return handleResponse(response, 'Failed to fetch daily panchang');
         }
     },
+    muhurat: {
+        getLive: async (opts: { date?: string; lat?: number; lon?: number; place?: string } = {}) => {
+            const params = new URLSearchParams();
+            if (opts.date) params.append('date', opts.date);
+            if (opts.lat !== undefined) params.append('lat', opts.lat.toString());
+            if (opts.lon !== undefined) params.append('lon', opts.lon.toString());
+            if (opts.place) params.append('place', opts.place);
+            const response = await customFetch(`${API_URL}/muhurat/live?${params}`);
+            return handleResponse(response, 'Failed to fetch live Muhurat data');
+        }
+    },
     places: {
         autocomplete: async (query: string): Promise<{ label: string; city: string; state: string; lat: number; lon: number }[]> => {
             const response = await customFetch(`${API_URL}/places/autocomplete?q=${encodeURIComponent(query)}`);

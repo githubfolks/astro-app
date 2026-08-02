@@ -339,6 +339,52 @@ export interface Panchang {
     rahu_kalam?: { start: string; end: string };
 }
 
+export interface HoraPeriod {
+    planet: string;
+    start: string;
+    end: string;
+    period: 'day' | 'night';
+    is_current: boolean;
+}
+
+export interface ChoghadiyaPeriod {
+    name: string;
+    nature: string;
+    start: string;
+    end: string;
+    period: 'day' | 'night';
+    is_current: boolean;
+}
+
+export interface MuhurtaPeriod {
+    name: string;
+    start: string;
+    end: string;
+    is_current: boolean;
+}
+
+export interface CurrentLagna {
+    sign: string;
+    sign_id: number;
+    degree: number;
+    start: string;
+    end: string;
+}
+
+export interface LiveMuhuratResponse {
+    date: string;
+    place_label?: string | null;
+    latitude: number;
+    longitude: number;
+    now: string;
+    sunrise: string;
+    sunset: string;
+    horas: HoraPeriod[];
+    choghadiyas: ChoghadiyaPeriod[];
+    muhurtas: MuhurtaPeriod[];
+    current_lagna: CurrentLagna;
+}
+
 export interface ShadbalaEntry {
     total: number;
     shadbala_in_rupas: number;

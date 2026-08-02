@@ -111,14 +111,22 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
 
     const housePolygons = buildHousePolygons(size);
 
+    // Font sizes and label spacing live in the same coordinate units as `size` (the SVG's
+    // viewBox matches its rendered width 1:1), so a bigger `size` alone only spreads the
+    // houses apart — text stays pixel-for-pixel identical unless scaled explicitly here.
+    const scale = size / 360;
+    const fs = (base: number) => +(base * scale).toFixed(1);
+
     return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-full overflow-x-auto">
             <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2">{title}</h3>
             <svg
                 ref={ref}
                 viewBox={`0 0 ${size} ${size}`}
-                style={{ width: '100%', maxWidth: size, height: 'auto' }}
-                className="border border-gray-300 rounded-lg bg-[#FFFBF0]"
+                width={size}
+                height={size}
+                style={{ maxWidth: '100%', height: 'auto' }}
+                className="border border-gray-300 rounded-lg bg-white shrink-0"
             >
                 {/* Outer square */}
                 <rect x={0.5} y={0.5} width={size - 1} height={size - 1} fill="none" stroke="#8B4513" strokeWidth={2} />
@@ -138,20 +146,20 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
                 {/* Center label */}
                 <text
                     x={size / 2}
-                    y={size / 2 - 6}
+                    y={size / 2 - fs(7)}
                     textAnchor="middle"
-                    fontSize={10}
+                    fontSize={fs(13)}
                     fontWeight="bold"
-                    fill="#8B4513"
+                    fill="#3D2400"
                 >
                     {title}
                 </text>
                 <text
                     x={size / 2}
-                    y={size / 2 + 9}
+                    y={size / 2 + fs(11)}
                     textAnchor="middle"
-                    fontSize={8}
-                    fill="#A0522D"
+                    fontSize={fs(10)}
+                    fill="#4A3010"
                 >
                     {lang === 'hi' ? '(उत्तर भारतीय)' : '(North Indian)'}
                 </text>
@@ -168,11 +176,11 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
                             {/* House number */}
                             <text
                                 x={cx}
-                                y={cy - (housePlanets.length > 0 ? 10 : 0)}
+                                y={cy - (housePlanets.length > 0 ? fs(12) : 0)}
                                 textAnchor="middle"
-                                fontSize={9}
-                                fill="#B8860B"
-                                fontWeight="600"
+                                fontSize={fs(12)}
+                                fill="#5C3D00"
+                                fontWeight="700"
                             >
                                 {sign
                                     ? `${lang === 'hi' ? RASHI_SHORT_HI[sign.sign] || sign.sign : RASHI_ABBR[sign.sign] || sign.sign.substring(0, 3)}(${sign.signId})`
@@ -184,10 +192,10 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
                             {housePlanets.map((planet, idx) => {
                                 const col = idx % 2;
                                 const row = Math.floor(idx / 2);
-                                const px = cx + (col === 0 ? -12 : 12) * (housePlanets.length > 1 ? 1 : 0.3);
-                                const py = cy + 8 + row * 14;
+                                const px = cx + (col === 0 ? -fs(15) : fs(15)) * (housePlanets.length > 1 ? 1 : 0.3);
+                                const py = cy + fs(10) + row * fs(18);
                                 const key = planet.name.toLowerCase();
-                                const color = PLANET_COLORS[key] || '#333';
+                                const color = PLANET_COLORS[key] || '#111';
 
                                 const exalted = isExalted(planet.name, planet.sign);
                                 const debilitated = isDebilitated(planet.name, planet.sign);
@@ -200,23 +208,23 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
                                         x={px}
                                         y={py}
                                         textAnchor="middle"
-                                        fontSize={11}
+                                        fontSize={fs(16)}
                                         fontWeight="bold"
                                         fill={color}
                                     >
                                         {planet.degree_in_sign !== undefined && (
-                                            <tspan x={px} dy={-9} fontSize={7} fontWeight="normal" fill="#999">
+                                            <tspan x={px} dy={-fs(12)} fontSize={fs(9)} fontWeight="700" fill="#333">
                                                 {Math.floor(planet.degree_in_sign).toString().padStart(2, '0')}
                                             </tspan>
                                         )}
-                                        <tspan x={px} dy={planet.degree_in_sign !== undefined ? 9 : 0}>
+                                        <tspan x={px} dy={planet.degree_in_sign !== undefined ? fs(12) : 0}>
                                             {lang === 'hi' ? PLANET_SHORT_HI[key] || planet.name : PLANET_SHORT[key] || planet.name.substring(0, 2)}
                                         </tspan>
-                                        {planet.is_retrograde && <tspan fontSize={8} fill="#C62828">*</tspan>}
-                                        {combust && <tspan fontSize={8} fill="#B8860B">^</tspan>}
-                                        {vargottama && <tspan fontSize={8} fill="#6A1B9A">□</tspan>}
-                                        {exalted && <tspan fontSize={8} fill="#2E7D32">↑</tspan>}
-                                        {debilitated && <tspan fontSize={8} fill="#C62828">↓</tspan>}
+                                        {planet.is_retrograde && <tspan fontSize={fs(10)} fill="#C62828">*</tspan>}
+                                        {combust && <tspan fontSize={fs(10)} fill="#7A5200">^</tspan>}
+                                        {vargottama && <tspan fontSize={fs(10)} fill="#6A1B9A">□</tspan>}
+                                        {exalted && <tspan fontSize={fs(10)} fill="#2E7D32">↑</tspan>}
+                                        {debilitated && <tspan fontSize={fs(10)} fill="#C62828">↓</tspan>}
                                     </text>
                                 );
                             })}

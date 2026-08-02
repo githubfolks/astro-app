@@ -45,6 +45,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const JoinAsAstrologer = lazy(() => import('./pages/JoinAsAstrologer').then(module => ({ default: module.JoinAsAstrologer })));
 const KundliGenerator = lazy(() => import('./pages/KundliGenerator'));
 const KundliMatchGenerator = lazy(() => import('./pages/KundliMatchGenerator'));
+const LiveMuhurat = lazy(() => import('./pages/LiveMuhurat'));
 const Panchang = lazy(() => import('./pages/Panchang'));
 const Classroom = lazy(() => import('./pages/Classroom').then(module => ({ default: module.Classroom })));
 const CourseManager = lazy(() => import('./pages/CourseManager').then(module => ({ default: module.CourseManager })));
@@ -277,6 +278,11 @@ function App() {
                             <Route path="/kundli/matching" element={
                                 <ProtectedRoute>
                                     <KundliMatchGenerator />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="/muhurat" element={
+                                <ProtectedRoute>
+                                    <LiveMuhurat />
                                 </ProtectedRoute>
                             } />
                             <Route path="/classroom/:sessionId" element={

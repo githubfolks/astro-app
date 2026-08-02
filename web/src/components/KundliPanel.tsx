@@ -1,7 +1,8 @@
 import type { ChartData, DivisionChart, PlanetPosition } from '../types';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import html2canvas from 'html2canvas';
-import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon } from 'lucide-react';
+import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import KundliChart, { PLANET_SHORT, PLANET_COLORS } from './KundliChart';
 import {
     type Lang, hi,
@@ -61,6 +62,12 @@ function svgToPngBlob(svgEl: SVGSVGElement): Promise<Blob> {
     });
 }
 
+const MIN_CHART_SIZE = 220;
+const MAX_CHART_SIZE = 760;
+const CHART_ZOOM_STEP = 60;
+const DEFAULT_CHART_SIZE = 340;
+const MODAL_DEFAULT_CHART_SIZE = 420;
+
 function getDivisionChart(chartData: ChartData, tab: string): DivisionChart | undefined {
     if (tab === 'D1') return chartData.chart;
     return chartData.vargas?.vargas?.[tab];
@@ -99,6 +106,23 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     const [sharing, setSharing] = useState(false);
     const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [dashaShareStatus, setDashaShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [chartSize, setChartSize] = useState(DEFAULT_CHART_SIZE);
+    const [modalChartSize, setModalChartSize] = useState(MODAL_DEFAULT_CHART_SIZE);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    const zoomIn = () => setChartSize(s => Math.min(MAX_CHART_SIZE, s + CHART_ZOOM_STEP));
+    const zoomOut = () => setChartSize(s => Math.max(MIN_CHART_SIZE, s - CHART_ZOOM_STEP));
+    const modalZoomIn = () => setModalChartSize(s => Math.min(MAX_CHART_SIZE, s + CHART_ZOOM_STEP));
+    const modalZoomOut = () => setModalChartSize(s => Math.max(MIN_CHART_SIZE, s - CHART_ZOOM_STEP));
+
+    // Fullscreen modal is rendered via a portal straight to <body>, so lock background
+    // scroll while it's open — otherwise the page behind it stays scrollable/interactive.
+    useEffect(() => {
+        if (!isFullscreen) return;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = previousOverflow; };
+    }, [isFullscreen]);
 
     const handleShareClick = async () => {
         if (!onShareImage || sharing || !chartRef.current) return;
@@ -155,6 +179,431 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     const shadbala = chartData?.shadbala;
     const ashtakavarga = chartData?.ashtakavarga;
 
+    const activeTabLabel = lang === 'hi' ? TABS.find(t => t.key === activeTab)?.labelHi || 'चार्ट' : TABS.find(t => t.key === activeTab)?.label || 'Chart';
+
+    /** Chart SVG + zoom controls + ascendant line + legend. `variant='modal'` renders a
+     * larger, independently-zoomable copy inside the fullscreen viewer with no share
+     * button (the share button always targets the panel's own chart via chartRef). */
+    const renderChartSection = (variant: 'panel' | 'modal') => {
+        const size = variant === 'modal' ? modalChartSize : chartSize;
+        const onZoomOut = variant === 'modal' ? modalZoomOut : zoomOut;
+        const onZoomIn = variant === 'modal' ? modalZoomIn : zoomIn;
+        return (
+            <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-1 self-end -mb-1">
+                    <button
+                        onClick={onZoomOut}
+                        disabled={size <= MIN_CHART_SIZE}
+                        title={lang === 'hi' ? 'छोटा करें' : 'Zoom out'}
+                        className="p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <ZoomOut size={14} />
+                    </button>
+                    <span className="text-[10px] text-gray-400 w-9 text-center tabular-nums">
+                        {Math.round((size / DEFAULT_CHART_SIZE) * 100)}%
+                    </span>
+                    <button
+                        onClick={onZoomIn}
+                        disabled={size >= MAX_CHART_SIZE}
+                        title={lang === 'hi' ? 'बड़ा करें' : 'Zoom in'}
+                        className="p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <ZoomIn size={14} />
+                    </button>
+                    {variant === 'panel' && (
+                        <button
+                            onClick={() => setIsFullscreen(true)}
+                            title={lang === 'hi' ? 'फुल स्क्रीन में देखें' : 'View fullscreen'}
+                            className="p-1.5 rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors ml-1"
+                        >
+                            <Maximize2 size={14} />
+                        </button>
+                    )}
+                </div>
+                <KundliChart
+                    ref={variant === 'panel' ? chartRef : undefined}
+                    chartData={activeChart}
+                    title={activeTabLabel}
+                    size={size}
+                    lang={lang}
+                    combustSet={combustSet}
+                    vargottamaSet={vargottamaSet}
+                />
+                {variant === 'panel' && canShare && onShareImage && activeChart && (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleShareClick}
+                            disabled={sharing}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors disabled:opacity-60"
+                        >
+                            {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
+                            {sharing ? (lang === 'hi' ? 'भेजा जा रहा है…' : 'Sharing…') : (lang === 'hi' ? 'चैट में भेजें' : 'Share to Chat')}
+                        </button>
+                        {shareStatus === 'success' && (
+                            <span className="text-[11px] text-emerald-600 font-semibold">{lang === 'hi' ? 'भेज दिया गया ✓' : 'Shared ✓'}</span>
+                        )}
+                        {shareStatus === 'error' && (
+                            <span className="text-[11px] text-red-600 font-semibold">{lang === 'hi' ? 'भेजने में विफल' : 'Failed to share'}</span>
+                        )}
+                    </div>
+                )}
+                {ascendant && (
+                    <p className="text-xs text-gray-900">
+                        {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id}){ascendant.degree !== undefined ? ` ${formatDMS(ascendant.degree % 30)}` : ''}</span>
+                        {ascendant.nakshatra && (
+                            <> · {hi(NAKSHATRA_HI, ascendant.nakshatra.name, lang)} {lang === 'hi' ? UI_HI.pada : 'Pada'} {ascendant.nakshatra.pada} ({lang === 'hi' ? UI_HI.lord : 'lord'} {hi(PLANET_NAME_HI, ascendant.nakshatra.lord, lang)})</>
+                        )}
+                    </p>
+                )}
+                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-gray-900 max-w-[340px]">
+                    <span><span className="text-red-600 font-bold">*</span> {lang === 'hi' ? UI_HI.legendRetrograde : 'Retrograde'}</span>
+                    <span><span className="text-amber-600 font-bold">^</span> {lang === 'hi' ? UI_HI.legendCombust : 'Combust'}</span>
+                    <span><span className="text-purple-700 font-bold">□</span> {lang === 'hi' ? UI_HI.legendVargottama : 'Vargottama'}</span>
+                    <span><span className="text-emerald-700 font-bold">↑</span> {lang === 'hi' ? UI_HI.legendExalted : 'Exalted'}</span>
+                    <span><span className="text-red-600 font-bold">↓</span> {lang === 'hi' ? UI_HI.legendDebilitated : 'Debilitated'}</span>
+                </div>
+            </div>
+        );
+    };
+
+    /** Panchang, Dasha, planet/house tables, Sade Sati, Yogas & Shadbala — everything
+     * below the chart. `variant='modal'` skips the dasha share-to-chat button since it
+     * targets the panel's own dashaCardRef via html2canvas. */
+    const renderDetailSections = (variant: 'panel' | 'modal') => (
+        <>
+            {/* Birth Panchang */}
+            {panchang && (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
+                    <h3 className="text-sm font-bold text-amber-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Star size={14} className="text-amber-600" />
+                        {lang === 'hi' ? UI_HI.birthPanchang : 'Birth Panchang'}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        {panchang.weekday && <DetailItem label={lang === 'hi' ? UI_HI.vaara : 'Vaara'} value={hi(WEEKDAY_HI, panchang.weekday.name, lang)} />}
+                        {panchang.tithi && <DetailItem label={lang === 'hi' ? UI_HI.tithi : 'Tithi'} value={`${hi(TITHI_HI, panchang.tithi.name, lang)} (${hi(PAKSHA_HI, panchang.tithi.paksha, lang)})`} />}
+                        {panchang.nakshatra && <DetailItem label={lang === 'hi' ? UI_HI.nakshatra : 'Nakshatra'} value={`${hi(NAKSHATRA_HI, panchang.nakshatra.name, lang)}, ${lang === 'hi' ? UI_HI.pada : 'Pada'} ${panchang.nakshatra.pada}`} />}
+                        {panchang.yoga && <DetailItem label={lang === 'hi' ? UI_HI.yoga : 'Yoga'} value={hi(PANCHANG_YOGA_HI, panchang.yoga.name, lang)} />}
+                        {panchang.lunar_month && <DetailItem label={lang === 'hi' ? UI_HI.lunarMonth : 'Lunar Month'} value={hi(LUNAR_MONTH_HI, panchang.lunar_month.name, lang)} />}
+                        {panchang.sunrise && <DetailItem label={lang === 'hi' ? UI_HI.sunrise : 'Sunrise'} value={panchang.sunrise} />}
+                        {panchang.sunset && <DetailItem label={lang === 'hi' ? UI_HI.sunset : 'Sunset'} value={panchang.sunset} />}
+                        {panchang.rahu_kalam && <DetailItem label={lang === 'hi' ? UI_HI.rahuKalam : 'Rahu Kalam'} value={`${panchang.rahu_kalam.start} – ${panchang.rahu_kalam.end}`} />}
+                    </div>
+                </div>
+            )}
+
+            {/* Vimshottari Dasha */}
+            {activePeriods && activePeriods.length > 0 && (
+                <div ref={variant === 'panel' ? dashaCardRef : undefined} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                            <Clock size={14} className="text-indigo-600" />
+                            {lang === 'hi' ? UI_HI.vimshottariDasha : 'Vimshottari Dasha'}
+                        </span>
+                        {variant === 'panel' && canShare && onShareImage && (
+                            <div data-html2canvas-ignore="true" className="flex items-center gap-2">
+                                <button
+                                    onClick={handleShareDashaImageClick}
+                                    disabled={sharing}
+                                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1 disabled:opacity-60"
+                                >
+                                    {sharing ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />}
+                                    {sharing ? 'Sharing…' : 'Share to Chat'}
+                                </button>
+                                {dashaShareStatus === 'success' && (
+                                    <span className="text-[11px] text-emerald-600 font-semibold">Shared ✓</span>
+                                )}
+                                {dashaShareStatus === 'error' && (
+                                    <span className="text-[11px] text-red-600 font-semibold">Failed</span>
+                                )}
+                            </div>
+                        )}
+                    </h3>
+                    <div className="p-4 pt-1 space-y-3">
+                        {activePeriods.map(period => (
+                            <div key={period.level}>
+                                <div className="flex justify-between items-baseline mb-1">
+                                    <span className="text-xs font-semibold text-gray-700">
+                                        {hi(DASHA_LEVEL_HI, period.level, lang)}: {period.path.map(p => hi(PLANET_NAME_HI, p, lang)).join(' → ')}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                        {period.start} – {period.end}
+                                    </span>
+                                </div>
+                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full bg-indigo-500 rounded-full"
+                                        style={{ width: `${Math.min(period.progress_fraction * 100, 100)}%` }}
+                                    />
+                                </div>
+                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                    {formatPeriodDuration(period, lang)}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Planet Positions Table */}
+            {activeChart?.planets && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2">
+                        {lang === 'hi' ? UI_HI.planetPositions : 'Planet Positions'}
+                    </h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="bg-gray-50 text-gray-900 uppercase text-xs">
+                                    <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.planet : 'Planet'}</th>
+                                    <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.signHouse : 'Sign / House'}</th>
+                                    <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.nakshatra : 'Nakshatra'}</th>
+                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.retrogradeAbbr : 'R'}</th>
+                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.avasthaAbbr : 'Avastha'}</th>
+                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.status : 'Status'}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {activeChart.planets.map((planet: PlanetPosition) => {
+                                    const key = planet.name.toLowerCase();
+                                    const color = PLANET_COLORS[key] || '#333';
+                                    const short = lang === 'hi' ? hi(PLANET_NAME_HI, planet.name, lang) : PLANET_SHORT[key] || planet.name;
+                                    const exalted = isExalted(planet.name, planet.sign);
+                                    const debilitated = isDebilitated(planet.name, planet.sign);
+                                    const combust = combustSet.has(planet.name);
+                                    const vargottama = vargottamaSet.has(planet.name);
+                                    return (
+                                        <tr key={planet.name} className="border-t border-gray-100 hover:bg-gray-50">
+                                            <td className="p-3 font-semibold" style={{ color }}>
+                                                {short} {lang !== 'hi' && <span className="text-gray-400 font-normal capitalize text-xs">({planet.name})</span>}
+                                            </td>
+                                            <td className="p-3 text-gray-700 font-mono text-xs">
+                                                {hi(RASHI_HI, planet.sign, lang)}({planet.sign_id}){planet.degree_in_sign !== undefined ? ` ${formatDMS(planet.degree_in_sign)}` : ''} · {lang === 'hi' ? UI_HI.house.charAt(0) : 'H'}{planet.house}
+                                            </td>
+                                            <td className="p-3 text-gray-600 text-xs">
+                                                {planet.nakshatra ? `${hi(NAKSHATRA_HI, planet.nakshatra, lang)}${planet.pada ? `, ${lang === 'hi' ? UI_HI.pada : 'Pada'} ${planet.pada}` : ''}` : '—'}
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                {planet.is_retrograde ? (
+                                                    <span className="text-red-600 font-bold text-xs">{lang === 'hi' ? UI_HI.retrogradeAbbr : 'R'}</span>
+                                                ) : (
+                                                    <span className="text-gray-300">—</span>
+                                                )}
+                                            </td>
+                                            <td className="p-3 text-center text-xs">
+                                                {planet.avastha ? (
+                                                    <span
+                                                        className="font-semibold text-indigo-700"
+                                                        title={planet.avastha.quality}
+                                                    >
+                                                        {hi(AVASTHA_STATE_HI, planet.avastha.state, lang)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-300">—</span>
+                                                )}
+                                            </td>
+                                            <td className="p-3 text-center text-xs font-bold whitespace-nowrap">
+                                                {combust && <span className="text-amber-600" title={lang === 'hi' ? UI_HI.legendCombust : 'Combust'}>^</span>}
+                                                {vargottama && <span className="text-purple-700 ml-1" title={lang === 'hi' ? UI_HI.legendVargottama : 'Vargottama'}>□</span>}
+                                                {exalted && <span className="text-emerald-700 ml-1" title={lang === 'hi' ? UI_HI.legendExalted : 'Exalted'}>↑</span>}
+                                                {debilitated && <span className="text-red-600 ml-1" title={lang === 'hi' ? UI_HI.legendDebilitated : 'Debilitated'}>↓</span>}
+                                                {!combust && !vargottama && !exalted && !debilitated && <span className="text-gray-300">—</span>}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+
+            {/* House Details */}
+            {activeChart?.houses && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2">
+                        {lang === 'hi' ? UI_HI.houseDetails : 'House Details'}
+                    </h3>
+                    <div className={`grid gap-2 p-4 pt-2 ${variant === 'modal' ? 'grid-cols-4 sm:grid-cols-6' : 'grid-cols-3'}`}>
+                        {activeChart.houses.map(houseData => {
+                            const housePlanets = activeChart.planets.filter(p => p.house === houseData.house);
+                            return (
+                                <div key={houseData.house} className="bg-gray-50 rounded-lg p-2.5 border border-gray-100 text-center">
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase">
+                                        {lang === 'hi' ? UI_HI.house : 'House'} {houseData.house}
+                                    </div>
+                                    <div className="text-xs font-semibold text-indigo-700 mt-0.5">{hi(RASHI_HI, houseData.sign, lang)}({houseData.sign_id})</div>
+                                    {housePlanets.length > 0 && (
+                                        <div className="mt-1 flex flex-wrap justify-center gap-1">
+                                            {housePlanets.map(p => {
+                                                const key = p.name.toLowerCase();
+                                                return (
+                                                    <span
+                                                        key={p.name}
+                                                        className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                                                        style={{
+                                                            color: PLANET_COLORS[key] || '#333',
+                                                            backgroundColor: `${PLANET_COLORS[key] || '#333'}15`
+                                                        }}
+                                                    >
+                                                        {lang === 'hi' ? hi(PLANET_NAME_HI, p.name, lang) : PLANET_SHORT[key] || p.name}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Sade Sati */}
+            {sadeSati && (
+                <div className={`rounded-xl p-4 border ${sadeSati.active ? 'bg-gradient-to-br from-red-50 to-orange-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                            <Moon size={14} className={sadeSati.active ? 'text-red-600' : 'text-gray-400'} />
+                            {lang === 'hi' ? UI_HI.sadeSati : 'Sade Sati'}
+                        </span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${sadeSati.active ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-500'}`}>
+                            {sadeSati.active
+                                ? (lang === 'hi' ? UI_HI.sadeSatiActive : 'Active')
+                                : (lang === 'hi' ? UI_HI.sadeSatiNotActive : 'Not Active')}
+                        </span>
+                    </h3>
+                    {sadeSati.active && (
+                        <div className="grid grid-cols-2 gap-3 mt-2">
+                            {sadeSati.phase && <DetailItem label={lang === 'hi' ? UI_HI.yoga : 'Phase'} value={hi(SADE_SATI_PHASE_HI, sadeSati.phase, lang)} />}
+                            {sadeSati.moon_sign && <DetailItem label="Moon Sign" value={hi(RASHI_HI, sadeSati.moon_sign, lang)} />}
+                            {sadeSati.saturn_sign && <DetailItem label="Saturn Sign" value={hi(RASHI_HI, sadeSati.saturn_sign, lang)} />}
+                        </div>
+                    )}
+                    {sadeSati.description && (
+                        <p className="text-xs text-gray-600 mt-2">{sadeSati.description}</p>
+                    )}
+                </div>
+            )}
+
+            {/* Yogas & Doshas */}
+            {yogas && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                            <Sparkles size={14} className="text-purple-600" />
+                            {lang === 'hi' ? UI_HI.yogasAndDoshas : 'Yogas & Doshas'}
+                        </span>
+                        {yogas.summary && (
+                            <span className="text-[10px] text-gray-400 normal-case font-normal">
+                                {lang === 'hi'
+                                    ? UI_HI.activeOf(yogas.summary.active, yogas.summary.total_evaluated)
+                                    : `${yogas.summary.active} active of ${yogas.summary.total_evaluated}`}
+                            </span>
+                        )}
+                    </h3>
+                    <div className="p-4 pt-1 flex flex-wrap gap-2">
+                        {yogas.yogas.filter(y => y.active).length === 0 && (
+                            <p className="text-xs text-gray-400">{lang === 'hi' ? UI_HI.noActiveYogas : 'No active yogas or doshas found.'}</p>
+                        )}
+                        {yogas.yogas.filter(y => y.active).map(yoga => {
+                            const isDosha = yoga.type === 'dosha';
+                            const name = lang === 'hi' ? (YOGA_NAME_HI[yoga.id] || yoga.name) : yoga.name;
+                            const strength = yoga.strength ? hi(STRENGTH_HI, yoga.strength, lang) : undefined;
+                            return (
+                                <span
+                                    key={yoga.id}
+                                    title={yoga.description}
+                                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${isDosha
+                                            ? 'bg-red-50 text-red-700 border-red-200'
+                                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                        }`}
+                                >
+                                    {name}{strength ? ` (${strength})` : ''}
+                                </span>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {/* Planetary Strength: Shadbala + Ashtakavarga */}
+            {(shadbala || ashtakavarga) && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
+                        <span className="flex items-center gap-2">
+                            <Gauge size={14} className="text-blue-600" />
+                            {lang === 'hi' ? UI_HI.planetaryStrength : 'Planetary Strength'}
+                        </span>
+                        {ashtakavarga && (
+                            <span className="text-[10px] text-gray-400 normal-case font-normal">
+                                {lang === 'hi' ? UI_HI.sarvashtakavarga(ashtakavarga.total_points) : `Sarvashtakavarga: ${ashtakavarga.total_points} pts`}
+                            </span>
+                        )}
+                    </h3>
+                    {shadbala && (
+                        <div className="p-4 pt-1 space-y-2">
+                            {Object.entries(shadbala).map(([planet, s]) => {
+                                const key = planet.toLowerCase();
+                                const strong = s.ratio >= 1;
+                                return (
+                                    <div key={planet} className="flex items-center gap-2">
+                                        <span className="w-16 text-xs font-semibold" style={{ color: PLANET_COLORS[key] || '#333' }}>
+                                            {hi(PLANET_NAME_HI, planet, lang)}
+                                        </span>
+                                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full ${strong ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                                style={{ width: `${Math.min((s.ratio / 3) * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                        <span className="w-24 text-[10px] text-gray-400 text-right">
+                                            {lang === 'hi'
+                                                ? UI_HI.rupas(s.shadbala_in_rupas.toFixed(1), s.ratio.toFixed(2))
+                                                : `${s.shadbala_in_rupas.toFixed(1)} rupas (${s.ratio.toFixed(2)}x)`}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+        </>
+    );
+
+    const renderTabSwitcher = () => (
+        <div className="flex items-center border-b border-gray-200 bg-gray-50 shrink-0">
+            <div className="flex flex-1">
+                {TABS.map(tab => (
+                    <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`flex-1 py-3 px-4 text-xs font-semibold transition-all ${activeTab === tab.key
+                                ? 'text-purple-700 border-b-2 border-purple-700 bg-white'
+                                : 'text-gray-900 hover:text-gray-700 hover:bg-gray-100'
+                            }`}
+                    >
+                        {lang === 'hi' ? tab.labelHi : tab.label}
+                    </button>
+                ))}
+            </div>
+            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 mx-3 text-xs font-semibold">
+                <button
+                    onClick={() => setLang('en')}
+                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
+                >
+                    EN
+                </button>
+                <button
+                    onClick={() => setLang('hi')}
+                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
+                >
+                    हि
+                </button>
+            </div>
+        </div>
+    );
+
     return (
         <>
             {/* Loading State */}
@@ -180,384 +629,44 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                 {/* Chart Content */}
                 {!loading && !error && chartData && (
                     <div className="flex-1 overflow-y-auto">
-                        {/* Tab Switcher + Language Toggle */}
-                        <div className="flex items-center border-b border-gray-200 bg-gray-50 shrink-0">
-                            <div className="flex flex-1">
-                                {TABS.map(tab => (
-                                    <button
-                                        key={tab.key}
-                                        onClick={() => setActiveTab(tab.key)}
-                                        className={`flex-1 py-3 px-4 text-xs font-semibold transition-all ${activeTab === tab.key
-                                                ? 'text-purple-700 border-b-2 border-purple-700 bg-white'
-                                                : 'text-gray-900 hover:text-gray-700 hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        {lang === 'hi' ? tab.labelHi : tab.label}
-                                    </button>
-                                ))}
-                            </div>
-                            <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 mx-3 text-xs font-semibold">
-                                <button
-                                    onClick={() => setLang('en')}
-                                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
-                                >
-                                    EN
-                                </button>
-                                <button
-                                    onClick={() => setLang('hi')}
-                                    className={`px-3 py-1 rounded-full transition-colors ${lang === 'hi' ? 'bg-white text-[#E91E63] shadow-sm' : 'text-gray-900 hover:text-gray-700'}`}
-                                >
-                                    हि
-                                </button>
-                            </div>
-                        </div>
-
+                        {renderTabSwitcher()}
                         <div className="p-5 space-y-6">
-                            {/* Chart Visualization */}
-                            <div className="flex flex-col items-center gap-2">
-                                <KundliChart
-                                    ref={chartRef}
-                                    chartData={activeChart}
-                                    title={lang === 'hi' ? TABS.find(t => t.key === activeTab)?.labelHi || 'चार्ट' : TABS.find(t => t.key === activeTab)?.label || 'Chart'}
-                                    size={340}
-                                    lang={lang}
-                                    combustSet={combustSet}
-                                    vargottamaSet={vargottamaSet}
-                                />
-                                {canShare && onShareImage && activeChart && (
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={handleShareClick}
-                                            disabled={sharing}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors disabled:opacity-60"
-                                        >
-                                            {sharing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
-                                            {sharing ? (lang === 'hi' ? 'भेजा जा रहा है…' : 'Sharing…') : (lang === 'hi' ? 'चैट में भेजें' : 'Share to Chat')}
-                                        </button>
-                                        {shareStatus === 'success' && (
-                                            <span className="text-[11px] text-emerald-600 font-semibold">{lang === 'hi' ? 'भेज दिया गया ✓' : 'Shared ✓'}</span>
-                                        )}
-                                        {shareStatus === 'error' && (
-                                            <span className="text-[11px] text-red-600 font-semibold">{lang === 'hi' ? 'भेजने में विफल' : 'Failed to share'}</span>
-                                        )}
-                                    </div>
-                                )}
-                                {ascendant && (
-                                    <p className="text-xs text-gray-900">
-                                        {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id}){ascendant.degree !== undefined ? ` ${formatDMS(ascendant.degree % 30)}` : ''}</span>
-                                        {ascendant.nakshatra && (
-                                            <> · {hi(NAKSHATRA_HI, ascendant.nakshatra.name, lang)} {lang === 'hi' ? UI_HI.pada : 'Pada'} {ascendant.nakshatra.pada} ({lang === 'hi' ? UI_HI.lord : 'lord'} {hi(PLANET_NAME_HI, ascendant.nakshatra.lord, lang)})</>
-                                        )}
-                                    </p>
-                                )}
-                                <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 text-[10px] text-gray-900 max-w-[340px]">
-                                    <span><span className="text-red-600 font-bold">*</span> {lang === 'hi' ? UI_HI.legendRetrograde : 'Retrograde'}</span>
-                                    <span><span className="text-amber-600 font-bold">^</span> {lang === 'hi' ? UI_HI.legendCombust : 'Combust'}</span>
-                                    <span><span className="text-purple-700 font-bold">□</span> {lang === 'hi' ? UI_HI.legendVargottama : 'Vargottama'}</span>
-                                    <span><span className="text-emerald-700 font-bold">↑</span> {lang === 'hi' ? UI_HI.legendExalted : 'Exalted'}</span>
-                                    <span><span className="text-red-600 font-bold">↓</span> {lang === 'hi' ? UI_HI.legendDebilitated : 'Debilitated'}</span>
-                                </div>
-                            </div>
-
-                            {/* Birth Panchang */}
-                            {panchang && (
-                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
-                                    <h3 className="text-sm font-bold text-amber-900 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                        <Star size={14} className="text-amber-600" />
-                                        {lang === 'hi' ? UI_HI.birthPanchang : 'Birth Panchang'}
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {panchang.weekday && <DetailItem label={lang === 'hi' ? UI_HI.vaara : 'Vaara'} value={hi(WEEKDAY_HI, panchang.weekday.name, lang)} />}
-                                        {panchang.tithi && <DetailItem label={lang === 'hi' ? UI_HI.tithi : 'Tithi'} value={`${hi(TITHI_HI, panchang.tithi.name, lang)} (${hi(PAKSHA_HI, panchang.tithi.paksha, lang)})`} />}
-                                        {panchang.nakshatra && <DetailItem label={lang === 'hi' ? UI_HI.nakshatra : 'Nakshatra'} value={`${hi(NAKSHATRA_HI, panchang.nakshatra.name, lang)}, ${lang === 'hi' ? UI_HI.pada : 'Pada'} ${panchang.nakshatra.pada}`} />}
-                                        {panchang.yoga && <DetailItem label={lang === 'hi' ? UI_HI.yoga : 'Yoga'} value={hi(PANCHANG_YOGA_HI, panchang.yoga.name, lang)} />}
-                                        {panchang.lunar_month && <DetailItem label={lang === 'hi' ? UI_HI.lunarMonth : 'Lunar Month'} value={hi(LUNAR_MONTH_HI, panchang.lunar_month.name, lang)} />}
-                                        {panchang.sunrise && <DetailItem label={lang === 'hi' ? UI_HI.sunrise : 'Sunrise'} value={panchang.sunrise} />}
-                                        {panchang.sunset && <DetailItem label={lang === 'hi' ? UI_HI.sunset : 'Sunset'} value={panchang.sunset} />}
-                                        {panchang.rahu_kalam && <DetailItem label={lang === 'hi' ? UI_HI.rahuKalam : 'Rahu Kalam'} value={`${panchang.rahu_kalam.start} – ${panchang.rahu_kalam.end}`} />}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Vimshottari Dasha */}
-                            {activePeriods && activePeriods.length > 0 && (
-                                <div ref={dashaCardRef} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
-                                        <span className="flex items-center gap-2">
-                                            <Clock size={14} className="text-indigo-600" />
-                                            {lang === 'hi' ? UI_HI.vimshottariDasha : 'Vimshottari Dasha'}
-                                        </span>
-                                        {canShare && onShareImage && (
-                                            <div data-html2canvas-ignore="true" className="flex items-center gap-2">
-                                                <button
-                                                    onClick={handleShareDashaImageClick}
-                                                    disabled={sharing}
-                                                    className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-1 disabled:opacity-60"
-                                                >
-                                                    {sharing ? <Loader2 size={12} className="animate-spin" /> : <Share2 size={12} />}
-                                                    {sharing ? 'Sharing…' : 'Share to Chat'}
-                                                </button>
-                                                {dashaShareStatus === 'success' && (
-                                                    <span className="text-[11px] text-emerald-600 font-semibold">Shared ✓</span>
-                                                )}
-                                                {dashaShareStatus === 'error' && (
-                                                    <span className="text-[11px] text-red-600 font-semibold">Failed</span>
-                                                )}
-                                            </div>
-                                        )}
-                                    </h3>
-                                    <div className="p-4 pt-1 space-y-3">
-                                        {activePeriods.map(period => (
-                                            <div key={period.level}>
-                                                <div className="flex justify-between items-baseline mb-1">
-                                                    <span className="text-xs font-semibold text-gray-700">
-                                                        {hi(DASHA_LEVEL_HI, period.level, lang)}: {period.path.map(p => hi(PLANET_NAME_HI, p, lang)).join(' → ')}
-                                                    </span>
-                                                    <span className="text-[10px] text-gray-400">
-                                                        {period.start} – {period.end}
-                                                    </span>
-                                                </div>
-                                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-indigo-500 rounded-full"
-                                                        style={{ width: `${Math.min(period.progress_fraction * 100, 100)}%` }}
-                                                    />
-                                                </div>
-                                                <p className="text-[10px] text-gray-400 mt-0.5">
-                                                    {formatPeriodDuration(period, lang)}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Planet Positions Table */}
-                            {activeChart?.planets && (
-                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2">
-                                        {lang === 'hi' ? UI_HI.planetPositions : 'Planet Positions'}
-                                    </h3>
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm">
-                                            <thead>
-                                                <tr className="bg-gray-50 text-gray-900 uppercase text-xs">
-                                                    <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.planet : 'Planet'}</th>
-                                                    <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.signHouse : 'Sign / House'}</th>
-                                                    <th className="text-left p-3 font-semibold">{lang === 'hi' ? UI_HI.nakshatra : 'Nakshatra'}</th>
-                                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.retrogradeAbbr : 'R'}</th>
-                                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.avasthaAbbr : 'Avastha'}</th>
-                                                    <th className="text-center p-3 font-semibold">{lang === 'hi' ? UI_HI.status : 'Status'}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {activeChart.planets.map((planet: PlanetPosition) => {
-                                                    const key = planet.name.toLowerCase();
-                                                    const color = PLANET_COLORS[key] || '#333';
-                                                    const short = lang === 'hi' ? hi(PLANET_NAME_HI, planet.name, lang) : PLANET_SHORT[key] || planet.name;
-                                                    const exalted = isExalted(planet.name, planet.sign);
-                                                    const debilitated = isDebilitated(planet.name, planet.sign);
-                                                    const combust = combustSet.has(planet.name);
-                                                    const vargottama = vargottamaSet.has(planet.name);
-                                                    return (
-                                                        <tr key={planet.name} className="border-t border-gray-100 hover:bg-gray-50">
-                                                            <td className="p-3 font-semibold" style={{ color }}>
-                                                                {short} {lang !== 'hi' && <span className="text-gray-400 font-normal capitalize text-xs">({planet.name})</span>}
-                                                            </td>
-                                                            <td className="p-3 text-gray-700 font-mono text-xs">
-                                                                {hi(RASHI_HI, planet.sign, lang)}({planet.sign_id}){planet.degree_in_sign !== undefined ? ` ${formatDMS(planet.degree_in_sign)}` : ''} · {lang === 'hi' ? UI_HI.house.charAt(0) : 'H'}{planet.house}
-                                                            </td>
-                                                            <td className="p-3 text-gray-600 text-xs">
-                                                                {planet.nakshatra ? `${hi(NAKSHATRA_HI, planet.nakshatra, lang)}${planet.pada ? `, ${lang === 'hi' ? UI_HI.pada : 'Pada'} ${planet.pada}` : ''}` : '—'}
-                                                            </td>
-                                                            <td className="p-3 text-center">
-                                                                {planet.is_retrograde ? (
-                                                                    <span className="text-red-600 font-bold text-xs">{lang === 'hi' ? UI_HI.retrogradeAbbr : 'R'}</span>
-                                                                ) : (
-                                                                    <span className="text-gray-300">—</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="p-3 text-center text-xs">
-                                                                {planet.avastha ? (
-                                                                    <span
-                                                                        className="font-semibold text-indigo-700"
-                                                                        title={planet.avastha.quality}
-                                                                    >
-                                                                        {hi(AVASTHA_STATE_HI, planet.avastha.state, lang)}
-                                                                    </span>
-                                                                ) : (
-                                                                    <span className="text-gray-300">—</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="p-3 text-center text-xs font-bold whitespace-nowrap">
-                                                                {combust && <span className="text-amber-600" title={lang === 'hi' ? UI_HI.legendCombust : 'Combust'}>^</span>}
-                                                                {vargottama && <span className="text-purple-700 ml-1" title={lang === 'hi' ? UI_HI.legendVargottama : 'Vargottama'}>□</span>}
-                                                                {exalted && <span className="text-emerald-700 ml-1" title={lang === 'hi' ? UI_HI.legendExalted : 'Exalted'}>↑</span>}
-                                                                {debilitated && <span className="text-red-600 ml-1" title={lang === 'hi' ? UI_HI.legendDebilitated : 'Debilitated'}>↓</span>}
-                                                                {!combust && !vargottama && !exalted && !debilitated && <span className="text-gray-300">—</span>}
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* House Details */}
-                            {activeChart?.houses && (
-                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2">
-                                        {lang === 'hi' ? UI_HI.houseDetails : 'House Details'}
-                                    </h3>
-                                    <div className="grid grid-cols-3 gap-2 p-4 pt-2">
-                                        {activeChart.houses.map(houseData => {
-                                            const housePlanets = activeChart.planets.filter(p => p.house === houseData.house);
-                                            return (
-                                                <div key={houseData.house} className="bg-gray-50 rounded-lg p-2.5 border border-gray-100 text-center">
-                                                    <div className="text-[10px] text-gray-400 font-bold uppercase">
-                                                        {lang === 'hi' ? UI_HI.house : 'House'} {houseData.house}
-                                                    </div>
-                                                    <div className="text-xs font-semibold text-indigo-700 mt-0.5">{hi(RASHI_HI, houseData.sign, lang)}({houseData.sign_id})</div>
-                                                    {housePlanets.length > 0 && (
-                                                        <div className="mt-1 flex flex-wrap justify-center gap-1">
-                                                            {housePlanets.map(p => {
-                                                                const key = p.name.toLowerCase();
-                                                                return (
-                                                                    <span
-                                                                        key={p.name}
-                                                                        className="text-[10px] font-bold px-1.5 py-0.5 rounded"
-                                                                        style={{
-                                                                            color: PLANET_COLORS[key] || '#333',
-                                                                            backgroundColor: `${PLANET_COLORS[key] || '#333'}15`
-                                                                        }}
-                                                                    >
-                                                                        {lang === 'hi' ? hi(PLANET_NAME_HI, p.name, lang) : PLANET_SHORT[key] || p.name}
-                                                                    </span>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Sade Sati */}
-                            {sadeSati && (
-                                <div className={`rounded-xl p-4 border ${sadeSati.active ? 'bg-gradient-to-br from-red-50 to-orange-50 border-red-200' : 'bg-gray-50 border-gray-200'}`}>
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
-                                        <span className="flex items-center gap-2">
-                                            <Moon size={14} className={sadeSati.active ? 'text-red-600' : 'text-gray-400'} />
-                                            {lang === 'hi' ? UI_HI.sadeSati : 'Sade Sati'}
-                                        </span>
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${sadeSati.active ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-500'}`}>
-                                            {sadeSati.active
-                                                ? (lang === 'hi' ? UI_HI.sadeSatiActive : 'Active')
-                                                : (lang === 'hi' ? UI_HI.sadeSatiNotActive : 'Not Active')}
-                                        </span>
-                                    </h3>
-                                    {sadeSati.active && (
-                                        <div className="grid grid-cols-2 gap-3 mt-2">
-                                            {sadeSati.phase && <DetailItem label={lang === 'hi' ? UI_HI.yoga : 'Phase'} value={hi(SADE_SATI_PHASE_HI, sadeSati.phase, lang)} />}
-                                            {sadeSati.moon_sign && <DetailItem label="Moon Sign" value={hi(RASHI_HI, sadeSati.moon_sign, lang)} />}
-                                            {sadeSati.saturn_sign && <DetailItem label="Saturn Sign" value={hi(RASHI_HI, sadeSati.saturn_sign, lang)} />}
-                                        </div>
-                                    )}
-                                    {sadeSati.description && (
-                                        <p className="text-xs text-gray-600 mt-2">{sadeSati.description}</p>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Yogas & Doshas */}
-                            {yogas && (
-                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
-                                        <span className="flex items-center gap-2">
-                                            <Sparkles size={14} className="text-purple-600" />
-                                            {lang === 'hi' ? UI_HI.yogasAndDoshas : 'Yogas & Doshas'}
-                                        </span>
-                                        {yogas.summary && (
-                                            <span className="text-[10px] text-gray-400 normal-case font-normal">
-                                                {lang === 'hi'
-                                                    ? UI_HI.activeOf(yogas.summary.active, yogas.summary.total_evaluated)
-                                                    : `${yogas.summary.active} active of ${yogas.summary.total_evaluated}`}
-                                            </span>
-                                        )}
-                                    </h3>
-                                    <div className="p-4 pt-1 flex flex-wrap gap-2">
-                                        {yogas.yogas.filter(y => y.active).length === 0 && (
-                                            <p className="text-xs text-gray-400">{lang === 'hi' ? UI_HI.noActiveYogas : 'No active yogas or doshas found.'}</p>
-                                        )}
-                                        {yogas.yogas.filter(y => y.active).map(yoga => {
-                                            const isDosha = yoga.type === 'dosha';
-                                            const name = lang === 'hi' ? (YOGA_NAME_HI[yoga.id] || yoga.name) : yoga.name;
-                                            const strength = yoga.strength ? hi(STRENGTH_HI, yoga.strength, lang) : undefined;
-                                            return (
-                                                <span
-                                                    key={yoga.id}
-                                                    title={yoga.description}
-                                                    className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${isDosha
-                                                            ? 'bg-red-50 text-red-700 border-red-200'
-                                                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                                        }`}
-                                                >
-                                                    {name}{strength ? ` (${strength})` : ''}
-                                                </span>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Planetary Strength: Shadbala + Ashtakavarga */}
-                            {(shadbala || ashtakavarga) && (
-                                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center justify-between">
-                                        <span className="flex items-center gap-2">
-                                            <Gauge size={14} className="text-blue-600" />
-                                            {lang === 'hi' ? UI_HI.planetaryStrength : 'Planetary Strength'}
-                                        </span>
-                                        {ashtakavarga && (
-                                            <span className="text-[10px] text-gray-400 normal-case font-normal">
-                                                {lang === 'hi' ? UI_HI.sarvashtakavarga(ashtakavarga.total_points) : `Sarvashtakavarga: ${ashtakavarga.total_points} pts`}
-                                            </span>
-                                        )}
-                                    </h3>
-                                    {shadbala && (
-                                        <div className="p-4 pt-1 space-y-2">
-                                            {Object.entries(shadbala).map(([planet, s]) => {
-                                                const key = planet.toLowerCase();
-                                                const strong = s.ratio >= 1;
-                                                return (
-                                                    <div key={planet} className="flex items-center gap-2">
-                                                        <span className="w-16 text-xs font-semibold" style={{ color: PLANET_COLORS[key] || '#333' }}>
-                                                            {hi(PLANET_NAME_HI, planet, lang)}
-                                                        </span>
-                                                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                            <div
-                                                                className={`h-full rounded-full ${strong ? 'bg-emerald-500' : 'bg-amber-500'}`}
-                                                                style={{ width: `${Math.min((s.ratio / 3) * 100, 100)}%` }}
-                                                            />
-                                                        </div>
-                                                        <span className="w-24 text-[10px] text-gray-400 text-right">
-                                                            {lang === 'hi'
-                                                                ? UI_HI.rupas(s.shadbala_in_rupas.toFixed(1), s.ratio.toFixed(2))
-                                                                : `${s.shadbala_in_rupas.toFixed(1)} rupas (${s.ratio.toFixed(2)}x)`}
-                                                        </span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                            {renderChartSection('panel')}
+                            {renderDetailSections('panel')}
                         </div>
                     </div>
+                )}
+
+                {/* Fullscreen Report Viewer — portaled straight to <body> so it always
+                    covers the full viewport, regardless of any ancestor's stacking context
+                    (e.g. the slide-over panel's own z-index layer). */}
+                {isFullscreen && activeChart && chartData && createPortal(
+                    <div
+                        className="fixed inset-0 bg-black/80 z-[9999] overflow-y-auto flex items-start justify-center p-4 sm:p-8"
+                        onClick={() => setIsFullscreen(false)}
+                    >
+                        <div
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl my-4"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="flex items-center justify-between p-4 border-b border-gray-200 sticky top-0 bg-white rounded-t-2xl z-10">
+                                <h2 className="text-base font-bold text-gray-800">🔮 {lang === 'hi' ? 'पूरी रिपोर्ट' : 'Full Kundli Report'}</h2>
+                                <button
+                                    onClick={() => setIsFullscreen(false)}
+                                    title={lang === 'hi' ? 'बंद करें' : 'Close'}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                >
+                                    <X size={20} className="text-gray-600" />
+                                </button>
+                            </div>
+                            {renderTabSwitcher()}
+                            <div className="p-6 space-y-6">
+                                {renderChartSection('modal')}
+                                {renderDetailSections('modal')}
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
                 )}
         </>
     );
