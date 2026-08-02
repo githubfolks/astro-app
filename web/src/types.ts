@@ -467,42 +467,6 @@ export interface MatchReport {
     created_at?: string;
 }
 
-// --- Muhurat Search / FreeAstroAPI /vedic/muhurat response ---
-
-export interface MuhuratWindow {
-    score: number;
-    quality: string;
-    date: string;
-    start: string; // ISO datetime
-    end: string; // ISO datetime
-    start_time?: string; // "HH:MM:SS" local
-    end_time?: string; // "HH:MM:SS" local
-    duration_minutes: number;
-    reasons?: string[];
-    warnings?: string[];
-}
-
-export interface MuhuratData {
-    purpose?: string;
-    range?: { start_date: string; end_date: string; days: number };
-    best_windows: MuhuratWindow[];
-    best_moment?: (MuhuratWindow & { explanation?: string }) | null;
-}
-
-export interface MuhuratSearchRecord {
-    id: number;
-    purpose?: string;
-    start_date: string;
-    end_date: string;
-    place: string;
-    personalized: boolean;
-    subject_date_of_birth?: string;
-    subject_time_of_birth?: string;
-    subject_place_of_birth?: string;
-    muhurat_data: MuhuratData;
-    created_at?: string;
-}
-
 // --- Razorpay checkout (loaded via external script) ---
 
 export interface RazorpayResponse {

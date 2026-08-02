@@ -25,7 +25,6 @@ const ROUTE_TITLES: Record<string, string> = {
     '/dashboard': 'Dashboard',
     '/kundli': 'Kundli',
     '/kundli/matching': 'Kundli Matching',
-    '/kundli/muhurat': 'Muhurat Search',
     '/services/kundli-matching': 'Kundli Matching',
     '/services/love-advice': 'Love Advice',
     '/services/daily-horoscope': 'Daily Horoscope',

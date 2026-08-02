@@ -9,7 +9,7 @@ import {
     WEEKDAY_HI, PAKSHA_HI, LUNAR_MONTH_HI, YOGA_NAME_HI, STRENGTH_HI,
     DASHA_LEVEL_HI, SADE_SATI_PHASE_HI, AVASTHA_STATE_HI, UI_HI,
 } from '../utils/kundliHindi';
-import { isExalted, isDebilitated, computeCombustSet, computeVargottamaSet } from '../utils/planetDignity';
+import { isExalted, isDebilitated, computeCombustSet, computeVargottamaSet, formatDMS } from '../utils/planetDignity';
 import { computeActiveSukshmaAndPrana } from '../utils/subDasha';
 
 interface KundliPanelProps {
@@ -244,7 +244,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                 )}
                                 {ascendant && (
                                     <p className="text-xs text-gray-900">
-                                        {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id}){ascendant.degree !== undefined ? ` ${ascendant.degree.toFixed(2)}°` : ''}</span>
+                                        {lang === 'hi' ? UI_HI.lagna : 'Lagna'}: <span className="font-semibold text-gray-700">{hi(RASHI_HI, ascendant.sign, lang)}({ascendant.sign_id}){ascendant.degree !== undefined ? ` ${formatDMS(ascendant.degree % 30)}` : ''}</span>
                                         {ascendant.nakshatra && (
                                             <> · {hi(NAKSHATRA_HI, ascendant.nakshatra.name, lang)} {lang === 'hi' ? UI_HI.pada : 'Pada'} {ascendant.nakshatra.pada} ({lang === 'hi' ? UI_HI.lord : 'lord'} {hi(PLANET_NAME_HI, ascendant.nakshatra.lord, lang)})</>
                                         )}
@@ -365,7 +365,7 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                                                 {short} {lang !== 'hi' && <span className="text-gray-400 font-normal capitalize text-xs">({planet.name})</span>}
                                                             </td>
                                                             <td className="p-3 text-gray-700 font-mono text-xs">
-                                                                {hi(RASHI_HI, planet.sign, lang)}({planet.sign_id}){planet.degree_in_sign !== undefined ? ` ${planet.degree_in_sign.toFixed(2)}°` : ''} · {lang === 'hi' ? UI_HI.house.charAt(0) : 'H'}{planet.house}
+                                                                {hi(RASHI_HI, planet.sign, lang)}({planet.sign_id}){planet.degree_in_sign !== undefined ? ` ${formatDMS(planet.degree_in_sign)}` : ''} · {lang === 'hi' ? UI_HI.house.charAt(0) : 'H'}{planet.house}
                                                             </td>
                                                             <td className="p-3 text-gray-600 text-xs">
                                                                 {planet.nakshatra ? `${hi(NAKSHATRA_HI, planet.nakshatra, lang)}${planet.pada ? `, ${lang === 'hi' ? UI_HI.pada : 'Pada'} ${planet.pada}` : ''}` : '—'}

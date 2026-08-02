@@ -623,42 +623,6 @@ class KundliMatchReport(Base):
     girl_seeker = relationship("User", foreign_keys=[girl_seeker_id])
 
 
-class MuhuratSearch(Base):
-    """Cached auspicious-timing (Muhurat) search results, generic or personalized
-    to a birth chart, keyed by the search parameters so repeat lookups don't
-    re-hit FreeAstroAPI."""
-    __tablename__ = "muhurat_searches"
-    __table_args__ = (
-        Index(
-            "ix_muhurat_searches_lookup",
-            "purpose", "start_date", "end_date", "latitude", "longitude",
-            "personalized", "subject_date_of_birth", "subject_time_of_birth", "subject_place_of_birth",
-        ),
-    )
-
-    id = Column(Integer, primary_key=True, index=True)
-    generated_by = Column(Integer, ForeignKey("users.id"), nullable=False)
-    seeker_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-
-    purpose = Column(String, nullable=True)
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
-    place = Column(String, nullable=False)
-    latitude = Column(DECIMAL(6, 2), nullable=False)
-    longitude = Column(DECIMAL(6, 2), nullable=False)
-
-    personalized = Column(Boolean, default=False, nullable=False)
-    subject_date_of_birth = Column(Date, nullable=True)
-    subject_time_of_birth = Column(Time, nullable=True)
-    subject_place_of_birth = Column(String, nullable=True)
-
-    muhurat_data = Column(JSON, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    astrologer = relationship("User", foreign_keys=[generated_by])
-    seeker = relationship("User", foreign_keys=[seeker_id])
-
-
 class ManglikCheck(Base):
     """Cached free, public Manglik/Yoga dosha check, keyed by birth details so
     repeat lookups for the same person don't re-hit FreeAstroAPI."""

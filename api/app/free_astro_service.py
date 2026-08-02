@@ -216,66 +216,6 @@ async def generate_kuta_match(person1: dict, person2: dict) -> dict:
     return await _post("/api/v2/vedic/compatibility", payload)
 
 
-async def search_muhurat(
-    start_date: str,
-    end_date: str,
-    latitude: float,
-    longitude: float,
-    purpose: Optional[str] = None,
-    timezone: str = "Asia/Kolkata",
-    ayanamsha: str = "lahiri",
-    limit: int = 10,
-) -> dict:
-    """
-    Search for auspicious muhurat windows in a date range (generic, non-personalized)
-    using FreeAstroAPI. `start_date`/`end_date` are YYYY-MM-DD, capped at 31 days apart.
-    """
-    payload = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "lat": latitude,
-        "lng": longitude,
-        "tz_str": timezone,
-        "ayanamsha": ayanamsha,
-        "limit": limit,
-    }
-    if purpose:
-        payload["purpose"] = purpose
-    return await _post("/api/v2/vedic/muhurat/search", payload)
-
-
-async def search_personalized_muhurat(
-    start_date: str,
-    end_date: str,
-    latitude: float,
-    longitude: float,
-    subject: dict,
-    purpose: Optional[str] = None,
-    timezone: str = "Asia/Kolkata",
-    ayanamsha: str = "lahiri",
-    strictness: str = "traditional",
-    limit: int = 10,
-) -> dict:
-    """
-    Search for auspicious muhurat windows personalized to a birth chart (`subject`:
-    dict with year, month, day, hour, minute, lat/lng or city) using FreeAstroAPI.
-    """
-    payload = {
-        "start_date": start_date,
-        "end_date": end_date,
-        "lat": latitude,
-        "lng": longitude,
-        "tz_str": timezone,
-        "ayanamsha": ayanamsha,
-        "strictness": strictness,
-        "limit": limit,
-        "subject": subject,
-    }
-    if purpose:
-        payload["purpose"] = purpose
-    return await _post("/api/v2/vedic/muhurat/personalized-search", payload)
-
-
 async def generate_yogas(
     birth_date: str,
     birth_time: str,

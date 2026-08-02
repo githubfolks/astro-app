@@ -16,6 +16,15 @@ export const DEBILITATION_SIGN: Record<string, string> = {
     Rahu: 'Scorpio', Ketu: 'Taurus',
 };
 
+/** Formats a decimal degree-in-sign value as degrees/minutes/seconds, e.g. 15.2981 -> 15°17'53". */
+export function formatDMS(decimalDegrees: number): string {
+    const totalSeconds = Math.round(decimalDegrees * 3600);
+    const degrees = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${degrees}°${String(minutes).padStart(2, '0')}'${String(seconds).padStart(2, '0')}"`;
+}
+
 export function isExalted(planetName: string, sign: string): boolean {
     return EXALTATION_SIGN[planetName] === sign;
 }

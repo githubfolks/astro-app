@@ -154,9 +154,7 @@ const KundliGenerator: React.FC = () => {
 
                 <div className="max-w-4xl mx-auto flex gap-2 mb-2 text-xs font-semibold">
                     <span className="px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500">Kundli Generator</span>
-                    <Link to="/kundli/matching" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Kundli Matching</Link>
-                    <Link to="/kundli/muhurat" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Muhurat Search</Link>
-                </div>
+                    <Link to="/kundli/matching" className="px-3 py-1.5 rounded-full bg-white/5 text-gray-400 hover:bg-amber-500/10 hover:text-amber-500 transition-colors">Kundli Matching</Link>                </div>
 
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-8">

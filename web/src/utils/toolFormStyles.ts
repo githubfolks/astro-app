@@ -1,5 +1,5 @@
 // Shared Tailwind class strings for form inputs/labels on the dark
-// "service-detail-page" themed tool pages (Kundli, Muhurat, Panchang, free tools),
+// "service-detail-page" themed tool pages (Kundli, Panchang, free tools),
 // so all of them stay visually consistent with the /services/* marketing pages.
 export const TOOL_INPUT_CLASS = "w-full border border-white/10 rounded-xl px-4 py-2.5 bg-white/5 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm";
 export const TOOL_LABEL_CLASS = "block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1";

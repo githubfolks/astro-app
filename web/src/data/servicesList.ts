@@ -6,8 +6,8 @@ export interface ServiceLink {
 // Single source of truth for "all services" links — used by the homepage
 // ServicesGrid and the Header "Services" nav dropdown, so both stay in sync.
 // Seeker-facing services only. The Kundli report generators (/kundli,
-// /kundli/matching, /kundli/muhurat) are astrologer tools for generating
-// reports on behalf of seekers — see ASTROLOGER_TOOLS_LIST below.
+// /kundli/matching) are astrologer tools for generating reports on behalf
+// of seekers — see ASTROLOGER_TOOLS_LIST below.
 export const SERVICES_LIST: ServiceLink[] = [
     { title: 'Daily Horoscope', to: '/services/horoscope' },
     { title: 'Kundli Matching', to: '/services/kundli-matching' },
@@ -26,5 +26,4 @@ export const SERVICES_LIST: ServiceLink[] = [
 export const ASTROLOGER_TOOLS_LIST: ServiceLink[] = [
     { title: 'Kundli Generator', to: '/kundli' },
     { title: 'Kundli Matching', to: '/kundli/matching' },
-    { title: 'Muhurat Search', to: '/kundli/muhurat' },
 ];

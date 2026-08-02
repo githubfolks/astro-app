@@ -440,37 +440,6 @@ class MatchReportResponse(BaseModel):
         from_attributes = True
 
 
-# Muhurat Search Schemas
-class MuhuratSubjectInput(BaseModel):
-    seeker_id: Optional[int] = None
-    date_of_birth: date
-    time_of_birth: time
-    place_of_birth: str
-
-class MuhuratSearchRequest(BaseModel):
-    purpose: Optional[str] = None
-    start_date: date
-    end_date: date
-    place: str
-    seeker_id: Optional[int] = None  # if set (with no inline subject), autofills a personalized search
-    subject: Optional[MuhuratSubjectInput] = None
-
-class MuhuratSearchResponse(BaseModel):
-    id: int
-    seeker_id: Optional[int]
-    purpose: Optional[str]
-    start_date: date
-    end_date: date
-    place: str
-    personalized: bool
-    subject_date_of_birth: Optional[date] = None
-    subject_time_of_birth: Optional[time] = None
-    subject_place_of_birth: Optional[str] = None
-    muhurat_data: dict
-    created_at: datetime
-    class Config:
-        from_attributes = True
-
 
 # Free public tools (Manglik check, Navamsa chart, Numerology) — no auth required
 class FreeToolBirthRequest(BaseModel):
