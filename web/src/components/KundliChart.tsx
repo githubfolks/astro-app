@@ -6,10 +6,10 @@ import { isExalted, isDebilitated } from '../utils/planetDignity';
 /**
  * North Indian style Kundli chart component.
  * Renders the traditional diamond-in-a-square layout: House 1 (Lagna) is
- * always the top point, and houses run clockwise from there (2, 3, 4 = right
- * point, ...). Which rashi (zodiac sign) falls in each house depends on the
- * ascendant, so — unlike the South Indian style — the rashi numbers move
- * from chart to chart while the house positions stay fixed.
+ * always the top point, and houses run counter-clockwise from there (2, 3,
+ * 4 = left point, ...). Which rashi (zodiac sign) falls in each house
+ * depends on the ascendant, so — unlike the South Indian style — the rashi
+ * numbers move from chart to chart while the house positions stay fixed.
  */
 
 interface KundliChartProps {
@@ -74,17 +74,17 @@ function buildHousePolygons(size: number) {
 
     return {
         1: [P, X3, O, X2],
-        2: [B, P, X3],
-        3: [B, Q, X3],
-        4: [Q, X1, O, X3],
-        5: [C, Q, X1],
-        6: [C, R, X1],
+        2: [A, P, X2],
+        3: [A, Sm, X2],
+        4: [Sm, X2, O, X4],
+        5: [D, Sm, X4],
+        6: [D, R, X4],
         7: [R, X4, O, X1],
-        8: [D, R, X4],
-        9: [D, Sm, X4],
-        10: [Sm, X2, O, X4],
-        11: [A, Sm, X2],
-        12: [A, P, X2],
+        8: [C, R, X1],
+        9: [C, Q, X1],
+        10: [Q, X1, O, X3],
+        11: [B, Q, X3],
+        12: [B, P, X3],
     } as Record<number, [number, number][]>;
 }
 
