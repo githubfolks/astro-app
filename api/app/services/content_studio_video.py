@@ -221,7 +221,11 @@ def concat_clips(clip_paths: list[str], work_dir: str, out_path: str):
         # clips' full-range (pc) tag survives re-encoding into yuvj420p.
         "-vf", "scale=out_range=tv",
         "-c:v", "libx264", "-threads", "1", "-x264-params", "threads=1",
-        "-preset", "veryfast", "-pix_fmt", "yuv420p",
+        # ultrafast, not veryfast: this pass only needs to normalize timing/color
+        # range across already-encoded scene clips, not re-optimize visual
+        # quality (each scene was already encoded at veryfast) -- ultrafast cuts
+        # the extra time this re-encode step adds on the VPS's single CPU.
+        "-preset", "ultrafast", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-ar", "48000", "-ac", "2", "-b:a", "128k",
         "-movflags", "+faststart",
         out_path,
