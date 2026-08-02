@@ -25,6 +25,11 @@ from .auth import get_current_admin
 # from Pollinations, so this only applies to the upload-image path below).
 MAX_SCENE_IMAGE_BYTES = 8 * 1024 * 1024
 ALLOWED_SCENE_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+# Lets a video rendered elsewhere (e.g. locally, on faster hardware than the
+# VPS) be uploaded and served from here so it gets a public URL Facebook/
+# Instagram can fetch -- see upload_video below.
+MAX_VIDEO_BYTES = 200 * 1024 * 1024
+ALLOWED_VIDEO_TYPES = {"video/mp4"}
 # Ken Burns zoompan in content_studio_video.py upscales to 2x the final
 # WIDTH (1080) before zooming, so anything short of that softens visibly.
 MIN_SCENE_IMAGE_DIMENSION = 1080
@@ -226,6 +231,48 @@ async def render_video(
     db.refresh(job)
 
     asyncio.create_task(_run_render_job(job_id))
+    return job
+
+
+@router.post("/jobs/{job_id}/upload-video", response_model=schemas_content_studio.Job)
+@limiter.limit("10/minute")
+async def upload_video(
+    request: Request,
+    job_id: int,
+    db: Session = Depends(database.get_db),
+    file: UploadFile = File(...),
+):
+    """Accepts a video rendered outside this server (e.g. locally, where a
+    faster CPU makes the ffmpeg re-encode steps much quicker than on the
+    VPS) and stores it as this job's output -- so it ends up served from a
+    public URL Facebook/Instagram can fetch, same as a normal render.
+    """
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if job.status == models.ContentJobStatus.RENDERING:
+        raise HTTPException(status_code=409, detail="Cannot upload while rendering")
+
+    if file.content_type not in ALLOWED_VIDEO_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed. Use MP4.")
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if len(content) > MAX_VIDEO_BYTES:
+        raise HTTPException(status_code=400, detail=f"File too large (max {MAX_VIDEO_BYTES // (1024 * 1024)}MB)")
+
+    job_dir = os.path.join("uploads", "content_studio", str(job_id))
+    os.makedirs(job_dir, exist_ok=True)
+    video_path = os.path.join(job_dir, "output.mp4")
+    with open(video_path, "wb") as f:
+        f.write(content)
+
+    job.output_video_url = f"/static/content_studio/{job_id}/output.mp4"
+    job.status = models.ContentJobStatus.DONE
+    job.error_message = None
+    db.commit()
+    db.refresh(job)
     return job
 
 

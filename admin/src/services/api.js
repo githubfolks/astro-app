@@ -142,6 +142,8 @@ export const contentStudio = {
     uploadSceneImage: (jobId, sceneIndex, formData) =>
         api.post(`/content-studio/jobs/${jobId}/scenes/${sceneIndex}/upload-image`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     renderVideo: (jobId) => api.post(`/content-studio/jobs/${jobId}/render`),
+    uploadVideo: (jobId, formData) =>
+        api.post(`/content-studio/jobs/${jobId}/upload-video`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     getJob: (jobId) => api.get(`/content-studio/jobs/${jobId}`),
     listJobs: (params) => api.get('/content-studio/jobs', { params }),
     deleteJob: (jobId) => api.delete(`/content-studio/jobs/${jobId}`),

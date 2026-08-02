@@ -47,3 +47,4 @@ yarn-debug.log*
 store-graphics/output/
 store-graphics/node_modules/
 api/secrets/aadikarta-vedic-astrology-firebase-adminsdk-fbsvc-0f4829e306.json
+docker-compose.prod-api.yml
