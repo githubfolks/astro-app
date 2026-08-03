@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -317,6 +317,53 @@ async def upload_video(
     job.output_video_url = f"/static/content_studio/{job_id}/output.mp4"
     job.status = models.ContentJobStatus.DONE
     job.error_message = None
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+@router.post("/jobs/upload", response_model=schemas_content_studio.Job)
+@limiter.limit("10/minute")
+async def create_job_with_video(
+    request: Request,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_admin),
+    topic: str = Form(..., min_length=1, max_length=500),
+    file: UploadFile = File(...),
+):
+    """Creates a job straight from a topic + an already-rendered video file --
+    skips the scene-generation/render pipeline entirely for admins who produced
+    the video themselves (e.g. locally), same storage convention as upload_video.
+    """
+    if file.content_type not in ALLOWED_VIDEO_TYPES:
+        raise HTTPException(status_code=400, detail=f"File type {file.content_type} not allowed. Use MP4.")
+
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if len(content) > MAX_VIDEO_BYTES:
+        raise HTTPException(status_code=400, detail=f"File too large (max {MAX_VIDEO_BYTES // (1024 * 1024)}MB)")
+
+    job = models.ContentStudioJob(
+        topic=topic,
+        content_type=models.ContentType.SHORT_VIDEO,
+        voice_gender=models.VoiceGender.FEMALE,
+        status=models.ContentJobStatus.SCENES_GENERATED,
+        scenes=[],
+        created_by=current_user.id,
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
+    job_dir = os.path.join("uploads", "content_studio", str(job.id))
+    os.makedirs(job_dir, exist_ok=True)
+    video_path = os.path.join(job_dir, "output.mp4")
+    with open(video_path, "wb") as f:
+        f.write(content)
+
+    job.output_video_url = f"/static/content_studio/{job.id}/output.mp4"
+    job.status = models.ContentJobStatus.DONE
     db.commit()
     db.refresh(job)
     return job

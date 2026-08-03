@@ -1,12 +1,11 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '../../components/ui/Table';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
-import { Facebook, Instagram, Youtube, Download, X, RotateCw, Trash2, Upload } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Download, X, Trash2, Upload } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import clsx from 'clsx';
 
@@ -22,6 +21,78 @@ const PLATFORMS = [
     { key: 'instagram', label: 'Instagram', icon: Instagram, postedField: 'posted_instagram_at', action: 'postInstagram', needsCaption: true },
     { key: 'youtube', label: 'YouTube', icon: Youtube, postedField: 'posted_youtube_at', action: 'postYoutube', needsCaption: true },
 ];
+
+function NewVideoModal({ onClose, onCreated }) {
+    const [topic, setTopic] = useState('');
+    const [file, setFile] = useState(null);
+    const [creating, setCreating] = useState(false);
+
+    const handleCreate = async () => {
+        if (!topic.trim()) {
+            alert('Topic is required.');
+            return;
+        }
+        if (!file) {
+            alert('Please choose a video file to upload.');
+            return;
+        }
+        setCreating(true);
+        try {
+            const formData = new FormData();
+            formData.append('topic', topic.trim());
+            formData.append('file', file);
+            const res = await contentStudio.createJobWithVideo(formData);
+            onCreated(res.data);
+        } catch (e) {
+            alert(e.message || 'Failed to create video.');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-slate-800">New Video</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <X size={20} />
+                    </button>
+                </div>
+                <TextArea
+                    fullWidth
+                    label="Topic"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    disabled={creating}
+                    className="h-24"
+                />
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Video file (MP4)</label>
+                    <input
+                        type="file"
+                        accept="video/mp4"
+                        disabled={creating}
+                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        className="block w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-xs file:font-semibold
+                        file:bg-blue-50 file:text-blue-700
+                        hover:file:bg-blue-100 cursor-pointer"
+                    />
+                    {file && <p className="mt-1 text-xs text-slate-500 truncate">{file.name}</p>}
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outlined" size="sm" onClick={onClose} disabled={creating} className="cursor-pointer">Cancel</Button>
+                    <Button size="sm" onClick={handleCreate} disabled={creating} className="cursor-pointer">
+                        {creating ? 'Creating...' : 'Create'}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 function CaptionModal({ job, platform, onClose, onPosted }) {
     const [caption, setCaption] = useState('');
@@ -100,11 +171,10 @@ export default function ContentStudioLibrary() {
     const [page, setPage] = useState(1);
     const [posting, setPosting] = useState({}); // `${jobId}-${platform}` -> true while in flight
     const [captionModal, setCaptionModal] = useState(null); // { job, platform } | null
-    const [rerendering, setRerendering] = useState({}); // jobId -> true while render is in flight
+    const [showNewVideoModal, setShowNewVideoModal] = useState(false);
     const [deleting, setDeleting] = useState({}); // jobId -> true while delete is in flight
     const [uploading, setUploading] = useState({}); // jobId -> true while a video upload is in flight
     const limit = 20;
-    const navigate = useNavigate();
     const fileInputRef = useRef(null);
     const uploadTargetJobId = useRef(null);
 
@@ -144,35 +214,10 @@ export default function ContentStudioLibrary() {
         setCaptionModal(null);
     };
 
-    const pollJobUntilSettled = useCallback(async (jobId) => {
-        for (let i = 0; i < 60; i++) {
-            await new Promise(r => setTimeout(r, 3000));
-            let res;
-            try {
-                res = await contentStudio.getJob(jobId);
-            } catch {
-                continue;
-            }
-            setJobs(prev => prev.map(j => (j.id === jobId ? res.data : j)));
-            if (res.data.status !== 'RENDERING') return res.data;
-        }
-        return null;
-    }, []);
-
-    const handleRerender = async (job) => {
-        if (!window.confirm(`Re-render "${job.topic}"? This regenerates the video from its existing scenes (e.g. to pick up an encoding fix) and will overwrite the current file.`)) return;
-        setRerendering(prev => ({ ...prev, [job.id]: true }));
-        try {
-            await contentStudio.renderVideo(job.id);
-            const settled = await pollJobUntilSettled(job.id);
-            if (settled && settled.status === 'FAILED') {
-                alert(`Re-render failed: ${settled.error_message || 'unknown error'}`);
-            }
-        } catch (e) {
-            alert(e.message || 'Failed to start re-render.');
-        } finally {
-            setRerendering(prev => ({ ...prev, [job.id]: false }));
-        }
+    const handleVideoCreated = (job) => {
+        setJobs(prev => [job, ...prev]);
+        setTotal(prev => prev + 1);
+        setShowNewVideoModal(false);
     };
 
     const handleUploadClick = (job) => {
@@ -220,7 +265,7 @@ export default function ContentStudioLibrary() {
                     <h1 className="text-3xl font-bold text-gray-900">Content Studio Library</h1>
                     <p className="text-sm text-gray-500 mt-1">All generated videos / voice-over content, with posting status for each platform.</p>
                 </div>
-                <Button onClick={() => navigate('/content-studio')}>New Video</Button>
+                <Button onClick={() => setShowNewVideoModal(true)}>New Video</Button>
             </div>
 
             <Card>
@@ -230,9 +275,7 @@ export default function ContentStudioLibrary() {
                             <TableHead>Topic</TableHead>
                             <TableHead>Date</TableHead>
                             <TableHead>Voice</TableHead>
-                            <TableHead>Status</TableHead>
                             {PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
-                            <TableHead className="text-right">Re-render</TableHead>
                             <TableHead className="text-right">Upload</TableHead>
                             <TableHead className="text-right">Video</TableHead>
                             <TableHead className="text-right">Delete</TableHead>
@@ -249,17 +292,6 @@ export default function ContentStudioLibrary() {
                                         job.voice_gender === 'MALE' ? "bg-blue-100 text-blue-800" : "bg-pink-100 text-pink-800"
                                     )}>
                                         {job.voice_gender === 'MALE' ? 'Male' : 'Female'}
-                                    </span>
-                                </TableCell>
-                                <TableCell>
-                                    <span className={clsx(
-                                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                        job.status === 'DONE' ? "bg-green-100 text-green-800" :
-                                            job.status === 'FAILED' ? "bg-red-100 text-red-800" :
-                                                job.status === 'RENDERING' ? "bg-yellow-100 text-yellow-800" :
-                                                    "bg-gray-100 text-gray-800"
-                                    )}>
-                                        {job.status}
                                     </span>
                                 </TableCell>
                                 {PLATFORMS.map((platform) => {
@@ -286,18 +318,6 @@ export default function ContentStudioLibrary() {
                                         </TableCell>
                                     );
                                 })}
-                                <TableCell className="text-right">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        title="Re-render this video from its existing scenes"
-                                        disabled={job.status === 'RENDERING' || !!rerendering[job.id]}
-                                        onClick={() => handleRerender(job)}
-                                        className="cursor-pointer"
-                                    >
-                                        <RotateCw size={18} className={clsx("text-gray-600", (job.status === 'RENDERING' || rerendering[job.id]) && "animate-spin")} />
-                                    </Button>
-                                </TableCell>
                                 <TableCell className="text-right">
                                     <Button
                                         variant="ghost"
@@ -333,7 +353,7 @@ export default function ContentStudioLibrary() {
                         ))}
                         {jobs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={4 + PLATFORMS.length + 4} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={3 + PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
                                     No videos generated yet
                                 </TableCell>
                             </TableRow>
@@ -382,6 +402,13 @@ export default function ContentStudioLibrary() {
                     platform={captionModal.platform}
                     onClose={() => setCaptionModal(null)}
                     onPosted={handlePosted}
+                />
+            )}
+
+            {showNewVideoModal && (
+                <NewVideoModal
+                    onClose={() => setShowNewVideoModal(false)}
+                    onCreated={handleVideoCreated}
                 />
             )}
         </div>

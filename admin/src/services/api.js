@@ -136,6 +136,8 @@ export const reviewModeration = {
 export const contentStudio = {
     suggestTopic: () => api.post('/content-studio/suggest-topic'),
     generateScenes: (data) => api.post('/content-studio/jobs', data),
+    createJobWithVideo: (formData) =>
+        api.post('/content-studio/jobs/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     updateScenes: (jobId, scenes) => api.put(`/content-studio/jobs/${jobId}/scenes`, { scenes }),
     generateSceneImage: (jobId, sceneIndex, imagePromptEn) =>
         api.post(`/content-studio/jobs/${jobId}/scenes/${sceneIndex}/generate-image`, { image_prompt_en: imagePromptEn }),
