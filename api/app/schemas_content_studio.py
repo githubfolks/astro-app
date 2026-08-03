@@ -74,6 +74,7 @@ class Job(BaseModel):
     posted_facebook_at: Optional[datetime] = None
     posted_instagram_at: Optional[datetime] = None
     posted_youtube_at: Optional[datetime] = None
+    youtube_video_id: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 

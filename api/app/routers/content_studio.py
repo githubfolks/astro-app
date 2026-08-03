@@ -459,8 +459,9 @@ async def post_youtube(
     db: Session = Depends(database.get_db),
 ):
     job = _get_ready_job(job_id, db)
-    await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, payload.caption)
+    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, payload.caption)
     job.posted_youtube_at = datetime.now(timezone.utc)
+    job.youtube_video_id = result.get("id")
     db.commit()
     db.refresh(job)
     return job

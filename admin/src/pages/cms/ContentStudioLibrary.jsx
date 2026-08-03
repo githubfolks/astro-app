@@ -274,7 +274,6 @@ export default function ContentStudioLibrary() {
                         <TableRow>
                             <TableHead>Topic</TableHead>
                             <TableHead>Date</TableHead>
-                            <TableHead>Voice</TableHead>
                             {PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
                             <TableHead className="text-right">Upload</TableHead>
                             <TableHead className="text-right">Video</TableHead>
@@ -286,14 +285,6 @@ export default function ContentStudioLibrary() {
                             <TableRow key={job.id}>
                                 <TableCell className="font-medium max-w-xs truncate" title={job.topic}>{job.topic}</TableCell>
                                 <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
-                                <TableCell>
-                                    <span className={clsx(
-                                        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                                        job.voice_gender === 'MALE' ? "bg-blue-100 text-blue-800" : "bg-pink-100 text-pink-800"
-                                    )}>
-                                        {job.voice_gender === 'MALE' ? 'Male' : 'Female'}
-                                    </span>
-                                </TableCell>
                                 {PLATFORMS.map((platform) => {
                                     const postedAt = job[platform.postedField];
                                     const flightKey = `${job.id}-${platform.key}`;
@@ -301,9 +292,21 @@ export default function ContentStudioLibrary() {
                                     return (
                                         <TableCell key={platform.key}>
                                             {postedAt ? (
-                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700" title={new Date(postedAt).toLocaleString()}>
-                                                    <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
-                                                </span>
+                                                platform.key === 'youtube' && job.youtube_video_id ? (
+                                                    <a
+                                                        href={`https://youtube.com/watch?v=${job.youtube_video_id}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:underline"
+                                                        title={new Date(postedAt).toLocaleString()}
+                                                    >
+                                                        <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
+                                                    </a>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700" title={new Date(postedAt).toLocaleString()}>
+                                                        <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
+                                                    </span>
+                                                )
                                             ) : (
                                                 <Button
                                                     variant="outlined"
@@ -353,7 +356,7 @@ export default function ContentStudioLibrary() {
                         ))}
                         {jobs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={3 + PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={2 + PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
                                     No videos generated yet
                                 </TableCell>
                             </TableRow>

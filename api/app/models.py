@@ -712,6 +712,7 @@ class ContentStudioJob(Base):
     posted_facebook_at = Column(DateTime(timezone=True), nullable=True)
     posted_instagram_at = Column(DateTime(timezone=True), nullable=True)
     posted_youtube_at = Column(DateTime(timezone=True), nullable=True)
+    youtube_video_id = Column(String, nullable=True)
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
