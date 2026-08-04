@@ -36,7 +36,10 @@ def create_post(post: schemas_cms.PostCreate, db: Session = Depends(database.get
         title=post.title,
         slug=slug,
         content=post.content,
+        excerpt=post.excerpt,
         featured_image=post.featured_image,
+        author_name=post.author_name,
+        faqs=post.faqs,
         status=post.status,
         author_id=current_user.id,
         published_at=datetime.utcnow() if post.status == schemas_cms.PostStatus.PUBLISHED else None
@@ -92,8 +95,14 @@ def update_post(post_id: int, post_update: schemas_cms.PostUpdate, db: Session =
         
     if post_update.content:
         db_post.content = post_update.content
+    if post_update.excerpt is not None:
+        db_post.excerpt = post_update.excerpt
     if post_update.featured_image is not None:
         db_post.featured_image = post_update.featured_image
+    if post_update.author_name is not None:
+        db_post.author_name = post_update.author_name
+    if post_update.faqs is not None:
+        db_post.faqs = post_update.faqs
     if post_update.status:
         db_post.status = post_update.status
         if post_update.status == schemas_cms.PostStatus.PUBLISHED and not db_post.published_at:

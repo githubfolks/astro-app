@@ -34,7 +34,10 @@ class PostBase(BaseModel):
     title: str
     content: str
     slug: Optional[str] = None
+    excerpt: Optional[str] = None
     featured_image: Optional[str] = None
+    author_name: Optional[str] = None
+    faqs: Optional[List[Dict[str, str]]] = None
     status: PostStatus = PostStatus.DRAFT
 
 class PostCreate(PostBase):
@@ -44,7 +47,10 @@ class PostUpdate(BaseModel):
     title: Optional[str] = None
     content: Optional[str] = None
     slug: Optional[str] = None
+    excerpt: Optional[str] = None
     featured_image: Optional[str] = None
+    author_name: Optional[str] = None
+    faqs: Optional[List[Dict[str, str]]] = None
     status: Optional[PostStatus] = None
 
 class Post(PostBase):

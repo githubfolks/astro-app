@@ -395,9 +395,12 @@ class Post(Base):
     title = Column(String, nullable=False)
     slug = Column(String, unique=True, index=True, nullable=False)
     content = Column(Text, nullable=False)
+    excerpt = Column(Text, nullable=True)
     featured_image = Column(String, nullable=True)
     status = Column(Enum(PostStatus), default=PostStatus.DRAFT)
     author_id = Column(Integer, ForeignKey("users.id"))
+    author_name = Column(String, nullable=True)
+    faqs = Column(JSON, nullable=True)  # [{question, answer}, ...] -> FAQPage schema on the public post
     published_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

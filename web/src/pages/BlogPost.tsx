@@ -7,6 +7,11 @@ import Footer from '../components/Footer';
 import { api } from '../services/api';
 
 import SEO from '../components/SEO';
+import ShareButtons from '../components/ShareButtons';
+import FAQSection from '../components/FAQSection';
+import { normalizeArticleHtml } from '../utils/articleContent';
+
+const BASE_URL = import.meta.env.VITE_SITE_URL || 'https://aadikarta.org';
 
 const BlogPost: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -54,7 +59,17 @@ const BlogPost: React.FC = () => {
                     { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://aadikarta.org/blog" },
                     { "@type": "ListItem", "position": 3, "name": p.title, "item": `https://aadikarta.org/blog/${p.slug || slug}` },
                 ]
-            }
+            },
+            ...(p.faqs?.length
+                ? [{
+                    "@type": "FAQPage",
+                    "mainEntity": p.faqs.map((faq) => ({
+                        "@type": "Question",
+                        "name": faq.question,
+                        "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+                    }))
+                }]
+                : [])
         ]
     });
 
@@ -139,6 +154,10 @@ const BlogPost: React.FC = () => {
                         </div>
                         <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">{post.title}</h1>
 
+                        <div className="flex justify-center">
+                            <ShareButtons url={`${BASE_URL}/blog/${post.slug}`} title={post.title} />
+                        </div>
+
                         {post.featured_image && (
                             <div className="mt-8 rounded-2xl overflow-hidden shadow-lg">
                                 <img src={post.featured_image} alt={post.title} className="w-full h-auto max-h-[500px] object-cover" />
@@ -148,8 +167,14 @@ const BlogPost: React.FC = () => {
 
                     <div
                         className="post-content prose prose-indigo max-w-none"
-                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+                        dangerouslySetInnerHTML={{ __html: normalizeArticleHtml(DOMPurify.sanitize(post.content)) }}
                     />
+
+                    {post.faqs && post.faqs.length > 0 && (
+                        <div className="mt-12 rounded-3xl bg-gradient-to-b from-[#130c2c] to-[#04010a] overflow-hidden">
+                            <FAQSection faqs={post.faqs} />
+                        </div>
+                    )}
 
                     <aside className="mt-12 mb-16 pt-8 border-t border-gray-100">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Related Services</h2>

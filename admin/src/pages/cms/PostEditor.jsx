@@ -4,7 +4,7 @@ import { cms } from '../../services/api';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { GalleryModal } from '../../components/GalleryModal';
 import { Button, Input, Card } from '../../components/ui';
-import { ChevronLeft, Eye, X, Images } from 'lucide-react';
+import { ChevronLeft, Eye, X, Images, Plus, Trash2 } from 'lucide-react';
 
 // The API returns relative /static/... paths for uploaded/generated images.
 // admin.aadikarta.org and api.aadikarta.org are different origins, so a
@@ -59,7 +59,10 @@ export default function PostEditor() {
         title: '',
         slug: '',
         content: '',
+        excerpt: '',
         featured_image: '',
+        author_name: '',
+        faqs: [],
         status: 'DRAFT',
     });
 
@@ -82,7 +85,10 @@ export default function PostEditor() {
                     title: response.data.title,
                     slug: response.data.slug || '',
                     content: response.data.content,
+                    excerpt: response.data.excerpt || '',
                     featured_image: response.data.featured_image || '',
+                    author_name: response.data.author_name || '',
+                    faqs: response.data.faqs || [],
                     status: response.data.status,
                 });
             } catch (error) {
@@ -231,13 +237,32 @@ export default function PostEditor() {
         }
     };
 
+    const addFaq = () => {
+        setFormData(prev => ({ ...prev, faqs: [...(prev.faqs || []), { question: '', answer: '' }] }));
+    };
+
+    const updateFaq = (index, field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            faqs: prev.faqs.map((faq, i) => (i === index ? { ...faq, [field]: value } : faq)),
+        }));
+    };
+
+    const removeFaq = (index) => {
+        setFormData(prev => ({ ...prev, faqs: prev.faqs.filter((_, i) => i !== index) }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const payload = {
+            ...formData,
+            faqs: (formData.faqs || []).filter(faq => faq.question.trim() && faq.answer.trim()),
+        };
         try {
             if (isEdit) {
-                await cms.posts.update(id, formData);
+                await cms.posts.update(id, payload);
             } else {
-                await cms.posts.create(formData);
+                await cms.posts.create(payload);
             }
             navigate('/cms/posts');
         } catch (error) {
@@ -333,6 +358,28 @@ export default function PostEditor() {
                             value={formData.slug || ''}
                             onChange={(e) => setFormData(prev => ({ ...prev, slug: e.target.value }))}
                             className="border-slate-200"
+                        />
+                    </div>
+
+                    {/* Author Name */}
+                    <div>
+                        <Input
+                            label="Author Name"
+                            placeholder="e.g. Acharya Raman (optional — shown as byline, falls back to Aadikarta Vedic Astrology)"
+                            value={formData.author_name || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, author_name: e.target.value }))}
+                            className="border-slate-200"
+                        />
+                    </div>
+
+                    {/* Excerpt */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-500 block uppercase tracking-wider">Excerpt</label>
+                        <textarea
+                            className="w-full text-sm border border-slate-200 rounded-lg p-3 h-20 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                            placeholder="Short summary used as the meta description and social-share preview — falls back to auto-stripped content if left blank."
+                            value={formData.excerpt || ''}
+                            onChange={(e) => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
                         />
                     </div>
 
@@ -464,6 +511,52 @@ export default function PostEditor() {
                             )}
                         </div>
                     </div>
+                </Card>
+
+                {/* FAQs — rendered on the public post as an FAQ section and FAQPage
+                    structured data, so answer engines (Google AI Overviews,
+                    Perplexity, ChatGPT) can lift a direct Q&A straight from the article. */}
+                <Card className="p-6 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                        <h3 className="font-semibold text-slate-800 text-sm">FAQs (optional)</h3>
+                        <Button type="button" variant="outlined" onClick={addFaq} className="cursor-pointer gap-1.5 text-xs h-8">
+                            <Plus size={14} /> Add FAQ
+                        </Button>
+                    </div>
+
+                    {(!formData.faqs || formData.faqs.length === 0) ? (
+                        <p className="text-xs text-slate-400">No FAQs yet. Add a question your article already answers.</p>
+                    ) : (
+                        <div className="space-y-4">
+                            {formData.faqs.map((faq, index) => (
+                                <div key={index} className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                    <div className="flex-1 space-y-2">
+                                        <input
+                                            type="text"
+                                            className="w-full text-sm font-medium border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            placeholder="Question"
+                                            value={faq.question}
+                                            onChange={(e) => updateFaq(index, 'question', e.target.value)}
+                                        />
+                                        <textarea
+                                            className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 h-20 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            placeholder="Answer"
+                                            value={faq.answer}
+                                            onChange={(e) => updateFaq(index, 'answer', e.target.value)}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeFaq(index)}
+                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                        title="Remove FAQ"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </Card>
             </form>
         </div>

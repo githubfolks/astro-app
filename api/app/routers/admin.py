@@ -1281,6 +1281,98 @@ def admin_wallet_credit(
         return {"new_balance": float(wallet.balance) if wallet else 0.0, "message": "Wallet adjustment already applied"}
     return {"new_balance": new_balance, "message": "Wallet adjusted successfully"}
 
+
+def _mock_data_snapshot(db: Session, user: models.User) -> dict:
+    """Counts/balance used both to preview a mock-data wipe before it runs and
+    to report what was actually deleted afterwards."""
+    txn_count = db.query(models.WalletTransaction).filter(models.WalletTransaction.user_id == user.id).count()
+    payout_count = db.query(models.Payout).filter(models.Payout.astrologer_id == user.id).count()
+    wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user.id).first()
+    return {
+        "user_id": user.id,
+        "email": user.email,
+        "role": user.role,
+        "wallet_balance": float(wallet.balance) if wallet else 0.0,
+        "transaction_count": txn_count,
+        "payout_count": payout_count,
+    }
+
+
+@router.get("/users/mock-data-preview")
+def mock_data_preview(user_ids: str, db: Session = Depends(database.get_db)):
+    """Read-only counts shown before a delete-mock-data run, so an admin can see
+    exactly what's about to be wiped for each selected user."""
+    try:
+        ids = [int(x) for x in user_ids.split(",") if x.strip()]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="user_ids must be a comma-separated list of integers")
+
+    users = db.query(models.User).filter(models.User.id.in_(ids)).all()
+    found_ids = {u.id for u in users}
+    missing = set(ids) - found_ids
+    if missing:
+        raise HTTPException(status_code=404, detail=f"User(s) not found: {sorted(missing)}")
+
+    by_id = {u.id: u for u in users}
+    return {"results": [_mock_data_snapshot(db, by_id[i]) for i in ids]}
+
+
+class DeleteMockDataRequest(BaseModel):
+    user_ids: List[int]
+
+
+@router.post("/users/delete-mock-data")
+def delete_mock_user_data(
+    body: DeleteMockDataRequest,
+    current_admin: models.User = Depends(get_current_admin),
+    db: Session = Depends(database.get_db)
+):
+    """Wipes WalletTransaction rows, resets UserWallet.balance to 0, and deletes
+    Payout rows (astrologer-only; a no-op for other roles) for each selected
+    user — the cleanup path for mock/seed financial data left over from
+    testing. Every deletion is audit-logged like any other money-affecting
+    admin action in this router."""
+    users = db.query(models.User).filter(models.User.id.in_(body.user_ids)).all()
+    found_ids = {u.id for u in users}
+    missing = set(body.user_ids) - found_ids
+    if missing:
+        raise HTTPException(status_code=404, detail=f"User(s) not found: {sorted(missing)}")
+    if any(u.role == models.UserRole.ADMIN for u in users):
+        raise HTTPException(status_code=400, detail="Cannot delete mock data for admin accounts")
+
+    results = []
+    for user in users:
+        txn_count = db.query(models.WalletTransaction).filter(models.WalletTransaction.user_id == user.id).delete()
+        payout_count = db.query(models.Payout).filter(models.Payout.astrologer_id == user.id).delete()
+        wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == user.id).first()
+        had_balance = float(wallet.balance) if wallet else 0.0
+        if wallet:
+            wallet.balance = Decimal("0.00")
+
+        audit.log(
+            db,
+            action="MOCK_DATA_DELETED",
+            actor_id=current_admin.id,
+            resource_type="user",
+            resource_id=user.id,
+            details={
+                "transactions_deleted": txn_count,
+                "payouts_deleted": payout_count,
+                "wallet_reset_from": had_balance,
+            },
+        )
+        results.append({
+            "user_id": user.id,
+            "email": user.email,
+            "transactions_deleted": txn_count,
+            "payouts_deleted": payout_count,
+            "wallet_reset_from": had_balance,
+        })
+
+    db.commit()
+    return {"results": results}
+
+
 @router.get("/astrologers/pending")
 def list_pending_astrologers(db: Session = Depends(database.get_db)):
     # Join User and Profile to get pending astrologers

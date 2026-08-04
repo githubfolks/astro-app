@@ -1675,6 +1675,27 @@
         "title": "BirthDetails",
         "type": "object"
       },
+      "Body_create_job_with_video_content_studio_jobs_upload_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic",
+          "file"
+        ],
+        "title": "Body_create_job_with_video_content_studio_jobs_upload_post",
+        "type": "object"
+      },
       "Body_login_login_post": {
         "properties": {
           "client_id": {
@@ -1793,6 +1814,34 @@
           "file"
         ],
         "title": "Body_upload_onboarding_photo_astrologers_onboarding_photo_post",
+        "type": "object"
+      },
+      "Body_upload_scene_image_content_studio_jobs__job_id__scenes__scene_index__upload_image_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_scene_image_content_studio_jobs__job_id__scenes__scene_index__upload_image_post",
+        "type": "object"
+      },
+      "Body_upload_video_content_studio_jobs__job_id__upload_video_post": {
+        "properties": {
+          "file": {
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_video_content_studio_jobs__job_id__upload_video_post",
         "type": "object"
       },
       "CaptionSuggestion": {
@@ -2922,6 +2971,22 @@
         "title": "CurrentLagna",
         "type": "object"
       },
+      "DeleteMockDataRequest": {
+        "properties": {
+          "user_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "User Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "user_ids"
+        ],
+        "title": "DeleteMockDataRequest",
+        "type": "object"
+      },
       "DeviceTokenSchema": {
         "properties": {
           "platform": {
@@ -3124,6 +3189,62 @@
         "title": "FreeToolBirthRequest",
         "type": "object"
       },
+      "GalleryImage": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "prompt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "created_at"
+        ],
+        "title": "GalleryImage",
+        "type": "object"
+      },
+      "GalleryImageListResponse": {
+        "properties": {
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/GalleryImage"
+            },
+            "title": "Images",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "images"
+        ],
+        "title": "GalleryImageListResponse",
+        "type": "object"
+      },
       "GenderType": {
         "enum": [
           "MALE",
@@ -3132,6 +3253,37 @@
         ],
         "title": "GenderType",
         "type": "string"
+      },
+      "GenerateFeaturedImageRequest": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ],
+        "title": "GenerateFeaturedImageRequest",
+        "type": "object"
+      },
+      "GenerateGalleryImageRequest": {
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          }
+        },
+        "required": [
+          "content"
+        ],
+        "title": "GenerateGalleryImageRequest",
+        "type": "object"
       },
       "GenerateSceneImageRequest": {
         "properties": {
@@ -3464,6 +3616,17 @@
           },
           "voice_gender": {
             "$ref": "#/components/schemas/VoiceGender"
+          },
+          "youtube_video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Youtube Video Id"
           }
         },
         "required": [
@@ -4440,6 +4603,17 @@
             "title": "Author Id",
             "type": "integer"
           },
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name"
+          },
           "content": {
             "title": "Content",
             "type": "string"
@@ -4448,6 +4622,34 @@
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "faqs": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Faqs"
           },
           "featured_image": {
             "anyOf": [
@@ -4516,9 +4718,48 @@
       },
       "PostCreate": {
         "properties": {
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name"
+          },
           "content": {
             "title": "Content",
             "type": "string"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "faqs": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Faqs"
           },
           "featured_image": {
             "anyOf": [
@@ -4605,6 +4846,17 @@
       },
       "PostUpdate": {
         "properties": {
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name"
+          },
           "content": {
             "anyOf": [
               {
@@ -4615,6 +4867,34 @@
               }
             ],
             "title": "Content"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "faqs": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Faqs"
           },
           "featured_image": {
             "anyOf": [
@@ -7933,6 +8213,97 @@
         ]
       }
     },
+    "/admin/users/delete-mock-data": {
+      "post": {
+        "description": "Wipes WalletTransaction rows, resets UserWallet.balance to 0, and deletes\nPayout rows (astrologer-only; a no-op for other roles) for each selected\nuser \u2014 the cleanup path for mock/seed financial data left over from\ntesting. Every deletion is audit-logged like any other money-affecting\nadmin action in this router.",
+        "operationId": "delete_mock_user_data_admin_users_delete_mock_data_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteMockDataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Mock User Data",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/users/mock-data-preview": {
+      "get": {
+        "description": "Read-only counts shown before a delete-mock-data run, so an admin can see\nexactly what's about to be wiped for each selected user.",
+        "operationId": "mock_data_preview_admin_users_mock_data_preview_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "user_ids",
+            "required": true,
+            "schema": {
+              "title": "User Ids",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Mock Data Preview",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/users/{user_id}": {
       "delete": {
         "operationId": "delete_user_admin_users__user_id__delete",
@@ -9892,6 +10263,155 @@
         ]
       }
     },
+    "/cms/gallery": {
+      "get": {
+        "operationId": "list_gallery_images_cms_gallery_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 40,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GalleryImageListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Gallery Images",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
+    "/cms/gallery/generate": {
+      "post": {
+        "operationId": "generate_gallery_image_cms_gallery_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateGalleryImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GalleryImage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Gallery Image",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
+    "/cms/gallery/{image_id}": {
+      "delete": {
+        "operationId": "delete_gallery_image_cms_gallery__image_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "image_id",
+            "required": true,
+            "schema": {
+              "title": "Image Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Gallery Image",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
     "/cms/posts": {
       "get": {
         "operationId": "list_posts_cms_posts_get",
@@ -10021,6 +10541,51 @@
           }
         ],
         "summary": "Create Post",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
+    "/cms/posts/generate-featured-image": {
+      "post": {
+        "description": "Writes an image prompt from the post's title/body (Groq), then renders it\nthe same way Content Studio does (content_studio_images -- Replicate FLUX.2\nif configured, else Pollinations), and returns the saved image's URL.",
+        "operationId": "generate_featured_image_cms_posts_generate_featured_image_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateFeaturedImageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Featured Image",
         "tags": [
           "CMS"
         ]
@@ -10708,7 +11273,92 @@
         ]
       }
     },
+    "/content-studio/jobs/upload": {
+      "post": {
+        "description": "Creates a job straight from a topic + an already-rendered video file --\nskips the scene-generation/render pipeline entirely for admins who produced\nthe video themselves (e.g. locally), same storage convention as upload_video.",
+        "operationId": "create_job_with_video_content_studio_jobs_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_job_with_video_content_studio_jobs_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Create Job With Video",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
     "/content-studio/jobs/{job_id}": {
+      "delete": {
+        "operationId": "delete_job_content_studio_jobs__job_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Job",
+        "tags": [
+          "Content Studio"
+        ]
+      },
       "get": {
         "operationId": "get_job_content_studio_jobs__job_id__get",
         "parameters": [
@@ -11077,6 +11727,63 @@
         ]
       }
     },
+    "/content-studio/jobs/{job_id}/scenes/{scene_index}/generate-audio": {
+      "post": {
+        "description": "Generates just one scene's narration audio, same slot/URL convention\nas generate_scene_image -- normally audio is only produced inline during\na full /render, this lets it be fetched standalone (e.g. by a script\nbuilding the video elsewhere) without also triggering the ffmpeg pass.",
+        "operationId": "generate_scene_audio_content_studio_jobs__job_id__scenes__scene_index__generate_audio_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "scene_index",
+            "required": true,
+            "schema": {
+              "title": "Scene Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Scene Audio",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
     "/content-studio/jobs/{job_id}/scenes/{scene_index}/generate-image": {
       "post": {
         "description": "Generates (or regenerates) just one scene's preview image, using\nwhatever image_prompt_en the admin currently has in the editor -- lets\nthem see and approve/retry each image before committing to a full render.",
@@ -11139,6 +11846,131 @@
           }
         ],
         "summary": "Generate Scene Image",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/scenes/{scene_index}/upload-image": {
+      "post": {
+        "description": "Lets the admin supply their own image for a scene instead of the\nPollinations auto-generated one -- same slot/URL convention as\ngenerate_scene_image, so the rest of the pipeline (render, preview) can't\ntell the difference.",
+        "operationId": "upload_scene_image_content_studio_jobs__job_id__scenes__scene_index__upload_image_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "scene_index",
+            "required": true,
+            "schema": {
+              "title": "Scene Index",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_scene_image_content_studio_jobs__job_id__scenes__scene_index__upload_image_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Upload Scene Image",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/upload-video": {
+      "post": {
+        "description": "Accepts a video rendered outside this server (e.g. locally, where a\nfaster CPU makes the ffmpeg re-encode steps much quicker than on the\nVPS) and stores it as this job's output -- so it ends up served from a\npublic URL Facebook/Instagram can fetch, same as a normal render.",
+        "operationId": "upload_video_content_studio_jobs__job_id__upload_video_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_video_content_studio_jobs__job_id__upload_video_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Upload Video",
         "tags": [
           "Content Studio"
         ]

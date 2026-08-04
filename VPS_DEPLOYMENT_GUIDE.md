@@ -146,3 +146,30 @@ docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --force-rec
 4.  **Pull** to the production directory on VPS:
     `cd /var/www/aadikarta/production && git pull origin main && docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build`.
 
+## 7. Automatic Rebuild on New Content
+
+`web`'s build (`npm run build`) runs a build-time prerender step
+(`web/scripts/prerender.js`) that bakes SEO tags (title, meta description,
+OG/Twitter, JSON-LD) and rendered content into each blog post's static HTML, so
+crawlers and social-share link previews see real content instead of the empty
+SPA shell. That only happens when `web` is rebuilt — a post published between
+deploys sits un-prerendered (missing title/meta/OG tags, broken social-share
+previews) until the next unrelated deploy happens to rebuild the site.
+
+`deploy/rebuild-if-new-content.sh` closes that gap: on each run it checks the
+latest post's timestamp against a local marker file, and rebuilds+redeploys
+`web` only if something newer than the last build exists. Install it as a
+cron job on the production host:
+
+```bash
+chmod +x /var/www/aadikarta/production/deploy/rebuild-if-new-content.sh
+crontab -e
+# add:
+*/30 * * * * /var/www/aadikarta/production/deploy/rebuild-if-new-content.sh
+```
+
+Runs are logged to `/var/log/aadikarta-rebuild.log`. Most ticks are a no-op
+(one `curl` + a string comparison); an actual rebuild only fires when a post's
+`published_at`/`updated_at` is newer than what's recorded in
+`.last-content-build` next to the compose files.
+

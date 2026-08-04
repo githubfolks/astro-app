@@ -216,6 +216,21 @@ const formatHtml = (html) => {
 // rendered HTML, but collapsing them back keeps the stored content clean.
 const minifyHtml = (html) => html.replace(/>\s+</g, '><').trim();
 
+// TipTap happily serializes an empty heading node (e.g. pressing Enter after
+// a heading, or toggling an empty paragraph to a heading) as `<h3></h3>` —
+// pure noise in the article outline that crawlers/answer-engines read.
+// Strip these before they ever reach the stored post content, whether they
+// came from the structured editor or a hand-edited HTML-source paste.
+const stripEmptyHeadings = (html) => {
+    if (!html) return html;
+    const container = document.createElement('div');
+    container.innerHTML = html;
+    container.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((el) => {
+        if (!el.textContent?.trim()) el.remove();
+    });
+    return container.innerHTML;
+};
+
 const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
     <button
         type="button"
@@ -235,14 +250,15 @@ const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
 
 const ToolbarDivider = () => <span className="w-px h-6 bg-slate-200 mx-1" />;
 
+// Heading 1 is deliberately not offered here: every post page renders its
+// own <h1> from the post title, so a body-level H1 would always duplicate
+// it. Body content starts at H2.
 const HeadingSelect = ({ editor }) => {
-    const value = editor.isActive('heading', { level: 1 })
-        ? '1'
-        : editor.isActive('heading', { level: 2 })
-            ? '2'
-            : editor.isActive('heading', { level: 3 })
-                ? '3'
-                : '';
+    const value = editor.isActive('heading', { level: 2 })
+        ? '2'
+        : editor.isActive('heading', { level: 3 })
+            ? '3'
+            : '';
 
     return (
         <select
@@ -256,7 +272,6 @@ const HeadingSelect = ({ editor }) => {
             className="text-sm border border-slate-200 rounded-md px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-400"
         >
             <option value="">Normal</option>
-            <option value="1">Heading 1</option>
             <option value="2">Heading 2</option>
             <option value="3">Heading 3</option>
         </select>
@@ -345,7 +360,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
 
     const extensions = useMemo(() => [
         StarterKit.configure({
-            heading: { levels: [1, 2, 3] },
+            heading: { levels: [2, 3] },
         }),
         Underline,
         Link.configure({ openOnClick: false, autolink: true }),
@@ -365,7 +380,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
             transformPastedText: (text) => stripNbsp(text),
             handlePaste: uploadPastedImage,
         },
-        onUpdate: ({ editor: e }) => onChange(e.getHTML()),
+        onUpdate: ({ editor: e }) => onChange(stripEmptyHeadings(e.getHTML())),
     });
 
     // Keep the editor in sync when `value` changes from outside (e.g. the
@@ -386,7 +401,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
             setSourceText(formatHtml(editor.getHTML()));
             setShowSource(true);
         } else {
-            const minified = minifyHtml(sourceText);
+            const minified = stripEmptyHeadings(minifyHtml(sourceText));
             editor.commands.setContent(minified, false);
             onChange(minified);
             setShowSource(false);

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { settings as settingsApi } from '../services/api';
+import api, { settings as settingsApi } from '../services/api';
 import { Button } from '../components/ui/Button';
-import { MessageCircle, Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
+import { MessageCircle, Wifi, WifiOff, RefreshCw, AlertCircle, Search, X, Trash2 } from 'lucide-react';
 
 const GROUPS = [
     {
@@ -222,6 +222,219 @@ function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone
                         <li>Enter your phone number (including country code) and click "Connect WhatsApp".</li>
                         <li>Enter the 8-character code displayed above in WhatsApp Link Device section.</li>
                     </ol>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Wipes WalletTransaction rows, resets UserWallet.balance to 0, and deletes
+// Payout rows for selected users -- the cleanup path for mock/seed financial
+// data left over from testing. Deliberately kept as its own self-contained
+// component: it manages its own search/selection/preview state and doesn't
+// touch the key/value settings form above it.
+function MockDataCleanupPanel() {
+    const [search, setSearch] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [selected, setSelected] = useState([]); // [{id, email, role}]
+    const [preview, setPreview] = useState(null); // [{user_id, email, role, wallet_balance, transaction_count, payout_count}]
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [confirmEmail, setConfirmEmail] = useState('');
+    const [deleting, setDeleting] = useState(false);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState('');
+    const searchDebounceRef = useRef(null);
+
+    useEffect(() => {
+        if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+        if (!search.trim()) { setSearchResults([]); return; }
+        searchDebounceRef.current = setTimeout(async () => {
+            setSearching(true);
+            try {
+                const res = await api.get('/admin/users', { params: { search, limit: 8 } });
+                const selectedIds = new Set(selected.map(u => u.id));
+                // Admin accounts are hard-blocked server-side too; filtering here
+                // just keeps them from being offered as a selectable option at all.
+                setSearchResults((res.data?.users || []).filter(u => !selectedIds.has(u.id) && u.role !== 'ADMIN'));
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setSearching(false);
+            }
+        }, 300);
+        return () => clearTimeout(searchDebounceRef.current);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
+
+    const fetchPreview = async (users) => {
+        if (users.length === 0) { setPreview(null); return; }
+        setPreviewLoading(true);
+        setError('');
+        try {
+            const res = await api.get('/admin/users/mock-data-preview', { params: { user_ids: users.map(u => u.id).join(',') } });
+            setPreview(res.data.results);
+        } catch (e) {
+            setError(e.response?.data?.detail || 'Failed to load preview');
+            setPreview(null);
+        } finally {
+            setPreviewLoading(false);
+        }
+    };
+
+    const addUser = (user) => {
+        const next = [...selected, user];
+        setSelected(next);
+        setSearch('');
+        setSearchResults([]);
+        setResult(null);
+        setConfirmEmail('');
+        fetchPreview(next);
+    };
+
+    const removeUser = (id) => {
+        const next = selected.filter(u => u.id !== id);
+        setSelected(next);
+        setResult(null);
+        setConfirmEmail('');
+        fetchPreview(next);
+    };
+
+    const confirmMatches = confirmEmail.trim() !== '' && selected.some(u => (u.email || '').trim().toLowerCase() === confirmEmail.trim().toLowerCase());
+
+    const handleDelete = async () => {
+        if (!confirmMatches) return;
+        setDeleting(true);
+        setError('');
+        try {
+            const res = await api.post('/admin/users/delete-mock-data', { user_ids: selected.map(u => u.id) });
+            setResult(res.data.results);
+            setSelected([]);
+            setPreview(null);
+            setConfirmEmail('');
+        } catch (e) {
+            setError(e.response?.data?.detail || 'Failed to delete mock data');
+        } finally {
+            setDeleting(false);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-xl border border-red-200 p-6 shadow-sm space-y-4">
+            <div>
+                <h2 className="font-bold text-gray-800 mb-1">Delete Mock User Data</h2>
+                <p className="text-xs text-gray-900">
+                    Permanently deletes wallet transactions, resets the wallet balance to ₹0, and deletes payout
+                    records for the selected user(s). Cannot be undone — use this to clear out test/seed data, not
+                    for real user accounts. Admin accounts cannot be selected.
+                </p>
+            </div>
+
+            <div className="relative">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                    type="text"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search users by email or phone…"
+                    className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-2 focus:ring-red-400 outline-none"
+                />
+                {searching && <RefreshCw className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 animate-spin" />}
+                {searchResults.length > 0 && (
+                    <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                        {searchResults.map(u => (
+                            <button
+                                key={u.id}
+                                type="button"
+                                onClick={() => addUser(u)}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
+                            >
+                                <span>{u.email || u.phone_number}</span>
+                                <span className="text-xs text-gray-400">{u.role}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {selected.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {selected.map(u => (
+                        <span key={u.id} className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full">
+                            {u.email || u.phone_number}
+                            <button type="button" onClick={() => removeUser(u.id)} className="hover:text-red-600">
+                                <X className="w-3 h-3" />
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {previewLoading && <p className="text-xs text-gray-400">Loading preview…</p>}
+
+            {preview && preview.length > 0 && (
+                <div className="border border-gray-200 rounded-lg overflow-x-auto">
+                    <table className="w-full text-xs">
+                        <thead className="bg-gray-50 text-gray-500 uppercase">
+                            <tr>
+                                <th className="text-left px-3 py-2">User</th>
+                                <th className="text-right px-3 py-2">Wallet Balance</th>
+                                <th className="text-right px-3 py-2">Transactions</th>
+                                <th className="text-right px-3 py-2">Payouts</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {preview.map(p => (
+                                <tr key={p.user_id}>
+                                    <td className="px-3 py-2 text-gray-900">{p.email}</td>
+                                    <td className="px-3 py-2 text-right text-gray-900">₹{p.wallet_balance.toFixed(2)}</td>
+                                    <td className="px-3 py-2 text-right text-gray-900">{p.transaction_count}</td>
+                                    <td className="px-3 py-2 text-right text-gray-900">{p.payout_count}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {error && (
+                <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>{error}</span>
+                </div>
+            )}
+
+            {selected.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-gray-100">
+                    <label className="block text-xs font-semibold text-gray-900 uppercase">
+                        Type the email of one selected user to confirm
+                    </label>
+                    <input
+                        type="text"
+                        value={confirmEmail}
+                        onChange={e => setConfirmEmail(e.target.value)}
+                        placeholder="e.g. seeker3@example.com"
+                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-400 outline-none"
+                    />
+                    <Button
+                        variant="danger"
+                        onClick={handleDelete}
+                        disabled={!confirmMatches || deleting}
+                        startIcon={<Trash2 className="w-4 h-4" />}
+                    >
+                        {deleting ? 'Deleting…' : `Delete Mock Data for ${selected.length} User${selected.length > 1 ? 's' : ''}`}
+                    </Button>
+                </div>
+            )}
+
+            {result && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-800 space-y-1">
+                    <p className="font-semibold">Done:</p>
+                    {result.map(r => (
+                        <p key={r.user_id}>
+                            {r.email}: {r.transactions_deleted} transaction(s) deleted, {r.payouts_deleted} payout(s) deleted, wallet reset from ₹{r.wallet_reset_from.toFixed(2)} to ₹0.
+                        </p>
+                    ))}
                 </div>
             )}
         </div>
@@ -469,10 +682,12 @@ export default function Settings() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mb-6">
                 <Button onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save Settings'}</Button>
                 {msg && <span className="text-sm text-gray-600">{msg}</span>}
             </div>
+
+            <MockDataCleanupPanel />
         </div>
     );
 }
