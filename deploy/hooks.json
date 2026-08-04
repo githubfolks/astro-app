@@ -1,0 +1,17 @@
+[
+  {
+    "id": "deploy-production",
+    "execute-command": "/var/www/aadikarta/production/deploy.sh",
+    "command-working-directory": "/var/www/aadikarta/production",
+    "trigger-rule": {
+      "match": {
+        "type": "payload-hmac-sha256",
+        "secret": "ENV:DEPLOY_WEBHOOK_SECRET",
+        "parameter": {
+          "source": "header",
+          "name": "X-Hub-Signature-256"
+        }
+      }
+    }
+  }
+]
