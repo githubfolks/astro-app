@@ -52,6 +52,13 @@ jobs:
       - name: Unit/integration tests
         run: npm test
 
+      # scripts/prerender.js (invoked by `npm run build`) drives a real
+      # headless Chromium via playwright-core, so the browser binary needs
+      # to be present even though this job doesn't run Playwright's test
+      # runner itself.
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
       - name: Build
         run: npm run build
 
