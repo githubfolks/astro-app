@@ -133,6 +133,10 @@ async function main() {
 
         browser = await chromium.launch({ args: ['--no-sandbox'] });
         const page = await (await browser.newContext()).newPage();
+        page.on('pageerror', (e) => console.warn(`  ! [console] page error on current route: ${e.message}`));
+        page.on('console', (msg) => {
+            if (msg.type() === 'error') console.warn(`  ! [console] ${msg.text()}`);
+        });
 
         let ok = 0;
         let failed = 0;
@@ -152,6 +156,14 @@ async function main() {
                     await page.waitForTimeout(1500);
                 }
                 const html = await page.content();
+                // A route that never actually rendered (JS error before mount,
+                // etc.) still resolves goto() successfully and still returns
+                // *some* HTML — so without this check every such failure was
+                // silently counted as "ok" and the raw SPA shell got written
+                // back to disk as if it were the prerendered page.
+                if (!html.includes('<title>') || html.length < 7600) {
+                    console.warn(`  ! ${route} rendered but looks like an unmounted shell (${html.length} bytes, has <title>: ${html.includes('<title>')})`);
+                }
                 const outDir = route === '/' ? DIST : join(DIST, route);
                 mkdirSync(outDir, { recursive: true });
                 writeFileSync(join(outDir, 'index.html'), html, 'utf8');
