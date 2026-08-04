@@ -68,6 +68,11 @@ export const cms = {
         generateFeaturedImage: (data) => api.post('/cms/posts/generate-featured-image', data),
         shareSocial: (id, data) => api.post(`/cms/posts/${id}/share-social`, data),
     },
+    gallery: {
+        list: (params) => api.get('/cms/gallery', { params }),
+        generate: (data) => api.post('/cms/gallery/generate', data),
+        delete: (id) => api.delete(`/cms/gallery/${id}`),
+    },
     inquiries: {
         list: (params) => api.get('/cms/contact-inquiries', { params }),
         // Add update/delete if needed later

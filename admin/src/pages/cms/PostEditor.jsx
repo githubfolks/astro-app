@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cms } from '../../services/api';
 import { RichTextEditor } from '../../components/RichTextEditor';
+import { GalleryModal } from '../../components/GalleryModal';
 import { Button, Input, Card } from '../../components/ui';
-import { ChevronLeft, Eye, X } from 'lucide-react';
+import { ChevronLeft, Eye, X, Images } from 'lucide-react';
 
 // The API returns relative /static/... paths for uploaded/generated images.
 // admin.aadikarta.org and api.aadikarta.org are different origins, so a
@@ -107,6 +108,7 @@ export default function PostEditor() {
     };
 
     const [showPreview, setShowPreview] = useState(false);
+    const [showGallery, setShowGallery] = useState(false);
     const [uploadingFeaturedImage, setUploadingFeaturedImage] = useState(false);
     const [generatingFeaturedImage, setGeneratingFeaturedImage] = useState(false);
 
@@ -296,6 +298,16 @@ export default function PostEditor() {
                 <PreviewModal post={formData} onClose={() => setShowPreview(false)} />
             )}
 
+            {showGallery && (
+                <GalleryModal
+                    onClose={() => setShowGallery(false)}
+                    onSelect={(url) => {
+                        setFormData(prev => ({ ...prev, featured_image: url }));
+                        setShowGallery(false);
+                    }}
+                />
+            )}
+
             {/* Single Column Editor Workspace */}
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Main Content Card - Full Width */}
@@ -345,6 +357,15 @@ export default function PostEditor() {
                                 className="h-10 whitespace-nowrap cursor-pointer"
                             >
                                 {generatingFeaturedImage ? 'Generating...' : 'Generate Image'}
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outlined"
+                                onClick={() => setShowGallery(true)}
+                                disabled={generatingFeaturedImage || uploadingFeaturedImage}
+                                className="h-10 whitespace-nowrap cursor-pointer gap-1.5"
+                            >
+                                <Images size={16} /> Gallery
                             </Button>
                         </div>
                         {formData.featured_image && (

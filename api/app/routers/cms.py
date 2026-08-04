@@ -256,6 +256,108 @@ def generate_featured_image(payload: GenerateFeaturedImageRequest):
     return {"url": f"/static/cms_posts/{filename}"}
 
 
+# --- Media Gallery ---
+# A reusable pool of AI-generated images: generate once from a text prompt,
+# then pick from the gallery on any post instead of regenerating per-post.
+
+GALLERY_UPLOAD_DIR = os.path.join("uploads", "gallery")
+
+
+class GenerateGalleryImageRequest(BaseModel):
+    content: str
+
+
+@router.post("/gallery/generate", response_model=schemas_cms.GalleryImage)
+def generate_gallery_image(payload: GenerateGalleryImageRequest, db: Session = Depends(database.get_db)):
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Image generation is unavailable. GROQ_API_KEY is not set.")
+
+    cleaned_content = re.sub('<[^<]+?>', '', payload.content).strip()[:3000]
+    if not cleaned_content:
+        raise HTTPException(status_code=400, detail="Content is required.")
+
+    system_prompt = (
+        "You write concise English prompts (under 40 words) for an AI image generator, creating an image "
+        "for Aadikarta, India's trusted marketplace for verified Vedic astrologers. Based on the content "
+        "below, write a single descriptive image prompt capturing its core theme using traditional Vedic "
+        "astrology iconography (zodiac symbols, Navagraha gods, Indian spiritual/temple art, diyas, mandalas) "
+        "in a professional, editorial style. Do not request any text/words rendered in the image. Respond "
+        "with ONLY the prompt text -- no commentary, no quotes."
+    )
+
+    body = {
+        "model": os.getenv("AI_ASTROLOGER_MODEL", "llama-3.3-70b-versatile"),
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": cleaned_content},
+        ],
+        "max_tokens": 150,
+        "temperature": 0.8,
+    }
+
+    try:
+        response = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"LLM request failed: {e}")
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"LLM upstream error {response.status_code}")
+
+    try:
+        image_prompt = (response.json()["choices"][0]["message"]["content"] or "").strip().strip('"')
+    except (KeyError, IndexError, ValueError):
+        raise HTTPException(status_code=500, detail="Failed to parse LLM response.")
+
+    if not image_prompt:
+        raise HTTPException(status_code=502, detail="LLM returned an empty image prompt.")
+
+    image_bytes = content_studio_images.generate_image(image_prompt, width=1024, height=1024)
+
+    os.makedirs(GALLERY_UPLOAD_DIR, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}.jpg"
+    with open(os.path.join(GALLERY_UPLOAD_DIR, filename), "wb") as f:
+        f.write(image_bytes)
+
+    image = models.MediaGalleryImage(url=f"/static/gallery/{filename}", prompt=image_prompt)
+    db.add(image)
+    db.commit()
+    db.refresh(image)
+    return image
+
+
+@router.get("/gallery", response_model=schemas_cms.GalleryImageListResponse)
+def list_gallery_images(skip: int = 0, limit: int = 40, db: Session = Depends(database.get_db)):
+    query = db.query(models.MediaGalleryImage)
+    total = query.count()
+    images = query.order_by(models.MediaGalleryImage.created_at.desc()).offset(skip).limit(limit).all()
+    return {"total": total, "images": images}
+
+
+@router.delete("/gallery/{image_id}")
+def delete_gallery_image(image_id: int, db: Session = Depends(database.get_db)):
+    image = db.query(models.MediaGalleryImage).filter(models.MediaGalleryImage.id == image_id).first()
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    # Only ever delete a file we ourselves stored under uploads/gallery -- basename()
+    # strips any path segments so a crafted/legacy url can't be (mis)used to escape
+    # that directory (e.g. a url containing "../../something").
+    filename = os.path.basename(image.url)
+    file_path = os.path.join(GALLERY_UPLOAD_DIR, filename)
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+
+    db.delete(image)
+    db.commit()
+    return {"message": "Image deleted"}
+
+
 @router.post("/posts/{post_id}/share-social")
 def share_social_post(post_id: int, payload: ShareSocialRequest, db: Session = Depends(database.get_db)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()

@@ -404,6 +404,14 @@ class Post(Base):
 
     author = relationship("User", backref="posts")
 
+class MediaGalleryImage(Base):
+    __tablename__ = "media_gallery_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String, nullable=False)
+    prompt = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 class Page(Base):
     __tablename__ = "pages"
 

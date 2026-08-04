@@ -62,6 +62,20 @@ class PostListResponse(BaseModel):
     total: int
     posts: List[Post]
 
+# Media Gallery Schemas
+class GalleryImage(BaseModel):
+    id: int
+    url: str
+    prompt: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class GalleryImageListResponse(BaseModel):
+    total: int
+    images: List[GalleryImage]
+
 # Page Schemas
 class PageBase(BaseModel):
     title: str

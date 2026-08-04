@@ -66,6 +66,7 @@ const ResizableImage = ImageExtension.extend({
     addNodeView() {
         return ({ node, getPos, editor }) => {
             const container = document.createElement('div');
+            container.contentEditable = 'false';
             container.style.position = 'relative';
             container.style.display = 'inline-block';
             container.style.maxWidth = '100%';
