@@ -56,7 +56,7 @@ services:
       DEPLOY_WEBHOOK_SECRET: "${DEPLOY_WEBHOOK_SECRET}"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /var/www/aadikarta/production:/var/www/aadikarta/production
+      - /root/aadikarta-app/production:/root/aadikarta-app/production
       - ./deploy/hooks.json:/etc/webhook/hooks.json:ro
     networks:
       - global-proxy-network

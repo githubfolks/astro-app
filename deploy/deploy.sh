@@ -4,8 +4,11 @@
 # the `deploy` job in .github/workflows/tests.yml for the trigger side.
 set -euo pipefail
 
-DEPLOY_DIR="/var/www/aadikarta/production"
-LOG="/var/log/aadikarta-deploy.log"
+DEPLOY_DIR="/root/aadikarta-app/production"
+# Lives inside DEPLOY_DIR (rather than /var/log) because this script runs
+# inside the webhook container, which only bind-mounts DEPLOY_DIR — nothing
+# written outside it would survive a container restart.
+LOG="$DEPLOY_DIR/deploy.log"
 
 cd "$DEPLOY_DIR"
 echo "$(date -Iseconds) deploy triggered" >> "$LOG"

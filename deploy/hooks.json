@@ -1,8 +1,8 @@
 [
   {
     "id": "deploy-production",
-    "execute-command": "/var/www/aadikarta/production/deploy.sh",
-    "command-working-directory": "/var/www/aadikarta/production",
+    "execute-command": "/root/aadikarta-app/production/deploy.sh",
+    "command-working-directory": "/root/aadikarta-app/production",
     "trigger-rule": {
       "match": {
         "type": "payload-hmac-sha256",
