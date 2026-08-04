@@ -643,6 +643,10 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
             consultation.status = models.ConsultationStatus.ACCEPTED
             db.commit()
             db.refresh(consultation)
+            # Let the seeker's already-open socket know the astrologer joined —
+            # otherwise their UI stays on "waiting" until the astrologer's first
+            # message (TIMER_STARTED), even though the astrologer is already in.
+            await manager.broadcast(consultation_id, {"type": "CONSULTATION_ACCEPTED"}, exclude_user_id=user.id)
 
         # Send Initial State
         is_active = consultation.status == models.ConsultationStatus.ACTIVE

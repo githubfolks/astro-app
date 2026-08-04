@@ -89,6 +89,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         }
 
+        // Unregister this device's push token so it doesn't keep receiving this
+        // user's notifications if a different account logs in on the same device.
+        await fcmService.clearRegisteredToken();
+
         setToken(null);
         setUser(null);
         await storage.removeItem('token');

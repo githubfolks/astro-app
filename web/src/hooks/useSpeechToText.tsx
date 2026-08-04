@@ -42,11 +42,13 @@ export function useSpeechToText() {
     const [error, setError] = useState<string | null>(null);
     const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
     const onFinalRef = useRef<(text: string) => void>(() => {});
-    // Some Android/Chrome speech engines re-fire the same result index as
-    // final multiple times, each time with the cumulative transcript so far
-    // rather than just the new words. Track what's already been emitted per
-    // index so we only forward the new suffix, not the whole growing chunk.
+    // Some Android/Chrome speech engines re-finalize already-spoken words
+    // under a *new* result index rather than re-firing the same one, so a
+    // per-index dedup misses it — the growing transcript keeps reappearing
+    // under fresh indices. Track everything finalized so far for the whole
+    // session and diff each new chunk against that, not just its own index.
     const finalizedByIndexRef = useRef<string[]>([]);
+    const finalizedTotalRef = useRef('');
 
     useEffect(() => {
         return () => {
@@ -59,11 +61,17 @@ export function useSpeechToText() {
             setError('Voice input is not supported in this browser.');
             return;
         }
+        // A rapid double-tap on the mic button (common on mobile) can call
+        // start() twice before React state commits isListening=true; without
+        // this guard both SpeechRecognition instances would independently
+        // transcribe the same audio into the shared onFinalRef callback.
+        if (recognitionRef.current) return;
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!Recognition) return;
 
         onFinalRef.current = onFinalTranscript;
         finalizedByIndexRef.current = [];
+        finalizedTotalRef.current = '';
         setError(null);
 
         const recognition = new Recognition();
@@ -78,11 +86,25 @@ export function useSpeechToText() {
                 const result = event.results[i];
                 const transcript = result[0].transcript;
                 if (result.isFinal) {
-                    const alreadySent = finalizedByIndexRef.current[i] || '';
-                    const newPart = transcript.startsWith(alreadySent)
-                        ? transcript.slice(alreadySent.length)
-                        : transcript;
+                    const alreadySentAtIndex = finalizedByIndexRef.current[i] || '';
                     finalizedByIndexRef.current[i] = transcript;
+
+                    // Diff this index's transcript against everything finalized
+                    // so far this session (not just its own prior value) — some
+                    // engines re-finalize already-spoken words under a brand new
+                    // index, which a per-index-only diff would miss entirely.
+                    const total = finalizedTotalRef.current;
+                    let newPart: string;
+                    if (transcript.startsWith(total)) {
+                        newPart = transcript.slice(total.length);
+                    } else if (total.endsWith(transcript)) {
+                        newPart = '';
+                    } else {
+                        newPart = transcript.startsWith(alreadySentAtIndex)
+                            ? transcript.slice(alreadySentAtIndex.length)
+                            : transcript;
+                    }
+                    if (newPart) finalizedTotalRef.current = total + newPart;
                     finalChunk += newPart;
                 } else {
                     interimChunk += transcript;
@@ -100,11 +122,13 @@ export function useSpeechToText() {
                 ? 'Microphone access was denied.'
                 : `Voice input error: ${event.error}`);
             setIsListening(false);
+            recognitionRef.current = null;
         };
 
         recognition.onend = () => {
             setIsListening(false);
             setInterimText('');
+            recognitionRef.current = null;
         };
 
         recognitionRef.current = recognition;
@@ -113,6 +137,7 @@ export function useSpeechToText() {
             setIsListening(true);
         } catch (err) {
             console.error('[speech-debug] start() threw', err);
+            recognitionRef.current = null;
         }
     }, [isSupported]);
 

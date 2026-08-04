@@ -13,6 +13,11 @@ const PUSH_NOTIFICATIONS_ENABLED = import.meta.env.VITE_PUSH_NOTIFICATIONS_ENABL
 // Native push notifications (lazily imported to avoid loading the plugin on web)
 let PushNotifications: typeof import('@capacitor/push-notifications').PushNotifications | null = null;
 
+// Cached so logout can unregister the same token/platform pair it registered —
+// a device that later logs into a different account must stop receiving this
+// user's pushes (see clearRegisteredToken).
+let lastRegisteredToken: { value: string; platform: string } | null = null;
+
 const loadNativePush = async () => {
     if (isNative() && !PushNotifications) {
         const mod = await import('@capacitor/push-notifications');
@@ -48,6 +53,7 @@ export const fcmService = {
                         console.log('Push registration token:', token.value);
                         const platform = getPlatform(); // 'android' or 'ios'
                         await api.updateDeviceToken(token.value, platform);
+                        lastRegisteredToken = { value: token.value, platform };
                         resolve(token.value);
                     });
 
@@ -77,6 +83,7 @@ export const fcmService = {
                 console.log('Notification permission granted.');
                 const mockToken = "mock_fcm_token_" + Date.now();
                 await api.updateDeviceToken(mockToken, 'web');
+                lastRegisteredToken = { value: mockToken, platform: 'web' };
                 return mockToken;
             } else {
                 console.log('Unable to get permission to notify.');
@@ -85,5 +92,16 @@ export const fcmService = {
             console.error('Error getting permission or token', error);
         }
         return null;
+    },
+
+    async clearRegisteredToken(): Promise<void> {
+        if (!lastRegisteredToken) return;
+        try {
+            await api.clearDeviceToken(lastRegisteredToken.value, lastRegisteredToken.platform);
+        } catch (error) {
+            console.error('Error clearing device token on logout:', error);
+        } finally {
+            lastRegisteredToken = null;
+        }
     }
 };

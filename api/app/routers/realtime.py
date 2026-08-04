@@ -223,6 +223,16 @@ async def realtime_endpoint(websocket: WebSocket):
             profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user.id).first()
             if profile and profile.is_online:
                 asyncio.create_task(notifier.broadcast({"type": "ASTRO_ONLINE", "astrologer_id": user.id}))
+                # Reconnecting (e.g. unlocking the phone and reopening the app,
+                # without tapping the notification) makes the astrologer reachable
+                # again just like the manual online toggle does — resolve pending
+                # Knock subscriptions here too, not only from that toggle endpoint,
+                # otherwise seekers who knocked never get told the astrologer is back.
+                from .astrologers import _notify_waiting_seekers
+                try:
+                    _notify_waiting_seekers(db, user.id)
+                except Exception as e:
+                    logger.error(f"notify_waiting_seekers on reconnect failed for {user.id}: {e}")
         finally:
             db.close()
 

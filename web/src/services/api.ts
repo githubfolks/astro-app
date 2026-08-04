@@ -567,6 +567,17 @@ export const api = {
         });
         return handleResponse(response, 'Failed to update device token');
     },
+    clearDeviceToken: async (token: string, platform = 'web') => {
+        const response = await customFetch(`${API_URL}/users/device-token`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(await authHeaders())
+            },
+            body: JSON.stringify({ token, platform })
+        });
+        return handleResponse(response, 'Failed to clear device token');
+    },
 
     kundli: {
         generate: async (data: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {

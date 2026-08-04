@@ -1278,6 +1278,36 @@ export const Chat: React.FC = () => {
                             </div>
                         )}
 
+                        {/* Waiting-for-astrologer overlay (seeker only) — the astrologer hasn't
+                            accepted/joined yet (status stays CONNECTING until their first message
+                            starts the timer), so hide the chat panel behind a waiting message
+                            instead of letting the seeker see an empty, interactive composer. */}
+                        {user?.role === 'SEEKER' && (status === 'CONNECTING' || status === 'ACCEPTED') && (
+                            <div className="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-6 rounded-2xl text-center">
+                                <div className="w-3 h-3 rounded-full bg-[#E91E63] animate-ping" />
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">
+                                        {status === 'ACCEPTED'
+                                            ? 'Astrologer has joined'
+                                            : queueAhead && queueAhead > 0 ? 'Astrologer is busy' : 'Waiting for the astrologer'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mt-1 max-w-xs">
+                                        {status === 'ACCEPTED'
+                                            ? `${opponentName || 'The astrologer'} is in the chat and will start typing shortly.`
+                                            : queueAhead && queueAhead > 0
+                                                ? <><span className="font-bold">{queueAhead}</span> {queueAhead === 1 ? 'seeker is' : 'seekers are'} ahead of you. We'll start as soon as it's your turn.</>
+                                                : `${opponentName || 'The astrologer'} has been notified and will accept your request shortly.`}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={handleEndChat}
+                                    className="text-sm text-red-600 hover:text-red-700 font-medium"
+                                >
+                                    Cancel request
+                                </button>
+                            </div>
+                        )}
+
                         {/* Messages Area */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
                             {user?.role === 'SEEKER' && astrologer && messages.length === 0 && (

@@ -24,7 +24,7 @@ export const useChat = (consultationId: string) => {
     const { token } = useAuth();
     const ws = useRef<WebSocket | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
-    const [status, setStatus] = useState<'CONNECTING' | 'ACTIVE' | 'ENDED' | 'PAUSED'>('CONNECTING');
+    const [status, setStatus] = useState<'CONNECTING' | 'ACCEPTED' | 'ACTIVE' | 'ENDED' | 'PAUSED'>('CONNECTING');
     const [pauseReason, setPauseReason] = useState<string | null>(null);
     const [billingInfo, setBillingInfo] = useState({ balance: 0, spent: 0, minutes_remaining: 0 });
     const [timerActive, setTimerActive] = useState(false);
@@ -80,7 +80,7 @@ export const useChat = (consultationId: string) => {
             socket.send(JSON.stringify({ token }));
             reconnectAttempt.current = 0;
             startHeartbeat(socket);
-            setStatus(prev => (prev === 'ENDED' || prev === 'PAUSED') ? prev : 'CONNECTING');
+            setStatus(prev => (prev === 'ENDED' || prev === 'PAUSED' || prev === 'ACCEPTED') ? prev : 'CONNECTING');
         };
 
         socket.onmessage = (event) => {
@@ -98,6 +98,10 @@ export const useChat = (consultationId: string) => {
                     if (data.status === 'COMPLETED' || data.status === 'AUTO_ENDED') { setStatus('ENDED'); setTimerActive(false); }
                     else if (data.status === 'PAUSED') setStatus('PAUSED');
                     else if (data.status === 'ACTIVE') setStatus('ACTIVE');
+                    else if (data.status === 'ACCEPTED') setStatus('ACCEPTED');
+                    break;
+                case 'CONSULTATION_ACCEPTED':
+                    setStatus(prev => (prev === 'CONNECTING') ? 'ACCEPTED' : prev);
                     break;
                 case 'NEW_MESSAGE':
                     setMessages(prev => {

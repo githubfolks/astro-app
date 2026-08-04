@@ -112,3 +112,20 @@ def register_device_token(
     db.add(new_token)
     db.commit()
     return {"status": "registered"}
+
+@router.delete("/device-token")
+def clear_device_token(
+    data: DeviceTokenSchema,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Unregister an FCM token on logout so a device that later logs into a
+    different account doesn't keep receiving this user's push notifications.
+    """
+    db.query(models.DeviceToken).filter(
+        models.DeviceToken.fcm_token == data.token,
+        models.DeviceToken.user_id == current_user.id
+    ).delete()
+    db.commit()
+    return {"status": "cleared"}
