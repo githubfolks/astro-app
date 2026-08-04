@@ -3336,6 +3336,23 @@
         "title": "GenerateScenesRequest",
         "type": "object"
       },
+      "GenerateSocialCopyRequest": {
+        "properties": {
+          "platform": {
+            "enum": [
+              "twitter",
+              "linkedin"
+            ],
+            "title": "Platform",
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform"
+        ],
+        "title": "GenerateSocialCopyRequest",
+        "type": "object"
+      },
       "GenerateSocialRequest": {
         "properties": {
           "content": {
@@ -3345,7 +3362,9 @@
           "platform": {
             "enum": [
               "facebook",
-              "instagram"
+              "instagram",
+              "twitter",
+              "linkedin"
             ],
             "title": "Platform",
             "type": "string"
@@ -3594,6 +3613,39 @@
             },
             "title": "Scenes",
             "type": "array"
+          },
+          "seo_keywords_facebook": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Facebook"
+          },
+          "seo_keywords_instagram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Instagram"
+          },
+          "seo_keywords_youtube": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Youtube"
           },
           "status": {
             "$ref": "#/components/schemas/ContentJobStatus"
@@ -4739,6 +4791,39 @@
             ],
             "title": "Published At"
           },
+          "seo_keywords_facebook": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Facebook"
+          },
+          "seo_keywords_instagram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Instagram"
+          },
+          "seo_keywords_youtube": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Youtube"
+          },
           "slug": {
             "title": "Slug",
             "type": "string"
@@ -4833,6 +4918,39 @@
             ],
             "title": "Featured Image"
           },
+          "seo_keywords_facebook": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Facebook"
+          },
+          "seo_keywords_instagram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Instagram"
+          },
+          "seo_keywords_youtube": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Youtube"
+          },
           "slug": {
             "anyOf": [
               {
@@ -4888,6 +5006,17 @@
             "minLength": 1,
             "title": "Caption",
             "type": "string"
+          },
+          "seo_keywords": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords"
           }
         },
         "required": [
@@ -4967,6 +5096,39 @@
               }
             ],
             "title": "Featured Image"
+          },
+          "seo_keywords_facebook": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Facebook"
+          },
+          "seo_keywords_instagram": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Instagram"
+          },
+          "seo_keywords_youtube": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords Youtube"
           },
           "slug": {
             "anyOf": [
@@ -5478,6 +5640,24 @@
           "text"
         ],
         "title": "ShareSocialRequest",
+        "type": "object"
+      },
+      "SocialCopySuggestion": {
+        "properties": {
+          "tags": {
+            "title": "Tags",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "tags"
+        ],
+        "title": "SocialCopySuggestion",
         "type": "object"
       },
       "Token": {
@@ -11686,6 +11866,63 @@
           }
         ],
         "summary": "Generate Caption",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/generate-social-copy": {
+      "post": {
+        "operationId": "generate_social_copy_content_studio_jobs__job_id__generate_social_copy_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateSocialCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SocialCopySuggestion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Social Copy",
         "tags": [
           "Content Studio"
         ]

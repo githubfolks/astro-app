@@ -58,6 +58,11 @@ class CaptionSuggestion(BaseModel):
     caption: str
 
 
+class SocialCopySuggestion(BaseModel):
+    text: str
+    tags: str
+
+
 class PostSocialRequest(BaseModel):
     caption: str = Field(..., min_length=1, max_length=2200)
     seo_keywords: Optional[str] = None

@@ -164,6 +164,86 @@ def generate_social_caption(topic: str) -> str:
     return caption
 
 
+STANDING_HASHTAGS = "#AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality"
+
+# X/LinkedIn have no publish API configured for Content Studio, so this is
+# copy-paste-only: the model is asked to end its reply with a "TAGS:" line so
+# the caller can split post body and hashtags into two independently
+# copyable fields, same as cms.py's generate_social_post for blog posts.
+SOCIAL_COPY_SYSTEM_PROMPTS = {
+    "twitter": (
+        "You are a social media manager for Aadikarta, India's trusted marketplace for verified Vedic astrologers. "
+        "Write a concise, engaging post for X (Twitter) promoting a short vertical astrology video (Reel/Short), under "
+        "260 characters, with an attention-grabbing hook in natural Hinglish (a mix of Hindi in Devanagari script and "
+        "English). Do not include hashtags in the post body, markdown headers, titles, HTML tags, or code block markers. "
+        "After the post body, on a new line, write 'TAGS:' followed by 5-8 relevant hashtags (single line, "
+        f"space-separated), mixing hashtags specific to the topic with these standing hashtags: {STANDING_HASHTAGS}."
+    ),
+    "linkedin": (
+        "You are a social media manager for Aadikarta, India's trusted marketplace for verified Vedic astrologers. "
+        "Write a professional, thought-leadership style LinkedIn post promoting a short vertical astrology video "
+        "(Reel/Short) -- a short hook line, 2-4 short paragraphs or bullet points grounded in authentic Vedic astrology "
+        "terms, and a closing line inviting engagement. Do not include hashtags in the post body, markdown headers, "
+        "titles, HTML tags, or code block markers. After the post body, on a new line, write 'TAGS:' followed by 5-8 "
+        f"relevant hashtags (single line, space-separated), mixing hashtags specific to the topic with these standing "
+        f"hashtags: {STANDING_HASHTAGS}."
+    ),
+}
+
+
+def generate_social_copy(topic: str, platform: str) -> dict:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Content Studio is unavailable. GROQ_API_KEY is not set.")
+
+    body = {
+        "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
+        "messages": [
+            {"role": "system", "content": SOCIAL_COPY_SYSTEM_PROMPTS[platform]},
+            {"role": "user", "content": f"Topic: {topic}"},
+        ],
+        "max_tokens": 400,
+        "temperature": 0.8,
+    }
+
+    try:
+        response = httpx.post(
+            GROQ_CHAT_URL,
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        print(f"Content Studio: Groq social copy request failed: {e}")
+        raise _UPSTREAM_ERROR
+
+    if response.status_code != 200:
+        print(f"Content Studio: Groq social copy error {response.status_code}: {response.text[:500]}")
+        raise _UPSTREAM_ERROR
+
+    try:
+        reply = (response.json()["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, ValueError) as e:
+        print(f"Content Studio: unexpected Groq social copy response shape: {e}")
+        raise _UPSTREAM_ERROR
+
+    if not reply:
+        raise _UPSTREAM_ERROR
+
+    if reply.startswith("```"):
+        reply = re.sub(r"^```[a-zA-Z]*\n", "", reply)
+        reply = re.sub(r"\n```$", "", reply)
+
+    match = re.search(r"\n?TAGS:\s*(.+)\s*$", reply, re.IGNORECASE | re.DOTALL)
+    if match:
+        text = reply[:match.start()].strip()
+        tags = match.group(1).strip()
+    else:
+        text, tags = reply, ""
+
+    return {"text": text, "tags": tags}
+
+
 def generate_scenes(topic: str, content_type: "models.ContentType", scene_count: int | None) -> list[dict]:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:

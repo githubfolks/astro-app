@@ -7,10 +7,12 @@ import asyncio
 import os
 import shutil
 from datetime import datetime, timezone
+from typing import Literal
 
 from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from pydantic import BaseModel
 from PIL import Image, UnidentifiedImageError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -416,6 +418,20 @@ def generate_caption(request: Request, job_id: int, db: Session = Depends(databa
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return schemas_content_studio.CaptionSuggestion(caption=content_studio_llm.generate_social_caption(job.topic))
+
+
+class GenerateSocialCopyRequest(BaseModel):
+    platform: Literal["twitter", "linkedin"]
+
+
+@router.post("/jobs/{job_id}/generate-social-copy", response_model=schemas_content_studio.SocialCopySuggestion)
+@limiter.limit("10/minute")
+def generate_social_copy(request: Request, job_id: int, payload: GenerateSocialCopyRequest, db: Session = Depends(database.get_db)):
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    result = content_studio_llm.generate_social_copy(job.topic, payload.platform)
+    return schemas_content_studio.SocialCopySuggestion(**result)
 
 
 @router.post("/jobs/{job_id}/post/facebook", response_model=schemas_content_studio.Job)

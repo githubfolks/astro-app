@@ -135,7 +135,7 @@ def delete_post(post_id: int, db: Session = Depends(database.get_db)):
 class GenerateSocialRequest(BaseModel):
     title: str
     content: str
-    platform: Literal["facebook", "instagram"]
+    platform: Literal["facebook", "instagram", "twitter", "linkedin"]
 
 class ShareSocialRequest(BaseModel):
     platform: Literal["facebook", "instagram"]
@@ -159,6 +159,12 @@ def generate_social_post(payload: GenerateSocialRequest):
     # which carry no discovery benefit on the platforms this posts to.
     STANDING_HASHTAGS = "#AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality"
 
+    # twitter/linkedin are copy-paste-only (no publish API configured), so the
+    # LLM is asked to return the post body and hashtags separately -- ending
+    # the reply with a "TAGS:" line -- so the UI can offer both as two
+    # independently copyable blocks instead of one blob of text.
+    wants_tags = payload.platform in ("twitter", "linkedin")
+
     if payload.platform == "facebook":
         system_prompt = (
             "You are an expert social media manager. Create a highly engaging Facebook post based on this blog content. "
@@ -166,12 +172,28 @@ def generate_social_post(payload: GenerateSocialRequest):
             f"hashtags specific to this post's topic with these standing hashtags: {STANDING_HASHTAGS}. Do not include "
             "markdown headers, titles, HTML tags, or code block markers. Make it feel authentic, professional, and exciting."
         )
-    else:
+    elif payload.platform == "instagram":
         system_prompt = (
             "You are an expert social media manager. Create an eye-catching Instagram caption based on this blog content. "
             "Start with an attention-grabbing hook, use bullet points or emojis for high readability, and end with a single "
             "line of 10-15 relevant hashtags, mixing hashtags specific to this post's topic with these standing hashtags: "
             f"{STANDING_HASHTAGS}. Do not include markdown headers, HTML tags, or code block markers."
+        )
+    elif payload.platform == "twitter":
+        system_prompt = (
+            "You are an expert social media manager. Create a concise, engaging post for X (Twitter) based on this blog "
+            "content, under 260 characters, with an attention-grabbing hook. Do not include hashtags in the post body, "
+            "markdown headers, titles, HTML tags, or code block markers. After the post body, on a new line, write "
+            "'TAGS:' followed by 5-8 relevant hashtags (single line, space-separated), mixing hashtags specific to this "
+            f"post's topic with these standing hashtags: {STANDING_HASHTAGS}."
+        )
+    else:  # linkedin
+        system_prompt = (
+            "You are an expert social media manager. Create a professional, thought-leadership style LinkedIn post based "
+            "on this blog content -- a short hook line, 2-4 short paragraphs or bullet points, and a closing line inviting "
+            "engagement. Do not include hashtags in the post body, markdown headers, titles, HTML tags, or code block "
+            "markers. After the post body, on a new line, write 'TAGS:' followed by 5-8 relevant hashtags (single line, "
+            f"space-separated), mixing hashtags specific to this post's topic with these standing hashtags: {STANDING_HASHTAGS}."
         )
 
     body = {
@@ -202,7 +224,17 @@ def generate_social_post(payload: GenerateSocialRequest):
         if reply.startswith("```"):
             reply = re.sub(r"^```[a-zA-Z]*\n", "", reply)
             reply = re.sub(r"\n```$", "", reply)
-        return {"text": reply}
+
+        if not wants_tags:
+            return {"text": reply}
+
+        match = re.search(r"\n?TAGS:\s*(.+)\s*$", reply, re.IGNORECASE | re.DOTALL)
+        if match:
+            text = reply[:match.start()].strip()
+            tags = match.group(1).strip()
+        else:
+            text, tags = reply, ""
+        return {"text": text, "tags": tags}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to parse LLM response.")
 

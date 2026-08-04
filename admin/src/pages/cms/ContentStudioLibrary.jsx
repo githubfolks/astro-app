@@ -5,7 +5,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
-import { Facebook, Instagram, Youtube, Download, X, Trash2, Upload } from 'lucide-react';
+import { Facebook, Instagram, Youtube, Download, X, Trash2, Upload, Twitter, Linkedin, Copy, Check } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import clsx from 'clsx';
 
@@ -20,6 +20,14 @@ const PLATFORMS = [
     { key: 'facebook', label: 'Facebook', icon: Facebook, postedField: 'posted_facebook_at', keywordsField: 'seo_keywords_facebook', action: 'postFacebook', needsCaption: true },
     { key: 'instagram', label: 'Instagram', icon: Instagram, postedField: 'posted_instagram_at', keywordsField: 'seo_keywords_instagram', action: 'postInstagram', needsCaption: true },
     { key: 'youtube', label: 'YouTube', icon: Youtube, postedField: 'posted_youtube_at', keywordsField: 'seo_keywords_youtube', action: 'postYoutube', needsCaption: true },
+];
+
+// X.com and LinkedIn have no publish API configured here -- these are
+// copy-paste-only: AI Generate produces post content + tags as two
+// separately copyable fields for manual posting, no "sent" status tracked.
+const SOCIAL_COPY_PLATFORMS = [
+    { key: 'twitter', label: 'X.com', icon: Twitter },
+    { key: 'linkedin', label: 'LinkedIn', icon: Linkedin },
 ];
 
 function NewVideoModal({ onClose, onCreated }) {
@@ -175,12 +183,111 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
     );
 }
 
+function SocialCopyModal({ job, platform, onClose }) {
+    const [text, setText] = useState('');
+    const [tags, setTags] = useState('');
+    const [generating, setGenerating] = useState(true);
+    const [copiedField, setCopiedField] = useState('');
+
+    const generate = useCallback(async () => {
+        setGenerating(true);
+        try {
+            const res = await contentStudio.generateSocialCopy(job.id, platform.key);
+            setText(res.data.text || '');
+            setTags(res.data.tags || '');
+        } catch (e) {
+            alert(e.message || `Failed to generate ${platform.label} content.`);
+        } finally {
+            setGenerating(false);
+        }
+    }, [job.id, platform.key, platform.label]);
+
+    useEffect(() => { generate(); }, [generate]);
+
+    const handleCopy = async (field, value) => {
+        if (!value) return;
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopiedField(field);
+            setTimeout(() => setCopiedField(''), 1500);
+        } catch {
+            alert('Failed to copy to clipboard.');
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                        <platform.icon size={18} /> {platform.label} Content
+                    </h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <X size={20} />
+                    </button>
+                </div>
+                <p className="text-xs text-slate-500 truncate" title={job.topic}>{job.topic}</p>
+
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-slate-700">Post Content</label>
+                        <button
+                            type="button"
+                            onClick={() => handleCopy('text', text)}
+                            disabled={!text || generating}
+                            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-30 cursor-pointer flex items-center gap-1"
+                        >
+                            {copiedField === 'text' ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+                        </button>
+                    </div>
+                    <TextArea
+                        fullWidth
+                        value={generating ? 'Generating...' : text}
+                        onChange={(e) => setText(e.target.value)}
+                        disabled={generating}
+                        className="h-32"
+                    />
+                </div>
+
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-slate-700">Tags</label>
+                        <button
+                            type="button"
+                            onClick={() => handleCopy('tags', tags)}
+                            disabled={!tags || generating}
+                            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-30 cursor-pointer flex items-center gap-1"
+                        >
+                            {copiedField === 'tags' ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+                        </button>
+                    </div>
+                    <TextArea
+                        fullWidth
+                        value={generating ? '' : tags}
+                        onChange={(e) => setTags(e.target.value)}
+                        disabled={generating}
+                        className="h-20"
+                    />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                    <Button variant="outlined" size="sm" onClick={generate} disabled={generating} className="cursor-pointer">
+                        {generating ? 'Generating...' : 'Regenerate with AI'}
+                    </Button>
+                    <Button variant="outlined" size="sm" onClick={onClose} className="cursor-pointer">Close</Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function ContentStudioLibrary() {
     const [jobs, setJobs] = useState([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [posting, setPosting] = useState({}); // `${jobId}-${platform}` -> true while in flight
     const [captionModal, setCaptionModal] = useState(null); // { job, platform } | null
+    const [socialCopyModal, setSocialCopyModal] = useState(null); // { job, platform } | null
     const [showNewVideoModal, setShowNewVideoModal] = useState(false);
     const [deleting, setDeleting] = useState({}); // jobId -> true while delete is in flight
     const [uploading, setUploading] = useState({}); // jobId -> true while a video upload is in flight
@@ -285,6 +392,7 @@ export default function ContentStudioLibrary() {
                             <TableHead>Topic</TableHead>
                             <TableHead>Date</TableHead>
                             {PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
+                            {SOCIAL_COPY_PLATFORMS.map(p => <TableHead key={p.key}>{p.label}</TableHead>)}
                             <TableHead className="text-right">Upload</TableHead>
                             <TableHead className="text-right">Video</TableHead>
                             <TableHead className="text-right">Delete</TableHead>
@@ -331,6 +439,18 @@ export default function ContentStudioLibrary() {
                                         </TableCell>
                                     );
                                 })}
+                                {SOCIAL_COPY_PLATFORMS.map((platform) => (
+                                    <TableCell key={platform.key}>
+                                        <Button
+                                            variant="outlined"
+                                            size="sm"
+                                            onClick={() => setSocialCopyModal({ job, platform })}
+                                            className="cursor-pointer"
+                                        >
+                                            Generate & Copy
+                                        </Button>
+                                    </TableCell>
+                                ))}
                                 <TableCell className="text-right">
                                     <Button
                                         variant="ghost"
@@ -366,7 +486,7 @@ export default function ContentStudioLibrary() {
                         ))}
                         {jobs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={2 + PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={2 + PLATFORMS.length + SOCIAL_COPY_PLATFORMS.length + 3} className="text-center py-8 text-gray-900">
                                     No videos generated yet
                                 </TableCell>
                             </TableRow>
@@ -415,6 +535,14 @@ export default function ContentStudioLibrary() {
                     platform={captionModal.platform}
                     onClose={() => setCaptionModal(null)}
                     onPosted={handlePosted}
+                />
+            )}
+
+            {socialCopyModal && (
+                <SocialCopyModal
+                    job={socialCopyModal.job}
+                    platform={socialCopyModal.platform}
+                    onClose={() => setSocialCopyModal(null)}
                 />
             )}
 
