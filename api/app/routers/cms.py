@@ -40,6 +40,9 @@ def create_post(post: schemas_cms.PostCreate, db: Session = Depends(database.get
         featured_image=post.featured_image,
         author_name=post.author_name,
         faqs=post.faqs,
+        seo_keywords_facebook=post.seo_keywords_facebook,
+        seo_keywords_instagram=post.seo_keywords_instagram,
+        seo_keywords_youtube=post.seo_keywords_youtube,
         status=post.status,
         author_id=current_user.id,
         published_at=datetime.utcnow() if post.status == schemas_cms.PostStatus.PUBLISHED else None
@@ -103,6 +106,12 @@ def update_post(post_id: int, post_update: schemas_cms.PostUpdate, db: Session =
         db_post.author_name = post_update.author_name
     if post_update.faqs is not None:
         db_post.faqs = post_update.faqs
+    if post_update.seo_keywords_facebook is not None:
+        db_post.seo_keywords_facebook = post_update.seo_keywords_facebook
+    if post_update.seo_keywords_instagram is not None:
+        db_post.seo_keywords_instagram = post_update.seo_keywords_instagram
+    if post_update.seo_keywords_youtube is not None:
+        db_post.seo_keywords_youtube = post_update.seo_keywords_youtube
     if post_update.status:
         db_post.status = post_update.status
         if post_update.status == schemas_cms.PostStatus.PUBLISHED and not db_post.published_at:

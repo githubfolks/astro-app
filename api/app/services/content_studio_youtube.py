@@ -62,7 +62,7 @@ def _get_access_token() -> str:
     return access_token
 
 
-def post_to_youtube(output_video_url: str, title: str, description: str) -> dict:
+def post_to_youtube(output_video_url: str, title: str, description: str, tags: list[str] | None = None) -> dict:
     video_path = _local_path(output_video_url)
     if not os.path.isfile(video_path):
         raise HTTPException(status_code=404, detail=f"Rendered video file not found at {video_path}.")
@@ -83,7 +83,12 @@ def post_to_youtube(output_video_url: str, title: str, description: str) -> dict
                 "X-Upload-Content-Length": str(file_size),
             },
             json={
-                "snippet": {"title": title, "description": description, "categoryId": DEFAULT_CATEGORY_ID},
+                "snippet": {
+                    "title": title,
+                    "description": description,
+                    "categoryId": DEFAULT_CATEGORY_ID,
+                    **({"tags": tags} if tags else {}),
+                },
                 "status": {"privacyStatus": "public", "selfDeclaredMadeForKids": False},
             },
             timeout=30.0,

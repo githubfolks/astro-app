@@ -38,6 +38,9 @@ class PostBase(BaseModel):
     featured_image: Optional[str] = None
     author_name: Optional[str] = None
     faqs: Optional[List[Dict[str, str]]] = None
+    seo_keywords_facebook: Optional[str] = None
+    seo_keywords_instagram: Optional[str] = None
+    seo_keywords_youtube: Optional[str] = None
     status: PostStatus = PostStatus.DRAFT
 
 class PostCreate(PostBase):
@@ -51,6 +54,9 @@ class PostUpdate(BaseModel):
     featured_image: Optional[str] = None
     author_name: Optional[str] = None
     faqs: Optional[List[Dict[str, str]]] = None
+    seo_keywords_facebook: Optional[str] = None
+    seo_keywords_instagram: Optional[str] = None
+    seo_keywords_youtube: Optional[str] = None
     status: Optional[PostStatus] = None
 
 class Post(PostBase):

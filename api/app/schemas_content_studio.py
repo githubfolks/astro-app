@@ -60,6 +60,7 @@ class CaptionSuggestion(BaseModel):
 
 class PostSocialRequest(BaseModel):
     caption: str = Field(..., min_length=1, max_length=2200)
+    seo_keywords: Optional[str] = None
 
 
 class Job(BaseModel):
@@ -75,6 +76,9 @@ class Job(BaseModel):
     posted_instagram_at: Optional[datetime] = None
     posted_youtube_at: Optional[datetime] = None
     youtube_video_id: Optional[str] = None
+    seo_keywords_facebook: Optional[str] = None
+    seo_keywords_instagram: Optional[str] = None
+    seo_keywords_youtube: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
 

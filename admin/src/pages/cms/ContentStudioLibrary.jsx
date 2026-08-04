@@ -17,9 +17,9 @@ const toAbsoluteUrl = (path) => {
 };
 
 const PLATFORMS = [
-    { key: 'facebook', label: 'Facebook', icon: Facebook, postedField: 'posted_facebook_at', action: 'postFacebook', needsCaption: true },
-    { key: 'instagram', label: 'Instagram', icon: Instagram, postedField: 'posted_instagram_at', action: 'postInstagram', needsCaption: true },
-    { key: 'youtube', label: 'YouTube', icon: Youtube, postedField: 'posted_youtube_at', action: 'postYoutube', needsCaption: true },
+    { key: 'facebook', label: 'Facebook', icon: Facebook, postedField: 'posted_facebook_at', keywordsField: 'seo_keywords_facebook', action: 'postFacebook', needsCaption: true },
+    { key: 'instagram', label: 'Instagram', icon: Instagram, postedField: 'posted_instagram_at', keywordsField: 'seo_keywords_instagram', action: 'postInstagram', needsCaption: true },
+    { key: 'youtube', label: 'YouTube', icon: Youtube, postedField: 'posted_youtube_at', keywordsField: 'seo_keywords_youtube', action: 'postYoutube', needsCaption: true },
 ];
 
 function NewVideoModal({ onClose, onCreated }) {
@@ -96,6 +96,7 @@ function NewVideoModal({ onClose, onCreated }) {
 
 function CaptionModal({ job, platform, onClose, onPosted }) {
     const [caption, setCaption] = useState('');
+    const [seoKeywords, setSeoKeywords] = useState(job[platform.keywordsField] || '');
     const [generating, setGenerating] = useState(true);
     const [sending, setSending] = useState(false);
 
@@ -120,7 +121,7 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
         }
         setSending(true);
         try {
-            const res = await contentStudio[platform.action](job.id, caption.trim());
+            const res = await contentStudio[platform.action](job.id, caption.trim(), seoKeywords.trim());
             onPosted(res.data);
         } catch (e) {
             alert(e.message || `Failed to post to ${platform.label}.`);
@@ -148,6 +149,15 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
                     onChange={(e) => setCaption(e.target.value)}
                     disabled={generating}
                     className="h-40"
+                />
+                <TextArea
+                    fullWidth
+                    label={`SEO Keywords (${platform.label})`}
+                    placeholder={platform.key === 'youtube' ? 'Comma-separated tags, e.g. astrology, horoscope, zodiac' : 'Comma-separated keywords for discovery'}
+                    value={seoKeywords}
+                    onChange={(e) => setSeoKeywords(e.target.value)}
+                    disabled={generating}
+                    className="h-20"
                 />
                 <div className="flex items-center justify-between pt-2">
                     <Button variant="outlined" size="sm" onClick={generate} disabled={generating} className="cursor-pointer">

@@ -156,9 +156,9 @@ export const contentStudio = {
     listJobs: (params) => api.get('/content-studio/jobs', { params }),
     deleteJob: (jobId) => api.delete(`/content-studio/jobs/${jobId}`),
     generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
-    postFacebook: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption }),
-    postInstagram: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption }),
-    postYoutube: (jobId, caption) => api.post(`/content-studio/jobs/${jobId}/post/youtube`, { caption }),
+    postFacebook: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption, seo_keywords: seoKeywords }),
+    postInstagram: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption, seo_keywords: seoKeywords }),
+    postYoutube: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/youtube`, { caption, seo_keywords: seoKeywords }),
 };
 
 

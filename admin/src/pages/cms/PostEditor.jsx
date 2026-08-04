@@ -63,6 +63,9 @@ export default function PostEditor() {
         featured_image: '',
         author_name: '',
         faqs: [],
+        seo_keywords_facebook: '',
+        seo_keywords_instagram: '',
+        seo_keywords_youtube: '',
         status: 'DRAFT',
     });
 
@@ -89,6 +92,9 @@ export default function PostEditor() {
                     featured_image: response.data.featured_image || '',
                     author_name: response.data.author_name || '',
                     faqs: response.data.faqs || [],
+                    seo_keywords_facebook: response.data.seo_keywords_facebook || '',
+                    seo_keywords_instagram: response.data.seo_keywords_instagram || '',
+                    seo_keywords_youtube: response.data.seo_keywords_youtube || '',
                     status: response.data.status,
                 });
             } catch (error) {
@@ -476,6 +482,15 @@ export default function PostEditor() {
                             >
                                 {publishingFb ? 'Publishing...' : 'Publish to Facebook'}
                             </Button>
+                            <div className="space-y-1 pt-1 border-t border-slate-200">
+                                <label className="text-[10px] font-semibold text-slate-500 block uppercase tracking-wider">SEO Keywords (Facebook)</label>
+                                <textarea
+                                    className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-16 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                    placeholder="Comma-separated keywords for Facebook discovery..."
+                                    value={formData.seo_keywords_facebook || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords_facebook: e.target.value }))}
+                                />
+                            </div>
                         </div>
 
                         {/* Instagram Section */}
@@ -509,6 +524,31 @@ export default function PostEditor() {
                             {!isEdit && (
                                 <p className="text-[10px] text-slate-400 text-center mt-2">Save this blog post first to enable publishing.</p>
                             )}
+                            <div className="space-y-1 pt-1 border-t border-slate-200">
+                                <label className="text-[10px] font-semibold text-slate-500 block uppercase tracking-wider">SEO Keywords (Instagram)</label>
+                                <textarea
+                                    className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-16 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                    placeholder="Comma-separated keywords for Instagram discovery..."
+                                    value={formData.seo_keywords_instagram || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords_instagram: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+
+                        {/* YouTube Section (keywords only — no video posting for blog posts) */}
+                        <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">YouTube</span>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-semibold text-slate-500 block uppercase tracking-wider">SEO Keywords (YouTube)</label>
+                                <textarea
+                                    className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-16 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                    placeholder="Comma-separated keywords/tags for a related YouTube video..."
+                                    value={formData.seo_keywords_youtube || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords_youtube: e.target.value }))}
+                                />
+                            </div>
                         </div>
                     </div>
                 </Card>

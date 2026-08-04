@@ -427,8 +427,10 @@ async def post_facebook(
     db: Session = Depends(database.get_db),
 ):
     job = _get_ready_job(job_id, db)
-    await asyncio.to_thread(content_studio_social.post_to_facebook, job.output_video_url, payload.caption)
+    caption = f"{payload.caption}\n\n{payload.seo_keywords}" if payload.seo_keywords else payload.caption
+    await asyncio.to_thread(content_studio_social.post_to_facebook, job.output_video_url, caption)
     job.posted_facebook_at = datetime.now(timezone.utc)
+    job.seo_keywords_facebook = payload.seo_keywords
     db.commit()
     db.refresh(job)
     return job
@@ -443,8 +445,10 @@ async def post_instagram(
     db: Session = Depends(database.get_db),
 ):
     job = _get_ready_job(job_id, db)
-    await asyncio.to_thread(content_studio_social.post_to_instagram, job.output_video_url, payload.caption)
+    caption = f"{payload.caption}\n\n{payload.seo_keywords}" if payload.seo_keywords else payload.caption
+    await asyncio.to_thread(content_studio_social.post_to_instagram, job.output_video_url, caption)
     job.posted_instagram_at = datetime.now(timezone.utc)
+    job.seo_keywords_instagram = payload.seo_keywords
     db.commit()
     db.refresh(job)
     return job
@@ -459,9 +463,11 @@ async def post_youtube(
     db: Session = Depends(database.get_db),
 ):
     job = _get_ready_job(job_id, db)
-    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, payload.caption)
+    tags = [t.strip() for t in payload.seo_keywords.split(",") if t.strip()] if payload.seo_keywords else None
+    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, payload.caption, tags)
     job.posted_youtube_at = datetime.now(timezone.utc)
     job.youtube_video_id = result.get("id")
+    job.seo_keywords_youtube = payload.seo_keywords
     db.commit()
     db.refresh(job)
     return job
