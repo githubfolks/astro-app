@@ -108,8 +108,6 @@ const Footer: React.FC = () => {
                                 {!isAstrologer && <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>}
                                 {!isAstrologer && <li><Link to="/pricing" onClick={scrollToTop}>Pricing</Link></li>}
                                 {!isAstrologer && <li><Link to="/how-it-works" onClick={scrollToTop}>How It Works</Link></li>}
-                                {!isAstrologer && <li><Link to="/vs/astrotalk" onClick={scrollToTop}>Aadikarta vs AstroTalk</Link></li>}
-                                {!isAstrologer && <li><Link to="/vs/astroyogi" onClick={scrollToTop}>Aadikarta vs Astroyogi</Link></li>}
                                 {!isAstrologer && <li><Link to="/join-as-astrologer" onClick={scrollToTop}>Join as Astrologer</Link></li>}
                                 <li><Link to="/contact-us" onClick={scrollToTop}>Contact Us</Link></li>
                             </ul>
