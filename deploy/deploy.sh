@@ -21,7 +21,7 @@ if [ -z "${DEPLOY_REEXECED:-}" ]; then
     # silently running last commit's deploy steps. Re-exec as a fresh
     # process so it opens whatever is actually on disk now.
     export DEPLOY_REEXECED=1
-    exec "$DEPLOY_DIR/deploy.sh"
+    exec "$0"
 fi
 
 # Built sequentially, not `build api web` in one call — Compose builds

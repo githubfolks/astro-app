@@ -1,7 +1,7 @@
 [
   {
     "id": "deploy-production",
-    "execute-command": "/root/aadikarta-app/production/deploy.sh",
+    "execute-command": "/root/aadikarta-app/production/deploy/deploy.sh",
     "command-working-directory": "/root/aadikarta-app/production",
     "trigger-rule": {
       "match": {
