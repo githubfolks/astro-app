@@ -36,6 +36,8 @@ const URLS = [
     { loc: '/services/daily-horoscope',  changefreq: 'daily',   priority: '0.7' },
     { loc: '/services/tarot-reading',    changefreq: 'monthly', priority: '0.7' },
     { loc: '/services/vastu-shastra',    changefreq: 'monthly', priority: '0.7' },
+    { loc: '/vs/astrotalk',              changefreq: 'monthly', priority: '0.7' },
+    { loc: '/vs/astroyogi',              changefreq: 'monthly', priority: '0.7' },
     { loc: '/about-us',                  changefreq: 'monthly', priority: '0.6' },
     { loc: '/contact-us',                changefreq: 'monthly', priority: '0.6' },
     { loc: '/join-as-astrologer',        changefreq: 'monthly', priority: '0.6' },
