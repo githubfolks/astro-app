@@ -307,11 +307,52 @@ async def log_requests(request: Request, call_next):
         # client, since it can contain SQL fragments, file paths, or other
         # internals from unrelated dependencies raising here.
         print(f"ERROR processing request: {e}")
+        _persist_error_log(request, e)
         from fastapi.responses import JSONResponse
         return JSONResponse(
             status_code=500,
             content={"detail": "Internal Server Error"}
         )
+
+
+def _persist_error_log(request: Request, exc: Exception):
+    """Best-effort durable record of an unhandled exception. Uses its own
+    session (no request-scoped `Depends(get_db)` is available this far up
+    the stack) and must never let a logging failure mask the original error."""
+    import traceback
+    from .database import SessionLocal
+    from . import models
+
+    user_id = None
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        try:
+            from jose import jwt, JWTError
+            from .routers.auth import SECRET_KEY, ALGORITHM
+            payload = jwt.decode(auth_header[7:], SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = int(payload.get("sub")) if payload.get("sub") else None
+        except (JWTError, ValueError, TypeError):
+            pass
+
+    try:
+        # Format the passed-in exception directly rather than reading the
+        # ambient sys.exc_info() — ASGI middleware chains can wrap the
+        # original error in an exception group, whose traceback text is long
+        # enough that a naive [:8000] head-slice cuts off before ever
+        # reaching the actual raise site.
+        tb_text = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+        with SessionLocal() as db:
+            db.add(models.ErrorLog(
+                method=request.method,
+                path=request.url.path,
+                user_id=user_id,
+                error_type=type(exc).__name__,
+                message=str(exc)[:2000],
+                traceback=tb_text[-8000:],
+            ))
+            db.commit()
+    except Exception as log_err:
+        print(f"Failed to persist error log: {log_err}")
 
 # Compress JSON responses when the API is reached without an nginx layer in front.
 # Excludes /static: GZipMiddleware doesn't correctly honor Range requests, so

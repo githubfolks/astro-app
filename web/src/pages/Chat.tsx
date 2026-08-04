@@ -338,7 +338,16 @@ export const Chat: React.FC = () => {
                 theme: { color: '#E91E63' }
             };
             const rzp = new window.Razorpay(options);
-            rzp.on("payment.failed", (r: RazorpayError) => alert("Payment failed: " + r.error.description));
+            rzp.on("payment.failed", (r: RazorpayError) => {
+                api.payment.reportFailure({
+                    razorpay_order_id: orderData.order_id,
+                    code: r.error.code,
+                    description: r.error.description,
+                    reason: r.error.reason,
+                    source: "chat"
+                });
+                alert("Payment failed: " + r.error.description);
+            });
             rzp.open();
         } catch (e) {
             alert('Failed to initiate payment: ' + (getErrorMessage(e) || 'Unknown error'));

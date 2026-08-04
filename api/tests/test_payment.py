@@ -223,3 +223,110 @@ def test_refund_blocks_mock_payment(client, make_user, db_session, monkeypatch):
 
     resp = client.post(f"/payment/refund/{txn.id}", headers=auth_headers(admin), json={})
     assert resp.status_code == 400
+
+
+def test_report_failure_requires_auth(client):
+    assert client.post("/payment/failure", json={}).status_code == 401
+
+
+def test_report_failure_writes_audit_log(client, make_user, db_session):
+    seeker = make_user(models.UserRole.SEEKER)
+    resp = client.post("/payment/failure", headers=auth_headers(seeker), json={
+        "razorpay_order_id": "order_test_1",
+        "code": "BAD_REQUEST_ERROR",
+        "description": "Payment failed due to insufficient funds",
+        "reason": "payment_failed",
+        "source": "wallet",
+    })
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "logged"
+
+    entry = db_session.query(models.AuditLog).filter(
+        models.AuditLog.action == "PAYMENT_FAILED"
+    ).order_by(models.AuditLog.id.desc()).first()
+    assert entry is not None
+    assert entry.actor_id == seeker.id
+    assert entry.resource_id == "order_test_1"
+    assert entry.details["description"] == "Payment failed due to insufficient funds"
+    assert entry.details["source"] == "wallet"
+
+
+def test_webhook_payment_failed_logs_audit_entry(client, make_user, db_session, monkeypatch):
+    import hmac as hmac_lib
+    import hashlib as hashlib_lib
+    import json as json_lib
+    from app.services import settings_service
+
+    seeker = make_user(models.UserRole.SEEKER)
+    order = models.PaymentOrder(
+        order_id="order_wh_1", user_id=seeker.id, amount_paise=10000, is_mock=False, razorpay_mode="test",
+    )
+    db_session.add(order)
+    db_session.commit()
+
+    secret = "whsec_test"
+    monkeypatch.setattr(settings_service, "get_setting", lambda key: secret if key == "razorpay_webhook_secret_test" else None)
+
+    payload = {
+        "event": "payment.failed",
+        "payload": {"payment": {"entity": {
+            "order_id": "order_wh_1",
+            "error_code": "BAD_REQUEST_ERROR",
+            "error_description": "The card was declined",
+            "error_reason": "payment_failed",
+        }}},
+    }
+    raw_body = json_lib.dumps(payload).encode("utf-8")
+    sig = hmac_lib.new(secret.encode("utf-8"), raw_body, hashlib_lib.sha256).hexdigest()
+
+    resp = client.post(
+        "/payment/razorpay-webhook",
+        content=raw_body,
+        headers={"X-Razorpay-Signature": sig, "Content-Type": "application/json"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "logged"
+
+    entry = db_session.query(models.AuditLog).filter(
+        models.AuditLog.action == "PAYMENT_FAILED",
+        models.AuditLog.resource_id == "order_wh_1",
+    ).first()
+    assert entry is not None
+    assert entry.actor_id == seeker.id
+    assert entry.details["description"] == "The card was declined"
+    assert entry.details["source"] == "webhook"
+
+
+def test_admin_payment_failures_requires_admin(client, make_user):
+    seeker = make_user(models.UserRole.SEEKER)
+    resp = client.get("/admin/payment-failures", headers=auth_headers(seeker))
+    assert resp.status_code == 403
+
+
+def test_admin_payment_failures_lists_and_searches(client, make_user):
+    admin = make_user(models.UserRole.ADMIN)
+    seeker = make_user(models.UserRole.SEEKER, full_name="Priya Sharma")
+
+    client.post("/payment/failure", headers=auth_headers(seeker), json={
+        "razorpay_order_id": "order_admin_1",
+        "code": "GATEWAY_ERROR",
+        "description": "UPI collect request timed out",
+        "reason": "payment_failed",
+        "source": "wallet",
+    })
+
+    resp = client.get("/admin/payment-failures", headers=auth_headers(admin))
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["total"] == 1
+    row = body["failures"][0]
+    assert row["user_name"] == "Priya Sharma"
+    assert row["email"] == seeker.email
+    assert row["order_id"] == "order_admin_1"
+    assert row["description"] == "UPI collect request timed out"
+
+    resp = client.get("/admin/payment-failures", headers=auth_headers(admin), params={"search": "Priya"})
+    assert resp.json()["total"] == 1
+
+    resp = client.get("/admin/payment-failures", headers=auth_headers(admin), params={"search": "nonexistent"})
+    assert resp.json()["total"] == 0

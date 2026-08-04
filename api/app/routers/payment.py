@@ -65,6 +65,13 @@ class RefundRequest(BaseModel):
     amount: float | None = None  # In Rupees. Defaults to the full remaining (unrefunded) amount.
     notes: str | None = None
 
+class PaymentFailureReport(BaseModel):
+    razorpay_order_id: str | None = None
+    code: str | None = None
+    description: str | None = None
+    reason: str | None = None
+    source: str | None = None  # e.g. "wallet", "payment_modal", "chat"
+
 @router.post("/order")
 def create_payment_order(
     order: OrderCreate,
@@ -231,6 +238,34 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
         raise HTTPException(status_code=400, detail="Payment verification failed")
 
 
+@router.post("/failure")
+def report_payment_failure(
+    data: PaymentFailureReport,
+    db: Session = Depends(database.get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """
+    Client-side report that Razorpay's checkout raised `payment.failed`
+    (card declined, insufficient funds, user cancelled, etc). Purely a
+    diagnostic breadcrumb for support to look up when a seeker claims money
+    was taken but their wallet wasn't credited — no wallet/order state
+    changes here, since the /verify or webhook path is what actually credits
+    a successful payment.
+    """
+    audit.log(
+        db, "PAYMENT_FAILED", actor_id=current_user.id,
+        resource_type="payment_order", resource_id=data.razorpay_order_id,
+        details={
+            "code": data.code,
+            "description": data.description,
+            "reason": data.reason,
+            "source": data.source,
+        },
+    )
+    db.commit()
+    return {"status": "logged"}
+
+
 @router.post("/razorpay-webhook")
 async def razorpay_webhook(request: Request, db: Session = Depends(database.get_db)):
     """
@@ -266,6 +301,24 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
     event = payload.get("event")
+
+    if event == "payment.failed":
+        payment_entity = payload.get("payload", {}).get("payment", {}).get("entity", {})
+        order_id = payment_entity.get("order_id")
+        order = db.query(models.PaymentOrder).filter(models.PaymentOrder.order_id == order_id).first() if order_id else None
+        audit.log(
+            db, "PAYMENT_FAILED", actor_id=order.user_id if order else None,
+            resource_type="payment_order", resource_id=order_id,
+            details={
+                "code": payment_entity.get("error_code"),
+                "description": payment_entity.get("error_description"),
+                "reason": payment_entity.get("error_reason"),
+                "source": "webhook",
+            },
+        )
+        db.commit()
+        return {"status": "logged"}
+
     if event != "payment.captured":
         return {"status": "ignored", "event": event}
 

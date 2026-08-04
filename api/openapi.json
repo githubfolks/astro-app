@@ -4560,6 +4560,67 @@
         "title": "PanchangResponse",
         "type": "object"
       },
+      "PaymentFailureReport": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "razorpay_order_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Razorpay Order Id"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          }
+        },
+        "title": "PaymentFailureReport",
+        "type": "object"
+      },
       "PaymentVerification": {
         "properties": {
           "razorpay_order_id": {
@@ -7260,6 +7321,111 @@
         ]
       }
     },
+    "/admin/error-logs": {
+      "get": {
+        "description": "Unhandled 500s captured by main.py's request middleware (ErrorLog table).",
+        "operationId": "list_error_logs_admin_error_logs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "path",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Path"
+            }
+          },
+          {
+            "in": "query",
+            "name": "error_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Error Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Error Logs",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/moderation-flags": {
       "get": {
         "operationId": "list_moderation_flags_admin_moderation_flags_get",
@@ -7382,6 +7548,79 @@
           }
         ],
         "summary": "Resolve Moderation Flag",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
+    "/admin/payment-failures": {
+      "get": {
+        "description": "PAYMENT_FAILED audit entries (client-reported `payment.failed` from\nRazorpay checkout, plus the server-side webhook backup) joined with the\nseeker's identity, so support can look up a customer's failed-charge\nclaims by name/email/phone without knowing their internal user id.",
+        "operationId": "list_payment_failures_admin_payment_failures_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Payment Failures",
         "tags": [
           "Admin"
         ]
@@ -13972,6 +14211,51 @@
         "summary": "Get Daily Panchang",
         "tags": [
           "Panchang"
+        ]
+      }
+    },
+    "/payment/failure": {
+      "post": {
+        "description": "Client-side report that Razorpay's checkout raised `payment.failed`\n(card declined, insufficient funds, user cancelled, etc). Purely a\ndiagnostic breadcrumb for support to look up when a seeker claims money\nwas taken but their wallet wasn't credited \u2014 no wallet/order state\nchanges here, since the /verify or webhook path is what actually credits\na successful payment.",
+        "operationId": "report_payment_failure_payment_failure_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentFailureReport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Report Payment Failure",
+        "tags": [
+          "Payment"
         ]
       }
     },

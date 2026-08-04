@@ -538,6 +538,22 @@ export const api = {
                 body: JSON.stringify(data)
             });
             return handleResponse(response, 'Failed to verify payment');
+        },
+        reportFailure: async (data: { razorpay_order_id?: string, code?: string, description?: string, reason?: string, source?: string }) => {
+            // Fire-and-forget diagnostic breadcrumb for support; never let a
+            // logging failure surface to the user on top of the payment failure.
+            try {
+                await customFetch(`${API_URL}/payment/failure`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(await authHeaders())
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch {
+                // best-effort only
+            }
         }
     },
     updateDeviceToken: async (token: string, platform = 'web') => {

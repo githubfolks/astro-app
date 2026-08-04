@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video, ListVideo, Receipt, Activity, MessageSquareQuote } from 'lucide-react';
+import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video, ListVideo, Receipt, Activity, MessageSquareQuote, XCircle, Bug } from 'lucide-react';
 
 import { Button } from '../components/ui/Button';
 import clsx from 'clsx';
@@ -25,6 +25,8 @@ export default function DashboardLayout() {
         { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
         { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
         { text: 'Transactions', icon: <Receipt size={20} />, path: '/transactions' },
+        { text: 'Payment Failures', icon: <XCircle size={20} />, path: '/payment-failures' },
+        { text: 'Error Logs', icon: <Bug size={20} />, path: '/error-logs' },
         { text: 'Content (Blog)', icon: <FileText size={20} />, path: '/cms/posts' },
         { text: 'Content Studio', icon: <Video size={20} />, path: '/content-studio' },
         { text: 'Content Library', icon: <ListVideo size={20} />, path: '/content-studio/library' },

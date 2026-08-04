@@ -1709,6 +1709,88 @@ def get_audit_logs(
     ]}
 
 
+@router.get("/payment-failures")
+def list_payment_failures(
+    search: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(database.get_db),
+):
+    """PAYMENT_FAILED audit entries (client-reported `payment.failed` from
+    Razorpay checkout, plus the server-side webhook backup) joined with the
+    seeker's identity, so support can look up a customer's failed-charge
+    claims by name/email/phone without knowing their internal user id."""
+    query = (
+        db.query(models.AuditLog, models.User.email, models.User.phone_number, models.SeekerProfile.full_name)
+        .join(models.User, models.AuditLog.actor_id == models.User.id)
+        .outerjoin(models.SeekerProfile, models.AuditLog.actor_id == models.SeekerProfile.user_id)
+        .filter(models.AuditLog.action == "PAYMENT_FAILED")
+    )
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            (models.User.email.ilike(search_term)) |
+            (models.User.phone_number.ilike(search_term)) |
+            (models.SeekerProfile.full_name.ilike(search_term)) |
+            (models.AuditLog.resource_id.ilike(search_term))
+        )
+
+    total = query.count()
+    rows = query.order_by(models.AuditLog.created_at.desc()).offset(offset).limit(limit).all()
+
+    return {"total": total, "failures": [
+        {
+            "id": entry.id,
+            "user_id": entry.actor_id,
+            "user_name": full_name or f"User #{entry.actor_id}",
+            "email": email,
+            "phone_number": phone_number,
+            "order_id": entry.resource_id,
+            "code": (entry.details or {}).get("code"),
+            "description": (entry.details or {}).get("description"),
+            "reason": (entry.details or {}).get("reason"),
+            "source": (entry.details or {}).get("source"),
+            "created_at": entry.created_at.isoformat() if entry.created_at else None,
+        }
+        for entry, email, phone_number, full_name in rows
+    ]}
+
+
+@router.get("/error-logs")
+def list_error_logs(
+    path: Optional[str] = None,
+    error_type: Optional[str] = None,
+    user_id: Optional[int] = None,
+    limit: int = 100,
+    offset: int = 0,
+    db: Session = Depends(database.get_db),
+):
+    """Unhandled 500s captured by main.py's request middleware (ErrorLog table)."""
+    query = db.query(models.ErrorLog)
+    if path:
+        query = query.filter(models.ErrorLog.path.ilike(f"%{path}%"))
+    if error_type:
+        query = query.filter(models.ErrorLog.error_type.ilike(f"%{error_type}%"))
+    if user_id:
+        query = query.filter(models.ErrorLog.user_id == user_id)
+
+    total = query.count()
+    logs = query.order_by(models.ErrorLog.created_at.desc()).offset(offset).limit(limit).all()
+    return {"total": total, "logs": [
+        {
+            "id": l.id,
+            "method": l.method,
+            "path": l.path,
+            "user_id": l.user_id,
+            "error_type": l.error_type,
+            "message": l.message,
+            "traceback": l.traceback,
+            "created_at": l.created_at.isoformat() if l.created_at else None,
+        }
+        for l in logs
+    ]}
+
+
 # --- App Settings (WhatsApp gateway, moderation, tunables) ---
 
 @router.get("/settings")

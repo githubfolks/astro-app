@@ -78,6 +78,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
 
             const rzp = new window.Razorpay(options);
             rzp.on("payment.failed", function (response: RazorpayError) {
+                api.payment.reportFailure({
+                    razorpay_order_id: orderData.order_id,
+                    code: response.error.code,
+                    description: response.error.description,
+                    reason: response.error.reason,
+                    source: "payment_modal"
+                });
                 alert("Payment Failed: " + response.error.description);
                 setProcessing(false);
             });

@@ -539,6 +539,25 @@ class AuditLog(Base):
     actor = relationship("User", foreign_keys=[actor_id])
 
 
+class ErrorLog(Base):
+    """Unhandled exceptions caught by main.py's top-level request middleware.
+    A durable record of server-side 500s, since stdout prints vanish once
+    nobody's watching the live log (see how PAYMENT_FAILED audit entries
+    solved the same blind spot for client-reported payment failures)."""
+    __tablename__ = "error_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    method = Column(String, nullable=False)
+    path = Column(String, nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # Null if unauthenticated/undecodable
+    error_type = Column(String, nullable=False, index=True)
+    message = Column(Text, nullable=True)
+    traceback = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+    user = relationship("User", foreign_keys=[user_id])
+
+
 class DisputeStatus(str, enum.Enum):
     OPEN = "OPEN"
     INVESTIGATING = "INVESTIGATING"

@@ -81,6 +81,13 @@ export const Wallet: React.FC = () => {
 
             const rzp = new window.Razorpay(options);
             rzp.on("payment.failed", function (response: RazorpayError) {
+                api.payment.reportFailure({
+                    razorpay_order_id: orderData.order_id,
+                    code: response.error.code,
+                    description: response.error.description,
+                    reason: response.error.reason,
+                    source: "wallet"
+                });
                 alert("Payment Failed: " + response.error.description);
             });
             rzp.open();
