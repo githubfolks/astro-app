@@ -15048,6 +15048,49 @@
       }
     },
     "/users/device-token": {
+      "delete": {
+        "description": "Unregister an FCM token on logout so a device that later logs into a\ndifferent account doesn't keep receiving this user's push notifications.",
+        "operationId": "clear_device_token_users_device_token_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceTokenSchema"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Clear Device Token",
+        "tags": [
+          "Users"
+        ]
+      },
       "post": {
         "description": "Register a Firebase Cloud Messaging (FCM) token for push notifications.",
         "operationId": "register_device_token_users_device_token_post",
