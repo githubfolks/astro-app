@@ -11,8 +11,19 @@ DEPLOY_DIR="/root/aadikarta-app/production"
 LOG="$DEPLOY_DIR/deploy.log"
 
 cd "$DEPLOY_DIR"
-echo "$(date -Iseconds) deploy triggered" >> "$LOG"
-git pull origin main >> "$LOG" 2>&1
+
+if [ -z "${DEPLOY_REEXECED:-}" ]; then
+    echo "$(date -Iseconds) deploy triggered" >> "$LOG"
+    git pull origin main >> "$LOG" 2>&1
+    # `git pull` just replaced this very file on disk (new inode via
+    # checkout), but bash already has the old one open and would keep
+    # executing stale buffered content for the rest of this process —
+    # silently running last commit's deploy steps. Re-exec as a fresh
+    # process so it opens whatever is actually on disk now.
+    export DEPLOY_REEXECED=1
+    exec "$DEPLOY_DIR/deploy.sh"
+fi
+
 # Built sequentially, not `build api web` in one call — Compose builds
 # services in parallel by default, and web's build runs a CPU-heavy
 # headless-Chromium prerender step (scripts/prerender.js) that was losing
