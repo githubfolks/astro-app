@@ -42,6 +42,25 @@ services:
       - default
       - global-proxy-network
 
+  # Receives the CI-triggered deploy webhook (see deploy/hooks.json,
+  # deploy/deploy.sh). Only global-proxy needs to reach it, so it's not on
+  # the default network. It mounts the docker socket so deploy.sh can run
+  # `docker compose build/up` against the host daemon — that's effectively
+  # root-equivalent host access, but it's the same trust level a manual SSH
+  # deploy already has.
+  webhook:
+    build: ./deploy
+    container_name: astro_webhook
+    restart: unless-stopped
+    environment:
+      DEPLOY_WEBHOOK_SECRET: "${DEPLOY_WEBHOOK_SECRET}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/www/aadikarta/production:/var/www/aadikarta/production
+      - ./deploy/hooks.json:/etc/webhook/hooks.json:ro
+    networks:
+      - global-proxy-network
+
 networks:
   global-proxy-network:
     external: true
