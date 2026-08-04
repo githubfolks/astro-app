@@ -3,7 +3,11 @@
 # docker-compose.vps.yml's `webhook` service.
 FROM docker:27-cli
 
-RUN apk add --no-cache bash git docker-cli-compose
+# gcompat provides a glibc-compatible dynamic loader — the adnanh/webhook
+# release binary is dynamically linked against glibc, which this musl-based
+# image doesn't otherwise have; without it, exec fails with a misleading
+# "no such file or directory" even though the file is right there.
+RUN apk add --no-cache bash git docker-cli-compose gcompat
 
 ARG WEBHOOK_VERSION=2.8.1
 RUN wget -qO- "https://github.com/adnanh/webhook/releases/download/${WEBHOOK_VERSION}/webhook-linux-amd64.tar.gz" \
