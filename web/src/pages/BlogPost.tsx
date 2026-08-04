@@ -117,7 +117,7 @@ const BlogPost: React.FC = () => {
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
-                <Link to="/blog" className="inline-flex items-center text-gray-900 hover:text-indigo-600 mb-8 transition-colors">
+                <Link to="/blog" className="inline-flex items-center text-gray-900 hover:text-indigo-600 mb-8 mt-8 transition-colors">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
@@ -151,7 +151,7 @@ const BlogPost: React.FC = () => {
                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
                     />
 
-                    <aside className="mt-12 pt-8 border-t border-gray-100">
+                    <aside className="mt-12 mb-16 pt-8 border-t border-gray-100">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Related Services</h2>
                         <div className="flex flex-wrap gap-3">
                             <Link to="/services/kundli-matching" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Kundli Matching</Link>
