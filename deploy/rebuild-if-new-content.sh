@@ -6,7 +6,7 @@
 # unrelated deploy happens to rebuild the site.
 set -euo pipefail
 
-DEPLOY_DIR="/var/www/aadikarta/production"
+DEPLOY_DIR="/root/aadikarta-app/production"
 MARKER="$DEPLOY_DIR/.last-content-build"
 API_URL="https://api.aadikarta.org"
 LOG="/var/log/aadikarta-rebuild.log"

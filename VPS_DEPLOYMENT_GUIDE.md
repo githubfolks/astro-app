@@ -162,10 +162,10 @@ latest post's timestamp against a local marker file, and rebuilds+redeploys
 cron job on the production host:
 
 ```bash
-chmod +x /var/www/aadikarta/production/deploy/rebuild-if-new-content.sh
+chmod +x /root/aadikarta-app/production/deploy/rebuild-if-new-content.sh
 crontab -e
 # add:
-*/30 * * * * /var/www/aadikarta/production/deploy/rebuild-if-new-content.sh
+*/30 * * * * /root/aadikarta-app/production/deploy/rebuild-if-new-content.sh
 ```
 
 Runs are logged to `/var/log/aadikarta-rebuild.log`. Most ticks are a no-op
