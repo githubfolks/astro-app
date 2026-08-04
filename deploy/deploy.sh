@@ -21,5 +21,6 @@ git pull origin main >> "$LOG" 2>&1
 # shell to crawlers.
 docker compose -f docker-compose.yml -f docker-compose.vps.yml build api >> "$LOG" 2>&1
 docker compose -f docker-compose.yml -f docker-compose.vps.yml build web >> "$LOG" 2>&1
-docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d api web >> "$LOG" 2>&1
+docker compose -f docker-compose.yml -f docker-compose.vps.yml build admin >> "$LOG" 2>&1
+docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d api web admin >> "$LOG" 2>&1
 echo "$(date -Iseconds) deploy complete" >> "$LOG"
