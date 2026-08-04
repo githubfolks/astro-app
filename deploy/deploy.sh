@@ -13,6 +13,13 @@ LOG="$DEPLOY_DIR/deploy.log"
 cd "$DEPLOY_DIR"
 echo "$(date -Iseconds) deploy triggered" >> "$LOG"
 git pull origin main >> "$LOG" 2>&1
-docker compose -f docker-compose.yml -f docker-compose.vps.yml build api web >> "$LOG" 2>&1
+# Built sequentially, not `build api web` in one call — Compose builds
+# services in parallel by default, and web's build runs a CPU-heavy
+# headless-Chromium prerender step (scripts/prerender.js) that was losing
+# the CPU race against api's build on this VPS, causing routes (e.g. the
+# homepage) to time out mid-prerender and silently ship the unrendered SPA
+# shell to crawlers.
+docker compose -f docker-compose.yml -f docker-compose.vps.yml build api >> "$LOG" 2>&1
+docker compose -f docker-compose.yml -f docker-compose.vps.yml build web >> "$LOG" 2>&1
 docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d api web >> "$LOG" 2>&1
 echo "$(date -Iseconds) deploy complete" >> "$LOG"

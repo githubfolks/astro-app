@@ -160,9 +160,15 @@ async function main() {
                 // etc.) still resolves goto() successfully and still returns
                 // *some* HTML — so without this check every such failure was
                 // silently counted as "ok" and the raw SPA shell got written
-                // back to disk as if it were the prerendered page.
+                // back to disk as if it were the prerendered page. Treat it as
+                // a failure instead: skip the write and leave the route's
+                // existing unprerendered dist/ shell in place (same fallback
+                // behavior as a thrown goto()/timeout below), and count it so
+                // it shows up in the final tally instead of hiding inside "ok".
                 if (!html.includes('<title>') || html.length < 7600) {
-                    console.warn(`  ! ${route} rendered but looks like an unmounted shell (${html.length} bytes, has <title>: ${html.includes('<title>')})`);
+                    console.warn(`  ! ${route} rendered but looks like an unmounted shell (${html.length} bytes, has <title>: ${html.includes('<title>')}) — not writing, leaving unprerendered fallback`);
+                    failed++;
+                    continue;
                 }
                 const outDir = route === '/' ? DIST : join(DIST, route);
                 mkdirSync(outDir, { recursive: true });
