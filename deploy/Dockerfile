@@ -17,4 +17,4 @@ RUN wget -qO- "https://github.com/adnanh/webhook/releases/download/${WEBHOOK_VER
 
 EXPOSE 9001
 ENTRYPOINT ["webhook"]
-CMD ["-hooks", "/etc/webhook/hooks.json", "-ip", "0.0.0.0", "-port", "9001", "-verbose"]
+CMD ["-hooks", "/etc/webhook/hooks.json", "-template", "-ip", "0.0.0.0", "-port", "9001", "-verbose"]
