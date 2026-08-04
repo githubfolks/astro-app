@@ -65,6 +65,7 @@ export const cms = {
         update: (id, data) => api.put(`/cms/posts/${id}`, data),
         delete: (id) => api.delete(`/cms/posts/${id}`),
         generateSocial: (data) => api.post('/cms/posts/generate-social', data),
+        generateFeaturedImage: (data) => api.post('/cms/posts/generate-featured-image', data),
         shareSocial: (id, data) => api.post(`/cms/posts/${id}/share-social`, data),
     },
     inquiries: {

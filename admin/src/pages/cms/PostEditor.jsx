@@ -62,6 +62,49 @@ export default function PostEditor() {
         });
     };
 
+    const [uploadingFeaturedImage, setUploadingFeaturedImage] = useState(false);
+    const [generatingFeaturedImage, setGeneratingFeaturedImage] = useState(false);
+
+    const handleGenerateFeaturedImage = async () => {
+        if (!formData.title || !formData.content) {
+            alert('Please enter a title and body content first.');
+            return;
+        }
+        setGeneratingFeaturedImage(true);
+        try {
+            const res = await cms.posts.generateFeaturedImage({
+                title: formData.title,
+                content: formData.content,
+            });
+            setFormData(prev => ({ ...prev, featured_image: res.data.url }));
+        } catch (e) {
+            alert(e.message || 'Failed to generate featured image.');
+        } finally {
+            setGeneratingFeaturedImage(false);
+        }
+    };
+
+    const handleFeaturedImagePaste = async (e) => {
+        const item = Array.from(e.clipboardData?.items || []).find((i) => i.type.startsWith('image/'));
+        if (!item) return;
+
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) return;
+
+        setUploadingFeaturedImage(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await cms.upload(formData);
+            setFormData(prev => ({ ...prev, featured_image: res.data.url }));
+        } catch (err) {
+            alert(err.message || 'Failed to upload pasted image.');
+        } finally {
+            setUploadingFeaturedImage(false);
+        }
+    };
+
     const [fbPostText, setFbPostText] = useState('');
     const [igPostText, setIgPostText] = useState('');
     const [generatingFb, setGeneratingFb] = useState(false);
@@ -224,13 +267,27 @@ export default function PostEditor() {
 
                     {/* Featured Image URL (Below Slug) */}
                     <div className="space-y-4">
-                        <Input
-                            label="Featured Image URL"
-                            placeholder="https://example.com/image.jpg"
-                            value={formData.featured_image || ''}
-                            onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
-                            className="border-slate-200"
-                        />
+                        <div className="flex items-end gap-2">
+                            <Input
+                                label="Featured Image URL"
+                                placeholder="https://example.com/image.jpg (or paste an image)"
+                                value={generatingFeaturedImage ? 'Generating...' : (uploadingFeaturedImage ? 'Uploading...' : (formData.featured_image || ''))}
+                                onChange={(e) => setFormData(prev => ({ ...prev, featured_image: e.target.value }))}
+                                onPaste={handleFeaturedImagePaste}
+                                disabled={uploadingFeaturedImage || generatingFeaturedImage}
+                                className="border-slate-200"
+                                fullWidth
+                            />
+                            <Button
+                                type="button"
+                                variant="outlined"
+                                onClick={handleGenerateFeaturedImage}
+                                disabled={generatingFeaturedImage || uploadingFeaturedImage}
+                                className="h-10 whitespace-nowrap cursor-pointer"
+                            >
+                                {generatingFeaturedImage ? 'Generating...' : 'Generate Image'}
+                            </Button>
+                        </div>
                         {formData.featured_image && (
                             <div className="space-y-1.5">
                                 <span className="text-xs font-semibold text-slate-500 block uppercase tracking-wider font-medium">Image Preview</span>

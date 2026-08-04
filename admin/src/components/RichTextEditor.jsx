@@ -11,6 +11,27 @@ import {
     Image as ImageIcon, RemoveFormatting, Code2, Undo2, Redo2,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { cms } from '../services/api';
+
+const uploadPastedImage = async (view, event) => {
+    const item = Array.from(event.clipboardData?.items || []).find((i) => i.type.startsWith('image/'));
+    if (!item) return false;
+
+    event.preventDefault();
+    const file = item.getAsFile();
+    if (!file) return true;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await cms.upload(formData);
+        const node = view.state.schema.nodes.image.create({ src: res.data.url });
+        view.dispatch(view.state.tr.replaceSelectionWith(node));
+    } catch (e) {
+        alert(e.message || 'Failed to upload pasted image.');
+    }
+    return true;
+};
 
 // Content pasted from Word/Google Docs/Notion/most contenteditable-based
 // apps encodes every word-separating space as U+00A0 (non-breaking space)
@@ -222,6 +243,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
             },
             transformPastedHTML: (html) => stripNbsp(html),
             transformPastedText: (text) => stripNbsp(text),
+            handlePaste: uploadPastedImage,
         },
         onUpdate: ({ editor: e }) => onChange(e.getHTML()),
     });

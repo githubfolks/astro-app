@@ -4,12 +4,14 @@ from sqlalchemy import func
 from typing import List, Optional, Literal
 from pydantic import BaseModel
 import os
+import re
+import uuid
 import httpx
 from slugify import slugify
 from datetime import datetime
 from .. import models, database, schemas_cms
 from .auth import get_current_admin
-from ..services import settings_service
+from ..services import settings_service, content_studio_images
 
 router = APIRouter(
     prefix="/cms",
@@ -131,20 +133,27 @@ def generate_social_post(payload: GenerateSocialRequest):
         )
 
     # Simple HTML tag stripping
-    import re
     cleaned_content = re.sub('<[^<]+?>', '', payload.content)[:3000]
+
+    # Same standing hashtag set as Content Studio's caption generator
+    # (content_studio_llm.CAPTION_SYSTEM_PROMPT) -- real, currently-used tags
+    # on Facebook/Instagram, not TikTok-only tags like #FYP or #AstrologyTok
+    # which carry no discovery benefit on the platforms this posts to.
+    STANDING_HASHTAGS = "#AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality"
 
     if payload.platform == "facebook":
         system_prompt = (
             "You are an expert social media manager. Create a highly engaging Facebook post based on this blog content. "
-            "Include appropriate emojis, structured text, and popular relevant hashtags. Do not include markdown headers, "
-            "titles, HTML tags, or code block markers. Make it feel authentic, professional, and exciting."
+            "Include appropriate emojis, structured text, and end with a single line of 8-12 relevant hashtags, mixing "
+            f"hashtags specific to this post's topic with these standing hashtags: {STANDING_HASHTAGS}. Do not include "
+            "markdown headers, titles, HTML tags, or code block markers. Make it feel authentic, professional, and exciting."
         )
     else:
         system_prompt = (
             "You are an expert social media manager. Create an eye-catching Instagram caption based on this blog content. "
-            "Start with an attention-grabbing hook, use bullet points or emojis for high readability, and list 10-15 relevant "
-            "hashtags. Do not include markdown headers, HTML tags, or code block markers."
+            "Start with an attention-grabbing hook, use bullet points or emojis for high readability, and end with a single "
+            "line of 10-15 relevant hashtags, mixing hashtags specific to this post's topic with these standing hashtags: "
+            f"{STANDING_HASHTAGS}. Do not include markdown headers, HTML tags, or code block markers."
         )
 
     body = {
@@ -178,6 +187,74 @@ def generate_social_post(payload: GenerateSocialRequest):
         return {"text": reply}
     except Exception as e:
         raise HTTPException(status_code=500, detail="Failed to parse LLM response.")
+
+
+class GenerateFeaturedImageRequest(BaseModel):
+    title: str
+    content: str
+
+
+@router.post("/posts/generate-featured-image")
+def generate_featured_image(payload: GenerateFeaturedImageRequest):
+    """Writes an image prompt from the post's title/body (Groq), then renders it
+    the same way Content Studio does (content_studio_images -- Replicate FLUX.2
+    if configured, else Pollinations), and returns the saved image's URL."""
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Image generation is unavailable. GROQ_API_KEY is not set.")
+
+    cleaned_content = re.sub('<[^<]+?>', '', payload.content)[:3000]
+
+    system_prompt = (
+        "You write concise English prompts (under 40 words) for an AI image generator, creating a blog "
+        "featured/cover image for Aadikarta, India's trusted marketplace for verified Vedic astrologers. "
+        "Based on the blog post's title and content below, write a single descriptive image prompt capturing "
+        "its core theme using traditional Vedic astrology iconography (zodiac symbols, Navagraha gods, Indian "
+        "spiritual/temple art, diyas, mandalas) in a professional, editorial blog-cover style. Do not request "
+        "any text/words rendered in the image. Respond with ONLY the prompt text -- no commentary, no quotes."
+    )
+
+    body = {
+        "model": os.getenv("AI_ASTROLOGER_MODEL", "llama-3.3-70b-versatile"),
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": f"Blog Title: {payload.title}\n\nBlog Content:\n{cleaned_content}"},
+        ],
+        "max_tokens": 150,
+        "temperature": 0.8,
+    }
+
+    try:
+        response = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"LLM request failed: {e}")
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"LLM upstream error {response.status_code}")
+
+    try:
+        image_prompt = (response.json()["choices"][0]["message"]["content"] or "").strip().strip('"')
+    except (KeyError, IndexError, ValueError):
+        raise HTTPException(status_code=500, detail="Failed to parse LLM response.")
+
+    if not image_prompt:
+        raise HTTPException(status_code=502, detail="LLM returned an empty image prompt.")
+
+    image_bytes = content_studio_images.generate_image(image_prompt, width=1200, height=630)
+
+    upload_dir = os.path.join("uploads", "cms_posts")
+    os.makedirs(upload_dir, exist_ok=True)
+    filename = f"{uuid.uuid4().hex}.jpg"
+    with open(os.path.join(upload_dir, filename), "wb") as f:
+        f.write(image_bytes)
+
+    return {"url": f"/static/cms_posts/{filename}"}
+
 
 @router.post("/posts/{post_id}/share-social")
 def share_social_post(post_id: int, payload: ShareSocialRequest, db: Session = Depends(database.get_db)):
