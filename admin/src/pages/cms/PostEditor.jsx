@@ -3,7 +3,51 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { cms } from '../../services/api';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { Button, Input, Card } from '../../components/ui';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Eye, X } from 'lucide-react';
+
+// The API returns relative /static/... paths for uploaded/generated images.
+// admin.aadikarta.org and api.aadikarta.org are different origins, so a
+// relative path 404s when used directly as an <img src> or a Graph API
+// photo URL -- resolve to an absolute URL before it's stored or rendered.
+const toAbsoluteUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+    return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
+function PreviewModal({ post, onClose }) {
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl my-8">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 sticky top-0 bg-white rounded-t-xl">
+                    <div className="flex items-center gap-2">
+                        <Eye size={18} className="text-slate-500" />
+                        <span className="font-semibold text-slate-800">Draft Preview</span>
+                        <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">Not published</span>
+                    </div>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <X size={20} />
+                    </button>
+                </div>
+                <article className="p-8">
+                    <header className="mb-10 text-center">
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">{post.title || 'Untitled post'}</h1>
+                        {post.featured_image && (
+                            <div className="mt-6 rounded-2xl overflow-hidden shadow-lg">
+                                <img src={toAbsoluteUrl(post.featured_image)} alt={post.title} className="w-full h-auto max-h-[420px] object-cover" />
+                            </div>
+                        )}
+                    </header>
+                    <div
+                        className="post-content prose prose-indigo max-w-none"
+                        dangerouslySetInnerHTML={{ __html: post.content || '<p class="text-slate-400">No content yet.</p>' }}
+                    />
+                </article>
+            </div>
+        </div>
+    );
+}
 
 export default function PostEditor() {
     const { id } = useParams();
@@ -62,6 +106,7 @@ export default function PostEditor() {
         });
     };
 
+    const [showPreview, setShowPreview] = useState(false);
     const [uploadingFeaturedImage, setUploadingFeaturedImage] = useState(false);
     const [generatingFeaturedImage, setGeneratingFeaturedImage] = useState(false);
 
@@ -76,7 +121,7 @@ export default function PostEditor() {
                 title: formData.title,
                 content: formData.content,
             });
-            setFormData(prev => ({ ...prev, featured_image: res.data.url }));
+            setFormData(prev => ({ ...prev, featured_image: toAbsoluteUrl(res.data.url) }));
         } catch (e) {
             alert(e.message || 'Failed to generate featured image.');
         } finally {
@@ -97,7 +142,7 @@ export default function PostEditor() {
             const formData = new FormData();
             formData.append('file', file);
             const res = await cms.upload(formData);
-            setFormData(prev => ({ ...prev, featured_image: res.data.url }));
+            setFormData(prev => ({ ...prev, featured_image: toAbsoluteUrl(res.data.url) }));
         } catch (err) {
             alert(err.message || 'Failed to upload pasted image.');
         } finally {
@@ -228,6 +273,16 @@ export default function PostEditor() {
                         <option value="PUBLISHED">Published</option>
                         <option value="ARCHIVED">Archived</option>
                     </select>
+                    {isEdit && formData.status === 'DRAFT' && (
+                        <Button
+                            variant="outlined"
+                            onClick={() => setShowPreview(true)}
+                            className="cursor-pointer gap-1.5"
+                            type="button"
+                        >
+                            <Eye size={16} /> Preview
+                        </Button>
+                    )}
                     <Button variant="outlined" onClick={() => navigate('/cms/posts')} className="cursor-pointer" type="button">
                         Cancel
                     </Button>
@@ -236,6 +291,10 @@ export default function PostEditor() {
                     </Button>
                 </div>
             </div>
+
+            {showPreview && (
+                <PreviewModal post={formData} onClose={() => setShowPreview(false)} />
+            )}
 
             {/* Single Column Editor Workspace */}
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -292,9 +351,9 @@ export default function PostEditor() {
                             <div className="space-y-1.5">
                                 <span className="text-xs font-semibold text-slate-500 block uppercase tracking-wider font-medium">Image Preview</span>
                                 <div className="max-w-md aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
-                                    <img 
-                                        src={formData.featured_image} 
-                                        alt="Featured preview" 
+                                    <img
+                                        src={toAbsoluteUrl(formData.featured_image)}
+                                        alt="Featured preview"
                                         className="w-full h-full object-cover"
                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                     />

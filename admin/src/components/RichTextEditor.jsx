@@ -13,6 +13,17 @@ import {
 import clsx from 'clsx';
 import { cms } from '../services/api';
 
+// The API returns relative /static/... paths for uploaded images. Blog
+// content is rendered on the public site (a different origin than the API),
+// so a relative path baked into the stored HTML would 404 there -- resolve
+// to an absolute URL before it ever lands in the document.
+const toAbsoluteUrl = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const base = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+    return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
 const uploadPastedImage = async (view, event) => {
     const item = Array.from(event.clipboardData?.items || []).find((i) => i.type.startsWith('image/'));
     if (!item) return false;
@@ -25,13 +36,121 @@ const uploadPastedImage = async (view, event) => {
     formData.append('file', file);
     try {
         const res = await cms.upload(formData);
-        const node = view.state.schema.nodes.image.create({ src: res.data.url });
+        const node = view.state.schema.nodes.image.create({ src: toAbsoluteUrl(res.data.url) });
         view.dispatch(view.state.tr.replaceSelectionWith(node));
     } catch (e) {
         alert(e.message || 'Failed to upload pasted image.');
     }
     return true;
 };
+
+// Image extension with a drag-to-resize handle. Stores the chosen width as an
+// inline style on the <img> (renderHTML/parseHTML below) so it round-trips
+// through the stored post HTML and renders at the same size on the public site.
+const ResizableImage = ImageExtension.extend({
+    addAttributes() {
+        return {
+            ...this.parent?.(),
+            width: {
+                default: null,
+                renderHTML: (attributes) => (attributes.width ? { style: `width: ${attributes.width}px` } : {}),
+                parseHTML: (element) => {
+                    const width = element.style.width || element.getAttribute('width');
+                    const parsed = width ? parseInt(width, 10) : null;
+                    return Number.isFinite(parsed) ? parsed : null;
+                },
+            },
+        };
+    },
+
+    addNodeView() {
+        return ({ node, getPos, editor }) => {
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            container.style.display = 'inline-block';
+            container.style.maxWidth = '100%';
+            container.style.lineHeight = '0';
+
+            const img = document.createElement('img');
+            img.src = node.attrs.src;
+            if (node.attrs.alt) img.alt = node.attrs.alt;
+            if (node.attrs.title) img.title = node.attrs.title;
+            img.style.display = 'block';
+            img.style.width = node.attrs.width ? `${node.attrs.width}px` : '100%';
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.draggable = false;
+
+            const handle = document.createElement('div');
+            handle.title = 'Drag to resize';
+            Object.assign(handle.style, {
+                position: 'absolute',
+                right: '-4px',
+                bottom: '-4px',
+                width: '12px',
+                height: '12px',
+                borderRadius: '3px',
+                background: '#4f46e5',
+                border: '2px solid white',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                cursor: 'nwse-resize',
+                display: 'none',
+            });
+
+            container.appendChild(img);
+            container.appendChild(handle);
+
+            const setSelected = (selected) => {
+                handle.style.display = selected ? 'block' : 'none';
+                img.style.outline = selected ? '2px solid #4f46e5' : 'none';
+                img.style.outlineOffset = selected ? '2px' : '0';
+            };
+
+            let startX = 0;
+            let startWidth = 0;
+
+            const onMouseMove = (e) => {
+                const delta = e.clientX - startX;
+                const newWidth = Math.max(50, Math.round(startWidth + delta));
+                img.style.width = `${newWidth}px`;
+            };
+
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                const width = parseInt(img.style.width, 10);
+                if (typeof getPos === 'function') {
+                    const pos = getPos();
+                    editor.view.dispatch(editor.view.state.tr.setNodeMarkup(pos, undefined, { ...node.attrs, width }));
+                }
+            };
+
+            handle.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startX = e.clientX;
+                startWidth = img.getBoundingClientRect().width;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            return {
+                dom: container,
+                selectNode: () => setSelected(true),
+                deselectNode: () => setSelected(false),
+                stopEvent: (event) => event.target === handle,
+                ignoreMutation: () => true,
+                update: (updatedNode) => {
+                    if (updatedNode.type !== node.type) return false;
+                    node = updatedNode;
+                    img.src = node.attrs.src;
+                    img.style.width = node.attrs.width ? `${node.attrs.width}px` : '100%';
+                    return true;
+                },
+            };
+        };
+    },
+});
 
 // Content pasted from Word/Google Docs/Notion/most contenteditable-based
 // apps encodes every word-separating space as U+00A0 (non-breaking space)
@@ -229,7 +348,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
         }),
         Underline,
         Link.configure({ openOnClick: false, autolink: true }),
-        ImageExtension,
+        ResizableImage,
         Placeholder.configure({ placeholder: placeholder || 'Write your post…' }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
     ], []);
