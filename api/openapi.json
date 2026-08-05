@@ -1682,6 +1682,11 @@
             "title": "File",
             "type": "string"
           },
+          "short_description": {
+            "maxLength": 2000,
+            "title": "Short Description",
+            "type": "string"
+          },
           "topic": {
             "maxLength": 500,
             "minLength": 1,
@@ -3336,6 +3341,18 @@
             ],
             "title": "Scene Count"
           },
+          "short_description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
           "topic": {
             "maxLength": 500,
             "minLength": 1,
@@ -3698,6 +3715,17 @@
             ],
             "title": "Seo Keywords Youtube"
           },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
           "status": {
             "$ref": "#/components/schemas/ContentJobStatus"
           },
@@ -3792,6 +3820,40 @@
           "role"
         ],
         "title": "JoinClassResponse",
+        "type": "object"
+      },
+      "KeywordSuggestion": {
+        "properties": {
+          "keywords": {
+            "title": "Keywords",
+            "type": "string"
+          }
+        },
+        "required": [
+          "keywords"
+        ],
+        "title": "KeywordSuggestion",
+        "type": "object"
+      },
+      "KeywordSuggestionRequest": {
+        "properties": {
+          "description": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Description",
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic"
+        ],
+        "title": "KeywordSuggestionRequest",
         "type": "object"
       },
       "KundliGenerateRequest": {
@@ -5816,6 +5878,51 @@
         "title": "Token",
         "type": "object"
       },
+      "TopicOption": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "short_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          },
+          "topic": {
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "topic"
+        ],
+        "title": "TopicOption",
+        "type": "object"
+      },
+      "TopicOptionsResponse": {
+        "properties": {
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/TopicOption"
+            },
+            "title": "Topics",
+            "type": "array"
+          }
+        },
+        "required": [
+          "topics"
+        ],
+        "title": "TopicOptionsResponse",
+        "type": "object"
+      },
       "TopicSuggestion": {
         "properties": {
           "topic": {
@@ -5942,6 +6049,24 @@
           "hashtags"
         ],
         "title": "TwitterCopy",
+        "type": "object"
+      },
+      "UpdateJobRequest": {
+        "properties": {
+          "short_description": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Short Description"
+          }
+        },
+        "title": "UpdateJobRequest",
         "type": "object"
       },
       "UpdateScenesRequest": {
@@ -11990,6 +12115,61 @@
         "tags": [
           "Content Studio"
         ]
+      },
+      "put": {
+        "operationId": "update_job_content_studio_jobs__job_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateJobRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Job",
+        "tags": [
+          "Content Studio"
+        ]
       }
     },
     "/content-studio/jobs/{job_id}/generate-caption": {
@@ -12641,6 +12821,33 @@
           }
         ],
         "summary": "Suggest Topic",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/topics": {
+      "get": {
+        "description": "Lightweight topic list (id, topic, short_description) for pickers like\nthe Social Copy Generator's Topic dropdown -- avoids shipping full job\nrows (scenes JSON, posting status, etc.) just to populate a dropdown.",
+        "operationId": "list_topics_content_studio_topics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicOptionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Topics",
         "tags": [
           "Content Studio"
         ]
@@ -15585,6 +15792,52 @@
           }
         ],
         "summary": "Generate Linkedin",
+        "tags": [
+          "Social Copy Generator"
+        ]
+      }
+    },
+    "/social-copy/suggest-keywords": {
+      "post": {
+        "operationId": "suggest_keywords_social_copy_suggest_keywords_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeywordSuggestionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeywordSuggestion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Suggest Keywords",
         "tags": [
           "Social Copy Generator"
         ]
