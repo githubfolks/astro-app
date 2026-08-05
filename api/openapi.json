@@ -3139,6 +3139,24 @@
         "title": "DisputeResolve",
         "type": "object"
       },
+      "FacebookCopy": {
+        "properties": {
+          "hashtags": {
+            "title": "Hashtags",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "hashtags"
+        ],
+        "title": "FacebookCopy",
+        "type": "object"
+      },
       "ForgotPasswordRequest": {
         "properties": {
           "email": {
@@ -3534,6 +3552,39 @@
         ],
         "title": "InquiryStatus",
         "type": "string"
+      },
+      "InstagramCopy": {
+        "properties": {
+          "alt_text": {
+            "title": "Alt Text",
+            "type": "string"
+          },
+          "caption": {
+            "title": "Caption",
+            "type": "string"
+          },
+          "cover_text": {
+            "title": "Cover Text",
+            "type": "string"
+          },
+          "hashtags": {
+            "title": "Hashtags",
+            "type": "string"
+          },
+          "pinned_comment": {
+            "title": "Pinned Comment",
+            "type": "string"
+          }
+        },
+        "required": [
+          "caption",
+          "hashtags",
+          "alt_text",
+          "cover_text",
+          "pinned_comment"
+        ],
+        "title": "InstagramCopy",
+        "type": "object"
       },
       "Job": {
         "properties": {
@@ -3939,6 +3990,24 @@
           "kyc_verified"
         ],
         "title": "KycVerifyUpdate",
+        "type": "object"
+      },
+      "LinkedInCopy": {
+        "properties": {
+          "hashtags": {
+            "title": "Hashtags",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "hashtags"
+        ],
+        "title": "LinkedInCopy",
         "type": "object"
       },
       "LiveMuhuratResponse": {
@@ -5642,6 +5711,54 @@
         "title": "ShareSocialRequest",
         "type": "object"
       },
+      "SocialCopyRequest": {
+        "properties": {
+          "cta_link": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Cta Link",
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "keywords": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Keywords",
+            "type": "string"
+          },
+          "language": {
+            "default": "Hindi/English mix",
+            "maxLength": 100,
+            "title": "Language",
+            "type": "string"
+          },
+          "price": {
+            "default": "",
+            "maxLength": 100,
+            "title": "Price",
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic",
+          "description",
+          "keywords",
+          "cta_link"
+        ],
+        "title": "SocialCopyRequest",
+        "type": "object"
+      },
       "SocialCopySuggestion": {
         "properties": {
           "tags": {
@@ -5807,6 +5924,24 @@
           "average_rating"
         ],
         "title": "TrustStats",
+        "type": "object"
+      },
+      "TwitterCopy": {
+        "properties": {
+          "hashtags": {
+            "title": "Hashtags",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "hashtags"
+        ],
+        "title": "TwitterCopy",
         "type": "object"
       },
       "UpdateScenesRequest": {
@@ -6232,6 +6367,39 @@
           "created_at"
         ],
         "title": "WalletTransaction",
+        "type": "object"
+      },
+      "YouTubeCopy": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "hashtags": {
+            "title": "Hashtags",
+            "type": "string"
+          },
+          "pinned_comment": {
+            "title": "Pinned Comment",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "video_tags": {
+            "title": "Video Tags",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "hashtags",
+          "video_tags",
+          "pinned_comment"
+        ],
+        "title": "YouTubeCopy",
         "type": "object"
       },
       "ZodiacSign": {
@@ -15282,6 +15450,236 @@
           }
         },
         "summary": "Signup"
+      }
+    },
+    "/social-copy/facebook": {
+      "post": {
+        "operationId": "generate_facebook_social_copy_facebook_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacebookCopy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Facebook",
+        "tags": [
+          "Social Copy Generator"
+        ]
+      }
+    },
+    "/social-copy/instagram": {
+      "post": {
+        "operationId": "generate_instagram_social_copy_instagram_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstagramCopy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Instagram",
+        "tags": [
+          "Social Copy Generator"
+        ]
+      }
+    },
+    "/social-copy/linkedin": {
+      "post": {
+        "operationId": "generate_linkedin_social_copy_linkedin_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkedInCopy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Linkedin",
+        "tags": [
+          "Social Copy Generator"
+        ]
+      }
+    },
+    "/social-copy/twitter": {
+      "post": {
+        "operationId": "generate_twitter_social_copy_twitter_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TwitterCopy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Twitter",
+        "tags": [
+          "Social Copy Generator"
+        ]
+      }
+    },
+    "/social-copy/youtube": {
+      "post": {
+        "operationId": "generate_youtube_social_copy_youtube_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SocialCopyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/YouTubeCopy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Youtube",
+        "tags": [
+          "Social Copy Generator"
+        ]
       }
     },
     "/users/device-token": {
