@@ -163,4 +163,13 @@ export const contentStudio = {
 };
 
 
+export const socialCopy = {
+    generateYoutube: (data) => api.post('/social-copy/youtube', data),
+    generateInstagram: (data) => api.post('/social-copy/instagram', data),
+    generateFacebook: (data) => api.post('/social-copy/facebook', data),
+    generateTwitter: (data) => api.post('/social-copy/twitter', data),
+    generateLinkedin: (data) => api.post('/social-copy/linkedin', data),
+};
+
+
 export default api;
