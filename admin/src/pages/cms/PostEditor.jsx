@@ -63,6 +63,8 @@ export default function PostEditor() {
         featured_image: '',
         author_name: '',
         faqs: [],
+        seo_keywords_facebook: '',
+        seo_keywords_instagram: '',
         status: 'DRAFT',
     });
 
@@ -89,6 +91,8 @@ export default function PostEditor() {
                     featured_image: response.data.featured_image || '',
                     author_name: response.data.author_name || '',
                     faqs: response.data.faqs || [],
+                    seo_keywords_facebook: response.data.seo_keywords_facebook || '',
+                    seo_keywords_instagram: response.data.seo_keywords_instagram || '',
                     status: response.data.status,
                 });
             } catch (error) {
@@ -165,6 +169,85 @@ export default function PostEditor() {
     const [linkedinTags, setLinkedinTags] = useState('');
     const [generatingLinkedin, setGeneratingLinkedin] = useState(false);
     const [copiedField, setCopiedField] = useState('');
+
+    const [fbPostText, setFbPostText] = useState('');
+    const [igPostText, setIgPostText] = useState('');
+    const [generatingFb, setGeneratingFb] = useState(false);
+    const [generatingIg, setGeneratingIg] = useState(false);
+    const [publishingFb, setPublishingFb] = useState(false);
+    const [publishingIg, setPublishingIg] = useState(false);
+
+    const handleGenerateFb = async () => {
+        if (!formData.title || !formData.content) {
+            alert('Please enter a title and content first.');
+            return;
+        }
+        setGeneratingFb(true);
+        try {
+            const res = await cms.posts.generateSocial({
+                title: formData.title,
+                content: formData.content,
+                platform: 'facebook'
+            });
+            setFbPostText(res.data.text);
+        } catch (e) {
+            alert(e.message || 'Failed to generate Facebook post.');
+        } finally {
+            setGeneratingFb(false);
+        }
+    };
+
+    const handleGenerateIg = async () => {
+        if (!formData.title || !formData.content) {
+            alert('Please enter a title and content first.');
+            return;
+        }
+        setGeneratingIg(true);
+        try {
+            const res = await cms.posts.generateSocial({
+                title: formData.title,
+                content: formData.content,
+                platform: 'instagram'
+            });
+            setIgPostText(res.data.text);
+        } catch (e) {
+            alert(e.message || 'Failed to generate Instagram post.');
+        } finally {
+            setGeneratingIg(false);
+        }
+    };
+
+    const handleShareFb = async () => {
+        if (!fbPostText) return;
+        setPublishingFb(true);
+        try {
+            await cms.posts.shareSocial(id, {
+                platform: 'facebook',
+                text: fbPostText
+            });
+            alert('Successfully published to Facebook!');
+        } catch (e) {
+            alert(e.message || 'Failed to publish to Facebook.');
+        } finally {
+            setPublishingFb(false);
+        }
+    };
+
+    const handleShareIg = async () => {
+        if (!igPostText) return;
+        setPublishingIg(true);
+        try {
+            await cms.posts.shareSocial(id, {
+                platform: 'instagram',
+                text: igPostText
+            });
+            alert('Successfully published to Instagram!');
+        } catch (e) {
+            alert(e.message || 'Failed to publish to Instagram.');
+        } finally {
+            setPublishingIg(false);
+        }
+    };
 
     const handleGenerateX = async () => {
         if (!formData.title || !formData.content) {
@@ -471,13 +554,95 @@ export default function PostEditor() {
                     )}
                 </Card>
 
-                {/* Social Media Sharing (Below FAQs) — X.com and LinkedIn have no
-                    publish API configured, so AI Generate produces post content and
-                    hashtags as two separately copyable blocks for manual posting. */}
+                {/* Social Media Sharing (Below FAQs) — Facebook/Instagram publish
+                    directly via the Graph API. X.com and LinkedIn have no publish
+                    API configured, so AI Generate produces post content and hashtags
+                    as two separately copyable blocks for manual posting. */}
                 <Card className="p-6 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
                     <h3 className="font-semibold text-slate-800 text-sm border-b border-slate-100 pb-3 mb-4">Social Media Sharing</h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                        {/* Facebook Section */}
+                        <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Facebook Page</span>
+                                <button
+                                    type="button"
+                                    onClick={handleGenerateFb}
+                                    disabled={generatingFb}
+                                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 cursor-pointer"
+                                >
+                                    {generatingFb ? 'Generating...' : 'AI Generate'}
+                                </button>
+                            </div>
+                            <textarea
+                                className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                placeholder="Facebook caption..."
+                                value={fbPostText}
+                                onChange={(e) => setFbPostText(e.target.value)}
+                            />
+                            <Button
+                                type="button"
+                                onClick={handleShareFb}
+                                disabled={publishingFb || !fbPostText || !isEdit}
+                                className="w-full text-xs h-9 justify-center cursor-pointer"
+                                variant="outlined"
+                            >
+                                {publishingFb ? 'Publishing...' : 'Publish to Facebook'}
+                            </Button>
+                            <div className="space-y-1 pt-1 border-t border-slate-200">
+                                <label className="text-[10px] font-semibold text-slate-500 block uppercase tracking-wider">SEO Keywords (Facebook)</label>
+                                <textarea
+                                    className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-16 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                    placeholder="Comma-separated keywords for Facebook discovery..."
+                                    value={formData.seo_keywords_facebook || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords_facebook: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Instagram Section */}
+                        <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">Instagram Business</span>
+                                <button
+                                    type="button"
+                                    onClick={handleGenerateIg}
+                                    disabled={generatingIg}
+                                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-50 cursor-pointer"
+                                >
+                                    {generatingIg ? 'Generating...' : 'AI Generate'}
+                                </button>
+                            </div>
+                            <textarea
+                                className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-24 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                placeholder="Instagram caption..."
+                                value={igPostText}
+                                onChange={(e) => setIgPostText(e.target.value)}
+                            />
+                            <Button
+                                type="button"
+                                onClick={handleShareIg}
+                                disabled={publishingIg || !igPostText || !isEdit}
+                                className="w-full text-xs h-9 justify-center cursor-pointer"
+                                variant="outlined"
+                            >
+                                {publishingIg ? 'Publishing...' : 'Publish to Instagram'}
+                            </Button>
+                            {!isEdit && (
+                                <p className="text-[10px] text-slate-400 text-center mt-2">Save this blog post first to enable publishing.</p>
+                            )}
+                            <div className="space-y-1 pt-1 border-t border-slate-200">
+                                <label className="text-[10px] font-semibold text-slate-500 block uppercase tracking-wider">SEO Keywords (Instagram)</label>
+                                <textarea
+                                    className="w-full text-xs border border-slate-200 bg-white rounded-lg p-2 h-16 focus:outline-none focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                                    placeholder="Comma-separated keywords for Instagram discovery..."
+                                    value={formData.seo_keywords_instagram || ''}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords_instagram: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+
                         {/* X (Twitter) Section */}
                         <div className="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <div className="flex items-center justify-between">
