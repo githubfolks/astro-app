@@ -736,6 +736,7 @@ class ContentStudioJob(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, nullable=False)
+    short_description = Column(Text, nullable=True)
     content_type = Column(Enum(ContentType), nullable=False)
     voice_gender = Column(Enum(VoiceGender), default=VoiceGender.FEMALE, nullable=False)
     status = Column(Enum(ContentJobStatus), default=ContentJobStatus.SCENES_GENERATED, nullable=False)

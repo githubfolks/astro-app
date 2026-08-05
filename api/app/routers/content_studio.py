@@ -62,6 +62,7 @@ def create_job(
 
     job = models.ContentStudioJob(
         topic=payload.topic,
+        short_description=payload.short_description,
         content_type=content_type,
         voice_gender=models.VoiceGender(payload.voice_gender.value),
         status=models.ContentJobStatus.SCENES_GENERATED,
@@ -72,6 +73,38 @@ def create_job(
     db.commit()
     db.refresh(job)
     return job
+
+
+@router.put("/jobs/{job_id}", response_model=schemas_content_studio.Job)
+def update_job(
+    job_id: int,
+    payload: schemas_content_studio.UpdateJobRequest,
+    db: Session = Depends(database.get_db),
+):
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    job.short_description = payload.short_description
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+@router.get("/topics", response_model=schemas_content_studio.TopicOptionsResponse)
+def list_topics(db: Session = Depends(database.get_db)):
+    """Lightweight topic list (id, topic, short_description) for pickers like
+    the Social Copy Generator's Topic dropdown -- avoids shipping full job
+    rows (scenes JSON, posting status, etc.) just to populate a dropdown.
+    """
+    jobs = (
+        db.query(models.ContentStudioJob)
+        .order_by(models.ContentStudioJob.created_at.desc())
+        .limit(200)
+        .all()
+    )
+    return schemas_content_studio.TopicOptionsResponse(
+        topics=[schemas_content_studio.TopicOption.model_validate(job) for job in jobs]
+    )
 
 
 @router.put("/jobs/{job_id}/scenes", response_model=schemas_content_studio.Job)
@@ -331,6 +364,7 @@ async def create_job_with_video(
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_admin),
     topic: str = Form(..., min_length=1, max_length=500),
+    short_description: str = Form(None, max_length=2000),
     file: UploadFile = File(...),
 ):
     """Creates a job straight from a topic + an already-rendered video file --
@@ -348,6 +382,7 @@ async def create_job_with_video(
 
     job = models.ContentStudioJob(
         topic=topic,
+        short_description=short_description or None,
         content_type=models.ContentType.SHORT_VIDEO,
         voice_gender=models.VoiceGender.FEMALE,
         status=models.ContentJobStatus.SCENES_GENERATED,

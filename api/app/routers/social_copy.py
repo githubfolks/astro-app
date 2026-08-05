@@ -45,3 +45,9 @@ def generate_twitter(request: Request, payload: schemas_social_copy.SocialCopyRe
 @limiter.limit("10/minute")
 def generate_linkedin(request: Request, payload: schemas_social_copy.SocialCopyRequest):
     return social_copy_llm.generate_linkedin_copy(payload)
+
+
+@router.post("/suggest-keywords", response_model=schemas_social_copy.KeywordSuggestion)
+@limiter.limit("10/minute")
+def suggest_keywords(request: Request, payload: schemas_social_copy.KeywordSuggestionRequest):
+    return schemas_social_copy.KeywordSuggestion(keywords=social_copy_llm.suggest_keywords(payload))

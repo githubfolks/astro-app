@@ -154,6 +154,8 @@ export const contentStudio = {
         api.post(`/content-studio/jobs/${jobId}/upload-video`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     getJob: (jobId) => api.get(`/content-studio/jobs/${jobId}`),
     listJobs: (params) => api.get('/content-studio/jobs', { params }),
+    listTopics: () => api.get('/content-studio/topics'),
+    updateJob: (jobId, data) => api.put(`/content-studio/jobs/${jobId}`, data),
     deleteJob: (jobId) => api.delete(`/content-studio/jobs/${jobId}`),
     generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
     generateSocialCopy: (jobId, platform) => api.post(`/content-studio/jobs/${jobId}/generate-social-copy`, { platform }),
@@ -169,6 +171,7 @@ export const socialCopy = {
     generateFacebook: (data) => api.post('/social-copy/facebook', data),
     generateTwitter: (data) => api.post('/social-copy/twitter', data),
     generateLinkedin: (data) => api.post('/social-copy/linkedin', data),
+    suggestKeywords: (data) => api.post('/social-copy/suggest-keywords', data),
 };
 
 

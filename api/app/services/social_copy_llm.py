@@ -247,3 +247,18 @@ def generate_twitter_copy(payload: schemas_social_copy.SocialCopyRequest) -> dic
 
 def generate_linkedin_copy(payload: schemas_social_copy.SocialCopyRequest) -> dict:
     return _generate_two_field_copy("linkedin", payload)
+
+
+KEYWORD_SYSTEM_PROMPT = (
+    BRAND_PRIMER + " Given a video's topic and description, suggest 4-6 realistic search target keyword "
+    "phrases (not hashtags -- no # symbol) that someone would actually type into Google or YouTube search "
+    "looking for this content, mixing broad astrology-service terms with ones specific to the topic. "
+    "Respond with ONLY a single comma-separated line of the keyword phrases, nothing else."
+)
+
+
+def suggest_keywords(payload: schemas_social_copy.KeywordSuggestionRequest) -> str:
+    context = f"Topic: {payload.topic}"
+    if payload.description:
+        context += f"\nDescription: {payload.description}"
+    return _call_groq(KEYWORD_SYSTEM_PROMPT, context, max_tokens=120, temperature=0.6)

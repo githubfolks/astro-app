@@ -32,6 +32,7 @@ const SOCIAL_COPY_PLATFORMS = [
 
 function NewVideoModal({ onClose, onCreated }) {
     const [topic, setTopic] = useState('');
+    const [shortDescription, setShortDescription] = useState('');
     const [file, setFile] = useState(null);
     const [creating, setCreating] = useState(false);
 
@@ -48,6 +49,7 @@ function NewVideoModal({ onClose, onCreated }) {
         try {
             const formData = new FormData();
             formData.append('topic', topic.trim());
+            if (shortDescription.trim()) formData.append('short_description', shortDescription.trim());
             formData.append('file', file);
             const res = await contentStudio.createJobWithVideo(formData);
             onCreated(res.data);
@@ -74,6 +76,14 @@ function NewVideoModal({ onClose, onCreated }) {
                     onChange={(e) => setTopic(e.target.value)}
                     disabled={creating}
                     className="h-24"
+                />
+                <TextArea
+                    fullWidth
+                    label="Short Description"
+                    value={shortDescription}
+                    onChange={(e) => setShortDescription(e.target.value)}
+                    disabled={creating}
+                    className="h-20"
                 />
                 <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Video file (MP4)</label>
@@ -281,6 +291,54 @@ function SocialCopyModal({ job, platform, onClose }) {
     );
 }
 
+function JobDetailModal({ job, onClose, onSaved }) {
+    const [shortDescription, setShortDescription] = useState(job.short_description || '');
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const res = await contentStudio.updateJob(job.id, { short_description: shortDescription.trim() || null });
+            onSaved(res.data);
+        } catch (e) {
+            alert(e.message || 'Failed to save.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-slate-800">Video Details</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <X size={20} />
+                    </button>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-slate-700">Topic</label>
+                    <p className="text-sm text-slate-800 bg-slate-50 border border-slate-200 rounded-lg p-2">{job.topic}</p>
+                </div>
+                <TextArea
+                    fullWidth
+                    label="Short Description"
+                    value={shortDescription}
+                    onChange={(e) => setShortDescription(e.target.value)}
+                    disabled={saving}
+                    className="h-32"
+                />
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outlined" size="sm" onClick={onClose} disabled={saving} className="cursor-pointer">Close</Button>
+                    <Button size="sm" onClick={handleSave} disabled={saving} className="cursor-pointer">
+                        {saving ? 'Saving...' : 'Save'}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function ContentStudioLibrary() {
     const [jobs, setJobs] = useState([]);
     const [total, setTotal] = useState(0);
@@ -288,6 +346,7 @@ export default function ContentStudioLibrary() {
     const [posting, setPosting] = useState({}); // `${jobId}-${platform}` -> true while in flight
     const [captionModal, setCaptionModal] = useState(null); // { job, platform } | null
     const [socialCopyModal, setSocialCopyModal] = useState(null); // { job, platform } | null
+    const [detailModal, setDetailModal] = useState(null); // job | null
     const [showNewVideoModal, setShowNewVideoModal] = useState(false);
     const [deleting, setDeleting] = useState({}); // jobId -> true while delete is in flight
     const [uploading, setUploading] = useState({}); // jobId -> true while a video upload is in flight
@@ -400,7 +459,7 @@ export default function ContentStudioLibrary() {
                     </TableHeader>
                     <TableBody>
                         {jobs.map((job) => (
-                            <TableRow key={job.id}>
+                            <TableRow key={job.id} onClick={() => setDetailModal(job)} className="cursor-pointer">
                                 <TableCell className="font-medium max-w-xs truncate" title={job.topic}>{job.topic}</TableCell>
                                 <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
                                 {PLATFORMS.map((platform) => {
@@ -408,7 +467,7 @@ export default function ContentStudioLibrary() {
                                     const flightKey = `${job.id}-${platform.key}`;
                                     const isPosting = !!posting[flightKey];
                                     return (
-                                        <TableCell key={platform.key}>
+                                        <TableCell key={platform.key} onClick={(e) => e.stopPropagation()}>
                                             {postedAt ? (
                                                 platform.key === 'youtube' && job.youtube_video_id ? (
                                                     <a
@@ -440,7 +499,7 @@ export default function ContentStudioLibrary() {
                                     );
                                 })}
                                 {SOCIAL_COPY_PLATFORMS.map((platform) => (
-                                    <TableCell key={platform.key}>
+                                    <TableCell key={platform.key} onClick={(e) => e.stopPropagation()}>
                                         <Button
                                             variant="outlined"
                                             size="sm"
@@ -451,7 +510,7 @@ export default function ContentStudioLibrary() {
                                         </Button>
                                     </TableCell>
                                 ))}
-                                <TableCell className="text-right">
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -463,14 +522,14 @@ export default function ContentStudioLibrary() {
                                         <Upload size={18} className={clsx("text-gray-600", uploading[job.id] && "animate-pulse")} />
                                     </Button>
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     {job.output_video_url && (
                                         <a href={toAbsoluteUrl(job.output_video_url)} download target="_blank" rel="noreferrer">
                                             <Button variant="ghost" size="icon"><Download size={18} className="text-gray-600" /></Button>
                                         </a>
                                     )}
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -543,6 +602,17 @@ export default function ContentStudioLibrary() {
                     job={socialCopyModal.job}
                     platform={socialCopyModal.platform}
                     onClose={() => setSocialCopyModal(null)}
+                />
+            )}
+
+            {detailModal && (
+                <JobDetailModal
+                    job={detailModal}
+                    onClose={() => setDetailModal(null)}
+                    onSaved={(updatedJob) => {
+                        setJobs(prev => prev.map(j => (j.id === updatedJob.id ? updatedJob : j)));
+                        setDetailModal(null);
+                    }}
                 />
             )}
 

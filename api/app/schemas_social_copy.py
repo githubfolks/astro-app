@@ -1,6 +1,15 @@
 from pydantic import BaseModel, Field
 
 
+class KeywordSuggestionRequest(BaseModel):
+    topic: str = Field(..., min_length=1, max_length=300)
+    description: str = Field("", max_length=2000)
+
+
+class KeywordSuggestion(BaseModel):
+    keywords: str
+
+
 class SocialCopyRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=300)
     description: str = Field(..., min_length=1, max_length=2000)

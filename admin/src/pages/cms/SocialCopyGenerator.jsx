@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Copy, Check, RefreshCw } from 'lucide-react';
-import { socialCopy } from '../../services/api';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Copy, Check, RefreshCw, ChevronDown } from 'lucide-react';
+import { socialCopy, contentStudio } from '../../services/api';
 import { Button, Card, CardHeader, CardTitle, CardContent, Input, TextArea } from '../../components/ui';
 
 const PLATFORM_FIELDS = {
@@ -54,6 +54,67 @@ const PLATFORM_FIELDS = {
 
 const PLATFORM_KEYS = Object.keys(PLATFORM_FIELDS);
 
+function TopicDropdown({ value, topics, onSelect, onChangeText }) {
+    const [open, setOpen] = useState(false);
+    const [query, setQuery] = useState(value);
+    const containerRef = useRef(null);
+
+    useEffect(() => { setQuery(value); }, [value]);
+
+    useEffect(() => {
+        const onClickOutside = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener('mousedown', onClickOutside);
+        return () => document.removeEventListener('mousedown', onClickOutside);
+    }, []);
+
+    const filtered = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return topics;
+        return topics.filter(t => t.topic.toLowerCase().includes(q));
+    }, [topics, query]);
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Topic</label>
+            <div className="relative">
+                <input
+                    type="text"
+                    className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Search or type a topic..."
+                    value={query}
+                    onFocus={() => setOpen(true)}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        onChangeText(e.target.value);
+                        setOpen(true);
+                    }}
+                />
+                <ChevronDown size={16} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+            {open && filtered.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full max-h-56 overflow-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+                    {filtered.map((t) => (
+                        <li
+                            key={t.id}
+                            className="px-3 py-2 text-sm hover:bg-indigo-50 cursor-pointer truncate"
+                            title={t.topic}
+                            onClick={() => {
+                                setQuery(t.topic);
+                                setOpen(false);
+                                onSelect(t);
+                            }}
+                        >
+                            {t.topic}
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    );
+}
+
 export default function SocialCopyGenerator() {
     const [form, setForm] = useState({
         topic: '',
@@ -69,8 +130,35 @@ export default function SocialCopyGenerator() {
     const [busy, setBusy] = useState({});
     const [generating, setGenerating] = useState(false);
     const [copiedField, setCopiedField] = useState('');
+    const [topics, setTopics] = useState([]);
+    const [suggestingKeywords, setSuggestingKeywords] = useState(false);
+
+    useEffect(() => {
+        contentStudio.listTopics()
+            .then(res => setTopics(res.data.topics || []))
+            .catch(e => console.error('Failed to load topics', e));
+    }, []);
 
     const updateField = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+    const suggestKeywords = async (topic, description) => {
+        if (!topic.trim()) return;
+        setSuggestingKeywords(true);
+        try {
+            const res = await socialCopy.suggestKeywords({ topic, description });
+            setForm(prev => ({ ...prev, keywords: res.data.keywords || prev.keywords }));
+        } catch (e) {
+            console.error('Failed to suggest keywords', e);
+        } finally {
+            setSuggestingKeywords(false);
+        }
+    };
+
+    const handleTopicSelect = (topicOption) => {
+        const description = topicOption.short_description || '';
+        setForm(prev => ({ ...prev, topic: topicOption.topic, description }));
+        suggestKeywords(topicOption.topic, description);
+    };
 
     const runPlatform = async (platform) => {
         setBusy(prev => ({ ...prev, [platform]: true }));
@@ -123,12 +211,11 @@ export default function SocialCopyGenerator() {
                     <CardTitle>Content Info</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Input
-                        label="Topic"
-                        fullWidth
-                        placeholder="e.g. Vedic astrology consultation for career doubts"
+                    <TopicDropdown
                         value={form.topic}
-                        onChange={(e) => updateField('topic', e.target.value)}
+                        topics={topics}
+                        onSelect={handleTopicSelect}
+                        onChangeText={(value) => updateField('topic', value)}
                     />
                     <TextArea
                         label="Description / script summary"
@@ -139,10 +226,11 @@ export default function SocialCopyGenerator() {
                         onChange={(e) => updateField('description', e.target.value)}
                     />
                     <Input
-                        label="Target keyword(s)"
+                        label={suggestingKeywords ? 'Target keyword(s) (generating...)' : 'Target keyword(s)'}
                         fullWidth
                         placeholder="e.g. online astrologer, kundli reading, career astrology"
                         value={form.keywords}
+                        disabled={suggestingKeywords}
                         onChange={(e) => updateField('keywords', e.target.value)}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -37,9 +37,14 @@ class Scene(BaseModel):
 # Job Schemas
 class GenerateScenesRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=500)
+    short_description: Optional[str] = Field(None, max_length=2000)
     content_type: ContentType
     voice_gender: VoiceGender = VoiceGender.FEMALE
     scene_count: Optional[int] = Field(None, ge=1, le=8)
+
+
+class UpdateJobRequest(BaseModel):
+    short_description: Optional[str] = Field(None, max_length=2000)
 
 
 class UpdateScenesRequest(BaseModel):
@@ -71,6 +76,7 @@ class PostSocialRequest(BaseModel):
 class Job(BaseModel):
     id: int
     topic: str
+    short_description: Optional[str] = None
     content_type: ContentType
     voice_gender: VoiceGender
     status: ContentJobStatus
@@ -94,3 +100,16 @@ class Job(BaseModel):
 class JobListResponse(BaseModel):
     total: int
     jobs: List[Job]
+
+
+class TopicOption(BaseModel):
+    id: int
+    topic: str
+    short_description: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
+class TopicOptionsResponse(BaseModel):
+    topics: List[TopicOption]
