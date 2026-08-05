@@ -105,7 +105,7 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
             },
             "sameAs": [
                 "https://www.facebook.com/astroaadikarta",
-                "https://x.com/astro_aadikarta_2026",
+                "https://x.com/astro_aadikarta",
                 "https://www.instagram.com/astro_aadikarta/",
                 "https://www.youtube.com/@astro-aadikarta",
                 "https://www.linkedin.com/in/aadikarta-vedic-astrology"
