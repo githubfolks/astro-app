@@ -138,7 +138,12 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
 
     useEffect(() => {
         fetchAstrologers(0, false);
-    }, [topRankingOnly, limit, fetchAstrologers]); // Refetch if these props change
+        // Also refetch on auth state changes: logging out and back in while this
+        // component stays mounted (e.g. parked on the native Home tab) would
+        // otherwise never re-run the ground-truth REST fetch — the list would
+        // keep relying solely on websocket deltas, which can miss online/offline
+        // events during the logout/login socket reconnect gap.
+    }, [topRankingOnly, limit, fetchAstrologers, isAuthenticated]);
 
     // Cards mount asynchronously after the fetch resolves, i.e. after the page's
     // initial AOS.init() already ran. Re-running it picks up these late `data-aos`

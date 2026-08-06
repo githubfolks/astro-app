@@ -185,9 +185,18 @@ def astrologer_has_other_active(db: Session, astrologer_id: int, exclude_id: int
 
 def promote_next_in_queue(db: Session, astrologer_id: int):
     """When an astrologer frees up, alert the next waiting seeker that it's their turn."""
-    from .realtime import notify_user
+    from .realtime import notify_user, broadcast_event
     from ..services.whatsapp_service import send_whatsapp
     from ..services.settings_service import get_setting
+
+    # The chat that just ended was this astrologer's only busy session (one-chat-at-a-time
+    # policy), so they're free again — tell every seeker's already-open astrologer list to
+    # flip the Chat button back on instead of leaving it stuck disabled until a manual refresh.
+    profile = db.query(models.AstrologerProfile).filter(
+        models.AstrologerProfile.user_id == astrologer_id
+    ).first()
+    if profile and profile.is_online and not astrologer_has_other_active(db, astrologer_id, exclude_id=-1):
+        broadcast_event({"type": "ASTRO_ONLINE", "astrologer_id": astrologer_id})
 
     next_req = db.query(models.Consultation).filter(
         models.Consultation.astrologer_id == astrologer_id,
@@ -701,12 +710,24 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
             if msg_type == "MESSAGE":
                 content = message_data.get("content")
 
+                # Re-read latest status first; billing_loop runs on a separate session
+                # and may have paused/ended the consultation (e.g. seeker disconnected)
+                # since this socket connected. Reject messages sent while not
+                # ACCEPTED/ACTIVE instead of silently persisting them.
+                db.refresh(consultation)
+                if consultation.status not in (
+                    models.ConsultationStatus.ACCEPTED,
+                    models.ConsultationStatus.ACTIVE,
+                ):
+                    await websocket.send_text(json.dumps({
+                        "type": "ERROR",
+                        "code": "CONSULTATION_NOT_ACTIVE",
+                        "message": "This consultation is not active right now.",
+                    }))
+                    continue
+
                 # Save to DB (+ moderation). broadcast_content has contact info masked.
                 new_msg, broadcast_content = persist_and_moderate(db, consultation, user.id, content)
-
-                # Re-read latest status; billing_loop runs on a separate session and
-                # may have changed status (PAUSED/AUTO_ENDED) since this socket connected.
-                db.refresh(consultation)
 
                 # Check for Timer Start (First Astrologer Message)
                 if user.role == models.UserRole.ASTROLOGER and consultation.status == models.ConsultationStatus.ACCEPTED:

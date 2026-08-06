@@ -374,7 +374,11 @@ export const Chat: React.FC = () => {
     }, [messages]);
 
     const sendCurrentInput = () => {
-        if (input.trim()) {
+        // Guard against sending while the consultation is paused/ended — the
+        // composer is only visually covered by an overlay in those states, so
+        // a textarea that had focus before the overlay appeared could otherwise
+        // still submit (e.g. right after the seeker disconnects).
+        if (input.trim() && status !== 'PAUSED' && status !== 'ENDED') {
             sendMessage(input);
             setInput('');
             setSuggestions([]);
@@ -393,7 +397,7 @@ export const Chat: React.FC = () => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [suggestionTarget, setSuggestionTarget] = useState<{ start: number; end: number } | null>(null);
 
-    const updateSuggestions = (value: string, cursor: number) => {
+    const computeSuggestions = (value: string, cursor: number) => {
         const atCursor = getWordAtCursor(value, cursor);
         if (atCursor.word.length >= 2) {
             setSuggestions(getSuggestions(atCursor.word, false));
@@ -415,6 +419,22 @@ export const Chat: React.FC = () => {
         setSuggestions([]);
         setSuggestionTarget(null);
     };
+
+    // getSuggestions does a dictionary scan / edit-distance spell-check that's too
+    // expensive to run synchronously on every keystroke — it was blocking the
+    // textarea from repainting immediately, making typing (especially backspace)
+    // feel delayed. Debounce it so the textbox updates instantly and suggestions
+    // catch up shortly after the user pauses.
+    const suggestionsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const updateSuggestions = (value: string, cursor: number) => {
+        if (suggestionsTimeoutRef.current) clearTimeout(suggestionsTimeoutRef.current);
+        suggestionsTimeoutRef.current = setTimeout(() => computeSuggestions(value, cursor), 150);
+    };
+    useEffect(() => {
+        return () => {
+            if (suggestionsTimeoutRef.current) clearTimeout(suggestionsTimeoutRef.current);
+        };
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
@@ -446,15 +466,30 @@ export const Chat: React.FC = () => {
 
     // Astrologer voice input: speak in Hindi, get Hinglish text appended to the composer.
     const speech = useSpeechToText();
+    // Text already in the composer when the current listening session started —
+    // interim (not-yet-final) results are rendered live on top of this so the
+    // textbox updates as the astrologer speaks instead of waiting several
+    // seconds for the engine to mark a phrase "final".
+    const voiceBaseRef = useRef('');
     const toggleVoiceInput = () => {
         if (speech.isListening) {
             speech.stop();
             return;
         }
+        voiceBaseRef.current = input;
         speech.start((hinglishChunk) => {
-            setInput(prev => (prev ? `${prev.trim()} ${hinglishChunk}` : hinglishChunk));
+            voiceBaseRef.current = voiceBaseRef.current
+                ? `${voiceBaseRef.current.trim()} ${hinglishChunk}`
+                : hinglishChunk;
+            setInput(voiceBaseRef.current);
         });
     };
+    useEffect(() => {
+        if (!speech.isListening || !speech.interimText) return;
+        setInput(voiceBaseRef.current
+            ? `${voiceBaseRef.current.trim()} ${speech.interimText}`
+            : speech.interimText);
+    }, [speech.interimText, speech.isListening]);
 
     const handleEndChat = () => {
         setShowEndChatConfirm(true);
@@ -1373,7 +1408,7 @@ export const Chat: React.FC = () => {
                                 ) : (
                                     <>
                                         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                        <span>Listening (Hindi)… {speech.interimText}</span>
+                                        <span>Listening (Hindi)…</span>
                                     </>
                                 )}
                             </div>
@@ -1412,7 +1447,7 @@ export const Chat: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={toggleVoiceInput}
-                                        disabled={status === 'ENDED'}
+                                        disabled={status === 'ENDED' || status === 'PAUSED'}
                                         title="Speak in Hindi — converted to Hinglish text"
                                         className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${speech.isListening
                                             ? 'bg-red-500 text-white animate-pulse'
@@ -1439,11 +1474,11 @@ export const Chat: React.FC = () => {
                                     lang={chatLanguage === 'hi' ? 'hi' : 'en'}
                                     rows={2}
                                     className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner resize-none max-h-24 overflow-y-auto"
-                                    disabled={status === 'ENDED'}
+                                    disabled={status === 'ENDED' || status === 'PAUSED'}
                                 />
                                 <button
                                     type="submit"
-                                    disabled={status === 'ENDED' || !input.trim()}
+                                    disabled={status === 'ENDED' || status === 'PAUSED' || !input.trim()}
                                     className="bg-[#E91E63] hover:bg-pink-700 w-12 h-12 rounded-full flex items-center justify-center text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-95 shadow-lg shadow-pink-200 self-end"
                                 >
                                     <Send size={20} />

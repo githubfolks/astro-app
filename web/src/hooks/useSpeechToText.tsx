@@ -113,6 +113,18 @@ export function useSpeechToText() {
             if (finalChunk) {
                 onFinalRef.current(devanagariToHinglish(finalChunk));
             }
+            // Same re-finalization quirk as above can leak into the *interim*
+            // tail too — the engine sometimes echoes words already committed to
+            // finalizedTotalRef as still-pending interim text. Strip that overlap
+            // so already-sent words don't visibly reappear in the live composer.
+            if (interimChunk) {
+                const total = finalizedTotalRef.current;
+                if (interimChunk.startsWith(total)) {
+                    interimChunk = interimChunk.slice(total.length);
+                } else if (total.endsWith(interimChunk)) {
+                    interimChunk = '';
+                }
+            }
             setInterimText(interimChunk ? devanagariToHinglish(interimChunk) : '');
         };
 
