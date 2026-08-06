@@ -87,17 +87,27 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const [hasMore, setHasMore] = useState(true);
     const PAGE_SIZE = limit || 20;
 
+    // A logout->login (or any other rapid re-trigger, e.g. the reconnect-resync
+    // effects below) can have two `fetchAstrologers(0, false)` calls in flight at
+    // once — an older, differently-authenticated request can resolve AFTER the
+    // newer one and silently overwrite fresh state with stale data (e.g. an
+    // online astrologer reverting to showing "Knock"). Only the response from the
+    // most recently *issued* request is allowed to commit to state.
+    const latestRequestId = React.useRef(0);
+
     // Takes `skip` explicitly (rather than closing over `page`) so this can be
     // safely memoized on PAGE_SIZE alone — closing over `page` would give the
     // reset-fetch effect below a new callback identity on every "Load More"
     // click and re-trigger it, wiping the accumulated list back to page 1.
     const fetchAstrologers = useCallback(async (skip: number, append: boolean) => {
+        const requestId = ++latestRequestId.current;
         try {
             setLoading(true);
             // Always sort by rating as per requirements
             const data = await api.astrologers.list(skip, PAGE_SIZE, 'rating');
 
             if (!Array.isArray(data)) throw new Error("Invalid response format");
+            if (requestId !== latestRequestId.current) return; // superseded by a newer fetch
 
             const astros = data.map((profile: AstrologerListItem) => ({
                 id: profile.user_id,

@@ -64,6 +64,8 @@ export const HINGLISH_WORDS: readonly string[] = [
     'seva', 'shadbala', 'shanti', 'shatru', 'shri', 'shuru', 'soch', 'sthan', 'swarashi', 'tak',
     'tareekh', 'tel', 'uchcha', 'upvas', 'vakri', 'vasya', 'vimshottari', 'vipreet', 'vrat',
     'wapas', 'waqt', 'yagya', 'yantra', 'yog', 'yogini', 'yoni', 'yuti',
+    'ast', 'tara', 'panna', 'varna', 'ayu', 'mein', 'hoon', 'baar', 'banana', 'chal', 'lena',
+    'maha', 'gayatri', 'hanuman', 'mitra', 'sade', 'shastra', 'swami', 'tulsi', 'guna',
 
     // English words seekers commonly mix into Hinglish chat (from docs/hinglish-words.txt)
     'arranged', 'boyfriend', 'caste', 'challenging', 'chances', 'emotions', 'employment',
@@ -74,9 +76,31 @@ export const HINGLISH_WORDS: readonly string[] = [
     'stressed', 'studies', 'term', 'up', 'upsc', 'wellbeing',
 ] as const;
 
+/**
+ * Lowercase letters only, with runs of a repeated letter collapsed to one
+ * (aa->a, ee->e, ...). Typed Hinglish uses single-vowel spelling ("shaadi"),
+ * but voice input's phonetic transliteration (utils/hinglish.ts) doubles
+ * matra vowels ("shaadee") — without normalizing both sides the same way,
+ * isHinglishWord() below would never recognise a voice-transcribed word,
+ * silently letting every real Hindi word fall through to the caller's
+ * English-loanword fuzzy-match and get "corrected" into the wrong word.
+ *
+ * Also folds "ph"->"f" and "w"->"v": फ transliterates to "ph" (e.g. "office"
+ * -> "ophisa") while English often spells the same sound with a single "f"
+ * ("office", not "opphice") — left unfolded, an edit-distance match can
+ * land on a wrong-but-closer word (e.g. "office" matched "phase" instead,
+ * since "ophisa" is fewer edits from "phase" than from unfolded "office").
+ * व is similarly ambiguous between English "v" and "w".
+ */
+export function normalizePhonetic(word: string): string {
+    return word.toLowerCase().replace(/[^a-z]/g, '')
+        .replace(/ph/g, 'f').replace(/w/g, 'v')
+        .replace(/(.)\1+/g, '$1');
+}
+
 let cachedSet: Set<string> | null = null;
 
 export function isHinglishWord(word: string): boolean {
-    if (!cachedSet) cachedSet = new Set(HINGLISH_WORDS);
-    return cachedSet.has(word.toLowerCase());
+    if (!cachedSet) cachedSet = new Set(HINGLISH_WORDS.map(normalizePhonetic));
+    return cachedSet.has(normalizePhonetic(word));
 }

@@ -1,0 +1,301 @@
+Hello
+Hi
+Welcome
+Good morning
+Good afternoon
+Good evening
+Thank you
+Thanks
+Please
+Sure
+Okay
+Alright
+Perfect
+Great
+Wonderful
+Excellent
+Let's begin
+Continue
+Go ahead
+Relax
+Don't worry
+Name
+Full name
+Date of birth
+Time of birth
+Birth time
+Place of birth
+Birth city
+Location
+Country
+Gender
+Age
+Birth Chart
+Natal Chart
+Horoscope
+Kundli
+Zodiac
+Zodiac Sign
+Ascendant
+Rising Sign
+Moon Sign
+Sun Sign
+Lagna
+House
+Planet
+Transit
+Dasha
+Mahadasha
+Antardasha
+Nakshatra
+Yoga
+Dosha
+Aspect
+Conjunction
+Combust
+Retrograde
+Direct Motion
+Degree
+Placement
+Alignment
+Influence
+Energy
+Prediction
+Reading
+Analysis
+Timing
+Destiny
+Fortune
+Karma
+Spiritual Energy
+Sun
+Moon
+Mars
+Mercury
+Jupiter
+Venus
+Saturn
+Rahu
+Ketu
+Pluto
+Uranus
+Neptune
+First House
+Second House
+Third House
+Fourth House
+Fifth House
+Sixth House
+Seventh House
+Eighth House
+Ninth House
+Tenth House
+Eleventh House
+Twelfth House
+Career
+Job
+Promotion
+Business
+Startup
+Profession
+Income
+Salary
+Office
+Company
+Client
+Project
+Success
+Failure
+Opportunity
+Growth
+Progress
+Leadership
+Competition
+Interview
+Transfer
+Abroad Opportunity
+Money
+Income
+Savings
+Investment
+Profit
+Loss
+Wealth
+Property
+Asset
+Expense
+Loan
+EMI
+Bank
+Financial Growth
+Financial Stability
+Cash Flow
+Love
+Relationship
+Marriage
+Wedding
+Partner
+Husband
+Wife
+Boyfriend
+Girlfriend
+Romance
+Compatibility
+Divorce
+Separation
+Engagement
+Proposal
+Family
+Health
+Fitness
+Stress
+Anxiety
+Depression
+Recovery
+Energy
+Immunity
+Mental Health
+Physical Health
+Lifestyle
+Diet
+Sleep
+Exercise
+Study
+Education
+School
+College
+University
+Degree
+Course
+Exam
+Result
+Admission
+Scholarship
+Learning
+Higher Education
+Today
+Tomorrow
+Yesterday
+This week
+Next week
+This month
+Next month
+This year
+Coming year
+Upcoming months
+Future
+Soon
+Later
+Right now
+Currently
+At present
+Long term
+Short term
+Focus
+Balance
+Patience
+Discipline
+Confidence
+Believe
+Trust
+Avoid
+Accept
+Improve
+Control
+Manage
+Plan
+Decide
+Prepare
+Practice
+Meditate
+Pray
+Donate
+Worship
+Positive
+Negative
+Favorable
+Unfavorable
+Lucky
+Unlucky
+Powerful
+Strong
+Weak
+Stable
+Unstable
+Beneficial
+Challenging
+Unexpected
+Sudden
+Gradual
+Remedy
+Solution
+Recommendation
+Suggestion
+Donation
+Charity
+Temple
+Mantra
+Chant
+Meditation
+Prayer
+Fasting
+Gemstone
+Rudraksha
+Yantra
+Puja
+Ritual
+Yes
+No
+Correct
+Right
+Exactly
+Absolutely
+Definitely
+Maybe
+Probably
+Possible
+Certainly
+Of course
+Actually
+Basically
+Normally
+Usually
+Generally
+Sometimes
+Mainly
+Simply
+Especially
+Honestly
+Clearly
+Obviously
+Practically
+Personally
+according to
+based on
+current situation
+overall prediction
+positive indication
+negative impact
+strong possibility
+good opportunity
+career growth
+financial stability
+relationship issues
+health concern
+family support
+future planning
+next phase
+life partner
+business expansion
+foreign travel
+higher education
+job change
+salary hike
+marriage timing
+favorable period
+challenging phase
+success rate
+lucky period
+planetary support
+karmic lessons
+spiritual growth

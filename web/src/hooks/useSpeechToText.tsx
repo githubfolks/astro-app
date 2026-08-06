@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { devanagariToHinglish } from '../utils/hinglish';
 
+/** Length of the longest shared prefix between `a` and `b`. */
+function commonPrefixLength(a: string, b: string): number {
+    let i = 0;
+    const max = Math.min(a.length, b.length);
+    while (i < max && a[i] === b[i]) i++;
+    return i;
+}
+
 // The Web Speech API's SpeechRecognition types aren't in the default TS DOM lib.
 interface SpeechRecognitionResultLike {
     isFinal: boolean;
@@ -99,10 +107,18 @@ export function useSpeechToText() {
                         newPart = transcript.slice(total.length);
                     } else if (total.endsWith(transcript)) {
                         newPart = '';
+                    } else if (transcript.startsWith(alreadySentAtIndex)) {
+                        newPart = transcript.slice(alreadySentAtIndex.length);
                     } else {
-                        newPart = transcript.startsWith(alreadySentAtIndex)
-                            ? transcript.slice(alreadySentAtIndex.length)
-                            : transcript;
+                        // The engine revised its earlier guess for this segment
+                        // instead of purely extending it — most common for a
+                        // code-switched English word mid-Hindi-sentence, whose
+                        // Devanagari rendering it's least confident about (e.g.
+                        // "मैरिज" revised to "marriage" once more audio arrives).
+                        // Re-sending the whole transcript would duplicate what's
+                        // already in the composer from this index's prior guess —
+                        // only append what's new past their longest shared prefix.
+                        newPart = transcript.slice(commonPrefixLength(alreadySentAtIndex, transcript));
                     }
                     if (newPart) finalizedTotalRef.current = total + newPart;
                     finalChunk += newPart;

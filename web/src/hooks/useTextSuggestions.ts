@@ -4,10 +4,6 @@ import { HINGLISH_WORDS, isHinglishWord } from '../data/hinglishWords';
 
 const MAX_SUGGESTIONS = 5;
 const MIN_WORD_LENGTH = 2;
-// Below this many real prefix matches, the prefix itself is probably a typo
-// (e.g. "helo" only completes to "helot"/"helots") — fall back to edit-distance
-// corrections ("hello") instead of surfacing those obscure completions.
-const MIN_PREFIX_MATCHES = 3;
 
 /** Filters out proper nouns and possessive/contraction forms, which make poor suggestions. */
 function isCommonForm(word: string): boolean {
@@ -94,7 +90,10 @@ export function useTextSuggestions() {
                 if (completions.length >= MAX_SUGGESTIONS) break;
             }
         }
-        if (completions.length >= MIN_PREFIX_MATCHES) return completions;
+        // Any genuine completion beats a guess — edit-distance on an incomplete
+        // word produces unrelated suggestions (e.g. "exampl" -> junk instead of
+        // "example"). Only fall back when nothing at all matches the prefix.
+        if (completions.length > 0) return completions;
 
         return dict.typo.suggest(lower, MAX_SUGGESTIONS).filter(isCommonForm);
     };

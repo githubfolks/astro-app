@@ -426,6 +426,11 @@ export const Chat: React.FC = () => {
     // feel delayed. Debounce it so the textbox updates instantly and suggestions
     // catch up shortly after the user pauses.
     const suggestionsTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    // Tracks whether the change in progress is a deletion, so onSelect (which
+    // fires right after onChange on the same backspace keystroke) can skip
+    // re-triggering suggestions too — otherwise both handlers keep resetting the
+    // debounce timer into the heavy spell-check path for every character deleted.
+    const isDeletingRef = useRef(false);
     const updateSuggestions = (value: string, cursor: number) => {
         if (suggestionsTimeoutRef.current) clearTimeout(suggestionsTimeoutRef.current);
         suggestionsTimeoutRef.current = setTimeout(() => computeSuggestions(value, cursor), 150);
@@ -436,10 +441,24 @@ export const Chat: React.FC = () => {
         };
     }, []);
 
+    const prevInputLenRef = useRef(0);
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value;
+        const isDeleting = value.length < prevInputLenRef.current;
+        prevInputLenRef.current = value.length;
+        isDeletingRef.current = isDeleting;
         setInput(value);
-        updateSuggestions(value, e.target.selectionStart ?? value.length);
+        if (isDeleting) {
+            // Deleting text shouldn't run the suggestion engine at all — its
+            // heaviest path (edit-distance spell-check, triggered as soon as the
+            // cursor lands right after a finished word) was making backspacing
+            // feel laggy. Just clear suggestions instantly instead.
+            if (suggestionsTimeoutRef.current) clearTimeout(suggestionsTimeoutRef.current);
+            setSuggestions([]);
+            setSuggestionTarget(null);
+        } else {
+            updateSuggestions(value, e.target.selectionStart ?? value.length);
+        }
         const now = Date.now();
         if (now - lastTyped.current > 2000) {
             sendTyping();
@@ -490,6 +509,19 @@ export const Chat: React.FC = () => {
             ? `${voiceBaseRef.current.trim()} ${speech.interimText}`
             : speech.interimText);
     }, [speech.interimText, speech.isListening]);
+
+    const clearInput = () => {
+        if (suggestionsTimeoutRef.current) clearTimeout(suggestionsTimeoutRef.current);
+        setInput('');
+        setSuggestions([]);
+        setSuggestionTarget(null);
+        // Stop an in-progress voice dictation too — otherwise its next interim
+        // result would immediately repopulate the composer from voiceBaseRef,
+        // making the clear appear to silently undo itself.
+        if (speech.isListening) speech.stop();
+        voiceBaseRef.current = '';
+        messageInputRef.current?.focus();
+    };
 
     const handleEndChat = () => {
         setShowEndChatConfirm(true);
@@ -1457,25 +1489,45 @@ export const Chat: React.FC = () => {
                                         {speech.isListening ? <MicOff size={20} /> : <Mic size={20} />}
                                     </button>
                                 )}
-                                <textarea
-                                    ref={messageInputRef}
-                                    value={input}
-                                    onChange={handleInputChange}
-                                    onSelect={(e) => updateSuggestions(input, e.currentTarget.selectionStart ?? input.length)}
-                                    onBlur={() => { setSuggestions([]); setSuggestionTarget(null); }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            sendCurrentInput();
-                                        }
-                                    }}
-                                    placeholder="Type your message..."
-                                    spellCheck
-                                    lang={chatLanguage === 'hi' ? 'hi' : 'en'}
-                                    rows={2}
-                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner resize-none max-h-24 overflow-y-auto"
-                                    disabled={status === 'ENDED' || status === 'PAUSED'}
-                                />
+                                <div className="relative flex-1">
+                                    <textarea
+                                        ref={messageInputRef}
+                                        value={input}
+                                        onChange={handleInputChange}
+                                        onSelect={(e) => {
+                                            // Only suppresses the onSelect firing right after the
+                                            // backspace keystroke that set this flag — reset
+                                            // immediately so an unrelated later click/arrow-key
+                                            // cursor move still gets suggestions.
+                                            if (isDeletingRef.current) { isDeletingRef.current = false; return; }
+                                            updateSuggestions(input, e.currentTarget.selectionStart ?? input.length);
+                                        }}
+                                        onBlur={() => { setSuggestions([]); setSuggestionTarget(null); }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                sendCurrentInput();
+                                            }
+                                        }}
+                                        placeholder="Type your message..."
+                                        spellCheck
+                                        lang={chatLanguage === 'hi' ? 'hi' : 'en'}
+                                        rows={3}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:border-[#E91E63] focus:ring-1 focus:ring-[#E91E63] text-gray-800 placeholder-gray-400 text-sm transition-all shadow-inner resize-none max-h-40 overflow-y-auto"
+                                        disabled={status === 'ENDED' || status === 'PAUSED'}
+                                    />
+                                    {input && (
+                                        <button
+                                            type="button"
+                                            onClick={clearInput}
+                                            onMouseDown={(e) => e.preventDefault()}
+                                            title="Clear message"
+                                            className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
                                 <button
                                     type="submit"
                                     disabled={status === 'ENDED' || status === 'PAUSED' || !input.trim()}

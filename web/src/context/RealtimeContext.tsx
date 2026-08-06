@@ -48,6 +48,14 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         ws.current = socket;
 
         socket.onopen = () => {
+            // A rapid logout->login can create a new socket (new token) before this
+            // one's connection settles, or this socket may be a stale reconnect
+            // attempt superseded by a newer `connect()` call (see onclose below).
+            // `shouldReconnect`/`reconnectAttempt` are refs shared across every
+            // socket instance, so without this identity check a superseded socket
+            // can still fire events / flip shared timers using its stale closed-over
+            // `currentToken`, clobbering the real connection's state.
+            if (ws.current !== socket) { socket.close(); return; }
             // Auth token goes in the first message, not the URL — a `?token=`
             // query string ends up in access logs/proxies/browser history.
             // Logged-out visitors send no token and are kept as a "guest"
@@ -70,6 +78,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         };
 
         socket.onmessage = (event) => {
+            if (ws.current !== socket) return;
             try {
                 const data = JSON.parse(event.data) as RealtimeEvent;
                 if (data.type === 'PONG') return;
@@ -79,6 +88,12 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
         socket.onclose = () => {
             clearHeartbeat();
+            // Only the currently-active socket instance may schedule a reconnect —
+            // otherwise a superseded socket's delayed onclose (e.g. the pre-login
+            // guest socket closing after the post-login authenticated one already
+            // opened) would reconnect using its own stale `currentToken`, tearing
+            // down the correct connection and racing REST fetches out of order.
+            if (ws.current !== socket) return;
             if (!shouldReconnect.current) return;
             const delay = Math.min(1000 * 2 ** reconnectAttempt.current, MAX_RECONNECT_DELAY_MS);
             reconnectAttempt.current += 1;

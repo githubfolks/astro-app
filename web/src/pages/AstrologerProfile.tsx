@@ -69,10 +69,19 @@ const AstrologerProfile: React.FC = () => {
         ]
     });
 
+    // A rapid logout->login (or an auth-token reconnect racing this page's own
+    // id-change fetch) can leave two `getOne` requests in flight; only the
+    // response to the most recently issued one may commit, otherwise a stale,
+    // differently-authenticated response can overwrite fresh state (e.g. an
+    // online astrologer reverting to a stale Offline/Knock display).
+    const latestRequestId = React.useRef(0);
+
     const fetchAstrologer = useCallback(() => {
         if (!id) return;
+        const requestId = ++latestRequestId.current;
         api.astrologers.getOne(id)
             .then(data => {
+                if (requestId !== latestRequestId.current) return;
                 setAstrologer(data);
                 setLoading(false);
                 // Redirect numeric-ID URLs to the canonical slug URL
