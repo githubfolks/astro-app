@@ -60,6 +60,13 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             heartbeatTimer.current = setInterval(() => {
                 if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ type: 'PING' }));
             }, HEARTBEAT_INTERVAL_MS);
+            // Any ASTRO_ONLINE/OFFLINE broadcasts that happened while this socket
+            // was down (e.g. app backgrounded) are lost — broadcast() only reaches
+            // sockets connected at send time, there's no replay/queue. Tell
+            // listeners a fresh connection was (re)established so pages relying on
+            // live status (astrologer list/profile) can REST-refetch to resync
+            // instead of showing stale Offline/Knock state indefinitely.
+            listeners.current.forEach(l => l({ type: 'REALTIME_RECONNECTED' }));
         };
 
         socket.onmessage = (event) => {

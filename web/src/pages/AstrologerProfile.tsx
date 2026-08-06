@@ -1,5 +1,5 @@
 import type { AstrologerProfile, SeekerProfile } from '../types';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -69,23 +69,26 @@ const AstrologerProfile: React.FC = () => {
         ]
     });
 
-    useEffect(() => {
-        if (id) {
-            api.astrologers.getOne(id)
-                .then(data => {
-                    setAstrologer(data);
-                    setLoading(false);
-                    // Redirect numeric-ID URLs to the canonical slug URL
-                    if (data.slug && /^\d+$/.test(id)) {
-                        navigate(`/astrologers/${data.slug}`, { replace: true });
-                    }
-                })
-                .catch(err => {
-                    console.error('Failed to fetch astrologer', err);
-                    setLoading(false);
-                });
-        }
+    const fetchAstrologer = useCallback(() => {
+        if (!id) return;
+        api.astrologers.getOne(id)
+            .then(data => {
+                setAstrologer(data);
+                setLoading(false);
+                // Redirect numeric-ID URLs to the canonical slug URL
+                if (data.slug && /^\d+$/.test(id)) {
+                    navigate(`/astrologers/${data.slug}`, { replace: true });
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch astrologer', err);
+                setLoading(false);
+            });
     }, [id, navigate]);
+
+    useEffect(() => {
+        fetchAstrologer();
+    }, [fetchAstrologer]);
 
     useEffect(() => {
         if (!astrologer?.user_id) return;
@@ -103,6 +106,13 @@ const AstrologerProfile: React.FC = () => {
     }, [isAuthenticated, user]);
 
     useRealtime((event) => {
+        if (event.type === 'REALTIME_RECONNECTED') {
+            // Any ASTRO_ONLINE/OFFLINE broadcast missed while this socket was
+            // down (e.g. app backgrounded) would otherwise leave this page
+            // showing stale Offline/Knock state indefinitely — resync via REST.
+            fetchAstrologer();
+            return;
+        }
         const isThisAstrologer = event.astrologer_id && (String(event.astrologer_id) === String(astrologer?.user_id) || String(event.astrologer_id) === String(id));
         if (event.type === 'ASTRO_ONLINE' && isThisAstrologer) {
             setAstrologer(prev => prev ? {

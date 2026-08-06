@@ -156,6 +156,13 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     }, [loading, astrologers]);
 
     useRealtime((event) => {
+        if (event.type === 'REALTIME_RECONNECTED') {
+            // The socket was down for a stretch (e.g. app backgrounded) and any
+            // ASTRO_ONLINE/OFFLINE broadcasts sent during that gap were missed —
+            // resync against the REST source of truth instead of trusting stale state.
+            fetchAstrologers(0, false);
+            return;
+        }
         if (event.type === 'ASTRO_ONLINE' && event.astrologer_id) {
             setAstrologers(prev => prev.map(astro => {
                 if (astro.id === event.astrologer_id) {

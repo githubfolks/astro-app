@@ -176,10 +176,11 @@ export const Dashboard: React.FC = () => {
         if (['NEW_REQUEST', 'QUEUE_UPDATE'].includes(event.type)) {
             api.consultations.getHistory().then(setHistory).catch(console.error);
         }
-        // Ring a bell alongside a new request while the Dashboard is already
-        // open (foreground) — push notifications (backgrounded/closed app)
-        // get their own sound via android_channel_id="knock_alerts".
-        if (event.type === 'NEW_REQUEST') {
+        // Ring a bell alongside a new request or a seeker's Knock while the
+        // Dashboard is already open (foreground) — push notifications
+        // (backgrounded/closed app) get their own sound via
+        // android_channel_id="knock_alerts".
+        if (event.type === 'NEW_REQUEST' || event.type === 'KNOCK') {
             playNotificationSound();
         }
     });

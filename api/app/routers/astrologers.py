@@ -598,10 +598,25 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
     if not is_within_availability_window(astro):
         raise HTTPException(status_code=400, detail="Astrologer is outside their availability window")
 
+    seeker_name = (current_user.seeker_profile.full_name if current_user.seeker_profile else None) or "Seeker"
+
+    # In-app live update -> astrologer's Dashboard rings a bell instantly if
+    # they're already in the app (foreground). Best-effort: an astrologer with
+    # no open socket just relies on the push notification below.
+    try:
+        from .realtime import notify_user
+        notify_user(astrologer_id, {
+            "type": "KNOCK",
+            "astrologer_id": astrologer_id,
+            "seeker_id": current_user.id,
+            "seeker_name": seeker_name,
+        })
+    except Exception as e:
+        print(f"realtime knock notify failed: {e}")
+
     # Ring the astrologer's phone via a loud push notification (always triggered on click)
     try:
         from ..notifications import send_push_notification
-        seeker_name = (current_user.seeker_profile.full_name if current_user.seeker_profile else None) or "Seeker"
         for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == astrologer_id).all():
             send_push_notification(
                 token=tok.fcm_token,
