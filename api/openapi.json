@@ -13903,7 +13903,7 @@
     },
     "/free-tools/kundli-chart": {
       "post": {
-        "description": "Basic birth chart (ascendant + planetary positions) for a birth chart.",
+        "description": "Full Kundli \u2014 chart, vargas, vimshottari dasha, yogas, birth panchang,\nshadbala, and ashtakavarga \u2014 for a birth chart.",
         "operationId": "kundli_chart_free_tools_kundli_chart_post",
         "requestBody": {
           "content": {
