@@ -11,6 +11,7 @@ import PaymentModal from '../components/PaymentModal';
 import RatingModal from '../components/RatingModal';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import SeekerChatTranscriptModal from '../components/SeekerChatTranscriptModal';
+import CityAutocomplete from '../components/CityAutocomplete';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
@@ -1227,11 +1228,9 @@ export const Dashboard: React.FC = () => {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-gray-900 mb-1">Place of Birth</label>
-                                    <input
-                                        type="text"
-                                        autoComplete="off"
+                                    <CityAutocomplete
                                         value={seekerProfile.place_of_birth || ''}
-                                        onChange={(e) => setSeekerProfile({ ...seekerProfile, place_of_birth: e.target.value })}
+                                        onChange={(place_of_birth) => setSeekerProfile({ ...seekerProfile, place_of_birth })}
                                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                         placeholder="City, Country"
                                     />

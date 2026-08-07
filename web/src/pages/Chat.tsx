@@ -13,6 +13,7 @@ import ConfirmEndChatModal from '../components/ConfirmEndChatModal';
 import { KundliContent } from '../components/KundliPanel';
 import { MatchContent } from '../components/MatchPanel';
 import PreChatQuestionsModal, { type PreChatAnswers } from '../components/PreChatQuestionsModal';
+import CityAutocomplete from '../components/CityAutocomplete';
 import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb, HeartHandshake } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, MatchData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
@@ -897,7 +898,7 @@ export const Chat: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
-                                                        <input type="text" value={adhocSpouseData.place_of_birth} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, place_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
+                                                        <CityAutocomplete value={adhocSpouseData.place_of_birth} onChange={place_of_birth => setAdhocSpouseData({ ...adhocSpouseData, place_of_birth })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
                                                     </div>
                                                     <button
                                                         onClick={handleGenerateAdhocCompatibility}
@@ -935,7 +936,7 @@ export const Chat: React.FC = () => {
                                                         </div>
                                                         <div>
                                                             <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
-                                                            <input type="text" value={editSeekerData.place_of_birth} onChange={e => setEditSeekerData({...editSeekerData, place_of_birth: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
+                                                            <CityAutocomplete value={editSeekerData.place_of_birth} onChange={place_of_birth => setEditSeekerData({...editSeekerData, place_of_birth})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
                                                         </div>
                                                         <div>
                                                             <label className="text-xs font-bold text-gray-500 uppercase">Gender</label>
@@ -1026,7 +1027,7 @@ export const Chat: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
-                                                        <input type="text" value={adhocKundliData.place_of_birth} onChange={e => setAdhocKundliData({ ...adhocKundliData, place_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
+                                                        <CityAutocomplete value={adhocKundliData.place_of_birth} onChange={place_of_birth => setAdhocKundliData({ ...adhocKundliData, place_of_birth })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
                                                     </div>
                                                     <button
                                                         onClick={handleGenerateAdhocKundli}

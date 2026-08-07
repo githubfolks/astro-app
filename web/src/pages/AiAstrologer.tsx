@@ -4,6 +4,7 @@ import { Sparkles, Send, Star, Pencil, Loader2, BadgeCheck, CalendarHeart, Messa
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import CityAutocomplete from '../components/CityAutocomplete';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { AstrologerListItem } from '../types';
@@ -321,14 +322,12 @@ const AiAstrologer: React.FC = () => {
                                     </div>
                                     <div>
                                         <label className="block text-indigo-100 text-sm font-medium mb-2">Place of Birth *</label>
-                                        <input
-                                            type="text"
-                                            autoComplete="off"
+                                        <CityAutocomplete
                                             value={details.place_of_birth}
-                                            onChange={e => setDetails({ ...details, place_of_birth: e.target.value })}
+                                            onChange={place_of_birth => setDetails({ ...details, place_of_birth })}
                                             placeholder="e.g. Jaipur, Rajasthan"
-                                            maxLength={150}
                                             className={inputBase}
+                                            dropdownClassName="bg-[#1a1530] text-white divide-y divide-white/5"
                                         />
                                     </div>
                                     <div>

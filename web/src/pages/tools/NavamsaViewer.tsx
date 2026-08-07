@@ -6,6 +6,7 @@ import SEO from '../../components/SEO';
 import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
 import PageHeading from '../../components/PageHeading';
+import CityAutocomplete from '../../components/CityAutocomplete';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
@@ -107,13 +108,13 @@ const NavamsaViewer: React.FC = () => {
                             </div>
                             <div>
                                 <label className={TOOL_LABEL_CLASS}>Place of Birth *</label>
-                                <input
-                                    type="text"
+                                <CityAutocomplete
                                     required
                                     value={formData.place_of_birth}
-                                    onChange={(e) => setFormData({ ...formData, place_of_birth: e.target.value })}
+                                    onChange={(place_of_birth) => setFormData({ ...formData, place_of_birth })}
                                     className={TOOL_INPUT_CLASS}
                                     placeholder="e.g., New Delhi, Delhi, India"
+                                    dropdownClassName="bg-[#1a1530] text-white divide-y divide-white/5"
                                 />
                             </div>
 

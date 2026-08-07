@@ -33,6 +33,8 @@ async def _post(path: str, payload: dict) -> dict:
             raise ValueError("Invalid FreeAstroAPI key. Please check your FREE_ASTRO_API_KEY.")
         elif response.status_code == 429:
             raise ValueError("FreeAstroAPI daily quota exceeded. Please try again tomorrow or upgrade your plan.")
+        elif response.status_code == 422:
+            raise ValueError(f"FreeAstroAPI rejected the request: {response.text}")
 
         response.raise_for_status()
         return response.json()
@@ -217,6 +219,12 @@ async def generate_kuta_match(person1: dict, person2: dict) -> dict:
     return await _post("/api/v2/vedic/compatibility", payload)
 
 
+def _split_date_time(birth_date: str, birth_time: str) -> dict:
+    year, month, day = (int(part) for part in birth_date.split("-"))
+    hour, minute = (int(part) for part in birth_time.split(":")[:2])
+    return {"year": year, "month": month, "day": day, "hour": hour, "minute": minute}
+
+
 async def generate_yogas(
     birth_date: str,
     birth_time: str,
@@ -226,13 +234,13 @@ async def generate_yogas(
     """
     Detect Vedic yogas (Manglik/Mangal Dosha, Kala Sarpa, Raj Yogas, etc.) for a birth
     chart using FreeAstroAPI's dedicated yogas endpoint. Unlike the other functions in
-    this module this is a v1 endpoint that geocodes `birth_place` itself, so no separate
-    geocode_place() call is needed. `birth_date` is "YYYY-MM-DD", `birth_time` is "HH:MM:SS".
+    this module this is a v1 endpoint that geocodes the birth place (`city`) itself, so
+    no separate geocode_place() call is needed. `birth_date` is "YYYY-MM-DD", `birth_time`
+    is "HH:MM:SS".
     """
     payload = {
-        "birth_date": birth_date,
-        "birth_time": birth_time,
-        "birth_place": birth_place,
+        **_split_date_time(birth_date, birth_time),
+        "city": birth_place,
         "timezone": timezone,
     }
     return await _post("/api/v1/vedic/yogas", payload)
@@ -248,13 +256,12 @@ async def generate_vargas(
     """
     Generate divisional (varga) charts, e.g. Navamsa (D9), for a birth chart using
     FreeAstroAPI's dedicated vargas endpoint. Same v1 request shape as generate_yogas —
-    `birth_place` is geocoded by the API itself. `vargas` is an optional list restricting
-    which divisional charts are returned; omit to get the API's default set.
+    the birth place (`city`) is geocoded by the API itself. `vargas` is an optional list
+    restricting which divisional charts are returned; omit to get the API's default set.
     """
     payload = {
-        "birth_date": birth_date,
-        "birth_time": birth_time,
-        "birth_place": birth_place,
+        **_split_date_time(birth_date, birth_time),
+        "city": birth_place,
         "timezone": timezone,
     }
     if vargas:
