@@ -53,6 +53,35 @@ async def _geocode_and_generate(dob, tob, place: str):
     return lat, lon, chart_data
 
 
+def _has_complete_dasha(data: dict) -> bool:
+    levels = {p.get("level") for p in data.get("vimshottari_dasha", {}).get("active_periods", [])}
+    return {"Mahadasha", "Antardasha", "Pratyantardasha"}.issubset(levels)
+
+
+def _find_reusable_kundli_chart(db: Session, dob, tob, place: str):
+    """Look for an existing KundliReport row with these exact birth details whose
+    chart_data is current (see _has_complete_dasha docstring context above) —
+    used by both create and edit so neither needlessly re-hits FreeAstroAPI when
+    the birth details match a report already generated for someone else."""
+    existing = db.query(models.KundliReport).filter(
+        models.KundliReport.date_of_birth == dob,
+        models.KundliReport.time_of_birth == tob,
+        models.KundliReport.place_of_birth == place,
+    ).first()
+
+    if (
+        existing
+        and isinstance(existing.chart_data, dict)
+        and "chart" in existing.chart_data
+        and _has_complete_dasha(existing.chart_data)
+        and existing.latitude is not None
+        and existing.longitude is not None
+    ):
+        return existing
+
+    return None
+
+
 @router.post("/generate", response_model=schemas.KundliReportResponse)
 async def generate_kundli_report(
     request: schemas.KundliGenerateRequest,
@@ -108,16 +137,8 @@ async def generate_kundli_report(
         models.KundliReport.place_of_birth == place,
     ).first()
 
-    def _has_complete_dasha(data: dict) -> bool:
-        levels = {p.get("level") for p in data.get("vimshottari_dasha", {}).get("active_periods", [])}
-        return {"Mahadasha", "Antardasha", "Pratyantardasha"}.issubset(levels)
-
-    if (
-        existing
-        and isinstance(existing.chart_data, dict)
-        and "chart" in existing.chart_data
-        and _has_complete_dasha(existing.chart_data)
-    ):
+    reusable = _find_reusable_kundli_chart(db, dob, tob, place)
+    if reusable:
         # Reuse the already-computed chart (skip re-hitting FreeAstroAPI for
         # identical birth details) but still record a fresh row for this
         # request — mutating `existing` in place would silently rename it
@@ -130,10 +151,10 @@ async def generate_kundli_report(
             date_of_birth=dob,
             time_of_birth=tob,
             place_of_birth=place,
-            latitude=existing.latitude,
-            longitude=existing.longitude,
-            timezone=existing.timezone,
-            chart_data=existing.chart_data,
+            latitude=reusable.latitude,
+            longitude=reusable.longitude,
+            timezone=reusable.timezone,
+            chart_data=reusable.chart_data,
         )
         db.add(report)
         db.commit()
@@ -295,9 +316,17 @@ async def update_kundli_report(
     if not report:
         raise HTTPException(status_code=404, detail="Kundli report not found")
 
-    lat, lon, chart_data = await _geocode_and_generate(
-        request.date_of_birth, request.time_of_birth, request.place_of_birth
+    reusable = _find_reusable_kundli_chart(
+        db, request.date_of_birth, request.time_of_birth, request.place_of_birth
     )
+    if reusable:
+        # New birth details match another already-cached report — reuse its
+        # chart instead of re-hitting FreeAstroAPI for identical inputs.
+        lat, lon, chart_data = reusable.latitude, reusable.longitude, reusable.chart_data
+    else:
+        lat, lon, chart_data = await _geocode_and_generate(
+            request.date_of_birth, request.time_of_birth, request.place_of_birth
+        )
 
     report.full_name = request.full_name
     report.date_of_birth = request.date_of_birth

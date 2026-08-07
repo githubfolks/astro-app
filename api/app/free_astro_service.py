@@ -64,37 +64,6 @@ async def _get(path: str, params: Optional[dict] = None) -> dict:
         return response.json()
 
 
-async def generate_chart(
-    year: int,
-    month: int,
-    day: int,
-    hour: int,
-    minute: int,
-    latitude: float,
-    longitude: float,
-    timezone: str = "Asia/Kolkata",
-    ayanamsha: str = "lahiri",
-    house_system: str = "whole_sign",
-) -> dict:
-    """
-    Generate a Vedic birth chart (Kundli) using FreeAstroAPI.
-    Returns ascendant, planetary positions, houses, Nakshatra and Pada data.
-    """
-    payload = {
-        "year": year,
-        "month": month,
-        "day": day,
-        "hour": hour,
-        "minute": minute,
-        "lat": latitude,
-        "lng": longitude,
-        "tz_str": timezone,
-        "ayanamsha": ayanamsha,
-        "house_system": house_system,
-    }
-    return await _post("/api/v2/vedic/chart", payload)
-
-
 async def generate_full_kundli(
     year: int,
     month: int,

@@ -8,7 +8,7 @@ import CityAutocomplete from '../components/CityAutocomplete';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { AstrologerListItem } from '../types';
-import { getAstrologerDisplayName } from '../utils/url';
+import { getAstrologerDisplayName, resolveImageUrl } from '../utils/url';
 
 const FREE_QUESTION_LIMIT = 5;
 const GUEST_DETAILS_KEY = 'ai_astrologer_birth_details';
@@ -397,7 +397,7 @@ const AiAstrologer: React.FC = () => {
                                             <div className="relative shrink-0">
                                                 {a.profile_picture_url && !brokenAvatarIds.has(a.user_id) ? (
                                                     <img
-                                                        src={a.profile_picture_url}
+                                                        src={resolveImageUrl(a.profile_picture_url)}
                                                         alt={getAstrologerDisplayName(a)}
                                                         className="w-11 h-11 rounded-xl object-cover"
                                                         onError={() => setBrokenAvatarIds(prev => new Set(prev).add(a.user_id))}

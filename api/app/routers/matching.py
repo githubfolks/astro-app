@@ -51,6 +51,21 @@ async def _resolve_person(person: schemas.MatchPersonInput, db: Session):
     return dob, tob, place, name
 
 
+def _find_reusable_match_report(db: Session, boy_dob, boy_tob, boy_place, girl_dob, girl_tob, girl_place):
+    """Look for an existing KundliMatchReport with these exact birth-detail pairs
+    — used by both create and edit so neither needlessly re-hits FreeAstroAPI
+    when the details match a match report already generated for someone else."""
+    existing = db.query(models.KundliMatchReport).filter(
+        models.KundliMatchReport.boy_date_of_birth == boy_dob,
+        models.KundliMatchReport.boy_time_of_birth == boy_tob,
+        models.KundliMatchReport.boy_place_of_birth == boy_place,
+        models.KundliMatchReport.girl_date_of_birth == girl_dob,
+        models.KundliMatchReport.girl_time_of_birth == girl_tob,
+        models.KundliMatchReport.girl_place_of_birth == girl_place,
+    ).first()
+    return existing
+
+
 @router.post("/generate", response_model=schemas.MatchReportResponse)
 async def generate_match_report(
     request: schemas.MatchGenerateRequest,
@@ -66,14 +81,7 @@ async def generate_match_report(
     boy_dob, boy_tob, boy_place, boy_name = await _resolve_person(request.boy, db)
     girl_dob, girl_tob, girl_place, girl_name = await _resolve_person(request.girl, db)
 
-    existing = db.query(models.KundliMatchReport).filter(
-        models.KundliMatchReport.boy_date_of_birth == boy_dob,
-        models.KundliMatchReport.boy_time_of_birth == boy_tob,
-        models.KundliMatchReport.boy_place_of_birth == boy_place,
-        models.KundliMatchReport.girl_date_of_birth == girl_dob,
-        models.KundliMatchReport.girl_time_of_birth == girl_tob,
-        models.KundliMatchReport.girl_place_of_birth == girl_place,
-    ).first()
+    existing = _find_reusable_match_report(db, boy_dob, boy_tob, boy_place, girl_dob, girl_tob, girl_place)
 
     if existing:
         return existing
@@ -205,33 +213,41 @@ async def update_match_report(
     boy_dob, boy_tob, boy_place, boy_name = await _resolve_person(request.boy, db)
     girl_dob, girl_tob, girl_place, girl_name = await _resolve_person(request.girl, db)
 
-    try:
-        boy_lat, boy_lon = await geocode_place(boy_place)
-        girl_lat, girl_lon = await geocode_place(girl_place)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
+    reusable = _find_reusable_match_report(db, boy_dob, boy_tob, boy_place, girl_dob, girl_tob, girl_place)
+    if reusable:
+        # New birth details match another already-cached match report — reuse
+        # its compatibility data instead of re-hitting FreeAstroAPI.
+        boy_lat, boy_lon = reusable.boy_latitude, reusable.boy_longitude
+        girl_lat, girl_lon = reusable.girl_latitude, reusable.girl_longitude
+        match_data = reusable.match_data
+    else:
+        try:
+            boy_lat, boy_lon = await geocode_place(boy_place)
+            girl_lat, girl_lon = await geocode_place(girl_place)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception:
+            raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
 
-    try:
-        match_data = await generate_kuta_match(
-            person1={
-                "year": boy_dob.year, "month": boy_dob.month, "day": boy_dob.day,
-                "hour": boy_tob.hour, "minute": boy_tob.minute,
-                "lat": boy_lat, "lng": boy_lon, "tz_str": "Asia/Kolkata",
-                "label": boy_name or "Boy",
-            },
-            person2={
-                "year": girl_dob.year, "month": girl_dob.month, "day": girl_dob.day,
-                "hour": girl_tob.hour, "minute": girl_tob.minute,
-                "lat": girl_lat, "lng": girl_lon, "tz_str": "Asia/Kolkata",
-                "label": girl_name or "Girl",
-            },
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+        try:
+            match_data = await generate_kuta_match(
+                person1={
+                    "year": boy_dob.year, "month": boy_dob.month, "day": boy_dob.day,
+                    "hour": boy_tob.hour, "minute": boy_tob.minute,
+                    "lat": boy_lat, "lng": boy_lon, "tz_str": "Asia/Kolkata",
+                    "label": boy_name or "Boy",
+                },
+                person2={
+                    "year": girl_dob.year, "month": girl_dob.month, "day": girl_dob.day,
+                    "hour": girl_tob.hour, "minute": girl_tob.minute,
+                    "lat": girl_lat, "lng": girl_lon, "tz_str": "Asia/Kolkata",
+                    "label": girl_name or "Girl",
+                },
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
 
     report.boy_seeker_id = request.boy.seeker_id
     report.girl_seeker_id = request.girl.seeker_id

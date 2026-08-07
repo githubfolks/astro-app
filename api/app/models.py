@@ -715,9 +715,10 @@ class NumerologyProfile(Base):
 
 
 class FreeKundliChart(Base):
-    """Cached free, public basic birth chart (ascendant + planetary positions),
-    keyed by birth details. Separate from the astrologer-only KundliReport
-    model — no user/seeker linkage, no dasha insights."""
+    """Cached free, public full Kundli (chart, vargas, dasha, yogas, panchang,
+    shadbala, ashtakavarga), keyed by birth details. Also reused by the AI
+    Astrologer to ground its answers in real chart facts. Separate from the
+    astrologer-only KundliReport model — no user/seeker linkage."""
     __tablename__ = "free_kundli_charts"
     __table_args__ = (
         Index("ix_free_kundli_charts_lookup", "date_of_birth", "time_of_birth", "place_of_birth", unique=True),
