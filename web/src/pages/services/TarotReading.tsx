@@ -97,9 +97,9 @@ const TarotReading: React.FC = () => {
                     
                     <div className="service-glass-panel p-8 flex items-center justify-center min-h-[250px]" data-aos="fade-left">
                         <div className="flex gap-4 items-center justify-center w-full">
-                            <div className="w-16 h-28 bg-white/5 border border-white/10 rounded-xl animate-bounce hover:border-amber-500/30 transition-colors shadow-md" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-18 h-32 bg-amber-500/10 border border-amber-500/30 rounded-xl animate-bounce hover:border-amber-500 transition-colors shadow-lg" style={{ animationDelay: '0.2s' }}></div>
-                            <div className="w-16 h-28 bg-white/5 border border-white/10 rounded-xl animate-bounce hover:border-amber-500/30 transition-colors shadow-md" style={{ animationDelay: '0.3s' }}></div>
+                            <div className="w-16 h-28 bg-white/5 border border-white/10 rounded-xl animate-bounce hover:border-amber-500/30 transition-colors shadow-md flex items-center justify-center text-2xl" style={{ animationDelay: '0.1s' }}>🌙</div>
+                            <div className="w-18 h-32 bg-amber-500/10 border border-amber-500/30 rounded-xl animate-bounce hover:border-amber-500 transition-colors shadow-lg flex items-center justify-center text-4xl" style={{ animationDelay: '0.2s' }}>⭐</div>
+                            <div className="w-16 h-28 bg-white/5 border border-white/10 rounded-xl animate-bounce hover:border-amber-500/30 transition-colors shadow-md flex items-center justify-center text-2xl" style={{ animationDelay: '0.3s' }}>☀️</div>
                         </div>
                     </div>
                 </section>

@@ -759,6 +759,29 @@ export const api = {
             });
             return handleResponse(response, 'Failed to generate numerology profile');
         },
+        dailyHoroscope: async () => {
+            const response = await customFetch(`${API_URL}/free-tools/daily-horoscope`);
+            return handleResponse(response, 'Failed to fetch daily horoscope');
+        },
+        kundliChart: async (data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
+            const response = await customFetch(`${API_URL}/free-tools/kundli-chart`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to generate birth chart');
+        },
+        kundliMatch: async (data: {
+            boy: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+            girl: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+        }) => {
+            const response = await customFetch(`${API_URL}/free-tools/kundli-match`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to generate Match report');
+        },
     },
     edu: {
         getCourses: async () => {

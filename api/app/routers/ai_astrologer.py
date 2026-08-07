@@ -1,5 +1,6 @@
 """AI Astrologer chat — a free, public teaser that answers up to 5 questions
-using the visitor's birth details, then nudges them to consult a human astrologer.
+per day using the visitor's birth details, then nudges them to consult a human
+astrologer.
 
 Powered by the Groq API (OpenAI-compatible chat-completions endpoint).
 Configure with:
@@ -7,7 +8,7 @@ Configure with:
   AI_ASTROLOGER_MODEL — optional model override (default: Llama 3.3 70B)
 """
 import os
-from datetime import date, time
+from datetime import date, datetime, time, timedelta, timezone
 from typing import List, Literal, Optional
 
 import httpx
@@ -22,6 +23,7 @@ from ..models import AiAstrologerUsage, GenderType
 router = APIRouter(prefix="/ai-astrologer", tags=["AI Astrologer"])
 
 FREE_QUESTION_LIMIT = 5
+IST_OFFSET_HOURS = 5.5  # matches free_tools.py's daily-horoscope cache convention
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
@@ -34,7 +36,7 @@ Your role:
 - Keep each answer between 100 and 180 words: one short opening that connects to their chart, the core insight, and one practical or spiritual suggestion (a habit, mantra, day of week, or color — keep remedies simple and safe).
 - Be uplifting and honest. Never predict death, serious illness, or disasters. For medical, legal, or financial decisions, gently advise consulting a qualified professional.
 - Stay on astrology. If asked something unrelated, warmly steer the conversation back to their stars.
-- You are a teaser experience limited to 5 questions. When it fits naturally (especially in later answers), mention that Aadikarta's verified human astrologers can go much deeper with a full kundli analysis.
+- You are a teaser experience limited to 5 questions per day. When it fits naturally (especially in later answers), mention that Aadikarta's verified human astrologers can go much deeper with a full kundli analysis.
 
 Formatting: plain conversational text. No markdown headings, no bullet lists, no LaTeX. An occasional fitting emoji (✨ 🙏 🪐) is welcome."""
 
@@ -75,9 +77,15 @@ _LIMIT_REACHED = HTTPException(
 )
 
 
+def _today_ist() -> date:
+    return (datetime.now(timezone.utc) + timedelta(hours=IST_OFFSET_HOURS)).date()
+
+
 def _identity_key(name: str, dob: date) -> str:
-    """Quota identity for a guest: lowercased, whitespace-collapsed name + DOB."""
-    return f"{' '.join(name.lower().split())}|{dob.isoformat()}"
+    """Quota identity for a guest: lowercased, whitespace-collapsed name + DOB +
+    today's date (Asia/Kolkata), so the free-question count resets every day
+    instead of being a one-time lifetime cap."""
+    return f"{' '.join(name.lower().split())}|{dob.isoformat()}|{_today_ist().isoformat()}"
 
 
 class QuotaResponse(BaseModel):

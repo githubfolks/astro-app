@@ -714,6 +714,51 @@ class NumerologyProfile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class FreeKundliChart(Base):
+    """Cached free, public basic birth chart (ascendant + planetary positions),
+    keyed by birth details. Separate from the astrologer-only KundliReport
+    model — no user/seeker linkage, no dasha insights."""
+    __tablename__ = "free_kundli_charts"
+    __table_args__ = (
+        Index("ix_free_kundli_charts_lookup", "date_of_birth", "time_of_birth", "place_of_birth", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, nullable=True)
+    date_of_birth = Column(Date, nullable=False)
+    time_of_birth = Column(Time, nullable=False)
+    place_of_birth = Column(String, nullable=False)
+    chart_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class FreeMatchReport(Base):
+    """Cached free, public Kuta (Guna Milan) compatibility report between two
+    birth charts, keyed by both people's birth details. Separate from the
+    astrologer-only KundliMatchReport model — no user/seeker linkage."""
+    __tablename__ = "free_match_reports"
+    __table_args__ = (
+        Index(
+            "ix_free_match_reports_lookup",
+            "boy_date_of_birth", "boy_time_of_birth", "boy_place_of_birth",
+            "girl_date_of_birth", "girl_time_of_birth", "girl_place_of_birth",
+            unique=True,
+        ),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    boy_full_name = Column(String, nullable=True)
+    boy_date_of_birth = Column(Date, nullable=False)
+    boy_time_of_birth = Column(Time, nullable=False)
+    boy_place_of_birth = Column(String, nullable=False)
+    girl_full_name = Column(String, nullable=True)
+    girl_date_of_birth = Column(Date, nullable=False)
+    girl_time_of_birth = Column(Time, nullable=False)
+    girl_place_of_birth = Column(String, nullable=False)
+    match_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class DailyHoroscopeBulk(Base):
     """Cached FreeAstroAPI bulk daily horoscope (all 12 signs in one payload),
     keyed by calendar date so the first request of the day fetches it and every

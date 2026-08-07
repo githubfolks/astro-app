@@ -155,11 +155,23 @@ interface DailyPrediction {
     [key: string]: string | undefined;
 }
 
+interface FreeAstroSignHoroscope {
+    scores?: { overall?: number; love?: number; career?: number; money?: number; health?: number };
+    score_factors?: Array<{ dimension: string; reason: string }>;
+    lucky?: {
+        color?: { key: string; label: string };
+        number?: number;
+        time_window?: { display: string };
+    };
+    content?: { text?: string; theme?: string };
+}
+
 const HoroscopeSign: React.FC = () => {
     const { sign } = useParams<{ sign: string }>();
     const data = sign ? SIGNS[sign.toLowerCase()] : undefined;
 
     const [prediction, setPrediction] = useState<DailyPrediction | null>(null);
+    const [freeAstro, setFreeAstro] = useState<FreeAstroSignHoroscope | null>(null);
     const [predLoading, setPredLoading] = useState(true);
 
     useEffect(() => {
@@ -168,11 +180,23 @@ const HoroscopeSign: React.FC = () => {
         api.cms.getHoroscopes(sign.toUpperCase(), 'DAILY', today)
             .then((results: Array<{ content?: DailyPrediction }>) => {
                 const entry = Array.isArray(results) ? results[0] : null;
-                setPrediction(entry?.content ?? null);
+                const cmsContent = entry?.content ?? null;
+                setPrediction(cmsContent);
+                if (cmsContent?.overview) return;
+                // No editorial content for today — fall back to the FreeAstroAPI
+                // bulk feed, which is cached once/day for all 12 signs anyway.
+                return api.freeTools.dailyHoroscope()
+                    .then((res: { horoscope_data?: { data?: Record<string, FreeAstroSignHoroscope> } }) => {
+                        setFreeAstro(res?.horoscope_data?.data?.[sign.toLowerCase()] ?? null);
+                    })
+                    .catch(() => setFreeAstro(null));
             })
             .catch(() => setPrediction(null))
             .finally(() => setPredLoading(false));
     }, [sign, data]);
+
+    const scoreReason = (dimension: string) =>
+        freeAstro?.score_factors?.find((f) => f.dimension === dimension)?.reason;
 
     if (!data) return <Navigate to="/astrologers" replace />;
 
@@ -305,6 +329,39 @@ const HoroscopeSign: React.FC = () => {
                                                 <div className="title text-emerald-400">Health & Vigor</div>
                                                 <p className="content">{prediction.health}</p>
                                             </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : freeAstro?.content?.text ? (
+                            <div className="mt-8 space-y-8">
+                                <p className="text-gray-300 text-lg leading-relaxed">{freeAstro.content.text}</p>
+                                {freeAstro.scores && (
+                                    <div className="grid md:grid-cols-3 gap-6 mt-8">
+                                        <div className="prediction-card love">
+                                            <div className="title text-rose-400">Love & Relations · {freeAstro.scores.love ?? '—'}/100</div>
+                                            <p className="content">{scoreReason('love') || 'General planetary influence on love and relationships today.'}</p>
+                                        </div>
+                                        <div className="prediction-card career">
+                                            <div className="title text-blue-400">Career & Finance · {freeAstro.scores.career ?? '—'}/100</div>
+                                            <p className="content">{scoreReason('career') || 'General planetary influence on career and finances today.'}</p>
+                                        </div>
+                                        <div className="prediction-card health">
+                                            <div className="title text-emerald-400">Health & Vigor · {freeAstro.scores.health ?? '—'}/100</div>
+                                            <p className="content">{scoreReason('health') || 'General planetary influence on health and vitality today.'}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {freeAstro.lucky && (
+                                    <div className="flex flex-wrap justify-center gap-4 pt-2">
+                                        {freeAstro.lucky.color && (
+                                            <span className="meta-chip">Lucky Color: <strong>{freeAstro.lucky.color.label}</strong></span>
+                                        )}
+                                        {freeAstro.lucky.number != null && (
+                                            <span className="meta-chip">Lucky Number: <strong>{freeAstro.lucky.number}</strong></span>
+                                        )}
+                                        {freeAstro.lucky.time_window && (
+                                            <span className="meta-chip">Lucky Time: <strong>{freeAstro.lucky.time_window.display}</strong></span>
                                         )}
                                     </div>
                                 )}

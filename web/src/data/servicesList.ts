@@ -9,6 +9,7 @@ export interface ServiceLink {
 // /kundli/matching) are astrologer tools for generating reports on behalf
 // of seekers — see ASTROLOGER_TOOLS_LIST below.
 export const SERVICES_LIST: ServiceLink[] = [
+    { title: 'AI Astrologer', to: '/ai-astrologer' },
     { title: 'Daily Horoscope', to: '/services/horoscope' },
     { title: 'Kundli Matching', to: '/services/kundli-matching' },
     { title: 'Tarot Reading', to: '/services/tarot-reading' },
@@ -16,6 +17,8 @@ export const SERVICES_LIST: ServiceLink[] = [
     { title: 'Love Advice', to: '/services/love-advice' },
     { title: 'Daily Panchang', to: '/panchang' },
     { title: 'Vedic Astrology', to: '/services/vedic-astrology' },
+    { title: 'Free Kundli Generator', to: '/tools/kundli-chart' },
+    { title: 'Free Kundli Matching', to: '/tools/kundli-matching' },
     { title: 'Manglik Dosha Checker', to: '/tools/manglik-dosha-checker' },
     { title: 'Navamsa (D9) Chart', to: '/tools/navamsa-chart' },
     { title: 'Numerology Calculator', to: '/tools/numerology-calculator' },

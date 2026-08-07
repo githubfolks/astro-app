@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
@@ -129,6 +129,13 @@ const NumerologyCalculator: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<unknown>(null);
+    const resultRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (result !== null) {
+            resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [result]);
 
     const structuredData = {
         "@context": "https://schema.org",
@@ -215,7 +222,7 @@ const NumerologyCalculator: React.FC = () => {
                     </div>
 
                     {result !== null ? (
-                        <div className="mt-8">
+                        <div ref={resultRef} className="mt-8 scroll-mt-24">
                             <h2 className="text-lg font-normal text-white mb-4">Your Numerology Profile</h2>
                             <NumerologyResult data={result} />
                         </div>

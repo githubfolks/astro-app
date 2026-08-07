@@ -259,7 +259,7 @@ const AiAstrologer: React.FC = () => {
                     <div className="max-w-3xl mx-auto text-center mb-10">
                         <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 mb-6">
                             <Sparkles className="w-4 h-4 text-amber-400" />
-                            <span className="text-amber-200 text-sm font-semibold tracking-wide">FREE · 5 QUESTIONS · INSTANT ANSWERS</span>
+                            <span className="text-amber-200 text-sm font-semibold tracking-wide">FREE · 5 QUESTIONS/DAY · INSTANT ANSWERS</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl text-white mb-4 leading-tight">
                             Ask <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Aadi</span>, Your AI Astrologer

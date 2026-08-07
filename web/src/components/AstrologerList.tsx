@@ -6,6 +6,7 @@ import AstrologerCard from './AstrologerCard';
 import type { Astrologer, AstrologerListItem, SeekerProfile } from '../types';
 import LoginModal from './LoginModal';
 import ProfileCompletionModal from './ProfileCompletionModal';
+import PaymentModal from './PaymentModal';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { useRealtime } from '../context/RealtimeContext';
@@ -23,6 +24,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [pendingChatAstroId, setPendingChatAstroId] = useState<number | null>(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
     const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
@@ -38,6 +40,27 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
 
     const isProfileComplete = (profile: SeekerProfile | null) => {
         return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
+    };
+
+    const proceedToChat = async (astroId: number) => {
+        // Require at least one minute of balance at this astrologer's rate before
+        // entering the chat, so seekers aren't dropped into a session that ends
+        // immediately for insufficient balance.
+        try {
+            const wallet = await api.wallet.getBalance();
+            const astro = astrologers.find(a => a.id === astroId);
+            const rate = astro?.consultation_fee_per_min ?? 0;
+            if (Number(wallet.balance) < rate) {
+                setPendingChatAstroId(astroId);
+                setIsPaymentModalOpen(true);
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to verify wallet balance', err);
+            alert('Could not verify your wallet balance. Please try again.');
+            return;
+        }
+        navigate(`/chat/new/${astroId}`);
     };
 
     const handleChatClick = (astroId: number) => {
@@ -59,13 +82,13 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
             return;
         }
 
-        navigate(`/chat/new/${astroId}`);
+        proceedToChat(astroId);
     };
 
     const handleProfileComplete = () => {
         setIsProfileModalOpen(false);
         if (pendingChatAstroId) {
-            navigate(`/chat/new/${pendingChatAstroId}`);
+            proceedToChat(pendingChatAstroId);
         }
     };
 
@@ -77,10 +100,28 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 if (!isProfileComplete(profile) && pendingChatAstroId) {
                     setIsProfileModalOpen(true);
                 } else if (pendingChatAstroId) {
-                    navigate(`/chat/new/${pendingChatAstroId}`);
+                    proceedToChat(pendingChatAstroId);
                 }
             })
             .catch(console.error);
+    };
+
+    const handlePaymentSuccess = async () => {
+        setIsPaymentModalOpen(false);
+        if (!pendingChatAstroId) return;
+        try {
+            const wallet = await api.wallet.getBalance();
+            const astro = astrologers.find(a => a.id === pendingChatAstroId);
+            const rate = astro?.consultation_fee_per_min ?? 0;
+            if (Number(wallet.balance) < rate) {
+                alert(`That top-up still isn't enough for this astrologer's rate (₹${rate}/min). Please add more to start the chat.`);
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to verify wallet balance', err);
+            return;
+        }
+        navigate(`/chat/new/${pendingChatAstroId}`);
     };
 
     const [page, setPage] = useState(0);
@@ -295,6 +336,12 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 onClose={() => setIsProfileModalOpen(false)}
                 onComplete={handleProfileComplete}
                 initialProfile={seekerProfile}
+            />
+
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                onSuccess={handlePaymentSuccess}
             />
         </section>
     );

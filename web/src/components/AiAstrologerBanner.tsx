@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Sparkles, MessageCircleQuestion, Zap, Gift } from 'lucide-react';
 import './AiAstrologerBanner.css';
 
@@ -43,16 +42,6 @@ const AiAstrologerBanner: React.FC = () => {
                             <span className="flex items-center gap-2"><MessageCircleQuestion className="w-4 h-4 text-amber-400" /> English & Hindi</span>
                         </div>
 
-                        <Link
-                            to="/ai-astrologer"
-                            className="ai-banner-cta group relative inline-flex px-10 py-4 rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95"
-                        >
-                            <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600"></div>
-                            <span className="relative text-indigo-950 flex items-center gap-2">
-                                Ask Aadi Now
-                                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
-                            </span>
-                        </Link>
                     </div>
                 </div>
             </div>

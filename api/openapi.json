@@ -3207,6 +3207,105 @@
         "title": "ForgotPasswordRequest",
         "type": "object"
       },
+      "FreeMatchReportResponse": {
+        "properties": {
+          "boy_date_of_birth": {
+            "format": "date",
+            "title": "Boy Date Of Birth",
+            "type": "string"
+          },
+          "boy_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boy Full Name"
+          },
+          "boy_place_of_birth": {
+            "title": "Boy Place Of Birth",
+            "type": "string"
+          },
+          "boy_time_of_birth": {
+            "format": "time",
+            "title": "Boy Time Of Birth",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "girl_date_of_birth": {
+            "format": "date",
+            "title": "Girl Date Of Birth",
+            "type": "string"
+          },
+          "girl_full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Girl Full Name"
+          },
+          "girl_place_of_birth": {
+            "title": "Girl Place Of Birth",
+            "type": "string"
+          },
+          "girl_time_of_birth": {
+            "format": "time",
+            "title": "Girl Time Of Birth",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "match_data": {
+            "additionalProperties": true,
+            "title": "Match Data",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "boy_full_name",
+          "boy_date_of_birth",
+          "boy_time_of_birth",
+          "boy_place_of_birth",
+          "girl_full_name",
+          "girl_date_of_birth",
+          "girl_time_of_birth",
+          "girl_place_of_birth",
+          "match_data",
+          "created_at"
+        ],
+        "title": "FreeMatchReportResponse",
+        "type": "object"
+      },
+      "FreeMatchRequest": {
+        "properties": {
+          "boy": {
+            "$ref": "#/components/schemas/FreeToolBirthRequest"
+          },
+          "girl": {
+            "$ref": "#/components/schemas/FreeToolBirthRequest"
+          }
+        },
+        "required": [
+          "boy",
+          "girl"
+        ],
+        "title": "FreeMatchRequest",
+        "type": "object"
+      },
       "FreeToolBirthRequest": {
         "properties": {
           "date_of_birth": {
@@ -3885,6 +3984,60 @@
           "topic"
         ],
         "title": "KeywordSuggestionRequest",
+        "type": "object"
+      },
+      "KundliChartResponse": {
+        "properties": {
+          "chart_data": {
+            "additionalProperties": true,
+            "title": "Chart Data",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "full_name",
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth",
+          "chart_data",
+          "created_at"
+        ],
+        "title": "KundliChartResponse",
         "type": "object"
       },
       "KundliGenerateRequest": {
@@ -13743,6 +13896,90 @@
           }
         },
         "summary": "Daily Horoscope Bulk",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
+    "/free-tools/kundli-chart": {
+      "post": {
+        "description": "Basic birth chart (ascendant + planetary positions) for a birth chart.",
+        "operationId": "kundli_chart_free_tools_kundli_chart_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeToolBirthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KundliChartResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kundli Chart",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
+    "/free-tools/kundli-match": {
+      "post": {
+        "description": "Kuta (Guna Milan) compatibility report between two birth charts.",
+        "operationId": "kundli_match_free_tools_kundli_match_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FreeMatchReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Kundli Match",
         "tags": [
           "Free Tools"
         ]

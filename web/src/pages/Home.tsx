@@ -13,6 +13,7 @@ import Testimonials from '../components/Testimonials';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
+import AiAstrologerBanner from '../components/AiAstrologerBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
 import PanchangSection from '../components/PanchangSection';
 import FAQSection from '../components/FAQSection';
@@ -141,6 +142,7 @@ const Home: React.FC = () => {
             <Header />
             <main id="main-content">
                 <Hero />
+                <AiAstrologerBanner />
                 <TrustBar />
                 <HowItWorks />
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />

@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import LoginModal from '../components/LoginModal';
 import ProfileCompletionModal from '../components/ProfileCompletionModal';
+import PaymentModal from '../components/PaymentModal';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { useRealtime } from '../context/RealtimeContext';
@@ -34,6 +35,7 @@ const AstrologerProfile: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile | null>(null);
     const [notified, setNotified] = useState(false);
     const [reviews, setReviews] = useState<Array<{ rating: number, comment: string, seeker_display_name: string }>>([]);
@@ -142,7 +144,7 @@ const AstrologerProfile: React.FC = () => {
         return profile?.date_of_birth && profile?.time_of_birth && profile?.place_of_birth && profile?.gender;
     };
 
-    const handleStartChat = () => {
+    const handleStartChat = async () => {
         if (!isAuthenticated) {
             setIsLoginModalOpen(true);
             return;
@@ -158,6 +160,38 @@ const AstrologerProfile: React.FC = () => {
             return;
         }
 
+        // Require at least one minute of balance at this astrologer's rate before
+        // entering the chat, so seekers aren't dropped into a session that ends
+        // immediately for insufficient balance.
+        try {
+            const wallet = await api.wallet.getBalance();
+            const rate = astrologer?.consultation_fee_per_min ?? 0;
+            if (Number(wallet.balance) < rate) {
+                setIsPaymentModalOpen(true);
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to verify wallet balance', err);
+            alert('Could not verify your wallet balance. Please try again.');
+            return;
+        }
+
+        navigate(`/chat/new/${id}`);
+    };
+
+    const handlePaymentSuccess = async () => {
+        setIsPaymentModalOpen(false);
+        try {
+            const wallet = await api.wallet.getBalance();
+            const rate = astrologer?.consultation_fee_per_min ?? 0;
+            if (Number(wallet.balance) < rate) {
+                alert(`That top-up still isn't enough for this astrologer's rate (₹${rate}/min). Please add more to start the chat.`);
+                return;
+            }
+        } catch (err) {
+            console.error('Failed to verify wallet balance', err);
+            return;
+        }
         navigate(`/chat/new/${id}`);
     };
 
@@ -542,6 +576,12 @@ const AstrologerProfile: React.FC = () => {
                 onClose={() => setIsProfileModalOpen(false)}
                 onComplete={handleProfileComplete}
                 initialProfile={seekerProfile}
+            />
+
+            <PaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                onSuccess={handlePaymentSuccess}
             />
         </div>
     );

@@ -59,6 +59,8 @@ const AiAstrologer = lazy(() => import('./pages/AiAstrologer'));
 const HoroscopeListing = lazy(() => import('./pages/horoscope/HoroscopeListing'));
 const ManglikChecker = lazy(() => import('./pages/tools/ManglikChecker'));
 const NavamsaViewer = lazy(() => import('./pages/tools/NavamsaViewer'));
+const KundliChartViewer = lazy(() => import('./pages/tools/KundliChartViewer'));
+const KundliMatchChecker = lazy(() => import('./pages/tools/KundliMatchChecker'));
 const NumerologyCalculator = lazy(() => import('./pages/tools/NumerologyCalculator'));
 
 // Service Pages
@@ -247,6 +249,8 @@ function App() {
                             <Route path="/panchang" element={<Panchang />} />
                             <Route path="/tools/manglik-dosha-checker" element={<ManglikChecker />} />
                             <Route path="/tools/navamsa-chart" element={<NavamsaViewer />} />
+                            <Route path="/tools/kundli-chart" element={<KundliChartViewer />} />
+                            <Route path="/tools/kundli-matching" element={<KundliMatchChecker />} />
                             <Route path="/tools/numerology-calculator" element={<NumerologyCalculator />} />
 
                             {/* Dynamic Page Route - Must be last to avoid catching specific routes */}

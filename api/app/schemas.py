@@ -548,3 +548,33 @@ class DailyHoroscopeBulkResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class KundliChartResponse(BaseModel):
+    id: int
+    full_name: Optional[str]
+    date_of_birth: date
+    time_of_birth: time
+    place_of_birth: str
+    chart_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class FreeMatchRequest(BaseModel):
+    boy: FreeToolBirthRequest
+    girl: FreeToolBirthRequest
+
+class FreeMatchReportResponse(BaseModel):
+    id: int
+    boy_full_name: Optional[str]
+    boy_date_of_birth: date
+    boy_time_of_birth: time
+    boy_place_of_birth: str
+    girl_full_name: Optional[str]
+    girl_date_of_birth: date
+    girl_time_of_birth: time
+    girl_place_of_birth: str
+    match_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
