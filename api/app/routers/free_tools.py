@@ -1,9 +1,11 @@
 """
 Free public astrology tools router — Manglik/Yoga dosha check, Navamsa (D9) chart,
-and Numerology profile. No auth required; anyone can use these directly from the
-homepage. Every result is cached indefinitely (deterministic given the inputs) so
-repeat lookups for the same person don't re-hit FreeAstroAPI's daily quota.
+Numerology profile, and daily horoscope. No auth required; anyone can use these
+directly from the homepage. Every result is cached indefinitely (deterministic
+given the inputs) so repeat lookups for the same person — or, for the daily
+horoscope, the same calendar day — don't re-hit FreeAstroAPI's daily quota.
 """
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -12,10 +14,13 @@ from ..free_astro_service import (
     generate_numerology_profile,
     generate_vargas,
     generate_yogas,
+    get_bulk_daily_horoscope,
     get_numerology_methods,
 )
 
 router = APIRouter(prefix="/free-tools", tags=["Free Tools"])
+
+IST_OFFSET_HOURS = 5.5  # matches generate_panchang's fixed Asia/Kolkata default
 
 # Numerology requires a `system` id that FreeAstroAPI defines (e.g. "pythagorean");
 # cache the first available system in-process rather than calling GET
@@ -185,6 +190,42 @@ async def numerology_profile(
         existing = db.query(models.NumerologyProfile).filter(
             models.NumerologyProfile.subject_name == request.full_name,
             models.NumerologyProfile.date_of_birth == request.date_of_birth,
+        ).first()
+        if existing:
+            return existing
+        raise
+    db.refresh(record)
+    return record
+
+
+@router.get("/daily-horoscope", response_model=schemas.DailyHoroscopeBulkResponse)
+async def daily_horoscope_bulk(db: Session = Depends(database.get_db)):
+    """Daily horoscope for all 12 signs. First request of the day (Asia/Kolkata)
+    calls FreeAstroAPI's bulk endpoint once and caches it; every later request
+    that same day is served straight from the DB."""
+    today_ist = (datetime.now(timezone.utc) + timedelta(hours=IST_OFFSET_HOURS)).date()
+
+    existing = db.query(models.DailyHoroscopeBulk).filter(
+        models.DailyHoroscopeBulk.date == today_ist,
+    ).first()
+    if existing:
+        return existing
+
+    try:
+        horoscope_data = await get_bulk_daily_horoscope()
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+    record = models.DailyHoroscopeBulk(date=today_ist, horoscope_data=horoscope_data)
+    db.add(record)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        existing = db.query(models.DailyHoroscopeBulk).filter(
+            models.DailyHoroscopeBulk.date == today_ist,
         ).first()
         if existing:
             return existing

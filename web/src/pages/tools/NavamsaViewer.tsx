@@ -12,6 +12,64 @@ import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
 import '../services/ServicesDetail.css';
 
+interface VargaPlanet {
+    planet?: string;
+    sign?: string;
+    sign_id?: number;
+}
+
+const VARGA_NAMES: Record<string, string> = {
+    D1: 'Rashi (D1) — Birth Chart',
+    D2: 'Hora (D2) — Wealth',
+    D3: 'Drekkana (D3) — Siblings',
+    D7: 'Saptamsha (D7) — Children',
+    D9: 'Navamsa (D9) — Marriage & Dharma',
+    D10: 'Dashamsha (D10) — Career',
+    D12: 'Dwadashamsha (D12) — Parents',
+    D16: 'Shodashamsha (D16) — Vehicles',
+    D20: 'Vimshamsha (D20) — Spirituality',
+    D24: 'Chaturvimshamsha (D24) — Education',
+    D30: 'Trimshamsha (D30) — Misfortunes',
+    D60: 'Shashtiamsha (D60) — Past Karma',
+};
+
+// Renders the FreeAstroAPI vargas payload ({ vargas: { D1: [...], D9: [...], ... } })
+// as per-chart planet/sign grids, with D9 (the whole point of this page) featured
+// first — falls back to the generic renderer for any other shape.
+const NavamsaResult: React.FC<{ data: unknown }> = ({ data }) => {
+    const obj = data && typeof data === 'object' ? (data as { vargas?: Record<string, VargaPlanet[]> }) : null;
+    const vargas = obj?.vargas;
+
+    if (!vargas || Object.keys(vargas).length === 0) return <FreeToolResult data={data} />;
+
+    const orderedKeys = Object.keys(vargas).sort((a, b) => (a === 'D9' ? -1 : b === 'D9' ? 1 : 0));
+
+    return (
+        <div className="space-y-4">
+            {orderedKeys.map((key) => {
+                const planets = vargas[key];
+                if (!Array.isArray(planets) || planets.length === 0) return null;
+                const isD9 = key === 'D9';
+                return (
+                    <div key={key} className={`service-glass-panel p-6 ${isD9 ? 'border-l-4 border-l-amber-500' : ''}`}>
+                        <h4 className={`text-xs font-bold uppercase tracking-wider mb-4 ${isD9 ? 'text-amber-400' : 'text-gray-400'}`}>
+                            {VARGA_NAMES[key] || key}
+                        </h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {planets.map((p, idx) => (
+                                <div key={idx} className="bg-white/5 rounded-xl border border-white/10 px-3 py-2 flex items-center justify-between">
+                                    <span className="text-gray-300 text-sm">{p.planet}</span>
+                                    <span className="text-white text-sm font-medium">{p.sign}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+};
+
 const NavamsaViewer: React.FC = () => {
     const [formData, setFormData] = useState({
         full_name: '',
@@ -131,7 +189,7 @@ const NavamsaViewer: React.FC = () => {
                     {result !== null ? (
                         <div className="mt-8">
                             <h2 className="text-lg font-normal text-white mb-4">Your Navamsa (D9) Chart</h2>
-                            <FreeToolResult data={result} />
+                            <NavamsaResult data={result} />
                         </div>
                     ) : null}
 

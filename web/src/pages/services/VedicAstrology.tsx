@@ -99,9 +99,19 @@ const VedicAstrology: React.FC = () => {
                         <div className="w-full">
                             <h3 className="text-lg font-normal text-white mb-6 text-center">Planetary Influences</h3>
                             <div className="grid grid-cols-4 gap-3 text-center">
-                                {['ASC', 'SUN', 'MOO', 'MER', 'VEN', 'MAR', 'JUP', 'SAT'].map((planet, idx) => (
-                                    <div key={idx} className={`p-3 rounded-xl border text-xs font-normal transition-all hover:-translate-y-0.5 ${planet === 'SUN' || planet === 'MOO' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        {planet}
+                                {[
+                                    { code: 'ASC', glyph: '↑' },
+                                    { code: 'SUN', glyph: '☉' },
+                                    { code: 'MOO', glyph: '☽' },
+                                    { code: 'MER', glyph: '☿' },
+                                    { code: 'VEN', glyph: '♀' },
+                                    { code: 'MAR', glyph: '♂' },
+                                    { code: 'JUP', glyph: '♃' },
+                                    { code: 'SAT', glyph: '♄' },
+                                ].map(({ code, glyph }, idx) => (
+                                    <div key={idx} className={`p-3 rounded-xl border text-xs font-normal transition-all hover:-translate-y-0.5 ${code === 'SUN' || code === 'MOO' ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                        <span className="block text-lg leading-none mb-1">{glyph}</span>
+                                        {code}
                                     </div>
                                 ))}
                             </div>

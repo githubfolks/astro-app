@@ -7,7 +7,7 @@ import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
-import { HeartHandshake, Users, CheckCircle, Award, Sparkles, Activity } from 'lucide-react';
+import { HeartHandshake, Users, CheckCircle, Award, Sparkles, Activity, Briefcase, Link2, Star, Heart } from 'lucide-react';
 import './ServicesDetail.css';
 
 const faqs = [
@@ -98,12 +98,13 @@ const KundliMatching: React.FC = () => {
                     <div className="service-glass-panel p-8" data-aos="fade-left">
                         <div className="grid grid-cols-2 gap-4">
                             {[
-                                { label: 'Varna', desc: 'Work profile/ego' },
-                                { label: 'Vashya', desc: 'Mutual control' },
-                                { label: 'Tara', desc: 'Destiny/health' },
-                                { label: 'Yoni', desc: 'Physical affinity' }
+                                { label: 'Varna', desc: 'Work profile/ego', icon: <Briefcase size={20} /> },
+                                { label: 'Vashya', desc: 'Mutual control', icon: <Link2 size={20} /> },
+                                { label: 'Tara', desc: 'Destiny/health', icon: <Star size={20} /> },
+                                { label: 'Yoni', desc: 'Physical affinity', icon: <Heart size={20} /> }
                             ].map((item, idx) => (
                                 <div key={idx} className="p-4 bg-white/5 border border-white/5 rounded-2xl text-center hover:border-amber-500/20 transition-all hover:-translate-y-0.5">
+                                    <div className="flex justify-center text-amber-500 mb-2">{item.icon}</div>
                                     <span className="block text-amber-500 font-normal text-base mb-1">{item.label}</span>
                                     <span className="text-xs text-gray-400 font-light">{item.desc}</span>
                                 </div>

@@ -2976,6 +2976,37 @@
         "title": "CurrentLagna",
         "type": "object"
       },
+      "DailyHoroscopeBulkResponse": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "horoscope_data": {
+            "additionalProperties": true,
+            "title": "Horoscope Data",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "horoscope_data",
+          "created_at"
+        ],
+        "title": "DailyHoroscopeBulkResponse",
+        "type": "object"
+      },
       "DeleteMockDataRequest": {
         "properties": {
           "user_ids": {
@@ -13693,6 +13724,28 @@
           }
         },
         "summary": "Forgot Password"
+      }
+    },
+    "/free-tools/daily-horoscope": {
+      "get": {
+        "description": "Daily horoscope for all 12 signs. First request of the day (Asia/Kolkata)\ncalls FreeAstroAPI's bulk endpoint once and caches it; every later request\nthat same day is served straight from the DB.",
+        "operationId": "daily_horoscope_bulk_free_tools_daily_horoscope_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DailyHoroscopeBulkResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Daily Horoscope Bulk",
+        "tags": [
+          "Free Tools"
+        ]
       }
     },
     "/free-tools/manglik-check": {

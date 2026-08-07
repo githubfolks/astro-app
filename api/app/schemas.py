@@ -540,3 +540,11 @@ class NumerologyProfileResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class DailyHoroscopeBulkResponse(BaseModel):
+    id: int
+    date: date
+    horoscope_data: dict
+    created_at: datetime
+    class Config:
+        from_attributes = True
+

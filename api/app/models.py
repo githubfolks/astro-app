@@ -714,6 +714,22 @@ class NumerologyProfile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class DailyHoroscopeBulk(Base):
+    """Cached FreeAstroAPI bulk daily horoscope (all 12 signs in one payload),
+    keyed by calendar date so the first request of the day fetches it and every
+    later request that day is served from this table instead of re-hitting
+    FreeAstroAPI."""
+    __tablename__ = "daily_horoscope_bulk"
+    __table_args__ = (
+        Index("ix_daily_horoscope_bulk_lookup", "date", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    date = Column(Date, nullable=False)
+    horoscope_data = Column(JSON, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class ContentType(str, enum.Enum):
     SHORT_VIDEO = "SHORT_VIDEO"
     VOICE_OVER_IMAGE = "VOICE_OVER_IMAGE"

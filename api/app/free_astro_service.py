@@ -293,3 +293,15 @@ async def generate_numerology_profile(
         "date_context": {"reference_date": date.today().isoformat()},
     }
     return await _post("/api/v1/numerology/profile", payload)
+
+
+async def get_bulk_daily_horoscope(timezone: str = "Asia/Kolkata") -> dict:
+    """
+    Fetch today's daily horoscope for all 12 zodiac signs in a single call, using
+    FreeAstroAPI's endpoint built specifically for caching (per its own docs:
+    "Optimized for caching/newsletters"). Returns the full response including the
+    `data` dict keyed by lowercase sign name (aries, taurus, ...) and `meta`
+    (which carries `settings.date_resolved`, the calendar date this content is
+    for in the given timezone).
+    """
+    return await _get("/api/v1/horoscope/daily/bulk", {"timezone": timezone})

@@ -7,7 +7,7 @@ import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
-import { Home, Compass, Shield, Sun, Activity } from 'lucide-react';
+import { Home, Compass, Shield, Sun, Activity, Wind, Droplet, Flame, Mountain, Sparkles } from 'lucide-react';
 import './ServicesDetail.css';
 
 const faqs = [
@@ -100,18 +100,20 @@ const VastuShastra: React.FC = () => {
                     <div className="service-glass-panel p-8" data-aos="fade-left">
                         <div className="grid grid-cols-3 gap-3 max-w-[360px] mx-auto">
                             {[
-                                { dir: 'NW', el: 'Air' },
-                                { dir: 'North', el: 'Water', active: true },
-                                { dir: 'NE', el: 'Water' },
-                                { dir: 'West', el: 'Air' },
-                                { dir: 'Brahma', el: 'Space', active: true },
-                                { dir: 'East', el: 'Fire' },
-                                { dir: 'SW', el: 'Earth' },
-                                { dir: 'South', el: 'Fire' },
-                                { dir: 'SE', el: 'Fire' }
+                                { dir: 'NW', hindi: 'वायव्य', el: 'Air', icon: <Wind size={16} /> },
+                                { dir: 'North', hindi: 'उत्तर', el: 'Water', active: true, icon: <Droplet size={16} /> },
+                                { dir: 'NE', hindi: 'ईशान', el: 'Water', icon: <Droplet size={16} /> },
+                                { dir: 'West', hindi: 'पश्चिम', el: 'Air', icon: <Wind size={16} /> },
+                                { dir: 'Brahma', hindi: 'ब्रह्म', el: 'Space', active: true, icon: <Sparkles size={16} /> },
+                                { dir: 'East', hindi: 'पूर्व', el: 'Fire', icon: <Flame size={16} /> },
+                                { dir: 'SW', hindi: 'नैऋत्य', el: 'Earth', icon: <Mountain size={16} /> },
+                                { dir: 'South', hindi: 'दक्षिण', el: 'Fire', icon: <Flame size={16} /> },
+                                { dir: 'SE', hindi: 'आग्नेय', el: 'Fire', icon: <Flame size={16} /> }
                             ].map((card, idx) => (
                                 <div key={idx} className={`aspect-square flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all hover:-translate-y-1 shadow-sm ${card.active ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : 'bg-white/5 border-white/5 text-gray-300'}`}>
+                                    <div className="mb-1">{card.icon}</div>
                                     <span className="font-normal text-xs uppercase">{card.dir}</span>
+                                    <span className="text-[10px] font-normal opacity-80">{card.hindi}</span>
                                     <span className="text-[9px] uppercase font-normal mt-1 px-1.5 py-0.5 rounded-full bg-white/5 text-gray-300">{card.el}</span>
                                 </div>
                             ))}

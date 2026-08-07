@@ -11,6 +11,116 @@ import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
 import '../services/ServicesDetail.css';
 
+interface NumberFact {
+    label?: string;
+    value?: number;
+    value_display?: string;
+    age_start?: number;
+    age_end_exclusive?: number;
+}
+
+const ageRangeLabel = (e: NumberFact): string | null => {
+    if (e.age_start === undefined) return null;
+    return e.age_end_exclusive !== undefined ? `Age ${e.age_start}–${e.age_end_exclusive}` : `Age ${e.age_start}+`;
+};
+
+const NumberRow: React.FC<{ item: NumberFact }> = ({ item }) => (
+    <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 flex items-center justify-between">
+        <div>
+            <span className="text-white text-sm font-medium">{item.label}</span>
+            {ageRangeLabel(item) && <span className="text-gray-500 text-xs ml-2">{ageRangeLabel(item)}</span>}
+        </div>
+        <span className="text-amber-400 font-normal">{item.value_display || item.value}</span>
+    </div>
+);
+
+// Renders the FreeAstroAPI numerology profile payload — a deeply nested
+// { data: { core, cycles, life_cycles } } structure — as headline stat tiles
+// plus grouped lists, since the raw JSON is unreadable to end users. Falls
+// back to the generic renderer for any other shape.
+const NumerologyResult: React.FC<{ data: unknown }> = ({ data }) => {
+    const obj = data && typeof data === 'object' ? (data as {
+        data?: {
+            core?: { life_path?: NumberFact; birthday?: NumberFact; attitude?: NumberFact };
+            cycles?: { personal_year?: NumberFact; personal_month?: NumberFact; personal_day?: NumberFact };
+            life_cycles?: { period_cycles?: NumberFact[]; pinnacles?: NumberFact[]; challenges?: NumberFact[] };
+        };
+    }) : null;
+    const core = obj?.data?.core;
+
+    if (!core) return <FreeToolResult data={data} />;
+
+    const cycles = obj?.data?.cycles;
+    const cycleEntries = [cycles?.personal_year, cycles?.personal_month, cycles?.personal_day].filter(
+        (e): e is NumberFact => !!e
+    );
+    const lifeCycles = obj?.data?.life_cycles;
+
+    return (
+        <div className="space-y-4">
+            {core.life_path && (
+                <div className="service-glass-panel p-6 md:p-8 border-l-4 border-l-amber-500">
+                    <div className="flex items-center gap-5">
+                        <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-2xl font-normal">
+                            {core.life_path.value}
+                        </div>
+                        <div>
+                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Life Path Number</span>
+                            <h3 className="text-2xl font-normal text-amber-400 mt-1">{core.life_path.value_display || core.life_path.value}</h3>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {(core.birthday || core.attitude) && (
+                <div className="grid grid-cols-2 gap-3">
+                    {[core.birthday, core.attitude].filter((e): e is NumberFact => !!e).map((item, idx) => (
+                        <div key={idx} className="bg-white/5 rounded-2xl border border-white/10 p-5 text-center">
+                            <span className="block text-2xl font-normal text-white mb-1">{item.value}</span>
+                            <span className="text-xs text-gray-400 uppercase tracking-wider">{item.label}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {cycleEntries.length > 0 && (
+                <div className="service-glass-panel p-6">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Current Cycles</h4>
+                    <div className="grid grid-cols-3 gap-3">
+                        {cycleEntries.map((item, idx) => (
+                            <div key={idx} className="text-center">
+                                <span className="block text-xl font-normal text-white">{item.value}</span>
+                                <span className="text-xs text-gray-400">{item.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {lifeCycles?.period_cycles && lifeCycles.period_cycles.length > 0 && (
+                <div className="space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-1">Life Period Cycles</h4>
+                    {lifeCycles.period_cycles.map((item, idx) => <NumberRow key={idx} item={item} />)}
+                </div>
+            )}
+
+            {lifeCycles?.pinnacles && lifeCycles.pinnacles.length > 0 && (
+                <div className="space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-1">Pinnacles</h4>
+                    {lifeCycles.pinnacles.map((item, idx) => <NumberRow key={idx} item={item} />)}
+                </div>
+            )}
+
+            {lifeCycles?.challenges && lifeCycles.challenges.length > 0 && (
+                <div className="space-y-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 px-1">Challenges</h4>
+                    {lifeCycles.challenges.map((item, idx) => <NumberRow key={idx} item={item} />)}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const NumerologyCalculator: React.FC = () => {
     const [formData, setFormData] = useState({
         full_name: '',
@@ -107,7 +217,7 @@ const NumerologyCalculator: React.FC = () => {
                     {result !== null ? (
                         <div className="mt-8">
                             <h2 className="text-lg font-normal text-white mb-4">Your Numerology Profile</h2>
-                            <FreeToolResult data={result} />
+                            <NumerologyResult data={result} />
                         </div>
                     ) : null}
 
