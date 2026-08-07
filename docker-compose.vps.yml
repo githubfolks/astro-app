@@ -37,6 +37,11 @@ services:
       - default
       - global-proxy-network
 
+  umami:
+    networks:
+      - default
+      - global-proxy-network
+
   mirotalk:
     networks:
       - default
