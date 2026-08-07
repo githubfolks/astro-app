@@ -260,14 +260,25 @@ async def csrf_middleware(request: Request, call_next):
             return JSONResponse(status_code=403, content={"detail": "CSRF token validation failed"})
 
     response = await call_next(request)
-    
-    # Set/Refresh CSRF cookie
+
+    # Set/Refresh CSRF cookie. In production the frontend (aadikarta.org) and
+    # API (api.aadikarta.org) are different hostnames, so without an explicit
+    # Domain attribute this cookie defaults to api.aadikarta.org only — the
+    # frontend's JS (document.cookie) can never read it, X-CSRF-Token never
+    # gets sent, and every state-changing request 403s with "CSRF token
+    # validation failed". Scoping to the shared parent domain fixes that.
+    # Locally both run on "localhost" (cookies are host-scoped, not
+    # port-scoped) so no Domain override is needed there.
+    cookie_kwargs = {}
+    if os.getenv("APP_ENV") == "production":
+        cookie_kwargs["domain"] = ".aadikarta.org"
     response.set_cookie(
         key="csrf_token",
         value=csrf_token,
         httponly=False, # Accessible by JS for double-submit
         samesite="None", # Required for cross-site requests
-        secure=True # Required when samesite="None"
+        secure=True, # Required when samesite="None"
+        **cookie_kwargs,
     )
     return response
 
