@@ -170,8 +170,8 @@ export const JoinAsAstrologer: React.FC = () => {
     };
 
     return (
-        <div className="auth-container" style={{ minHeight: '100vh', padding: '40px 20px' }}>
-            <Link to="/" className="back-to-home-link" style={{ position: 'absolute', top: '20px', left: '20px' }}>
+        <div className="auth-container" style={{ minHeight: '100vh' }}>
+            <Link to="/" className="back-to-home-link">
                 <ArrowLeft size={20} /> Back to Home
             </Link>
             <SEO
@@ -382,6 +382,27 @@ export const JoinAsAstrologer: React.FC = () => {
                 @media (max-width: 640px) {
                     .form-grid { grid-template-columns: 1fr; }
                     .full-width { grid-column: span 1; }
+                }
+                .form-grid .form-group { margin-bottom: 0; }
+                @media (max-width: 768px) {
+                    .auth-container { padding: 16px; }
+                    .onboarding-card { padding: 20px 16px; border-radius: 16px; margin-top: 56px; }
+                    .auth-header { margin-bottom: 16px; }
+                    .auth-title { font-size: 22px; }
+                    .step-indicator { margin-top: 16px; }
+                    .step-title { margin: 20px 0 14px; font-size: 17px; }
+                    .pro-section { margin-bottom: 20px; }
+                    .form-grid { gap: 14px; }
+                    .field-hint { font-size: 11px; }
+                    .auth-form input,
+                    .onboarding-step textarea,
+                    .PasswordInput,
+                    .auth-form input[type="text"],
+                    .auth-form input[type="email"] {
+                        min-height: 46px;
+                        border-radius: 12px;
+                        font-size: 16px;
+                    }
                 }
             `}</style>
         </div >

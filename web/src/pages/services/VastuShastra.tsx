@@ -64,7 +64,7 @@ const VastuShastra: React.FC = () => {
             <Header />
             
             {/* Hero Section */}
-            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+            <header className="relative pt-8 pb-6 md:pt-16 md:pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -77,17 +77,17 @@ const VastuShastra: React.FC = () => {
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+            <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
                 {/* Intro Section */}
-                <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 items-center" data-aos="fade-up">
                     <div>
-                        <span className="inline-block px-4 py-1 rounded-full bg-white/5 border border-white/10 text-amber-500 text-sm font-normal mb-6">
+                        <span className="inline-block px-3 py-1 md:px-4 rounded-full bg-white/5 border border-white/10 text-amber-500 text-xs md:text-sm font-normal mb-3 md:mb-6">
                             Ancient Science. Modern Spaces.
                         </span>
-                        <h2 className="text-3xl font-normal text-white mb-6">
+                        <h2 className="text-2xl md:text-3xl font-normal text-white mb-3 md:mb-6">
                             The Sacred Geometry of Your Home
                         </h2>
-                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
+                        <div className="space-y-3 md:space-y-4 text-gray-300 text-sm md:text-lg leading-relaxed">
                             <p>
                                 Vastu Shastra is the metaphysical blueprint of living. By aligning your architecture with natural rhythms, we synchronize your space with the Earth.
                             </p>
@@ -96,8 +96,8 @@ const VastuShastra: React.FC = () => {
                             </p>
                         </div>
                     </div>
-                    
-                    <div className="service-glass-panel p-8" data-aos="fade-left">
+
+                    <div className="service-glass-panel p-5 md:p-8" data-aos="fade-left">
                         <div className="grid grid-cols-3 gap-3 max-w-[360px] mx-auto">
                             {[
                                 { dir: 'NW', hindi: 'वायव्य', el: 'Air', icon: <Wind size={16} /> },
@@ -122,9 +122,9 @@ const VastuShastra: React.FC = () => {
                 </section>
 
                 {/* The Five Elements */}
-                <section className="service-glass-panel p-10 md:p-16 text-center" data-aos="zoom-in">
-                    <h2 className="text-3xl font-normal text-white mb-16">The Five Elements — <span className="italic text-amber-500">Pancha Bhoota</span></h2>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <section className="service-glass-panel p-5 md:p-16 text-center" data-aos="zoom-in">
+                    <h2 className="text-xl md:text-3xl font-normal text-white mb-6 md:mb-16">The Five Elements — <span className="italic text-amber-500">Pancha Bhoota</span></h2>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6">
                         {[
                             { name: 'Water', sanskrit: 'Jala', desc: 'North / NE flow' },
                             { name: 'Fire', sanskrit: 'Agni', desc: 'SE kitchen zone' },
@@ -132,11 +132,11 @@ const VastuShastra: React.FC = () => {
                             { name: 'Air', sanskrit: 'Vayu', desc: 'NW movement' },
                             { name: 'Space', sanskrit: 'Akasha', desc: 'Brahmasthan' }
                         ].map((element, idx) => (
-                            <div key={idx} className="flex flex-col items-center p-6 bg-white/5 border border-white/5 rounded-2xl hover:border-amber-500/30 transition-all">
-                                <div className="w-14 h-14 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-xl mb-4 font-normal">
+                            <div key={idx} className="flex flex-col items-center p-3 md:p-6 bg-white/5 border border-white/5 rounded-xl md:rounded-2xl hover:border-amber-500/30 transition-all">
+                                <div className="w-10 h-10 md:w-14 md:h-14 rounded-lg md:rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center text-base md:text-xl mb-2 md:mb-4 font-normal">
                                     {element.name[0]}
                                 </div>
-                                <span className="font-normal text-white text-base">{element.name}</span>
+                                <span className="font-normal text-white text-sm md:text-base">{element.name}</span>
                                 <span className="text-[10px] uppercase tracking-wider text-amber-500 font-normal mt-1">{element.sanskrit}</span>
                                 <span className="text-[11px] text-gray-400 mt-2 text-center">{element.desc}</span>
                             </div>
@@ -145,20 +145,20 @@ const VastuShastra: React.FC = () => {
                 </section>
 
                 {/* Geometry of Success */}
-                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                <section className="service-glass-panel p-5 md:p-16 relative overflow-hidden" data-aos="zoom-in">
                     <div className="absolute -right-20 -top-20 w-80 h-80 bg-amber-500/5 rounded-full blur-[100px]"></div>
                     <div className="relative z-10 text-center">
-                        <h2 className="text-3xl font-normal text-white mb-12">The Geometry of Success</h2>
-                        <div className="grid md:grid-cols-3 gap-8">
+                        <h2 className="text-xl md:text-3xl font-normal text-white mb-5 md:mb-12">The Geometry of Success</h2>
+                        <div className="grid md:grid-cols-3 gap-3 md:gap-8">
                             {[
                                 { icon: <Home size={24} />, title: 'Entrance Power', desc: 'The main entry is the "mouth" of your home. We ensure it\'s positioned for prosperity.' },
                                 { icon: <Activity size={24} />, title: 'Energy Balancing', desc: 'Harmonize zones for sleep, work, and nourishment to remove stagnant blocks.' },
                                 { icon: <Sun size={24} />, title: 'Wealth Zones', desc: 'Optimize the North and NE corners to amplify financial stability and growth.' }
                             ].map((box, idx) => (
-                                <div key={idx} className="p-8 rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/5 transition-all hover:bg-white/10 text-left">
-                                    <div className="text-amber-500 mb-4">{box.icon}</div>
-                                    <h3 className="text-xl font-normal text-white mb-3">{box.title}</h3>
-                                    <p className="text-gray-300 font-light leading-relaxed">{box.desc}</p>
+                                <div key={idx} className="p-4 md:p-8 rounded-2xl md:rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/5 transition-all hover:bg-white/10 text-left">
+                                    <div className="text-amber-500 mb-2 md:mb-4 [&>svg]:w-5 [&>svg]:h-5 md:[&>svg]:w-6 md:[&>svg]:h-6">{box.icon}</div>
+                                    <h3 className="text-base md:text-xl font-normal text-white mb-1.5 md:mb-3">{box.title}</h3>
+                                    <p className="text-sm text-gray-300 font-light leading-snug md:leading-relaxed">{box.desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -166,9 +166,9 @@ const VastuShastra: React.FC = () => {
                 </section>
 
                 {/* Features list */}
-                <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl font-normal text-white mb-6">Expert Vastu Consultancy</h2>
-                    <div className="grid md:grid-cols-2 gap-10 text-left mt-16">
+                <section className="text-center py-5 md:py-10" data-aos="fade-up">
+                    <h2 className="text-xl md:text-3xl font-normal text-white mb-3 md:mb-6">Expert Vastu Consultancy</h2>
+                    <div className="grid md:grid-cols-2 gap-3 md:gap-10 text-left mt-6 md:mt-16">
                         {[
                             { icon: <Compass size={24} />, title: 'Design & Blueprint Audits', desc: 'Detailed review of floor plans for upcoming constructions to ensure a \'Vastu-perfect\' start.' },
                             { icon: <Shield size={24} />, title: 'No-Demolition Remedies', desc: 'Correct structural defects using colors and strategic placements without breaking a single wall.' }
@@ -176,14 +176,14 @@ const VastuShastra: React.FC = () => {
                             <div key={idx} className="custom-list-item">
                                 <div className="icon-box">{item.icon}</div>
                                 <div>
-                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
-                                    <p className="text-gray-300 font-light">{item.desc}</p>
+                                    <h4 className="text-base md:text-xl font-normal text-white mb-1 md:mb-2">{item.title}</h4>
+                                    <p className="text-sm md:text-base text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
+                    <Link to="/astrologers" className="inline-block mt-8 md:mt-16 bg-amber-500 text-indigo-950 px-8 py-3 md:px-12 md:py-4 rounded-full font-normal text-base md:text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Consult a Vastu Expert
                     </Link>
                 </section>

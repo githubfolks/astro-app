@@ -89,20 +89,20 @@ const ContactUs: React.FC = () => {
             />
             <Header />
 
-            <main className="flex-1 container mx-auto px-4 py-20 md:py-32">
+            <main className="flex-1 container mx-auto px-4 py-10 md:py-32">
                 <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Get in Touch</h1>
-                        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+                    <div className="text-center mb-8 md:mb-16">
+                        <h1 className="text-2xl md:text-5xl font-bold text-gray-900 mb-3 md:mb-6">Get in Touch</h1>
+                        <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
                             Have questions or need assistance? We're here to help you on your spiritual journey.
                         </p>
                     </div>
 
                     <div className="bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col md:flex-row">
                         {/* Left Side - Info & Illustration */}
-                        <div className="w-full md:w-5/12 bg-indigo-600 p-10 md:p-12 text-white relative overflow-hidden">
+                        <div className="w-full md:w-5/12 bg-indigo-600 p-6 md:p-12 text-white relative overflow-hidden">
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-bold mb-8">Contact Information</h3>
+                                <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">Contact Information</h3>
 
                                 <div className="space-y-6">
                                     <div className="flex items-start gap-4">
@@ -140,7 +140,7 @@ const ContactUs: React.FC = () => {
                             </div>
 
                             {/* Decorative Illustration */}
-                            <div className="mt-12 relative flex justify-center z-10">
+                            <div className="mt-6 md:mt-12 relative flex justify-center z-10">
                                 <img
                                     src="/assets/contact-illustration.webp"
                                     alt="Customer Support"
@@ -154,8 +154,8 @@ const ContactUs: React.FC = () => {
                         </div>
 
                         {/* Right Side - Form */}
-                        <div className="w-full md:w-7/12 p-10 md:p-14">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-8">Send us a Message</h3>
+                        <div className="w-full md:w-7/12 p-6 md:p-14">
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-8">Send us a Message</h3>
 
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

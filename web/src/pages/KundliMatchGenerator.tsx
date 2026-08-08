@@ -195,8 +195,8 @@ const KundliMatchGenerator: React.FC = () => {
                 </div>
 
                 <div className="max-w-5xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-normal text-white">💞 Kundli Matching</h1>
+                    <div className="text-center mb-4 md:mb-8">
+                        <h1 className="text-2xl md:text-3xl font-normal text-white">💞 Kundli Matching</h1>
                         <p className="text-gray-300 mt-2">Generate Kuta (Guna Milan) compatibility reports for seekers</p>
                     </div>
 
@@ -325,8 +325,8 @@ const KundliMatchGenerator: React.FC = () => {
                         </div>
                     </div>
 
-                    <section className="mt-16 service-glass-panel p-8">
-                        <h2 className="text-2xl font-normal text-white mb-4">Why Kundli Matching Matters</h2>
+                    <section className="mt-8 md:mt-16 service-glass-panel p-4 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-normal text-white mb-4">Why Kundli Matching Matters</h2>
                         <div className="space-y-3 text-gray-300 leading-relaxed">
                             <p>
                                 Kundli Matching (Guna Milan) compares the birth charts of two people across 8 Kutas covering temperament, mental compatibility, health, and progeny — scored out of 36 points. It's a long-standing practice before marriage in Indian families, meant to gauge how naturally two people are likely to get along.

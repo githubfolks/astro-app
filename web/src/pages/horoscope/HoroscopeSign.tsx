@@ -266,25 +266,25 @@ const HoroscopeSign: React.FC = () => {
                 <div className="absolute top-[40%] right-[-200px] w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                 {/* Hero */}
-                <section className="relative pt-24 pb-16 px-6 text-center">
+                <section className="relative pt-10 pb-6 md:pt-24 md:pb-16 px-6 text-center">
                     <div className="max-w-3xl mx-auto relative z-10">
                         <div className="rashi-icon-wrapper">
                             <span role="img" aria-label={`${data.name} icon`}>{data.glyph}</span>
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-normal mb-4 tracking-tight">
+                        <h1 className="text-3xl md:text-6xl font-normal mb-2 md:mb-4 tracking-tight">
                             {data.name} <span className="text-amber-500 font-medium">({data.hindi})</span>
                         </h1>
-                        <p className="text-gray-300 text-lg mt-3 font-medium">{data.dates}</p>
-                        
-                        <div className="flex justify-center gap-4 mt-6 flex-wrap">
+                        <p className="text-gray-300 text-base md:text-lg mt-2 md:mt-3 font-medium">{data.dates}</p>
+
+                        <div className="flex justify-center gap-2 md:gap-4 mt-4 md:mt-6 flex-wrap">
                             <span className="meta-chip">Element: <strong>{data.element}</strong></span>
                             <span className="meta-chip">Ruling Planet: <strong>{data.ruling_planet}</strong></span>
                             <span className="meta-chip">Quality: <strong>{data.quality}</strong></span>
                         </div>
-                        
+
                         <a
                             href="#prediction-section"
-                            className="inline-block mt-10 bg-amber-500 text-indigo-950 font-normal px-10 py-4 rounded-full shadow-2xl hover:bg-amber-400 transition-all active:scale-95"
+                            className="inline-block mt-5 md:mt-10 bg-amber-500 text-indigo-950 font-normal px-8 py-3 md:px-10 md:py-4 rounded-full shadow-2xl hover:bg-amber-400 transition-all active:scale-95"
                         >
                             Read Today's Forecast
                         </a>
@@ -292,8 +292,8 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* Today's Daily Prediction */}
-                <section id="prediction-section" className="max-w-4xl mx-auto px-6 py-12 relative z-10">
-                    <div className="glass-panel p-8 md:p-10">
+                <section id="prediction-section" className="max-w-4xl mx-auto px-6 py-5 md:py-12 relative z-10">
+                    <div className="glass-panel p-5 md:p-10">
                         <h2 className="text-2xl md:text-3xl font-normal text-white mb-2 flex items-center justify-between flex-wrap gap-4">
                             <span>{data.name} Horoscope Today</span>
                             <span className="text-sm font-normal text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-4 py-1.5 rounded-full">
@@ -308,10 +308,10 @@ const HoroscopeSign: React.FC = () => {
                                 <div className="h-4 bg-white/5 rounded w-4/6" />
                             </div>
                         ) : prediction?.overview ? (
-                            <div className="mt-8 space-y-8">
-                                <p className="text-gray-300 text-lg leading-relaxed">{prediction.overview}</p>
+                            <div className="mt-4 md:mt-8 space-y-4 md:space-y-8">
+                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{prediction.overview}</p>
                                 {(prediction.love || prediction.career || prediction.health) && (
-                                    <div className="grid md:grid-cols-3 gap-6 mt-8">
+                                    <div className="grid md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
                                         {prediction.love && (
                                             <div className="prediction-card love">
                                                 <div className="title text-rose-400">Love & Relations</div>
@@ -334,10 +334,10 @@ const HoroscopeSign: React.FC = () => {
                                 )}
                             </div>
                         ) : freeAstro?.content?.text ? (
-                            <div className="mt-8 space-y-8">
-                                <p className="text-gray-300 text-lg leading-relaxed">{freeAstro.content.text}</p>
+                            <div className="mt-4 md:mt-8 space-y-4 md:space-y-8">
+                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{freeAstro.content.text}</p>
                                 {freeAstro.scores && (
-                                    <div className="grid md:grid-cols-3 gap-6 mt-8">
+                                    <div className="grid md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
                                         <div className="prediction-card love">
                                             <div className="title text-rose-400">Love & Relations · {freeAstro.scores.love ?? '—'}/100</div>
                                             <p className="content">{scoreReason('love') || 'General planetary influence on love and relationships today.'}</p>
@@ -383,18 +383,18 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* Sign Overview */}
-                <section className="max-w-4xl mx-auto px-6 py-12 relative z-10">
-                    <div className="glass-panel p-8 md:p-10">
-                        <h2 className="text-3xl font-normal text-white mb-6">{data.name} Personality</h2>
-                        <p className="text-gray-300 text-lg leading-relaxed mb-10">{data.desc}</p>
+                <section className="max-w-4xl mx-auto px-6 py-6 md:py-12 relative z-10">
+                    <div className="glass-panel p-5 md:p-10">
+                        <h2 className="text-xl md:text-3xl font-normal text-white mb-3 md:mb-6">{data.name} Personality</h2>
+                        <p className="text-gray-300 text-sm md:text-lg leading-relaxed mb-5 md:mb-10">{data.desc}</p>
 
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 gap-3 md:gap-6">
                             <div className="personality-box strengths">
-                                <h3 className="font-normal text-lg text-emerald-400 mb-3">Core Strengths</h3>
+                                <h3 className="font-normal text-base md:text-lg text-emerald-400 mb-2 md:mb-3">Core Strengths</h3>
                                 <p className="text-gray-300 leading-relaxed text-sm">{data.strengths}</p>
                             </div>
                             <div className="personality-box challenges">
-                                <h3 className="font-normal text-lg text-amber-500 mb-3">Potential Challenges</h3>
+                                <h3 className="font-normal text-base md:text-lg text-amber-500 mb-2 md:mb-3">Potential Challenges</h3>
                                 <p className="text-gray-300 leading-relaxed text-sm">{data.challenges}</p>
                             </div>
                         </div>
@@ -402,12 +402,12 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* Traits */}
-                <section className="py-12 px-6 relative z-10">
+                <section className="py-6 md:py-12 px-6 relative z-10">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-2xl font-normal text-white mb-8">Key Character Traits</h2>
-                        <div className="flex flex-wrap justify-center gap-3">
+                        <h2 className="text-lg md:text-2xl font-normal text-white mb-4 md:mb-8">Key Character Traits</h2>
+                        <div className="flex flex-wrap justify-center gap-2 md:gap-3">
                             {data.traits.map((t, i) => (
-                                <span key={i} className="bg-white/5 border border-white/10 text-amber-500 font-normal px-6 py-2.5 rounded-full shadow-md text-sm hover:border-amber-500/30 transition-colors">
+                                <span key={i} className="bg-white/5 border border-white/10 text-amber-500 font-normal px-4 py-2 md:px-6 md:py-2.5 rounded-full shadow-md text-xs md:text-sm hover:border-amber-500/30 transition-colors">
                                     {t}
                                 </span>
                             ))}
@@ -416,19 +416,19 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* Lucky details */}
-                <section className="max-w-4xl mx-auto px-6 py-12 relative z-10">
-                    <div className="glass-panel p-8">
-                        <h2 className="text-2xl font-normal text-white mb-8 text-center">Quick Facts</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <section className="max-w-4xl mx-auto px-6 py-6 md:py-12 relative z-10">
+                    <div className="glass-panel p-4 md:p-8">
+                        <h2 className="text-lg md:text-2xl font-normal text-white mb-4 md:mb-8 text-center">Quick Facts</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-4">
                             {[
                                 { label: 'Lucky Color', value: data.lucky_color },
                                 { label: 'Lucky Number', value: data.lucky_number },
                                 { label: 'Compatible', value: data.compatible },
                                 { label: 'Ruler', value: data.ruling_planet },
                             ].map((item, i) => (
-                                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center transition-colors hover:border-white/20">
-                                    <div className="text-xs uppercase tracking-wider text-gray-400 font-normal mb-2">{item.label}</div>
-                                    <div className="font-normal text-white text-base">{item.value}</div>
+                                <div key={i} className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-3 md:p-5 text-center transition-colors hover:border-white/20">
+                                    <div className="text-[10px] md:text-xs uppercase tracking-wider text-gray-400 font-normal mb-1 md:mb-2">{item.label}</div>
+                                    <div className="font-normal text-white text-sm md:text-base">{item.value}</div>
                                 </div>
                             ))}
                         </div>
@@ -436,9 +436,9 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* All Signs Nav */}
-                <section className="py-12 px-6 relative z-10">
+                <section className="py-6 md:py-12 px-6 relative z-10">
                     <div className="max-w-5xl mx-auto">
-                        <h2 className="text-2xl font-normal text-white mb-8 text-center">Explore Other Zodiac Signs</h2>
+                        <h2 className="text-lg md:text-2xl font-normal text-white mb-4 md:mb-8 text-center">Explore Other Zodiac Signs</h2>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                             {Object.entries(SIGNS).map(([slug, s]) => (
                                 <Link
@@ -460,15 +460,15 @@ const HoroscopeSign: React.FC = () => {
                 </section>
 
                 {/* CTA */}
-                <section className="max-w-4xl mx-auto px-6 py-12 relative z-10">
-                    <div className="glass-panel p-8 md:p-12 text-center bg-gradient-to-r from-indigo-950/40 to-purple-950/40 border border-indigo-500/10">
-                        <h2 className="text-3xl font-normal mb-4 text-white">Want a Personalised {data.name} Reading?</h2>
-                        <p className="text-gray-300 mb-8 text-lg max-w-xl mx-auto">
+                <section className="max-w-4xl mx-auto px-6 py-6 md:py-12 relative z-10">
+                    <div className="glass-panel p-5 md:p-12 text-center bg-gradient-to-r from-indigo-950/40 to-purple-950/40 border border-indigo-500/10">
+                        <h2 className="text-xl md:text-3xl font-normal mb-2 md:mb-4 text-white">Want a Personalised {data.name} Reading?</h2>
+                        <p className="text-gray-300 mb-4 md:mb-8 text-sm md:text-lg max-w-xl mx-auto">
                             Connect with verified Vedic astrologers who specialize in {data.name} birth charts — live, 24/7.
                         </p>
                         <Link
                             to="/astrologers"
-                            className="inline-block bg-amber-500 text-indigo-950 font-normal px-12 py-4 rounded-full shadow-2xl hover:bg-amber-400 transition-all active:scale-95"
+                            className="inline-block bg-amber-500 text-indigo-950 font-normal px-8 py-3 md:px-12 md:py-4 rounded-full shadow-2xl hover:bg-amber-400 transition-all active:scale-95"
                         >
                             Connect with an Astrologer
                         </Link>

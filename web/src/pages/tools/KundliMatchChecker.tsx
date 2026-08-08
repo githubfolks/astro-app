@@ -148,7 +148,7 @@ const KundliMatchChecker: React.FC = () => {
             <Header />
 
             {/* Hero Section */}
-            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+            <header className="relative pt-8 pb-6 md:pt-16 md:pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -161,7 +161,7 @@ const KundliMatchChecker: React.FC = () => {
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+            <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
                 {/* Form + Result */}
                 <div className="max-w-4xl mx-auto relative z-10" data-aos="fade-up">
                     <div className="service-glass-panel p-6 md:p-8">
@@ -201,13 +201,13 @@ const KundliMatchChecker: React.FC = () => {
                 </div>
 
                 {/* Why it matters */}
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center" data-aos="fade-up">
                     <div>
-                        <div className="flex items-center gap-3 mb-6">
+                        <div className="flex items-center gap-3 mb-3 md:mb-6">
                             <div className="title-icon-wrapper"><HeartHandshake size={20} /></div>
                             <h2 className="text-2xl md:text-3xl font-normal text-white">Why Kundli Matching Matters</h2>
                         </div>
-                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
+                        <div className="space-y-4 text-gray-300 text-base md:text-lg leading-relaxed">
                             <p>
                                 Kundli Matching (Guna Milan) compares the birth charts of two people across 8 Kutas covering temperament, mental compatibility, health, and progeny — scored out of 36 points.
                             </p>
@@ -217,7 +217,7 @@ const KundliMatchChecker: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="service-glass-panel p-8" data-aos="fade-left">
+                    <div className="service-glass-panel p-5 md:p-8" data-aos="fade-left">
                         <div className="grid grid-cols-2 gap-4">
                             {[
                                 { label: 'Varna', desc: 'Work profile/ego' },
@@ -236,9 +236,9 @@ const KundliMatchChecker: React.FC = () => {
                 </section>
 
                 {/* How Aadikarta helps */}
-                <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl font-normal text-white mb-6">How Aadikarta Astrologers Help You</h2>
-                    <p className="text-lg text-gray-300 max-w-3xl mx-auto mb-12">
+                <section className="text-center py-5 md:py-10" data-aos="fade-up">
+                    <h2 className="text-2xl md:text-3xl font-normal text-white mb-3 md:mb-6">How Aadikarta Astrologers Help You</h2>
+                    <p className="text-base md:text-lg text-gray-300 max-w-3xl mx-auto mb-6 md:mb-12">
                         A free score gives you a quick read — only an expert astrologer can interpret weak Kootas and suggest remedies.
                     </p>
 
@@ -252,14 +252,14 @@ const KundliMatchChecker: React.FC = () => {
                             <div key={idx} className="custom-list-item">
                                 <div className="icon-box">{item.icon}</div>
                                 <div>
-                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <h4 className="text-lg md:text-xl font-normal text-white mb-2">{item.title}</h4>
                                     <p className="text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
+                    <Link to="/astrologers" className="inline-block mt-8 md:mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-base md:text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Consult an Expert Now
                     </Link>
                 </section>

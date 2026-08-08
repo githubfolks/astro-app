@@ -58,19 +58,19 @@ const VISIBLE_SUGGESTIONS = 4;
 
 const HOW_IT_WORKS_STEPS = [
     {
-        icon: <CalendarHeart className="w-7 h-7" />,
+        icon: <CalendarHeart className="w-5 h-5 md:w-7 md:h-7" />,
         step: '01',
         title: 'Share Your Birth Details',
         description: 'Tell Aadi your name, date, time and place of birth — that’s all he needs to read your stars.',
     },
     {
-        icon: <MessagesSquare className="w-7 h-7" />,
+        icon: <MessagesSquare className="w-5 h-5 md:w-7 md:h-7" />,
         step: '02',
         title: 'Ask 5 Free Questions',
         description: 'Career, love, marriage, health or fortune — get warm, instant answers rooted in Vedic wisdom.',
     },
     {
-        icon: <UserCheck className="w-7 h-7" />,
+        icon: <UserCheck className="w-5 h-5 md:w-7 md:h-7" />,
         step: '03',
         title: 'Go Deeper with an Expert',
         description: 'Continue with a verified human astrologer for a full kundli analysis — live chat from ₹10/min.',
@@ -235,7 +235,7 @@ const AiAstrologer: React.FC = () => {
         }
     };
 
-    const inputBase = 'w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white placeholder-indigo-200/50 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-transparent transition-all [color-scheme:dark]';
+    const inputBase = 'w-full bg-white/10 border border-white/20 rounded-xl md:rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 text-sm md:text-base text-white placeholder-indigo-200/50 focus:outline-none focus:ring-2 focus:ring-amber-400/60 focus:border-transparent transition-all [color-scheme:dark]';
 
     return (
         <div className="ai-astrologer-page pb-20 md:pb-0">
@@ -254,17 +254,17 @@ const AiAstrologer: React.FC = () => {
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse"></div>
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-amber-500/5 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-                <div className="container mx-auto px-4 relative z-10 pt-28 pb-16">
+                <div className="container mx-auto px-4 relative z-10 pt-20 pb-10 md:pt-28 md:pb-16">
                     {/* Page heading */}
-                    <div className="max-w-3xl mx-auto text-center mb-10">
-                        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2 mb-6">
-                            <Sparkles className="w-4 h-4 text-amber-400" />
-                            <span className="text-amber-200 text-sm font-semibold tracking-wide">FREE · 5 QUESTIONS/DAY · INSTANT ANSWERS</span>
+                    <div className="max-w-3xl mx-auto text-center mb-6 md:mb-10">
+                        <div className="inline-flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-3.5 py-1.5 md:px-5 md:py-2 mb-4 md:mb-6">
+                            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 text-amber-400" />
+                            <span className="text-amber-200 text-xs md:text-sm font-semibold tracking-wide">FREE · 5 QUESTIONS/DAY · INSTANT ANSWERS</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl text-white mb-4 leading-tight">
+                        <h1 className="text-2xl md:text-5xl text-white mb-2 md:mb-4 leading-tight">
                             Ask <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Aadi</span>, Your AI Astrologer
                         </h1>
-                        <p className="text-lg md:text-xl text-indigo-100/70 font-light max-w-2xl mx-auto">
+                        <p className="text-sm md:text-xl text-indigo-100/70 font-light max-w-2xl mx-auto">
                             Share your birth details and let ancient Vedic wisdom, powered by AI, illuminate your path — career, love, marriage and more.
                         </p>
                     </div>
@@ -276,19 +276,19 @@ const AiAstrologer: React.FC = () => {
                             /* ---------- Step 1: Birth details ---------- */
                             <form
                                 onSubmit={handleDetailsSubmit}
-                                className="bg-white/[0.07] backdrop-blur-xl border border-white/15 rounded-[2.5rem] p-8 md:p-10 shadow-2xl"
+                                className="bg-white/[0.07] backdrop-blur-xl border border-white/15 rounded-2xl md:rounded-[2.5rem] p-4 sm:p-6 md:p-10 shadow-2xl"
                             >
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/20">🔮</div>
+                                <div className="flex items-center gap-3 mb-5 md:gap-4 md:mb-8">
+                                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-xl md:text-3xl shadow-lg shadow-amber-500/20">🔮</div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-white">Your Birth Details</h2>
-                                        <p className="text-indigo-200/60 text-sm">Aadi needs these to read your stars accurately</p>
+                                        <h2 className="text-base md:text-xl text-white">Your Birth Details</h2>
+                                        <p className="text-indigo-200/60 text-xs md:text-sm">Aadi needs these to read your stars accurately</p>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
                                     <div className="md:col-span-2">
-                                        <label className="block text-indigo-100 text-sm font-medium mb-2">Full Name *</label>
+                                        <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Full Name *</label>
                                         <input
                                             type="text"
                                             autoComplete="name"
@@ -300,7 +300,7 @@ const AiAstrologer: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-indigo-100 text-sm font-medium mb-2">Date of Birth *</label>
+                                        <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Date of Birth *</label>
                                         <input
                                             type="date"
                                             autoComplete="bday"
@@ -311,7 +311,7 @@ const AiAstrologer: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-indigo-100 text-sm font-medium mb-2">Time of Birth <span className="text-indigo-300/50 font-normal">(if known)</span></label>
+                                        <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Time of Birth <span className="text-indigo-300/50 font-normal">(if known)</span></label>
                                         <input
                                             type="time"
                                             autoComplete="off"
@@ -321,7 +321,7 @@ const AiAstrologer: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-indigo-100 text-sm font-medium mb-2">Place of Birth *</label>
+                                        <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Place of Birth *</label>
                                         <CityAutocomplete
                                             value={details.place_of_birth}
                                             onChange={place_of_birth => setDetails({ ...details, place_of_birth })}
@@ -331,14 +331,14 @@ const AiAstrologer: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-indigo-100 text-sm font-medium mb-2">Gender *</label>
-                                        <div className="grid grid-cols-3 gap-2">
+                                        <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Gender *</label>
+                                        <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                                             {(['MALE', 'FEMALE', 'OTHER'] as const).map(g => (
                                                 <button
                                                     key={g}
                                                     type="button"
                                                     onClick={() => setDetails({ ...details, gender: g })}
-                                                    className={`py-3 rounded-2xl text-sm font-semibold border transition-all ${details.gender === g
+                                                    className={`py-2 md:py-3 rounded-xl md:rounded-2xl text-xs md:text-sm font-semibold border transition-all ${details.gender === g
                                                         ? 'bg-amber-400 text-indigo-950 border-amber-400 shadow-lg shadow-amber-500/20'
                                                         : 'bg-white/10 text-indigo-100 border-white/20 hover:bg-white/20'}`}
                                                 >
@@ -350,32 +350,32 @@ const AiAstrologer: React.FC = () => {
                                 </div>
 
                                 {isSeeker ? (
-                                    <label className="flex items-center gap-3 mt-6 cursor-pointer select-none">
+                                    <label className="flex items-center gap-2.5 md:gap-3 mt-4 md:mt-6 cursor-pointer select-none">
                                         <input
                                             type="checkbox"
                                             checked={saveToProfile}
                                             onChange={e => setSaveToProfile(e.target.checked)}
-                                            className="w-5 h-5 rounded accent-amber-400"
+                                            className="w-4 h-4 md:w-5 md:h-5 rounded accent-amber-400"
                                         />
-                                        <span className="text-indigo-100 text-sm">Save these details to my profile for next time</span>
+                                        <span className="text-indigo-100 text-xs md:text-sm">Save these details to my profile for next time</span>
                                     </label>
                                 ) : (
-                                    <p className="mt-6 text-indigo-200/60 text-sm">
+                                    <p className="mt-4 md:mt-6 text-indigo-200/60 text-xs md:text-sm">
                                         ✨ <Link to="/login" className="text-amber-300 hover:text-amber-200 underline underline-offset-2">Log in</Link> to save your details so we remember you next time.
                                     </p>
                                 )}
 
                                 {formError && (
-                                    <p className="mt-4 text-rose-300 text-sm bg-rose-500/10 border border-rose-400/20 rounded-xl px-4 py-3">{formError}</p>
+                                    <p className="mt-3 md:mt-4 text-rose-300 text-xs md:text-sm bg-rose-500/10 border border-rose-400/20 rounded-xl px-3 py-2.5 md:px-4 md:py-3">{formError}</p>
                                 )}
 
                                 <button
                                     type="submit"
-                                    className="group relative w-full mt-8 py-4 rounded-2xl font-bold text-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                                    className="group relative w-full mt-5 md:mt-8 py-3 md:py-4 rounded-xl md:rounded-2xl font-bold text-sm md:text-lg overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-95"
                                 >
                                     <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600"></div>
                                     <span className="relative text-indigo-950 flex items-center justify-center gap-2">
-                                        Reveal My Stars <Sparkles className="w-5 h-5 transition-transform group-hover:rotate-12" />
+                                        Reveal My Stars <Sparkles className="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:rotate-12" />
                                     </span>
                                 </button>
                             </form>
@@ -464,9 +464,8 @@ const AiAstrologer: React.FC = () => {
                                 {/* Messages */}
                                 <div ref={messagesRef} className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4" style={{ maxHeight: '55vh' }}>
                                     {/* Welcome bubble */}
-                                    <div className="flex items-end gap-2.5">
-                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-base shrink-0">🔮</div>
-                                        <div className="bg-white/10 border border-white/10 rounded-3xl rounded-bl-lg px-5 py-3.5 text-indigo-50 max-w-[85%] leading-relaxed">
+                                    <div className="flex">
+                                        <div className="flex-1 min-w-0 md:flex-initial bg-white/10 border border-white/10 rounded-3xl rounded-bl-lg px-4 py-1.5 md:px-5 md:py-3 text-indigo-50 text-sm md:text-base max-w-full md:max-w-[85%] leading-relaxed">
                                             Namaste {details.name.split(' ')[0]} 🙏 I have your birth details before me. The cosmos is listening — ask me anything about your career, love, marriage, health habits or fortune. You have {questionsLeft} free {questionsLeft === 1 ? 'question' : 'questions'}. ✨
                                         </div>
                                     </div>
@@ -474,14 +473,13 @@ const AiAstrologer: React.FC = () => {
                                     {messages.map((msg, i) => (
                                         msg.role === 'user' ? (
                                             <div key={i} className="flex justify-end">
-                                                <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl rounded-br-lg px-5 py-3.5 text-white max-w-[85%] leading-relaxed shadow-lg shadow-indigo-900/30">
+                                                <div className="bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-3xl rounded-br-lg px-4 py-1.5 md:px-5 md:py-3 text-white text-sm md:text-base max-w-[85%] leading-relaxed shadow-lg shadow-indigo-900/30">
                                                     {msg.content}
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div key={i} className="flex items-end gap-2.5">
-                                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-base shrink-0">🔮</div>
-                                                <div className="bg-white/10 border border-white/10 rounded-3xl rounded-bl-lg px-5 py-3.5 text-indigo-50 max-w-[85%] leading-relaxed whitespace-pre-line">
+                                            <div key={i} className="flex">
+                                                <div className="flex-1 min-w-0 md:flex-initial bg-white/10 border border-white/10 rounded-3xl rounded-bl-lg px-4 py-1.5 md:px-5 md:py-3 text-indigo-50 text-sm md:text-base max-w-full md:max-w-[85%] leading-relaxed whitespace-pre-line">
                                                     {msg.content}
                                                 </div>
                                             </div>
@@ -489,8 +487,7 @@ const AiAstrologer: React.FC = () => {
                                     ))}
 
                                     {isTyping && (
-                                        <div className="flex items-end gap-2.5">
-                                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-base shrink-0">🔮</div>
+                                        <div className="flex">
                                             <div className="bg-white/10 border border-white/10 rounded-3xl rounded-bl-lg px-5 py-4 flex items-center gap-1.5">
                                                 <span className="w-2 h-2 bg-amber-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
                                                 <span className="w-2 h-2 bg-amber-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
@@ -571,27 +568,32 @@ const AiAstrologer: React.FC = () => {
                     </div>
 
                     {/* How it works — in the page's celestial glass look */}
-                    <div className="max-w-5xl mx-auto mt-20 md:mt-24">
-                        <div className="text-center mb-10">
-                            <h2 className="text-3xl md:text-4xl text-white mb-3">
+                    <div className="max-w-5xl mx-auto mt-12 md:mt-24">
+                        <div className="text-center mb-6 md:mb-10">
+                            <h2 className="text-2xl md:text-4xl text-white mb-2 md:mb-3">
                                 How It <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Works</span>
                             </h2>
-                            <p className="text-indigo-100/60 font-light max-w-xl mx-auto">
+                            <p className="text-sm md:text-base text-indigo-100/60 font-light max-w-xl mx-auto">
                                 Your journey from curiosity to cosmic clarity, in three simple steps.
                             </p>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
                             {HOW_IT_WORKS_STEPS.map(s => (
                                 <div
                                     key={s.step}
-                                    className="relative bg-white/[0.07] backdrop-blur-xl border border-white/15 rounded-[2rem] p-7 hover:bg-white/[0.12] hover:-translate-y-1 transition-all duration-300"
+                                    className="relative flex items-center md:block gap-3 md:gap-0 bg-white/[0.07] backdrop-blur-xl border border-white/15 rounded-2xl md:rounded-[2rem] p-3.5 md:p-7 hover:bg-white/[0.12] md:hover:-translate-y-1 transition-all duration-300"
                                 >
-                                    <span className="absolute top-4 right-6 text-6xl font-black text-white/[0.06] select-none">{s.step}</span>
-                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 flex items-center justify-center mb-5 shadow-lg shadow-amber-500/20">
+                                    <span className="hidden md:block absolute top-4 right-6 text-6xl font-black text-white/[0.06] select-none">{s.step}</span>
+                                    <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 flex items-center justify-center shrink-0 mb-0 md:mb-5 shadow-lg shadow-amber-500/20">
                                         {s.icon}
                                     </div>
-                                    <h3 className="text-white font-bold text-lg mb-2">{s.title}</h3>
-                                    <p className="text-indigo-100/60 text-sm leading-relaxed">{s.description}</p>
+                                    <div className="min-w-0">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="md:hidden text-amber-400/80 text-[0.65rem] font-bold tracking-wide">{s.step}</span>
+                                            <h3 className="text-white font-bold text-sm md:text-lg mb-0 md:mb-2">{s.title}</h3>
+                                        </div>
+                                        <p className="text-indigo-100/60 text-xs md:text-sm leading-snug md:leading-relaxed">{s.description}</p>
+                                    </div>
                                 </div>
                             ))}
                         </div>

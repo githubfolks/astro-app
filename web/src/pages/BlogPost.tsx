@@ -108,8 +108,8 @@ const BlogPost: React.FC = () => {
         return (
             <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="flex-1 container mx-auto px-4 py-12 text-center">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-4">Post Not Found</h1>
+                <div className="flex-1 container mx-auto px-4 py-6 md:py-12 text-center">
+                    <h1 className="text-2xl md:text-4xl font-bold text-gray-800 mb-4">Post Not Found</h1>
                     <p className="text-gray-600 mb-8">The article you're looking for might have been moved or deleted.</p>
                     <Link to="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium" aria-label="Return to blog list">Return to Blog</Link>
                 </div>
@@ -131,8 +131,8 @@ const BlogPost: React.FC = () => {
                 structuredData={getStructuredData(post)}
             />
             <Header />
-            <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
-                <Link to="/blog" className="inline-flex items-center text-gray-900 hover:text-indigo-600 mb-8 mt-8 transition-colors">
+            <main className="flex-1 container mx-auto px-4 py-6 md:py-12 max-w-4xl">
+                <Link to="/blog" className="inline-flex items-center text-gray-900 hover:text-indigo-600 mb-4 mt-4 md:mb-8 md:mt-8 transition-colors">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
@@ -140,7 +140,7 @@ const BlogPost: React.FC = () => {
                 </Link>
 
                 <article>
-                    <header className="mb-10 text-center">
+                    <header className="mb-5 md:mb-10 text-center">
                         <div className="text-sm text-indigo-600 font-semibold uppercase tracking-wide mb-2 flex items-center justify-center">
                             <span>{new Date(post.published_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
                             {post.author_name && (
@@ -176,7 +176,7 @@ const BlogPost: React.FC = () => {
                         </div>
                     )}
 
-                    <aside className="mt-12 mb-16 pt-8 border-t border-gray-100">
+                    <aside className="mt-8 mb-8 md:mt-12 md:mb-16 pt-4 md:pt-8 border-t border-gray-100">
                         <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Related Services</h2>
                         <div className="flex flex-wrap gap-3">
                             <Link to="/services/kundli-matching" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Kundli Matching</Link>

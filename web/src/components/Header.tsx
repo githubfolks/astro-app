@@ -14,6 +14,7 @@ const NATIVE_TAB_ROOTS = ['/', '/astrologers', '/dashboard'];
 const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [isServicesExpanded, setIsServicesExpanded] = useState(false);
 
     const getDisplayName = () => {
         if (!user) return '';
@@ -63,8 +64,15 @@ const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     <button onClick={() => go('/contact-us')}><Phone size={18} /> Contact Us</button>
                     {user?.role === 'ASTROLOGER' ? (
                         <>
-                            <div className="native-drawer-section-label"><Sparkles size={14} /> Tools</div>
-                            {ASTROLOGER_TOOLS_LIST.map((tool) => (
+                            <button
+                                className="native-drawer-section-label native-drawer-section-toggle"
+                                onClick={() => setIsServicesExpanded((open) => !open)}
+                                aria-expanded={isServicesExpanded}
+                            >
+                                <span><Sparkles size={14} /> Tools</span>
+                                <ChevronDown size={16} className={isServicesExpanded ? 'rotate-180' : ''} />
+                            </button>
+                            {isServicesExpanded && ASTROLOGER_TOOLS_LIST.map((tool) => (
                                 <button key={tool.to} onClick={() => go(tool.to)} className="native-drawer-subitem">{tool.title}</button>
                             ))}
                         </>
@@ -73,8 +81,15 @@ const NativeDrawer: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                             <button onClick={() => go('/astrologers')}><Star size={18} /> Our Astrologers</button>
                             <button onClick={() => go('/how-it-works')}><HelpCircle size={18} /> How It Works</button>
                             <button onClick={() => go('/join-as-astrologer')}><Briefcase size={18} /> Join as Astrologer</button>
-                            <div className="native-drawer-section-label"><Sparkles size={14} /> Services</div>
-                            {SERVICES_LIST.map((service) => (
+                            <button
+                                className="native-drawer-section-label native-drawer-section-toggle"
+                                onClick={() => setIsServicesExpanded((open) => !open)}
+                                aria-expanded={isServicesExpanded}
+                            >
+                                <span><Sparkles size={14} /> Services</span>
+                                <ChevronDown size={16} className={isServicesExpanded ? 'rotate-180' : ''} />
+                            </button>
+                            {isServicesExpanded && SERVICES_LIST.map((service) => (
                                 <button key={service.to} onClick={() => go(service.to)} className="native-drawer-subitem">{service.title}</button>
                             ))}
                         </>

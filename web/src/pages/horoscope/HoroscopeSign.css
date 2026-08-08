@@ -134,6 +134,36 @@
     color: #f59e0b;
 }
 
+@media (max-width: 640px) {
+    .rashi-icon-wrapper {
+        width: 84px;
+        height: 84px;
+        margin: 0 auto 14px;
+    }
+
+    .rashi-icon-wrapper span {
+        font-size: 42px;
+    }
+
+    .glass-panel {
+        border-radius: 18px;
+    }
+
+    .prediction-card {
+        padding: 16px;
+        border-radius: 14px;
+    }
+
+    .meta-chip {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
+
+    .personality-box {
+        padding: 18px;
+    }
+}
+
 /* Personality Strengths & Challenges */
 .personality-box {
     padding: 28px;

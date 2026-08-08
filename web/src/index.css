@@ -338,7 +338,7 @@ a {
   width: 100%;
 }
 
-.native-drawer-section-label {
+.native-drawer-nav button.native-drawer-section-label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -348,6 +348,21 @@ a {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #9ca3af;
+}
+
+.native-drawer-nav button.native-drawer-section-toggle {
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+
+.native-drawer-section-toggle span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.native-drawer-section-toggle svg.rotate-180 {
+  transform: rotate(180deg);
 }
 
 .native-drawer-nav button.native-drawer-subitem {

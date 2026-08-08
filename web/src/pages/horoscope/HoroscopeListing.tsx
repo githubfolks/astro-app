@@ -115,19 +115,19 @@ const HoroscopeListing: React.FC = () => {
                     </div>
                 </section>
 
-                <section className="bg-slate-50 py-12 px-6">
+                <section className="bg-slate-50 py-8 md:py-12 px-4 md:px-6">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-2xl font-bold text-slate-800 mb-4">Zodiac Signs by Element</h2>
-                        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-3 md:mb-4">Zodiac Signs by Element</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mt-4 md:mt-8">
                             {(['Fire', 'Earth', 'Air', 'Water'] as const).map((element) => (
-                                <div key={element} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-                                    <div className={`inline-block px-3 py-1 rounded-full text-white text-xs font-bold bg-gradient-to-r ${ELEMENT_COLORS[element]} mb-3`}>
+                                <div key={element} className="bg-white rounded-xl md:rounded-2xl p-3 md:p-5 border border-slate-100 shadow-sm">
+                                    <div className={`inline-block px-2.5 py-0.5 md:px-3 md:py-1 rounded-full text-white text-xs font-bold bg-gradient-to-r ${ELEMENT_COLORS[element]} mb-2 md:mb-3`}>
                                         {element}
                                     </div>
-                                    <ul className="space-y-1">
+                                    <ul className="space-y-0.5 md:space-y-1">
                                         {SIGNS.filter((s) => s.element === element).map((s) => (
                                             <li key={s.slug}>
-                                                <Link to={`/services/horoscope/${s.slug}`} className="text-sm text-slate-700 hover:text-indigo-600 transition-colors">
+                                                <Link to={`/services/horoscope/${s.slug}`} className="text-xs md:text-sm text-slate-700 hover:text-indigo-600 transition-colors leading-tight block py-0.5">
                                                     {s.symbol} {s.name}
                                                 </Link>
                                             </li>

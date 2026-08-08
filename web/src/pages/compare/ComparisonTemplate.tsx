@@ -85,7 +85,7 @@ const ComparisonPage: React.FC<ComparisonPageProps> = ({
             />
             <Header />
 
-            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+            <header className="relative pt-8 pb-6 md:pt-16 md:pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="max-w-4xl mx-auto relative z-10">
@@ -97,7 +97,7 @@ const ComparisonPage: React.FC<ComparisonPageProps> = ({
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+            <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
                 <section className="overflow-x-auto" data-aos="fade-up">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -123,19 +123,19 @@ const ComparisonPage: React.FC<ComparisonPageProps> = ({
                 </section>
 
                 <section className="text-center py-6" data-aos="fade-up">
-                    <h2 className="text-3xl font-normal text-white mb-12">Why People Choose Aadikarta</h2>
-                    <div className="grid md:grid-cols-2 gap-8 text-left">
+                    <h2 className="text-2xl md:text-3xl font-normal text-white mb-6 md:mb-12">Why People Choose Aadikarta</h2>
+                    <div className="grid md:grid-cols-2 gap-6 md:gap-8 text-left">
                         {differentiators.map((item, idx) => (
                             <div key={idx} className="custom-list-item">
                                 <div className="icon-box"><Check size={20} /></div>
                                 <div>
-                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
+                                    <h4 className="text-lg md:text-xl font-normal text-white mb-2">{item.title}</h4>
                                     <p className="text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
+                    <Link to="/astrologers" className="inline-block mt-8 md:mt-16 bg-amber-500 text-indigo-950 px-8 py-3 md:px-12 md:py-4 rounded-full font-normal text-base md:text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Try Aadikarta — From ₹10/min
                     </Link>
                 </section>

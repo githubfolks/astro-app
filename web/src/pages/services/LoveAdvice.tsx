@@ -64,7 +64,7 @@ const LoveAdvice: React.FC = () => {
             <Header />
             
             {/* Hero Section */}
-            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+            <header className="relative pt-8 pb-6 md:pt-16 md:pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -77,15 +77,15 @@ const LoveAdvice: React.FC = () => {
                 </div>
             </header>
 
-            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+            <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
                 {/* Intro Section */}
-                <section className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center" data-aos="fade-up">
+                <section className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center" data-aos="fade-up">
                     <div>
                         <div className="flex items-center gap-3 mb-6">
                             <div className="title-icon-wrapper"><Heart size={20} /></div>
                             <h2 className="text-2xl md:text-3xl font-normal text-white">What is Love Advice?</h2>
                         </div>
-                        <div className="space-y-4 text-gray-300 text-lg leading-relaxed">
+                        <div className="space-y-4 text-gray-300 text-base md:text-lg leading-relaxed">
                             <p>
                                 Love advice in astrology is the sacred practice of analyzing the <span className="font-normal text-amber-500">7th House</span>, Venus, and Mars positions to understand your soul's romantic path.
                             </p>
@@ -95,31 +95,31 @@ const LoveAdvice: React.FC = () => {
                         </div>
                     </div>
                     
-                    <div className="service-glass-panel p-8 flex items-center justify-center min-h-[250px]" data-aos="fade-left">
-                        <div className="relative w-full text-center py-10">
+                    <div className="service-glass-panel p-5 md:p-8 flex items-center justify-center min-h-[180px] md:min-h-[250px]" data-aos="fade-left">
+                        <div className="relative w-full text-center py-5 md:py-10">
                             <div className="floating-box inline-block mb-4 p-4 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20">
                                 <Heart size={48} fill="currentColor" />
                             </div>
-                            <h3 className="text-lg font-normal text-white mb-2">Sync Your Fates</h3>
+                            <h3 className="text-base md:text-lg font-normal text-white mb-2">Sync Your Fates</h3>
                             <p className="text-gray-400 text-sm max-w-xs mx-auto">Explore planetary aspects that trigger romantic attachments and compatibility.</p>
                         </div>
                     </div>
                 </section>
 
                 {/* Benefits of Guidance */}
-                <section className="service-glass-panel p-10 md:p-16 relative overflow-hidden" data-aos="zoom-in">
+                <section className="service-glass-panel p-5 md:p-16 relative overflow-hidden" data-aos="zoom-in">
                     <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
-                        <h2 className="text-3xl font-normal text-white mb-12">The Benefits of Relationship Guidance</h2>
-                        <div className="grid md:grid-cols-3 gap-8 text-left">
+                        <h2 className="text-xl md:text-3xl font-normal text-white mb-6 md:mb-12">The Benefits of Relationship Guidance</h2>
+                        <div className="grid md:grid-cols-3 gap-4 md:gap-8 text-left">
                             {[
                                 { icon: <Flame size={24} />, title: 'Syncing Energies', desc: 'Align your personal vibrations with your partner for deeper emotional resonance.' },
                                 { icon: <HeartHandshake size={24} />, title: 'Conflict Resolution', desc: 'Understand root causes of friction through planetary aspect analysis.' },
                                 { icon: <Activity size={24} />, title: 'Divine Timing', desc: 'Identify perfect moments for life-changing romantic decisions and commitments.' }
                             ].map((item, idx) => (
-                                <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
+                                <div key={idx} className="p-4 md:p-8 rounded-2xl bg-white/5 border border-white/5 backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/15">
                                     <div className="text-amber-500 mb-4">{item.icon}</div>
-                                    <h3 className="text-xl font-normal text-white mb-3">{item.title}</h3>
+                                    <h3 className="text-base md:text-xl font-normal text-white mb-1.5 md:mb-3">{item.title}</h3>
                                     <p className="text-gray-300 font-light leading-relaxed">{item.desc}</p>
                                 </div>
                             ))}
@@ -128,9 +128,9 @@ const LoveAdvice: React.FC = () => {
                 </section>
 
                 {/* Features list */}
-                <section className="text-center py-10" data-aos="fade-up">
-                    <h2 className="text-3xl font-normal text-white mb-6">Aadikarta: Compassion Meets Wisdom</h2>
-                    <div className="grid md:grid-cols-2 gap-8 text-left mt-12">
+                <section className="text-center py-5 md:py-10" data-aos="fade-up">
+                    <h2 className="text-xl md:text-3xl font-normal text-white mb-3 md:mb-6">Aadikarta: Compassion Meets Wisdom</h2>
+                    <div className="grid md:grid-cols-2 gap-4 md:gap-8 text-left mt-6 md:mt-12">
                         {[
                             { icon: <CheckCircle size={24} />, title: 'Synastry Reports', desc: 'Deep-dive comparison of two birth charts to map out emotional, intellectual, and physical compatibility zones.' },
                             { icon: <Sparkles size={24} />, title: 'Venus Positioning', desc: 'Understanding your love language and how to effectively communicate your needs to your significant other.' }
@@ -138,14 +138,14 @@ const LoveAdvice: React.FC = () => {
                             <div key={idx} className="custom-list-item">
                                 <div className="icon-box">{item.icon}</div>
                                 <div>
-                                    <h4 className="text-xl font-normal text-white mb-2">{item.title}</h4>
-                                    <p className="text-gray-300 font-light">{item.desc}</p>
+                                    <h4 className="text-base md:text-xl font-normal text-white mb-1 md:mb-2">{item.title}</h4>
+                                    <p className="text-sm md:text-base text-gray-300 font-light">{item.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <Link to="/astrologers" className="inline-block mt-16 bg-amber-500 text-indigo-950 px-12 py-4 rounded-full font-normal text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
+                    <Link to="/astrologers" className="inline-block mt-8 md:mt-16 bg-amber-500 text-indigo-950 px-8 md:px-12 py-3 md:py-4 rounded-full font-normal text-base md:text-lg shadow-xl shadow-amber-500/10 hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all">
                         Connect with Love Expert
                     </Link>
                 </section>

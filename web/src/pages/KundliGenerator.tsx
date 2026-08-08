@@ -159,8 +159,8 @@ const KundliGenerator: React.FC = () => {
                 </div>
 
                 <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-8">
-                        <h1 className="text-3xl font-normal text-white">🔮 Kundli Generator</h1>
+                    <div className="text-center mb-4 md:mb-8">
+                        <h1 className="text-2xl md:text-3xl font-normal text-white">🔮 Kundli Generator</h1>
                         <p className="text-gray-300 mt-2">Generate Vedic birth charts for seekers</p>
                     </div>
 
@@ -328,8 +328,8 @@ const KundliGenerator: React.FC = () => {
                         </div>
                     </div>
 
-                    <section className="mt-16 service-glass-panel p-8">
-                        <h2 className="text-2xl font-normal text-white mb-4">Why Your Kundli Matters</h2>
+                    <section className="mt-8 md:mt-16 service-glass-panel p-4 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-normal text-white mb-4">Why Your Kundli Matters</h2>
                         <div className="space-y-3 text-gray-300 leading-relaxed">
                             <p>
                                 A Kundli (Janam Patrika) is a map of the sky at the exact moment you were born — the positions of the Sun, Moon, and planets across the twelve houses. In Vedic astrology, this chart is treated as a blueprint of your personality, strengths, and the broad timing of major life events.

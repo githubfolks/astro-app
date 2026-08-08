@@ -123,7 +123,7 @@ const NavamsaViewer: React.FC = () => {
             />
             <Header />
             {/* Hero Section */}
-            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+            <header className="relative pt-8 pb-6 md:pt-16 md:pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -135,7 +135,7 @@ const NavamsaViewer: React.FC = () => {
                         />
                 </div>
             </header>
-             <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+             <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
                 <div className="max-w-4xl mx-auto">
                     <div className="service-glass-panel p-6">
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -200,8 +200,8 @@ const NavamsaViewer: React.FC = () => {
                         </div>
                     ) : null}
 
-                    <section className="mt-16 service-glass-panel p-8">
-                        <h2 className="text-2xl font-normal text-white mb-4">Why the Navamsa Chart Matters</h2>
+                    <section className="mt-8 md:mt-16 service-glass-panel p-5 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-normal text-white mb-3 md:mb-4">Why the Navamsa Chart Matters</h2>
                         <div className="space-y-3 text-gray-300 leading-relaxed">
                             <p>
                                 The Navamsa (D9) is a divisional chart derived by splitting each sign of your birth chart into nine parts. Often called the "second most important chart" in Vedic astrology, it's used specifically to study marriage, spouse, and the strength of planets in your later life.

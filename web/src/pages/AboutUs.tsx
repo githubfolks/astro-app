@@ -66,10 +66,10 @@ const AboutUs: React.FC = () => {
 
             <main className="flex-1">
                 {/* Mission Section */}
-                <div className="container mx-auto px-4 py-12 md:py-8">
+                <div className="container mx-auto px-4 py-6 md:py-8">
                     <div className="flex flex-col md:flex-row items-center gap-16 md:gap-24">
                         <div className="w-full md:w-1/2" data-aos="fade-right">
-                            <h2 className="text-2xl sm:text-3xl md:text-5xl text-gray-900 mb-8 relative">
+                            <h2 className="text-2xl sm:text-3xl md:text-5xl text-gray-900 mb-4 md:mb-8 relative">
                                 Our <span className="text-indigo-600">Mission</span>
                             </h2>
                             <div className="prose prose-lg text-gray-700 space-y-6">
@@ -106,7 +106,7 @@ const AboutUs: React.FC = () => {
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="max-w-3xl mx-auto mb-8 md:mb-20 text-center" data-aos="fade-up">
                             <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block">Trust & Framework</span>
-                            <h2 className="text-2xl sm:text-3xl md:text-5xl text-gray-900 mb-8">
+                            <h2 className="text-2xl sm:text-3xl md:text-5xl text-gray-900 mb-4 md:mb-8">
                                 Why Choose <span className="text-indigo-600">Aadikarta?</span>
                             </h2>
                             <p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed text-justify sm:text-center">We are committed to providing a safe, authentic, and enriching experience for every seeker.</p>
@@ -144,7 +144,7 @@ const AboutUs: React.FC = () => {
                 <div className="bg-indigo-950 text-indigo-100 py-12 md:py-20 relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-30"></div>
                     <div className="container mx-auto px-4 text-center relative z-10" data-aos="zoom-in">
-                        <h3 className="text-xl sm:text-2xl mb-6 text-white tracking-wide">Our Commitment to Reality</h3>
+                        <h3 className="text-xl sm:text-2xl mb-4 md:mb-6 text-white tracking-wide">Our Commitment to Reality</h3>
                         <p className="max-w-3xl mx-auto opacity-80 text-sm sm:text-base md:text-lg leading-relaxed font-light text-justify sm:text-center">
                             We do not promote superstition or guarantee outcomes. Our platform encourages seekers to use astrological insights as supportive guidance while making their own informed choices.
                         </p>

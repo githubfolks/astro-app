@@ -282,9 +282,9 @@ export const Dashboard: React.FC = () => {
                             </span>
                         </a>
                     )}
-                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 gap-4">
                         <div className="w-full text-center md:w-auto md:text-left">
-                            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                                 {astrologerProfile ? getAstrologerDisplayName(astrologerProfile) : (user?.full_name || 'Astrologer Dashboard')}
                             </h2>
                             <p className="text-gray-600">Manage your status and consultations.</p>
@@ -307,7 +307,7 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
                         {/* Requests Queue Column */}
                         <div>
                             {/* Requests Queue Section */}
@@ -321,11 +321,11 @@ export const Dashboard: React.FC = () => {
                                 </h3>
 
                                 {loading ? (
-                                    <div className="flex justify-center p-10">
+                                    <div className="flex justify-center p-6 md:p-10">
                                         <div className="animate-spin h-8 w-8 border-4 border-[#E91E63] rounded-full border-t-transparent"></div>
                                     </div>
                                 ) : history.filter((c: Consultation) => ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 ? (
-                                    <div className="flex-1 flex items-center justify-center text-center bg-gray-50 rounded-lg p-8">
+                                    <div className="flex-1 flex items-center justify-center text-center bg-gray-50 rounded-lg p-4 md:p-8">
                                         <p className="text-gray-900">No active requests in queue.</p>
                                     </div>
                                 ) : (
@@ -474,13 +474,13 @@ export const Dashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-4 md:mt-8">
                         <ImportantPoliciesCard />
                     </div>
 
                     {/* Performance Stats */}
                     {performanceStats && (
-                        <div className="mt-8 bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <div className="mt-4 md:mt-8 bg-white p-4 sm:p-6 rounded-xl border border-gray-200 shadow-sm">
                             <div className="grid grid-cols-4 gap-2 sm:gap-4 divide-x divide-gray-100">
                                 <div className="flex flex-col items-center text-center px-1">
                                     <p className="text-xl sm:text-2xl font-extrabold text-cyan-600">{performanceStats.avg_online_hours_per_day_30d}h</p>
@@ -503,7 +503,7 @@ export const Dashboard: React.FC = () => {
                     )}
 
                     {/* Past History Section — top 5 only; full paginated list lives at /chat-history */}
-                    <div className="mt-8">
+                    <div className="mt-4 md:mt-8">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xl font-bold text-gray-900">History</h3>
                             <button onClick={() => navigate('/chat-history')} className="text-sm font-semibold text-[#E91E63] hover:underline">
@@ -557,7 +557,7 @@ export const Dashboard: React.FC = () => {
                                                 ))}
                                                 {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 && (
                                                     <tr>
-                                                        <td colSpan={5} className="p-8 text-center text-gray-400">
+                                                        <td colSpan={5} className="p-6 md:p-8 text-center text-gray-400">
                                                             <p>No past consultations.</p>
                                                         </td>
                                                     </tr>
@@ -595,14 +595,14 @@ export const Dashboard: React.FC = () => {
                                             </button>
                                         ))}
                                         {history.filter((c: Consultation) => !['REQUESTED', 'ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)).length === 0 && (
-                                            <p className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">No past consultations.</p>
+                                            <p className="bg-white rounded-xl border border-gray-100 p-6 md:p-8 text-center text-gray-400">No past consultations.</p>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Payout & Transaction History — top 5 only; full paginated list lives at /transaction-history */}
-                            <div className="mt-8">
+                            <div className="mt-4 md:mt-8">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                                         <Wallet size={20} className="text-[#E91E63]" />
@@ -652,7 +652,7 @@ export const Dashboard: React.FC = () => {
                                                 ))}
                                                 {payoutHistory.length === 0 && (
                                                     <tr>
-                                                        <td colSpan={6} className="p-8 text-center text-gray-400">
+                                                        <td colSpan={6} className="p-6 md:p-8 text-center text-gray-400">
                                                             <p>No payout transactions found.</p>
                                                         </td>
                                                     </tr>
@@ -689,14 +689,14 @@ export const Dashboard: React.FC = () => {
                                             </div>
                                         ))}
                                         {payoutHistory.length === 0 && (
-                                            <p className="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">No payout transactions found.</p>
+                                            <p className="bg-white rounded-xl border border-gray-100 p-6 md:p-8 text-center text-gray-400">No payout transactions found.</p>
                                         )}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Onboarding & Profile Management — full width, not squeezed into a sidebar column */}
-                            <div id="astrologer-onboarding-panel" className="mt-8 scroll-mt-24">
+                            <div id="astrologer-onboarding-panel" className="mt-4 md:mt-8 scroll-mt-24">
                                 <AstrologerOnboardingTabs
                                     astrologerProfile={astrologerProfile}
                                     onProfileSaved={setAstrologerProfile}
@@ -719,8 +719,8 @@ export const Dashboard: React.FC = () => {
             <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
                 <Header />
                 <main className="dashboard-main flex-1 container mx-auto p-6 md:p-8">
-                    <div className="text-center md:text-left mb-8">
-                        <h2 className="text-3xl text-gray-900 mb-2">Welcome, {user?.full_name || 'Tutor'}</h2>
+                    <div className="text-center md:text-left mb-4 md:mb-8">
+                        <h2 className="text-2xl md:text-3xl text-gray-900 mb-2">Welcome, {user?.full_name || 'Tutor'}</h2>
                         <p className="text-gray-600">Manage your live classes and sessions.</p>
                     </div>
 
@@ -872,8 +872,8 @@ export const Dashboard: React.FC = () => {
                 </div>
             )}
             <main className={`dashboard-main flex-1 container mx-auto p-6 md:p-8`}>
-                <div className="text-center md:text-left mb-8">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                <div className="text-center md:text-left mb-4 md:mb-8">
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                         {seekerProfile.full_name || user?.full_name || 'My Dashboard'}
                     </h2>
                     <p className="text-gray-600">Manage your consultations and profile.</p>
@@ -894,9 +894,9 @@ export const Dashboard: React.FC = () => {
                         </span>
                     </a>
                 )}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
                     {/* Main Content */}
-                    <div className="lg:col-span-2 space-y-8 order-2 lg:order-none">
+                    <div className="lg:col-span-2 space-y-4 md:space-y-8 order-2 lg:order-none">
                         {/* Past Consultations */}
                         <div>
                             <h3 className="text-xl font-bold text-gray-900 mt-2 mb-4 flex items-center gap-2">
@@ -907,7 +907,7 @@ export const Dashboard: React.FC = () => {
 
                             {/* Live Classes for Student */}
                             {sessions.length > 0 && (
-                                <div className="mb-8">
+                                <div className="mb-4 md:mb-8">
                                     <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                                         <span className="bg-indigo-600 text-white p-1 rounded-md"><Calendar size={18} /></span>
                                         My Live Classes
@@ -945,7 +945,7 @@ export const Dashboard: React.FC = () => {
 
                             {/* Enrolled Courses & Materials for Student */}
                             {myCourses.length > 0 && (
-                                <div className="mb-8">
+                                <div className="mb-4 md:mb-8">
                                     <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                                         <span className="bg-indigo-600 text-white p-1 rounded-md"><Book size={18} /></span>
                                         My Learning Materials
@@ -1013,11 +1013,11 @@ export const Dashboard: React.FC = () => {
                             )}
 
                             {loading ? (
-                                <div className="flex justify-center p-10">
+                                <div className="flex justify-center p-6 md:p-10">
                                     <div className="animate-spin h-8 w-8 border-4 border-[#E91E63] rounded-full border-t-transparent"></div>
                                 </div>
                             ) : seekerHistory.length === 0 ? (
-                                <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
+                                <div className="bg-white rounded-xl p-5 md:p-8 text-center border border-gray-100">
                                     <p className="text-gray-900 mb-4">No consultations yet.</p>
                                     <button
                                         onClick={() => navigate('/astrologers')}
@@ -1040,7 +1040,7 @@ export const Dashboard: React.FC = () => {
 
                                 if (filtered.length === 0) {
                                     return (
-                                        <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
+                                        <div className="bg-white rounded-xl p-5 md:p-8 text-center border border-gray-100">
                                             <p className="text-gray-900">No consultations match your search.</p>
                                         </div>
                                     );

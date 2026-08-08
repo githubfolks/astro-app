@@ -172,7 +172,7 @@ const NumerologyCalculator: React.FC = () => {
             />
             <Header />
             {/* Hero Section */}
-            <header className="relative pt-16 pb-12 px-6 text-center overflow-hidden">
+            <header className="relative pt-8 pb-6 md:pt-16 md:pb-12 px-6 text-center overflow-hidden">
                 <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
@@ -184,7 +184,7 @@ const NumerologyCalculator: React.FC = () => {
                     />
                 </div>
             </header>
-            <main className="max-w-5xl mx-auto px-6 py-12 space-y-24">
+            <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
                 <div className="max-w-4xl mx-auto">
                     <div className="service-glass-panel p-6">
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -228,8 +228,8 @@ const NumerologyCalculator: React.FC = () => {
                         </div>
                     ) : null}
 
-                    <section className="mt-16 service-glass-panel p-8">
-                        <h2 className="text-2xl font-normal text-white mb-4">Why Numerology Matters</h2>
+                    <section className="mt-8 md:mt-16 service-glass-panel p-5 md:p-8">
+                        <h2 className="text-xl md:text-2xl font-normal text-white mb-3 md:mb-4">Why Numerology Matters</h2>
                         <div className="space-y-3 text-gray-300 leading-relaxed">
                             <p>
                                 Numerology reduces your name and date of birth to a set of core numbers — like your Life Path number — each believed to carry its own personality traits, strengths, and challenges. It's a system many people use alongside astrology to understand themselves and time decisions.

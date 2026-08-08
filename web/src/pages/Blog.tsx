@@ -73,24 +73,24 @@ const Blog: React.FC = () => {
                 structuredData={structuredData}
             />
             <Header />
-            <main className="flex-1 container mx-auto px-4 py-12">
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4 mt-4">Vedic Astrology Blog</h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <main className="flex-1 container mx-auto px-4 py-6 md:py-12">
+                <div className="text-center mb-6 md:mb-12">
+                    <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 mt-4">Vedic Astrology Blog</h1>
+                    <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
                         Expert guidance on Vedic astrology, horoscopes, kundli matching & spiritual wisdom.
                     </p>
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center py-20">
+                    <div className="flex justify-center py-10 md:py-20">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
                     </div>
                 ) : posts.length === 0 ? (
-                    <div className="text-center py-20 text-gray-900">
+                    <div className="text-center py-10 md:py-20 text-gray-900">
                         No articles found. Check back soon!
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         {posts.map((post) => (
                             <div key={post.id} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                                 {post.featured_image ? (

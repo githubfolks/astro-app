@@ -269,9 +269,9 @@ const AstrologerProfile: React.FC = () => {
             <Header />
             <main className="flex-1">
                 {/* Hero Section */}
-                <div className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] text-white py-12">
+                <div className="bg-gradient-to-r from-[#1a1a2e] to-[#16213e] text-white py-6 md:py-12">
                     <div className="container mx-auto px-6">
-                        <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+                        <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center md:items-start">
                             {/* Profile Image */}
                             <div className="relative">
                                 <div className="w-40 h-40 md:w-52 md:h-52 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl bg-gradient-to-br from-purple-400 to-pink-500">
@@ -353,7 +353,7 @@ const AstrologerProfile: React.FC = () => {
                             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 min-w-[280px]">
                                 <div className="text-center mb-4">
                                     <div className="text-sm text-gray-300 mb-1">Consultation Fee</div>
-                                    <div className="text-4xl text-white">
+                                    <div className="text-3xl md:text-4xl text-white">
                                         ₹{astrologer.consultation_fee_per_min}
                                         <span className="text-lg font-normal text-gray-300">/min</span>
                                     </div>
@@ -407,10 +407,10 @@ const AstrologerProfile: React.FC = () => {
                 </div>
 
                 {/* Content Section */}
-                <div className="container mx-auto px-6 py-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="container mx-auto px-6 py-5 md:py-10">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
                         {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="lg:col-span-2 space-y-4 md:space-y-8">
                             {/* About Section — omitted entirely when the astrologer hasn't written a real bio,
                                 rather than showing fabricated boilerplate attributed to them. */}
                             {astrologer.about_me && (

@@ -101,20 +101,20 @@ const HowItWorks: React.FC = () => {
 
             <main>
                 {/* Hero */}
-                <section className="relative pt-16 pb-20 px-6 text-center overflow-hidden min-h-[460px] flex flex-col items-center justify-center">
+                <section className="relative pt-8 pb-10 md:pt-16 md:pb-20 px-6 text-center overflow-hidden md:min-h-[460px] flex flex-col items-center justify-center">
                     <div className="absolute top-[10%] left-[-150px] w-[400px] h-[400px] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none"></div>
                     <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                     <div className="max-w-3xl mx-auto relative z-10">
-                        <span className="text-amber-500 font-normal uppercase tracking-widest text-sm mb-3 block">Step-By-Step Guide</span>
-                        <h1 className="text-4xl md:text-6xl font-normal text-white mb-6">How Aadikarta Works</h1>
-                        <p className="text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
+                        <span className="text-amber-500 font-normal uppercase tracking-widest text-xs md:text-sm mb-2 md:mb-3 block">Step-By-Step Guide</span>
+                        <h1 className="text-3xl md:text-6xl font-normal text-white mb-3 md:mb-6">How Aadikarta Works</h1>
+                        <p className="text-base md:text-xl text-gray-300 font-light max-w-2xl mx-auto leading-relaxed">
                             Get live astrology guidance in 5 simple steps — no appointments, no subscriptions.
                             Pay only for the minutes you use.
                         </p>
                         <Link
                             to="/astrologers"
-                            className="inline-block mt-10 bg-amber-500 text-indigo-950 font-normal px-10 py-4 rounded-full shadow-xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all"
+                            className="inline-block mt-5 md:mt-10 bg-amber-500 text-indigo-950 font-normal px-8 py-3 md:px-10 md:py-4 rounded-full shadow-xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all"
                         >
                             Browse Astrologers
                         </Link>
@@ -122,9 +122,9 @@ const HowItWorks: React.FC = () => {
                 </section>
 
                 {/* Steps */}
-                <section className="max-w-4xl mx-auto px-6 py-12">
-                    <h2 className="text-3xl font-normal text-center text-white mb-16">Your Journey, Step by Step</h2>
-                    <div className="space-y-8">
+                <section className="max-w-4xl mx-auto px-6 py-8 md:py-12">
+                    <h2 className="text-2xl md:text-3xl font-normal text-center text-white mb-6 md:mb-16">Your Journey, Step by Step</h2>
+                    <div className="space-y-3 md:space-y-8">
                         {steps.map((step, idx) => (
                             <div key={idx} className="custom-list-item">
                                 <div className="icon-box">
@@ -132,8 +132,8 @@ const HowItWorks: React.FC = () => {
                                 </div>
                                 <div>
                                     <div className="text-xs font-normal text-amber-500 tracking-widest uppercase mb-1">Step {step.num}</div>
-                                    <h3 className="text-xl font-normal text-white mb-2">{step.title}</h3>
-                                    <p className="text-gray-300 font-light leading-relaxed">{step.desc}</p>
+                                    <h3 className="text-base md:text-xl font-normal text-white mb-1 md:mb-2">{step.title}</h3>
+                                    <p className="text-sm md:text-base text-gray-300 font-light leading-snug md:leading-relaxed">{step.desc}</p>
                                 </div>
                             </div>
                         ))}
@@ -141,33 +141,33 @@ const HowItWorks: React.FC = () => {
                 </section>
  
                 {/* FAQ */}
-                <section className="max-w-3xl mx-auto px-6 py-20">
-                    <h2 className="text-3xl font-normal text-white mb-12 text-center flex items-center justify-center gap-3">
-                        <HelpCircle size={28} className="text-amber-500" />
+                <section className="max-w-3xl mx-auto px-6 py-10 md:py-20">
+                    <h2 className="text-2xl md:text-3xl font-normal text-white mb-6 md:mb-12 text-center flex items-center justify-center gap-2 md:gap-3">
+                        <HelpCircle size={22} className="text-amber-500 md:w-7 md:h-7" />
                         Frequently Asked Questions
                     </h2>
-                    <div className="space-y-6">
+                    <div className="space-y-3 md:space-y-6">
                         {faqs.map(({ q, a }, i) => (
-                            <div key={i} className="service-glass-panel p-6">
-                                <h3 className="font-normal text-white text-lg mb-2 flex items-center gap-2">
+                            <div key={i} className="service-glass-panel p-4 md:p-6">
+                                <h3 className="font-normal text-white text-base md:text-lg mb-1.5 md:mb-2 flex items-center gap-2">
                                     <CheckCircle size={16} className="text-amber-500 flex-shrink-0" />
                                     {q}
                                 </h3>
-                                <p className="text-gray-300 font-light pl-6">{a}</p>
+                                <p className="text-sm md:text-base text-gray-300 font-light pl-6">{a}</p>
                             </div>
                         ))}
                     </div>
                 </section>
 
                 {/* CTA */}
-                <section className="relative py-24 px-6 text-center overflow-hidden border-t border-white/5">
+                <section className="relative py-12 md:py-24 px-6 text-center overflow-hidden border-t border-white/5">
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/20 to-purple-950/20"></div>
                     <div className="relative z-10 max-w-xl mx-auto">
-                        <h2 className="text-3xl font-normal mb-4 text-white">Ready to get your first reading?</h2>
-                        <p className="text-gray-300 mb-8 text-lg font-light">Join thousands who found clarity through Aadikarta.</p>
+                        <h2 className="text-2xl md:text-3xl font-normal mb-3 md:mb-4 text-white">Ready to get your first reading?</h2>
+                        <p className="text-gray-300 mb-5 md:mb-8 text-base md:text-lg font-light">Join thousands who found clarity through Aadikarta.</p>
                         <Link
                             to="/astrologers"
-                            className="inline-block bg-amber-500 text-indigo-950 font-normal px-12 py-4 rounded-full shadow-2xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all"
+                            className="inline-block bg-amber-500 text-indigo-950 font-normal px-10 py-3 md:px-12 md:py-4 rounded-full shadow-2xl hover:bg-amber-400 hover:scale-105 active:scale-95 transition-all"
                         >
                             Find Your Astrologer
                         </Link>

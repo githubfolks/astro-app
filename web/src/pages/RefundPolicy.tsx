@@ -14,8 +14,8 @@ const RefundPolicy: React.FC = () => {
                 keywords="Aadikarta Vedic Astrology refund policy, wallet refund Aadikarta, consultation refund"
             />
             <Header />
-            <main className="flex-1 container mx-auto px-4 py-16 max-w-4xl mb-4">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mt-4 mb-8 text-center">Refund Policy</h1>
+            <main className="flex-1 container mx-auto px-4 py-8 md:py-16 max-w-4xl mb-4">
+                <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mt-4 mb-4 md:mb-8 text-center">Refund Policy</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
                     <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
@@ -24,14 +24,14 @@ const RefundPolicy: React.FC = () => {
                         AadiKarta is committed to a transparent, fair, and automated billing process. Because our platform runs on a real-time, server-side wallet deduction engine, we've set out clear rules below for when a refund or wallet credit applies.
                     </p>
 
-                    <h2 className="text-2xl font-bold text-gray-900 pt-4">How Chat Billing Works</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">How Chat Billing Works</h2>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>Your wallet is not billed the moment a chat is requested — billing starts only when the astrologer sends the first message</li>
                         <li>If an astrologer accepts a chat but never replies, no balance is deducted</li>
                         <li>A session automatically ends the moment your wallet balance reaches zero or your purchased time package is exhausted</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 pt-4">Eligibility for Refund</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Eligibility for Refund</h2>
                     <p>You're eligible for a refund or pro-rated wallet credit if:</p>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>An astrologer accepts your chat but never sends a single message — the session is cancelled and no credits are deducted</li>
@@ -40,7 +40,7 @@ const RefundPolicy: React.FC = () => {
                         <li>You were billed twice for a single wallet top-up due to a payment gateway error — the duplicate charge is refunded to your original payment source</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 pt-4">Non-Refundable Cases</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Non-Refundable Cases</h2>
                     <p>Refunds are not applicable in cases where:</p>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>A consultation has already been successfully delivered and completed</li>
@@ -52,14 +52,14 @@ const RefundPolicy: React.FC = () => {
                         <li>Promotional or referral credits (free-trial minutes, coupon codes, referral bonuses) — these have no cash value and cannot be refunded or exchanged for cash</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 pt-4">Courses and Classroom Enrollments</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Courses and Classroom Enrollments</h2>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>A full refund is available if you cancel your enrollment at least 24 hours before the batch or class start date</li>
                         <li>Once a course has commenced, or once you have accessed any live class or downloadable course material, the enrollment fee becomes non-refundable</li>
                         <li>If a scheduled class is cancelled or not delivered due to a platform-side issue, you'll be offered a make-up session or a refund for that class</li>
                     </ul>
 
-                    <h2 className="text-2xl font-bold text-gray-900 pt-4">Refund Process</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Refund Process</h2>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>Refund or dispute claims must be raised within 48 hours of the transaction by emailing {support_email} with your transaction ID and (for chats) chat ID</li>
                         <li>Verified refunds for payment gateway failures are processed within 7–10 working days to your original payment source</li>
