@@ -28,7 +28,7 @@ echo "4. App responding locally (port 4003)?"
 curl -sf -o /dev/null -w "   HTTP %{http_code}\n" http://localhost:4003/ || echo "   FAILED"
 
 echo "5. Public endpoint responding?"
-curl -sf -o /dev/null -w "   HTTP %{http_code}\n" https://analytics.aadikarta.org/ || echo "   FAILED (check DNS + nginx + certbot)"
+curl -sf -o /dev/null -w "   HTTP %{http_code}\n" http://65.20.90.180:4003/ || echo "   FAILED (check firewall + docker port mapping)"
 
-echo "Done. If all OK, log into https://analytics.aadikarta.org, create the admin account,"
+echo "Done. If all OK, log into http://65.20.90.180:4003, create the admin account,"
 echo "add aadikarta.org as a website, and paste its website ID into web/index.html."
