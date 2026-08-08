@@ -75,29 +75,6 @@ services:
           cpus: '0.25'
           memory: 128M
 
-  umami:
-    image: ghcr.io/umami-software/umami:postgresql-latest
-    container_name: astro_umami
-    env_file:
-      - .env
-    environment:
-      DATABASE_URL: "${UMAMI_DATABASE_URL}"
-      DATABASE_TYPE: postgresql
-      APP_SECRET: "${UMAMI_APP_SECRET}"
-      DISABLE_TELEMETRY: "1"
-    ports:
-      - "4003:3000"
-    # Lets umami reach Postgres running on the Docker host, same as api.
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - default
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-
   redis:
     image: "redis:alpine"
     container_name: astro_redis
