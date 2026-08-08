@@ -47,5 +47,41 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+
+	<!--
+	Google + Facebook sign-in (@capgo/capacitor-social-login). Replace the
+	REPLACE_WITH_* placeholders below with real values once the iOS OAuth
+	clients exist (Google Cloud Console -> iOS client -> "iOS URL scheme" is
+	the reversed client ID; Facebook -> App Dashboard -> Settings -> Basic).
+	-->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.750457761407-gf5nubbklca29f64t7lt1cupb4lcslel</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb797884603381164</string>
+			</array>
+		</dict>
+	</array>
+	<key>FacebookAppID</key>
+	<string>797884603381164</string>
+	<key>FacebookClientToken</key>
+	<string>09f06099a102cd099d2e77beb7e84d5d</string>
+	<key>FacebookDisplayName</key>
+	<string>Aadikarta Vedic Astrology</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fbauth</string>
+		<string>fb-messenger-share-api</string>
+		<string>fbauth2</string>
+		<string>fbshareextension</string>
+	</array>
 </dict>
 </plist>

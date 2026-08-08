@@ -241,6 +241,8 @@ async def csrf_middleware(request: Request, call_next):
         "/forgot-password",
         "/verify-otp",
         "/reset-password",
+        "/auth/google",
+        "/auth/facebook",
         "/payment/razorpay-webhook",
         "/public/whatsapp/waplex/inbound",
         "/ai-astrologer/chat",

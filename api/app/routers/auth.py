@@ -8,6 +8,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import os
 import random
 import string
+import httpx
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_auth_requests
 from pydantic import EmailStr
 from ..limiter import limiter
 from ..services import email_service
@@ -29,6 +32,17 @@ if not SECRET_KEY:
     raise RuntimeError("JWT_SECRET_KEY environment variable is not set. Refusing to start.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Google ID tokens are minted with different audiences depending on which client
+# initiated sign-in (web page vs iOS app vs Android app via Credential Manager,
+# which uses the web client as its "server" client). We accept any of these as
+# a valid audience so the same backend endpoint serves every platform.
+GOOGLE_WEB_CLIENT_ID = os.getenv("GOOGLE_WEB_CLIENT_ID")
+GOOGLE_IOS_CLIENT_ID = os.getenv("GOOGLE_IOS_CLIENT_ID")
+GOOGLE_VALID_AUDIENCES = [aud for aud in (GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID) if aud]
+
+FACEBOOK_APP_ID = os.getenv("FACEBOOK_APP_ID")
+FACEBOOK_APP_SECRET = os.getenv("FACEBOOK_APP_SECRET")
 
 def verify_password(plain_password, hashed_password):
     return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
@@ -175,6 +189,128 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
                     print(f"notify waiting seekers on login failed: {e}")
 
     return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "role": user.role, "full_name": full_name}
+
+def _social_login(db: Session, provider: str, provider_user_id: str, email: Optional[str], full_name: Optional[str]) -> dict:
+    """Shared find-or-create + token issuance for Google/Facebook sign-in.
+
+    Matches an existing account by (provider, provider_user_id) first, then falls
+    back to matching by verified email so a user who originally signed up with a
+    password can link a social account without creating a duplicate.
+    """
+    if not email:
+        raise HTTPException(status_code=400, detail=f"Your {provider.capitalize()} account has no email address. Please use email/password signup instead.")
+
+    user = db.query(models.User).filter(
+        models.User.oauth_provider == provider,
+        models.User.oauth_id == provider_user_id
+    ).first()
+
+    if not user:
+        user = db.query(models.User).filter(models.User.email == email).first()
+        if user:
+            # Existing password (or other-provider) account with the same email — link it.
+            user.oauth_provider = provider
+            user.oauth_id = provider_user_id
+            if not user.is_verified:
+                user.is_verified = True
+            db.commit()
+            db.refresh(user)
+        else:
+            user = models.User(
+                email=email,
+                role=models.UserRole.SEEKER,
+                oauth_provider=provider,
+                oauth_id=provider_user_id,
+                is_verified=True,
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+            profile = models.SeekerProfile(user_id=user.id, full_name=full_name)
+            db.add(profile)
+            wallet = models.UserWallet(user_id=user.id)
+            db.add(wallet)
+            db.commit()
+
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
+
+    access_token = create_access_token(
+        data={"sub": str(user.id), "role": user.role.value},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES * 48)  # 24h, matches /login
+    )
+
+    resolved_full_name = full_name
+    if user.role == models.UserRole.SEEKER and user.seeker_profile:
+        resolved_full_name = user.seeker_profile.full_name or full_name
+    elif user.role == models.UserRole.ASTROLOGER and user.astrologer_profile:
+        resolved_full_name = user.astrologer_profile.full_name
+
+    return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "role": user.role, "full_name": resolved_full_name}
+
+@router.post("/auth/google", response_model=schemas.Token)
+@limiter.limit("10/minute")
+def google_login(request: Request, payload: schemas.GoogleLoginRequest, db: Session = Depends(database.get_db)):
+    if not GOOGLE_VALID_AUDIENCES:
+        raise HTTPException(status_code=503, detail="Google sign-in is not configured")
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            payload.id_token, google_auth_requests.Request()
+        )
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    if idinfo.get("aud") not in GOOGLE_VALID_AUDIENCES:
+        raise HTTPException(status_code=401, detail="Invalid Google token audience")
+    if not idinfo.get("email_verified", False):
+        raise HTTPException(status_code=401, detail="Google email is not verified")
+
+    result = _social_login(
+        db, "google", idinfo["sub"], idinfo.get("email"), idinfo.get("name")
+    )
+    return result
+
+@router.post("/auth/facebook", response_model=schemas.Token)
+@limiter.limit("10/minute")
+def facebook_login(request: Request, payload: schemas.FacebookLoginRequest, db: Session = Depends(database.get_db)):
+    if not FACEBOOK_APP_ID or not FACEBOOK_APP_SECRET:
+        raise HTTPException(status_code=503, detail="Facebook sign-in is not configured")
+
+    app_access_token = f"{FACEBOOK_APP_ID}|{FACEBOOK_APP_SECRET}"
+    with httpx.Client(timeout=10) as client:
+        try:
+            debug_resp = client.get(
+                "https://graph.facebook.com/debug_token",
+                params={"input_token": payload.access_token, "access_token": app_access_token},
+            )
+            debug_resp.raise_for_status()
+            debug_data = debug_resp.json().get("data", {})
+        except httpx.HTTPError:
+            raise HTTPException(status_code=401, detail="Could not verify Facebook token")
+
+    if not debug_data.get("is_valid") or str(debug_data.get("app_id")) != str(FACEBOOK_APP_ID):
+        raise HTTPException(status_code=401, detail="Invalid Facebook token")
+
+    fb_user_id = debug_data.get("user_id")
+    if not fb_user_id:
+        raise HTTPException(status_code=401, detail="Invalid Facebook token")
+
+    with httpx.Client(timeout=10) as client:
+        try:
+            profile_resp = client.get(
+                f"https://graph.facebook.com/{fb_user_id}",
+                params={"fields": "id,name,email", "access_token": payload.access_token},
+            )
+            profile_resp.raise_for_status()
+            profile = profile_resp.json()
+        except httpx.HTTPError:
+            raise HTTPException(status_code=401, detail="Could not fetch Facebook profile")
+
+    result = _social_login(
+        db, "facebook", str(profile["id"]), profile.get("email"), profile.get("name")
+    )
+    return result
 
 import secrets
 
