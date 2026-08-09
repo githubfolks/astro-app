@@ -23,6 +23,7 @@ const NativeFooter: React.FC = () => (
                 <p>&copy; 2026 Aadikarta Vedic Astrology. All rights reserved.</p>
                 <div className="footer-legal">
                     <Link to="/privacy-policy">Privacy Policy</Link>
+                    <Link to="/refund-policy">Refund Policy</Link>
                     <Link to="/terms-of-service">Terms of Service</Link>
                 </div>
             </div>
@@ -90,6 +91,7 @@ const Footer: React.FC = () => {
                                 <ul className="footer-links">
                                     <li><Link to="/ai-astrologer" onClick={scrollToTop}>Free AI Astrologer</Link></li>
                                     <li><Link to="/services/horoscope" onClick={scrollToTop}>Free Daily Horoscope</Link></li>
+                                    <li><Link to="/panchang" onClick={scrollToTop}>Free Panchang</Link></li>
                                     <li><Link to="/tools/kundli-chart" onClick={scrollToTop}>Free Kundli Generator</Link></li>
                                     <li><Link to="/tools/kundli-matching" onClick={scrollToTop}>Free Kundli Matching</Link></li>
                                     <li><Link to="/services/vedic-astrology" onClick={scrollToTop}>Vedic Astrology</Link></li>
@@ -105,6 +107,7 @@ const Footer: React.FC = () => {
                             <h4 className="footer-title">Company</h4>
                             <ul className="footer-links">
                                 <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
+                                <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
                                 {!isAstrologer && <li><Link to="/astrologers" onClick={scrollToTop}>Our Astrologers</Link></li>}
                                 {!isAstrologer && <li><Link to="/pricing" onClick={scrollToTop}>Pricing</Link></li>}
                                 {!isAstrologer && <li><Link to="/how-it-works" onClick={scrollToTop}>How It Works</Link></li>}
