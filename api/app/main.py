@@ -290,7 +290,15 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    # Uploaded/gallery images under /static are immutable once written (each
+    # upload gets its own filename) -- forcing no-store on them too meant every
+    # blog image was re-downloaded in full on every single page view, with no
+    # browser or CDN caching possible. API JSON still needs no-store (it can
+    # carry per-user/auth data), so only /static gets the long-lived version.
+    if request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    else:
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self)"
     response.headers["Content-Security-Policy"] = (

@@ -16,5 +16,13 @@ export function normalizeArticleHtml(html: string): string {
             el.replaceWith(h2);
         }
     });
+    // In-article images (unlike the featured image above the fold) are below
+    // the fold by definition, so let the browser defer fetching them until
+    // they're near the viewport instead of racing the visible content for
+    // bandwidth on page load.
+    container.querySelectorAll('img').forEach((img) => {
+        img.loading = 'lazy';
+        img.decoding = 'async';
+    });
     return container.innerHTML;
 }

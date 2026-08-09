@@ -160,7 +160,7 @@ const BlogPost: React.FC = () => {
 
                         {post.featured_image && (
                             <div className="mt-8 rounded-2xl overflow-hidden shadow-lg">
-                                <img src={post.featured_image} alt={post.title} className="w-full h-auto max-h-[500px] object-cover" />
+                                <img src={post.featured_image} alt={post.title} className="w-full h-auto max-h-[500px] object-cover" fetchPriority="high" />
                             </div>
                         )}
                     </header>
