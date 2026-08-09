@@ -42,6 +42,23 @@ const EXCLUDE_PREFIXES = [
     '/forgot-password', '/reset-password',
 ];
 
+// Highest-value routes for search/AEO — if these fail to prerender the build
+// should fail loudly instead of silently shipping a blank homepage shell to
+// crawlers again (see 2026-08-09 incident: homepage + all 12 horoscope pages
+// were serving an empty <div id="app"> in production for days undetected).
+const CRITICAL_ROUTES = new Set([
+    '/', '/astrologers', '/ai-astrologer',
+    ...['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra',
+        'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
+        .map((s) => `/services/horoscope/${s}`),
+]);
+
+// Third-party calls that are slow/rate-limited and irrelevant to the
+// prerendered SEO snapshot (e.g. IP geolocation for the Panchang widget's
+// default city) — block them so the app hits its own fast fallback instead
+// of a real network round-trip that can hang well past the page timeout.
+const BLOCKED_THIRD_PARTY = ['https://ipapi.co/**'];
+
 async function fetchAllPages(path, mapItem, getItems = (d) => d) {
     const out = [];
     let skip = 0;
@@ -132,18 +149,25 @@ async function main() {
         await waitForServer(BASE);
 
         browser = await chromium.launch({ args: ['--no-sandbox'] });
-        const page = await (await browser.newContext()).newPage();
-        page.on('pageerror', (e) => console.warn(`  ! [console] page error on current route: ${e.message}`));
+        const context = await browser.newContext();
+        for (const pattern of BLOCKED_THIRD_PARTY) {
+            await context.route(pattern, (route) => route.abort());
+        }
+        const page = await context.newPage();
+        let recentErrors = [];
+        page.on('pageerror', (e) => recentErrors.push(`page error: ${e.message}`));
         page.on('console', (msg) => {
-            if (msg.type() === 'error') console.warn(`  ! [console] ${msg.text()}`);
+            if (msg.type() === 'error') recentErrors.push(`console: ${msg.text()}`);
         });
 
         let ok = 0;
         let failed = 0;
+        const failedCritical = [];
         for (const route of routes) {
+            recentErrors = [];
             try {
                 try {
-                    await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 15000 });
+                    await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle', timeout: 20000 });
                 } catch (e) {
                     // Heavier pages (e.g. the homepage, with animations, live
                     // astrologer status, and multiple data widgets) can have
@@ -152,9 +176,12 @@ async function main() {
                     // container — failing here would silently drop the page's
                     // most valuable route. `load` still guarantees the SPA has
                     // mounted; the extra wait lets client-side data fetches settle.
-                    await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 15000 });
-                    await page.waitForTimeout(1500);
+                    await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 20000 });
                 }
+                // Wait for react-helmet-async's title write rather than a fixed
+                // sleep — faster on light routes, still generous (10s) for
+                // heavy ones so real slowness doesn't get misread as a bug.
+                await page.waitForFunction(() => !!document.title, { timeout: 10000 }).catch(() => {});
                 const html = await page.content();
                 // A route that never actually rendered (JS error before mount,
                 // etc.) still resolves goto() successfully and still returns
@@ -167,7 +194,9 @@ async function main() {
                 // it shows up in the final tally instead of hiding inside "ok".
                 if (!html.includes('<title>') || html.length < 7600) {
                     console.warn(`  ! ${route} rendered but looks like an unmounted shell (${html.length} bytes, has <title>: ${html.includes('<title>')}) — not writing, leaving unprerendered fallback`);
+                    if (recentErrors.length) console.warn(`    last page errors: ${recentErrors.slice(-3).join(' | ')}`);
                     failed++;
+                    if (CRITICAL_ROUTES.has(route)) failedCritical.push(route);
                     continue;
                 }
                 const outDir = route === '/' ? DIST : join(DIST, route);
@@ -176,17 +205,23 @@ async function main() {
                 ok++;
             } catch (e) {
                 console.warn(`  ! failed to prerender ${route}: ${e.message}`);
+                if (recentErrors.length) console.warn(`    last page errors: ${recentErrors.slice(-3).join(' | ')}`);
                 failed++;
+                if (CRITICAL_ROUTES.has(route)) failedCritical.push(route);
             }
         }
 
         console.log(`Prerendered ${ok} routes (${failed} failed).`);
         // A route that fails to prerender just falls back to the unprerendered
         // SPA shell for crawlers (same as before this script existed) — not a
-        // regression for real users. Only treat this as a build failure when
-        // NOTHING prerendered, since that means the mechanism itself is broken
-        // (preview server never came up, etc.), not that one page timed out.
+        // regression for real users, EXCEPT for CRITICAL_ROUTES (homepage,
+        // horoscope pages, astrologers, ai-astrologer): those are too
+        // high-value to fail silently, so a failure there fails the build.
         if (ok === 0 && routes.length > 0) process.exitCode = 1;
+        if (failedCritical.length > 0) {
+            console.error(`Critical routes failed to prerender: ${failedCritical.join(', ')}`);
+            process.exitCode = 1;
+        }
     } finally {
         if (browser) await browser.close();
         preview.kill();
