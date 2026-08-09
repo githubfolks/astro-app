@@ -13,7 +13,9 @@ astrologer). These are the public-facing equivalents — no auth, no persistence
 tied to any user, just a shared cache keyed by birth details.
 """
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Literal
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from .. import database, models, schemas
@@ -26,6 +28,8 @@ from ..free_astro_service import (
     get_bulk_daily_horoscope,
     get_numerology_methods,
 )
+from ..limiter import limiter
+from ..translation_service import translate_text
 from ..vedic_rishi_service import geocode_place
 
 router = APIRouter(prefix="/free-tools", tags=["Free Tools"])
@@ -242,6 +246,24 @@ async def daily_horoscope_bulk(db: Session = Depends(database.get_db)):
         raise
     db.refresh(record)
     return record
+
+
+class TranslateHoroscopeRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=2000)
+    target_lang: Literal["hi", "en"]
+
+
+class TranslateHoroscopeResponse(BaseModel):
+    translated_text: str
+
+
+@router.post("/translate", response_model=TranslateHoroscopeResponse)
+@limiter.limit("20/minute")
+def translate_horoscope_text(request: Request, payload: TranslateHoroscopeRequest):
+    """Public, unauthenticated Hindi/English translation for horoscope page
+    copy. Rate-limited by IP since there's no user account to key off of."""
+    translated = translate_text(payload.text, payload.target_lang)
+    return TranslateHoroscopeResponse(translated_text=translated)
 
 
 @router.post("/kundli-chart", response_model=schemas.KundliChartResponse)

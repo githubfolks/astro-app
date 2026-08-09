@@ -782,6 +782,14 @@ export const api = {
             });
             return handleResponse(response, 'Failed to generate Match report');
         },
+        translate: async (text: string, target_lang: 'hi' | 'en') => {
+            const response = await customFetch(`${API_URL}/free-tools/translate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, target_lang }),
+            });
+            return handleResponse(response, 'Failed to translate text');
+        },
     },
     edu: {
         getCourses: async () => {

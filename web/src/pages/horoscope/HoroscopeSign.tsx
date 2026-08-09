@@ -173,8 +173,13 @@ const HoroscopeSign: React.FC = () => {
     const [prediction, setPrediction] = useState<DailyPrediction | null>(null);
     const [freeAstro, setFreeAstro] = useState<FreeAstroSignHoroscope | null>(null);
     const [predLoading, setPredLoading] = useState(true);
+    const [predLang, setPredLang] = useState<'en' | 'hi'>('en');
+    const [predTranslations, setPredTranslations] = useState<Record<string, string>>({});
+    const [translating, setTranslating] = useState(false);
 
     useEffect(() => {
+        setPredLang('en');
+        setPredTranslations({});
         if (!sign || !data) return;
         const today = new Date().toISOString().slice(0, 10);
         api.cms.getHoroscopes(sign.toUpperCase(), 'DAILY', today)
@@ -197,6 +202,53 @@ const HoroscopeSign: React.FC = () => {
 
     const scoreReason = (dimension: string) =>
         freeAstro?.score_factors?.find((f) => f.dimension === dimension)?.reason;
+
+    // Keys/text for whichever prediction source is currently shown; these get
+    // sent for translation and looked up by key when rendering in Hindi.
+    const predictionTexts: Record<string, string> = prediction?.overview
+        ? {
+            overview: prediction.overview,
+            ...(prediction.love ? { love: prediction.love } : {}),
+            ...(prediction.career ? { career: prediction.career } : {}),
+            ...(prediction.health ? { health: prediction.health } : {}),
+        }
+        : freeAstro?.content?.text
+            ? {
+                overview: freeAstro.content.text,
+                love: scoreReason('love') || 'General planetary influence on love and relationships today.',
+                career: scoreReason('career') || 'General planetary influence on career and finances today.',
+                health: scoreReason('health') || 'General planetary influence on health and vitality today.',
+            }
+            : {};
+
+    const text = (key: string, fallback: string) =>
+        predLang === 'hi' && predTranslations[key] ? predTranslations[key] : fallback;
+
+    const toggleHindi = async () => {
+        if (predLang === 'hi') {
+            setPredLang('en');
+            return;
+        }
+        setPredLang('hi');
+        const missing = Object.entries(predictionTexts).filter(([key]) => !predTranslations[key]);
+        if (missing.length === 0) return;
+        setTranslating(true);
+        try {
+            const results = await Promise.all(
+                missing.map(([, value]) => api.freeTools.translate(value, 'hi').catch(() => null))
+            );
+            setPredTranslations((prev) => {
+                const next = { ...prev };
+                missing.forEach(([key], i) => {
+                    const translated = results[i]?.translated_text;
+                    if (translated) next[key] = translated;
+                });
+                return next;
+            });
+        } finally {
+            setTranslating(false);
+        }
+    };
 
     if (!data) return <Navigate to="/astrologers" replace />;
 
@@ -296,9 +348,21 @@ const HoroscopeSign: React.FC = () => {
                     <div className="glass-panel p-5 md:p-10">
                         <h2 className="text-2xl md:text-3xl font-normal text-white mb-2 flex items-center justify-between flex-wrap gap-4">
                             <span>{data.name} Horoscope Today</span>
-                            <span className="text-sm font-normal text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-4 py-1.5 rounded-full">
-                                {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </span>
+                            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
+                                <span className="text-sm font-normal text-amber-500/80 bg-amber-500/5 border border-amber-500/10 px-4 py-1.5 rounded-full">
+                                    {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </span>
+                                {Object.keys(predictionTexts).length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={toggleHindi}
+                                        disabled={translating}
+                                        className="text-sm font-normal text-white bg-white/5 border border-white/10 hover:border-amber-500/30 px-4 py-1.5 rounded-full transition-colors disabled:opacity-60"
+                                    >
+                                        {translating ? 'अनुवाद हो रहा है…' : predLang === 'hi' ? 'Show in English' : 'हिंदी में पढ़ें'}
+                                    </button>
+                                )}
+                            </div>
                         </h2>
 
                         {predLoading ? (
@@ -309,25 +373,25 @@ const HoroscopeSign: React.FC = () => {
                             </div>
                         ) : prediction?.overview ? (
                             <div className="mt-4 md:mt-8 space-y-4 md:space-y-8">
-                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{prediction.overview}</p>
+                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{text('overview', prediction.overview)}</p>
                                 {(prediction.love || prediction.career || prediction.health) && (
                                     <div className="grid md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
                                         {prediction.love && (
                                             <div className="prediction-card love">
                                                 <div className="title text-rose-400">Love & Relations</div>
-                                                <p className="content">{prediction.love}</p>
+                                                <p className="content">{text('love', prediction.love)}</p>
                                             </div>
                                         )}
                                         {prediction.career && (
                                             <div className="prediction-card career">
                                                 <div className="title text-blue-400">Career & Finance</div>
-                                                <p className="content">{prediction.career}</p>
+                                                <p className="content">{text('career', prediction.career)}</p>
                                             </div>
                                         )}
                                         {prediction.health && (
                                             <div className="prediction-card health">
                                                 <div className="title text-emerald-400">Health & Vigor</div>
-                                                <p className="content">{prediction.health}</p>
+                                                <p className="content">{text('health', prediction.health)}</p>
                                             </div>
                                         )}
                                     </div>
@@ -335,20 +399,20 @@ const HoroscopeSign: React.FC = () => {
                             </div>
                         ) : freeAstro?.content?.text ? (
                             <div className="mt-4 md:mt-8 space-y-4 md:space-y-8">
-                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{freeAstro.content.text}</p>
+                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{text('overview', freeAstro.content.text)}</p>
                                 {freeAstro.scores && (
                                     <div className="grid md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
                                         <div className="prediction-card love">
                                             <div className="title text-rose-400">Love & Relations · {freeAstro.scores.love ?? '—'}/100</div>
-                                            <p className="content">{scoreReason('love') || 'General planetary influence on love and relationships today.'}</p>
+                                            <p className="content">{text('love', scoreReason('love') || 'General planetary influence on love and relationships today.')}</p>
                                         </div>
                                         <div className="prediction-card career">
                                             <div className="title text-blue-400">Career & Finance · {freeAstro.scores.career ?? '—'}/100</div>
-                                            <p className="content">{scoreReason('career') || 'General planetary influence on career and finances today.'}</p>
+                                            <p className="content">{text('career', scoreReason('career') || 'General planetary influence on career and finances today.')}</p>
                                         </div>
                                         <div className="prediction-card health">
                                             <div className="title text-emerald-400">Health & Vigor · {freeAstro.scores.health ?? '—'}/100</div>
-                                            <p className="content">{scoreReason('health') || 'General planetary influence on health and vitality today.'}</p>
+                                            <p className="content">{text('health', scoreReason('health') || 'General planetary influence on health and vitality today.')}</p>
                                         </div>
                                     </div>
                                 )}

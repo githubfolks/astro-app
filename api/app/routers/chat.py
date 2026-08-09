@@ -872,9 +872,7 @@ async def _pause_active_consultation_on_disconnect(consultation_id: int, disconn
 
 # --- Message translation (Hindi <-> English) ---
 
-_TRANSLATE_GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-_TRANSLATE_MODEL = "llama-3.3-70b-versatile"
-_TRANSLATE_LANG_NAMES = {"hi": "Hindi", "en": "English"}
+from ..translation_service import translate_text
 
 
 class TranslateRequest(BaseModel):
@@ -899,54 +897,7 @@ def translate_message(
     if not consultation or current_user.id not in (consultation.seeker_id, consultation.astrologer_id):
         raise HTTPException(status_code=404, detail="Consultation not found")
 
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=503, detail="Translation is temporarily unavailable. Please try again later.")
-
-    target_name = _TRANSLATE_LANG_NAMES[payload.target_lang]
-    body = {
-        "model": _TRANSLATE_MODEL,
-        "messages": [
-            {
-                "role": "system",
-                "content": (
-                    f"Translate the user's message into {target_name}. "
-                    "Output ONLY the translated text — no quotes, no explanation, no transliteration notes. "
-                    "Preserve tone and meaning. If the message is already in the target language, return it unchanged."
-                ),
-            },
-            {"role": "user", "content": payload.text},
-        ],
-        "max_tokens": 500,
-        "temperature": 0.2,
-    }
-
-    try:
-        response = httpx.post(
-            _TRANSLATE_GROQ_URL,
-            json=body,
-            headers={"Authorization": f"Bearer {api_key}"},
-            timeout=30.0,
-        )
-    except httpx.HTTPError as e:
-        logger.error(f"Translate: Groq request failed: {e}")
-        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
-
-    if response.status_code == 429:
-        raise HTTPException(status_code=429, detail="Translation is busy right now. Please try again in a minute.")
-    if response.status_code != 200:
-        logger.error(f"Translate: Groq error {response.status_code}: {response.text[:500]}")
-        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
-
-    try:
-        translated = (response.json()["choices"][0]["message"]["content"] or "").strip()
-    except (KeyError, IndexError, ValueError) as e:
-        logger.error(f"Translate: unexpected Groq response shape: {e}")
-        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
-
-    if not translated:
-        raise HTTPException(status_code=502, detail="Translation failed. Please try again.")
-
+    translated = translate_text(payload.text, payload.target_lang)
     return TranslateResponse(translated_text=translated)
 
 
