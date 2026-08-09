@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { cms } from '../services/api';
+import { GalleryModal } from './GalleryModal';
 
 // The API returns relative /static/... paths for uploaded images. Blog
 // content is rendered on the public site (a different origin than the API),
@@ -51,9 +52,14 @@ const ResizableImage = ImageExtension.extend({
     addAttributes() {
         return {
             ...this.parent?.(),
+            // Always centers the image (display: block + auto margins), on top of
+            // whatever width the resize handle picked — matches how images render
+            // on the public blog post page, which has no other way to align them.
             width: {
                 default: null,
-                renderHTML: (attributes) => (attributes.width ? { style: `width: ${attributes.width}px` } : {}),
+                renderHTML: (attributes) => ({
+                    style: `display: block; margin: 0 auto;${attributes.width ? ` width: ${attributes.width}px;` : ''}`,
+                }),
                 parseHTML: (element) => {
                     const width = element.style.width || element.getAttribute('width');
                     const parsed = width ? parseInt(width, 10) : null;
@@ -278,7 +284,7 @@ const HeadingSelect = ({ editor }) => {
     );
 };
 
-const Toolbar = ({ editor, showSource, onToggleSource }) => {
+const Toolbar = ({ editor, showSource, onToggleSource, onOpenGallery }) => {
     if (!editor) return null;
 
     const setLink = () => {
@@ -290,11 +296,6 @@ const Toolbar = ({ editor, showSource, onToggleSource }) => {
             return;
         }
         editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-    };
-
-    const insertImage = () => {
-        const url = window.prompt('Image URL');
-        if (url) editor.chain().focus().setImage({ src: url }).run();
     };
 
     return (
@@ -333,7 +334,7 @@ const Toolbar = ({ editor, showSource, onToggleSource }) => {
             <ToolbarButton title="Link" active={editor.isActive('link')} disabled={showSource} onClick={setLink}>
                 <LinkIcon size={16} />
             </ToolbarButton>
-            <ToolbarButton title="Image" disabled={showSource} onClick={insertImage}>
+            <ToolbarButton title="Image" disabled={showSource} onClick={onOpenGallery}>
                 <ImageIcon size={16} />
             </ToolbarButton>
             <ToolbarDivider />
@@ -357,6 +358,7 @@ const Toolbar = ({ editor, showSource, onToggleSource }) => {
 export const RichTextEditor = ({ value, onChange, placeholder, style, className }) => {
     const [showSource, setShowSource] = useState(false);
     const [sourceText, setSourceText] = useState('');
+    const [showGallery, setShowGallery] = useState(false);
 
     const extensions = useMemo(() => [
         StarterKit.configure({
@@ -410,7 +412,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
 
     return (
         <div className={clsx('flex flex-col border border-gray-300 rounded-lg overflow-hidden bg-white', className)} style={style}>
-            <Toolbar editor={editor} showSource={showSource} onToggleSource={toggleSource} />
+            <Toolbar editor={editor} showSource={showSource} onToggleSource={toggleSource} onOpenGallery={() => setShowGallery(true)} />
 
             {showSource ? (
                 <textarea
@@ -422,6 +424,16 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
                 <div className="flex-1 overflow-auto">
                     <EditorContent editor={editor} />
                 </div>
+            )}
+
+            {showGallery && (
+                <GalleryModal
+                    onClose={() => setShowGallery(false)}
+                    onSelect={(url) => {
+                        editor?.chain().focus().setImage({ src: url }).run();
+                        setShowGallery(false);
+                    }}
+                />
             )}
         </div>
     );

@@ -512,17 +512,14 @@ export default function PostEditor() {
                     structured data, so answer engines (Google AI Overviews,
                     Perplexity, ChatGPT) can lift a direct Q&A straight from the article. */}
                 <Card className="p-6 border border-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+                    <div className="border-b border-slate-100 pb-3 mb-4">
                         <h3 className="font-semibold text-slate-800 text-sm">FAQs (optional)</h3>
-                        <Button type="button" variant="outlined" onClick={addFaq} className="cursor-pointer gap-1.5 text-xs h-8">
-                            <Plus size={14} /> Add FAQ
-                        </Button>
                     </div>
 
                     {(!formData.faqs || formData.faqs.length === 0) ? (
-                        <p className="text-xs text-slate-400">No FAQs yet. Add a question your article already answers.</p>
+                        <p className="text-xs text-slate-400 mb-4">No FAQs yet. Add a question your article already answers.</p>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-4 mb-4">
                             {formData.faqs.map((faq, index) => (
                                 <div key={index} className="flex gap-3 items-start bg-slate-50 p-4 rounded-xl border border-slate-100">
                                     <div className="flex-1 space-y-2">
@@ -552,6 +549,10 @@ export default function PostEditor() {
                             ))}
                         </div>
                     )}
+
+                    <Button type="button" variant="outlined" onClick={addFaq} className="cursor-pointer gap-1.5 text-xs h-8">
+                        <Plus size={14} /> Add FAQ
+                    </Button>
                 </Card>
 
                 {/* Social Media Sharing (Below FAQs) — Facebook/Instagram publish

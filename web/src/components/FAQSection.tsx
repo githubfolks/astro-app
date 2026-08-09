@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import AOS from 'aos';
 import { isNative } from '../utils/platform';
 
 export interface FAQItem {
@@ -12,6 +13,14 @@ interface FAQSectionProps {
 }
 
 const FAQSection: React.FC<FAQSectionProps> = ({ faqs, title = "Frequently Asked Questions" }) => {
+    // Some host pages (e.g. BlogPost, HoroscopeListing) never call AOS.init()
+    // themselves, so the data-aos="fade-up" below never gets the "aos-animate"
+    // class and stays at its default opacity: 0 forever. Init here so this
+    // section reveals itself regardless of what the parent page does.
+    useEffect(() => {
+        AOS.init({ duration: 1000, once: true, disable: 'mobile' });
+    }, []);
+
     if (!faqs || faqs.length === 0) return null;
     if (isNative()) return null;
 
