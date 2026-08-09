@@ -14496,7 +14496,7 @@
     },
     "/free-tools/translate": {
       "post": {
-        "description": "Public, unauthenticated Hindi/English translation for horoscope page\ncopy. Rate-limited by IP since there's no user account to key off of.",
+        "description": "Public, unauthenticated Hindi/English translation for horoscope page\ncopy (daily and yearly). Rate-limited by IP since there's no user account\nto key off of. The same English sentence is shown to every visitor of a\ngiven sign/day (or sign/year), so the translation is cached by a hash of\nthe source text + target language \u2014 first visitor to toggle Hindi for a\ngiven piece of copy pays the Groq call, everyone after reads from the DB.",
         "operationId": "translate_horoscope_text_free_tools_translate_post",
         "requestBody": {
           "content": {

@@ -12,6 +12,7 @@ an astrologer's account and their seekers (role-gated, saved history per
 astrologer). These are the public-facing equivalents — no auth, no persistence
 tied to any user, just a shared cache keyed by birth details.
 """
+import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -259,10 +260,47 @@ class TranslateHoroscopeResponse(BaseModel):
 
 @router.post("/translate", response_model=TranslateHoroscopeResponse)
 @limiter.limit("20/minute")
-def translate_horoscope_text(request: Request, payload: TranslateHoroscopeRequest):
+def translate_horoscope_text(
+    request: Request,
+    payload: TranslateHoroscopeRequest,
+    db: Session = Depends(database.get_db),
+):
     """Public, unauthenticated Hindi/English translation for horoscope page
-    copy. Rate-limited by IP since there's no user account to key off of."""
+    copy (daily and yearly). Rate-limited by IP since there's no user account
+    to key off of. The same English sentence is shown to every visitor of a
+    given sign/day (or sign/year), so the translation is cached by a hash of
+    the source text + target language — first visitor to toggle Hindi for a
+    given piece of copy pays the Groq call, everyone after reads from the DB."""
+    text_hash = hashlib.sha256(payload.text.encode("utf-8")).hexdigest()
+
+    existing = db.query(models.TranslationCache).filter(
+        models.TranslationCache.text_hash == text_hash,
+        models.TranslationCache.target_lang == payload.target_lang,
+    ).first()
+    if existing:
+        return TranslateHoroscopeResponse(translated_text=existing.translated_text)
+
     translated = translate_text(payload.text, payload.target_lang)
+
+    record = models.TranslationCache(
+        text_hash=text_hash,
+        target_lang=payload.target_lang,
+        source_text=payload.text,
+        translated_text=translated,
+    )
+    db.add(record)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        existing = db.query(models.TranslationCache).filter(
+            models.TranslationCache.text_hash == text_hash,
+            models.TranslationCache.target_lang == payload.target_lang,
+        ).first()
+        if existing:
+            return TranslateHoroscopeResponse(translated_text=existing.translated_text)
+        raise
+
     return TranslateHoroscopeResponse(translated_text=translated)
 
 

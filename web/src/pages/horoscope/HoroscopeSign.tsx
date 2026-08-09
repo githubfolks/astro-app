@@ -241,7 +241,7 @@ const HoroscopeSign: React.FC = () => {
                             </div>
                         ) : prediction?.overview ? (
                             <div className="mt-4 md:mt-8 space-y-4 md:space-y-8">
-                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{text('overview', prediction.overview)}</p>
+                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed text-justify">{text('overview', prediction.overview)}</p>
                                 {(prediction.love || prediction.career || prediction.health) && (
                                     <div className="grid md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
                                         {prediction.love && (
@@ -267,7 +267,7 @@ const HoroscopeSign: React.FC = () => {
                             </div>
                         ) : freeAstro?.content?.text ? (
                             <div className="mt-4 md:mt-8 space-y-4 md:space-y-8">
-                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed">{text('overview', freeAstro.content.text)}</p>
+                                <p className="text-gray-300 text-sm md:text-lg leading-relaxed text-justify">{text('overview', freeAstro.content.text)}</p>
                                 {freeAstro.scores && (
                                     <div className="grid md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-8">
                                         <div className="prediction-card love">
@@ -318,7 +318,7 @@ const HoroscopeSign: React.FC = () => {
                 <section className="max-w-4xl mx-auto px-6 py-6 md:py-12 relative z-10">
                     <div className="glass-panel p-5 md:p-10">
                         <h2 className="text-xl md:text-3xl font-normal text-white mb-3 md:mb-6">{data.name} Personality</h2>
-                        <p className="text-gray-300 text-sm md:text-lg leading-relaxed mb-5 md:mb-10">{data.desc}</p>
+                        <p className="text-gray-300 text-sm md:text-lg leading-relaxed mb-5 md:mb-10 text-justify">{data.desc}</p>
 
                         <div className="grid md:grid-cols-2 gap-3 md:gap-6">
                             <div className="personality-box strengths">

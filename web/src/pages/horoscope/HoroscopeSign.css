@@ -118,6 +118,7 @@
     font-size: 14px;
     line-height: 1.6;
     color: #d1d5db;
+    text-align: justify;
 }
 
 .prediction-card .icon {

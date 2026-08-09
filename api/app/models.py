@@ -776,6 +776,28 @@ class DailyHoroscopeBulk(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class TranslationCache(Base):
+    """Cached Groq translation of horoscope copy (daily + yearly), keyed by a
+    hash of the exact source text plus target language. The same English
+    sentence — a CMS overview, a FreeAstroAPI daily blurb — is shown to every
+    visitor of that sign/day (or sign/year), so translating it once and
+    reusing the result avoids paying an LLM call per visitor per toggle.
+    Not used by the in-chat translate endpoint (chat.py): those messages are
+    one-off and user-specific, so caching them would just bloat this table
+    for no reuse benefit."""
+    __tablename__ = "translation_cache"
+    __table_args__ = (
+        Index("ix_translation_cache_lookup", "text_hash", "target_lang", unique=True),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    text_hash = Column(String(64), nullable=False)
+    target_lang = Column(String(8), nullable=False)
+    source_text = Column(Text, nullable=False)
+    translated_text = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class ContentType(str, enum.Enum):
     SHORT_VIDEO = "SHORT_VIDEO"
     VOICE_OVER_IMAGE = "VOICE_OVER_IMAGE"
