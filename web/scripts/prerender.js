@@ -37,7 +37,8 @@ const BASE = `http://${HOST}:${PORT}`;
 
 // Mirrors public/robots.txt — never prerender auth/private routes.
 const EXCLUDE_PREFIXES = [
-    '/dashboard', '/chat', '/kundli', '/classroom', '/tutor',
+    '/dashboard', '/chat-history', '/transaction-history', '/chat', '/kundli',
+    '/muhurat', '/classroom', '/tutor',
     '/login', '/signup', '/verify-otp', '/verify-email',
     '/forgot-password', '/reset-password',
 ];
@@ -51,6 +52,8 @@ const CRITICAL_ROUTES = new Set([
     ...['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra',
         'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
         .map((s) => `/services/horoscope/${s}`),
+    '/tools/manglik-dosha-checker', '/tools/numerology-calculator',
+    '/tools/kundli-matching', '/tools/kundli-chart', '/tools/navamsa-chart',
 ]);
 
 // Third-party calls that are slow/rate-limited and irrelevant to the

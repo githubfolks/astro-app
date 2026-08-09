@@ -3,8 +3,11 @@ Allow: /
 
 # Private / auth routes — no crawl budget wasted here
 Disallow: /dashboard
+Disallow: /chat-history
+Disallow: /transaction-history
 Disallow: /chat/
 Disallow: /kundli
+Disallow: /muhurat
 Disallow: /classroom/
 Disallow: /tutor/
 Disallow: /login
