@@ -9,19 +9,21 @@ export interface ServiceLink {
 // /kundli/matching) are astrologer tools for generating reports on behalf
 // of seekers — see ASTROLOGER_TOOLS_LIST below.
 export const SERVICES_LIST: ServiceLink[] = [
-    { title: 'AI Astrologer', to: '/ai-astrologer' },
-    { title: 'Daily Horoscope', to: '/services/horoscope' },
-    { title: 'Kundli Matching', to: '/services/kundli-matching' },
-    { title: 'Tarot Reading', to: '/services/tarot-reading' },
-    { title: 'Vastu Shastra', to: '/services/vastu-shastra' },
-    { title: 'Love Advice', to: '/services/love-advice' },
-    { title: 'Daily Panchang', to: '/panchang' },
-    { title: 'Vedic Astrology', to: '/services/vedic-astrology' },
+    // FREE SERVICES & TOOLS (Placed First for Low-Friction Entry)
+    { title: 'Free AI Astrologer', to: '/ai-astrologer' },
+    { title: 'Free Daily Horoscope', to: '/services/horoscope' },
     { title: 'Free Kundli Generator', to: '/tools/kundli-chart' },
     { title: 'Free Kundli Matching', to: '/tools/kundli-matching' },
-    { title: 'Manglik Dosha Checker', to: '/tools/manglik-dosha-checker' },
-    { title: 'Navamsa (D9) Chart', to: '/tools/navamsa-chart' },
-    { title: 'Numerology Calculator', to: '/tools/numerology-calculator' },
+    { title: 'Free Daily Panchang', to: '/panchang' },
+    { title: 'Free Manglik Checker', to: '/tools/manglik-dosha-checker' },
+    { title: 'Free Navamsa (D9) Chart', to: '/tools/navamsa-chart' },
+    { title: 'Free Numerology Calculator', to: '/tools/numerology-calculator' },
+
+    // PAID CONSULTATIONS
+    { title: 'Vedic Astrology Consultation', to: '/services/vedic-astrology' },
+    { title: 'Tarot Reading Consultation', to: '/services/tarot-reading' },
+    { title: 'Vastu Shastra Consultation', to: '/services/vastu-shastra' },
+    { title: 'Love Advice Consultation', to: '/services/love-advice' },
 ];
 
 // Report-generator tools used by astrologers on behalf of their seekers.

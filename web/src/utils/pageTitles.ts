@@ -6,7 +6,7 @@ const ROUTE_TITLES: Record<string, string> = {
     '/verify-otp': 'Verify OTP',
     '/verify-email': 'Verify Email',
     '/reset-password': 'Reset Password',
-    '/ai-astrologer': 'AI Astrologer',
+    '/ai-astrologer': 'Free AI Astrologer',
     '/astrologers': 'Astrologers',
     '/about-us': 'About Us',
     '/contact-us': 'Contact Us',

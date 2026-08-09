@@ -7,17 +7,41 @@ const Hero: React.FC = () => {
         <section className="hero-section spiritual-bg overflow-hidden relative min-h-screen lg:min-h-[640px] flex items-center">
             <div className="container hero-content relative z-10 py-2">
                 <div className="hero-text">
+                    <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-400/30 rounded-full px-4 py-1.5 mb-4 backdrop-blur-md">
+                        <span className="text-amber-300 text-xs md:text-sm font-semibold tracking-wide flex items-center gap-1.5">
+                            ✨ Free AI Astrologer + Human-Verified Astrology · From ₹10/min
+                        </span>
+                    </div>
                     <h1 className="hero-title mt-2">
                         Talk to Verified
                         <span className="gradient-text block mt-2 py-2">Astrologers Online</span>
                     </h1>
-                    <p className="hero-description text-indigo-100 text-xl mt-6 opacity-90 leading-relaxed">
-                        Connect with India's top Vedic astrologers for live chat consultations on kundli, tarot, love & career. Guidance starts at ₹10/min.
+                    <p className="hero-description text-indigo-100 text-xl mt-4 opacity-90 leading-relaxed">
+                        Get instant free AI chart insights or connect with India's top Vedic astrologers for live chat consultations on Kundli, Tarot, Love & Career.
                     </p>
-                    <div className="hero-actions mt-10 flex flex-wrap gap-4">
-                        <Link to="/astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20">Chat with Astrologer</Link>
-                        <Link to="/ai-astrologer" className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-indigo-950 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-amber-900/20">✨ Ask AI Astrologer — Free</Link>
-                        <Link to="/memory-guru" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105">Memory Guru</Link>
+                    <div className="hero-actions mt-8 flex flex-wrap gap-4 items-center">
+                        <Link to="/astrologers" className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-indigo-900/20 flex items-center gap-2">
+                            <span>Chat with Astrologer</span>
+                            <span className="text-xs bg-indigo-500/50 px-2 py-0.5 rounded-full">From ₹10/min</span>
+                        </Link>
+                        <Link to="/ai-astrologer" className="bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-indigo-950 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105 shadow-xl shadow-amber-900/20">
+                            ✨ Ask Free AI Astrologer
+                        </Link>
+                        <Link to="/memory-guru" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-2xl font-bold transition-all hover:scale-105">
+                            Memory Guru
+                        </Link>
+                    </div>
+
+                    <div className="hero-trust-badges mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center gap-6 text-xs text-indigo-200/80">
+                        <span className="flex items-center gap-1.5 font-medium">
+                            <span className="text-amber-400">🔒</span> 100% Private & Confidential
+                        </span>
+                        <span className="flex items-center gap-1.5 font-medium">
+                            <span className="text-amber-400">⭐</span> Verified Vedic Experts
+                        </span>
+                        <span className="flex items-center gap-1.5 font-medium">
+                            <span className="text-amber-400">⚡</span> Instant AI + Human Handoff
+                        </span>
                     </div>
                 </div>
 

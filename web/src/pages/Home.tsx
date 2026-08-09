@@ -67,7 +67,7 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
             "url": "https://aadikarta.org",
             "name": "Aadikarta Vedic Astrology",
             "alternateName": ["Aadikarta", "Aadikarta Astro", "Aadikarta Vedic Astrology Platform"],
-            "description": "India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists on Aadikarta Vedic Astrology. Live chat consultations starting from ₹10/min.",
+            "description": "India's trusted AI-assisted online marketplace for verified Vedic astrologers, tarot readers, and AI Kundli chat on Aadikarta. Live chat consultations from ₹10/min.",
             "publisher": { "@id": "https://aadikarta.org/#organization" }
         },
         {
@@ -79,12 +79,14 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
             "url": "https://aadikarta.org",
             "logo": "https://aadikarta.org/assets/logo.png",
             "image": "https://aadikarta.org/assets/og-image.png",
-            "description": "Aadikarta Vedic Astrology connects you with India's top verified Vedic astrologers, tarot card readers, and spiritual guides for instant live consultations, Kundli matching, daily horoscope, and Vastu advice.",
-            "disambiguatingDescription": "Aadikarta.org is a private limited company specializing in Vedic astrology services and digital consultations. It is distinct and not associated with any public figures or other entities sharing a similar name.",
+            "description": "Aadikarta Vedic Astrology connects you with instant AI astrological insights and India's top verified Vedic astrologers, tarot card readers, and spiritual guides for live consultations, Kundli matching, daily horoscope, and Vastu advice.",
+            "disambiguatingDescription": "Aadikarta.org is a private limited company specializing in AI-assisted Vedic astrology services and digital consultations. It is distinct and not associated with any public figures or other entities sharing a similar name.",
             "email": supportEmail,
             "telephone": supportPhone,
             "areaServed": "IN",
             "knowsAbout": [
+                "AI Astrologer",
+                "AI-Assisted Vedic Astrology",
                 "Aadikarta Vedic Astrology",
                 "Vedic Astrology",
                 "Jyotish",
@@ -131,9 +133,9 @@ const Home: React.FC = () => {
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Talk to Verified Astrologers Online | Aadikarta Vedic Astrology"
-                description="India's top verified astrologers for live chat on Aadikarta Vedic Astrology. Vedic astrology, kundli matching, tarot & love guidance. Trusted by thousands. From ₹10/min."
-                keywords="Aadikarta Vedic Astrology, Aadikarta Astro, talk to astrologers online, Vedic astrology online, online kundli matching, daily horoscope, tarot reading Aadikarta"
+                title="Talk to Verified Astrologers & Free AI Astrologer Online | Aadikarta"
+                description="Instant free AI chart insights & live chat with top verified Vedic astrologers on Aadikarta. Kundli matching, tarot & love advice. From ₹10/min."
+                keywords="Aadikarta Vedic Astrology, Free AI Astrologer, AI astrology chat, talk to astrologers online, Vedic astrology online, online kundli matching, daily horoscope, tarot reading Aadikarta"
                 structuredData={buildHomeStructuredData(support_email, support_phone)}
             />
             <Helmet>

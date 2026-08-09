@@ -25,11 +25,17 @@ const TrustBar: React.FC = () => {
         return () => { cancelled = true; };
     }, []);
 
-    // Don't render fabricated numbers — only show once we have real data,
-    // and only show a stat once it's actually meaningful (e.g. hide rating until reviews exist).
-    if (!stats || stats.verified_astrologers === 0) return null;
+    // Structural trust items when live numbers are loading or zero
+    const defaultPillars = [
+        { icon: ShieldCheck, label: '4-Step Expert Screening', value: '100% Verified' },
+        { icon: Users, label: 'Private & Confidential', value: '100% Secure' },
+        { icon: Star, label: 'AI + Human Handoff', value: 'Instant Advice' },
+        { icon: MessageCircle, label: 'Starting From', value: '₹10/min' },
+    ];
 
-    const items = [
+    const hasLiveStats = stats && stats.verified_astrologers > 0;
+
+    const items = hasLiveStats ? [
         { icon: ShieldCheck, label: 'Verified Astrologers', value: formatCount(stats.verified_astrologers) },
         ...(stats.total_consultations > 0
             ? [{ icon: Users, label: 'Consultations Completed', value: formatCount(stats.total_consultations) }]
@@ -40,7 +46,7 @@ const TrustBar: React.FC = () => {
         ...(stats.total_reviews > 0
             ? [{ icon: MessageCircle, label: 'Reviews from Seekers', value: formatCount(stats.total_reviews) }]
             : []),
-    ];
+    ] : defaultPillars;
 
     return (
         <section className="trust-bar-section py-10 bg-indigo-950/95 border-y border-indigo-800/40">
@@ -49,8 +55,8 @@ const TrustBar: React.FC = () => {
                     {items.map((item) => (
                         <div key={item.label} className="flex flex-col items-center text-center gap-2">
                             <item.icon size={24} className="text-amber-400" />
-                            <span className="text-2xl md:text-3xl text-white">{item.value}</span>
-                            <span className="text-xs md:text-sm text-indigo-200/70 uppercase tracking-wide">{item.label}</span>
+                            <span className="text-2xl md:text-3xl text-white font-bold">{item.value}</span>
+                            <span className="text-xs md:text-sm text-indigo-200/70 uppercase tracking-wide font-medium">{item.label}</span>
                         </div>
                     ))}
                 </div>

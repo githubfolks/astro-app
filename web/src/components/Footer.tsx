@@ -88,12 +88,12 @@ const Footer: React.FC = () => {
                             <div className="info-group">
                                 <h4 className="footer-title">Services</h4>
                                 <ul className="footer-links">
+                                    <li><Link to="/ai-astrologer" onClick={scrollToTop}>Free AI Astrologer</Link></li>
+                                    <li><Link to="/services/horoscope" onClick={scrollToTop}>Free Daily Horoscope</Link></li>
+                                    <li><Link to="/tools/kundli-chart" onClick={scrollToTop}>Free Kundli Generator</Link></li>
+                                    <li><Link to="/tools/kundli-matching" onClick={scrollToTop}>Free Kundli Matching</Link></li>
                                     <li><Link to="/services/vedic-astrology" onClick={scrollToTop}>Vedic Astrology</Link></li>
-                                    <li><Link to="/services/kundli-matching" onClick={scrollToTop}>Kundli Matching</Link></li>
                                     <li><Link to="/services/tarot-reading" onClick={scrollToTop}>Tarot Reading</Link></li>
-                                    <li><Link to="/services/love-advice" onClick={scrollToTop}>Love Advice</Link></li>
-                                    <li><Link to="/services/daily-horoscope" onClick={scrollToTop}>Daily Horoscope</Link></li>
-                                    <li><Link to="/services/vastu-shastra" onClick={scrollToTop}>Vastu Shastra</Link></li>
                                 </ul>
                             </div>
                         </div>
