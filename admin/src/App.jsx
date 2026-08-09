@@ -20,6 +20,8 @@ const ErrorLogs = lazy(() => import('./pages/ErrorLogs'));
 const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
 const PostList = lazy(() => import('./pages/cms/PostList'));
 const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
+const HoroscopeList = lazy(() => import('./pages/cms/HoroscopeList'));
+const HoroscopeEditor = lazy(() => import('./pages/cms/HoroscopeEditor'));
 const ContactInquiries = lazy(() => import('./pages/cms/ContactInquiries'));
 const ContentStudio = lazy(() => import('./pages/cms/ContentStudio'));
 const ContentStudioLibrary = lazy(() => import('./pages/cms/ContentStudioLibrary'));
@@ -71,6 +73,10 @@ function App() {
             <Route path="/cms/posts" element={<PostList />} />
             <Route path="/cms/posts/new" element={<PostEditor />} />
             <Route path="/cms/posts/edit/:id" element={<PostEditor />} />
+
+            <Route path="/cms/horoscopes" element={<HoroscopeList />} />
+            <Route path="/cms/horoscopes/new" element={<HoroscopeEditor />} />
+            <Route path="/cms/horoscopes/edit/:id" element={<HoroscopeEditor />} />
 
             <Route path="/cms/contact-inquiries" element={<ContactInquiries />} />
             <Route path="/content-studio" element={<ContentStudio />} />

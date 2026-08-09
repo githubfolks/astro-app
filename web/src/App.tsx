@@ -55,6 +55,8 @@ const Book = lazy(() => import('./pages/Book'));
 const HowItWorks = lazy(() => import('./pages/HowItWorks'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const HoroscopeSign = lazy(() => import('./pages/horoscope/HoroscopeSign'));
+const YearlyHoroscopeSign = lazy(() => import('./pages/horoscope/YearlyHoroscopeSign'));
+const YearlyHoroscopeListing = lazy(() => import('./pages/horoscope/YearlyHoroscopeListing'));
 const AiAstrologer = lazy(() => import('./pages/AiAstrologer'));
 const HoroscopeListing = lazy(() => import('./pages/horoscope/HoroscopeListing'));
 const ManglikChecker = lazy(() => import('./pages/tools/ManglikChecker'));
@@ -229,6 +231,8 @@ function App() {
                             <Route path="/how-it-works" element={<HowItWorks />} />
                             <Route path="/pricing" element={<Pricing />} />
                             <Route path="/services/horoscope" element={<HoroscopeListing />} />
+                            <Route path="/services/horoscope/yearly" element={<YearlyHoroscopeListing />} />
+                            <Route path="/services/horoscope/yearly/:sign" element={<YearlyHoroscopeSign />} />
                             <Route path="/services/horoscope/:sign" element={<HoroscopeSign />} />
                             <Route path="/horoscope" element={<Navigate to="/services/horoscope" replace />} />
                             <Route path="/horoscope/:sign" element={<HoroscopeSignRedirect />} />

@@ -3680,6 +3680,55 @@
         "title": "Horoscope",
         "type": "object"
       },
+      "HoroscopeCreate": {
+        "properties": {
+          "content": {
+            "additionalProperties": true,
+            "title": "Content",
+            "type": "object"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "period": {
+            "$ref": "#/components/schemas/HoroscopePeriod"
+          },
+          "sign": {
+            "$ref": "#/components/schemas/ZodiacSign"
+          }
+        },
+        "required": [
+          "sign",
+          "period",
+          "date",
+          "content"
+        ],
+        "title": "HoroscopeCreate",
+        "type": "object"
+      },
+      "HoroscopeListResponse": {
+        "properties": {
+          "horoscopes": {
+            "items": {
+              "$ref": "#/components/schemas/Horoscope"
+            },
+            "title": "Horoscopes",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "horoscopes"
+        ],
+        "title": "HoroscopeListResponse",
+        "type": "object"
+      },
       "HoroscopePeriod": {
         "enum": [
           "DAILY",
@@ -3689,6 +3738,24 @@
         ],
         "title": "HoroscopePeriod",
         "type": "string"
+      },
+      "HoroscopeUpdate": {
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          }
+        },
+        "title": "HoroscopeUpdate",
+        "type": "object"
       },
       "InquiryStatus": {
         "enum": [
@@ -6146,6 +6213,43 @@
         ],
         "title": "TransactionType",
         "type": "string"
+      },
+      "TranslateHoroscopeRequest": {
+        "properties": {
+          "target_lang": {
+            "enum": [
+              "hi",
+              "en"
+            ],
+            "title": "Target Lang",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "target_lang"
+        ],
+        "title": "TranslateHoroscopeRequest",
+        "type": "object"
+      },
+      "TranslateHoroscopeResponse": {
+        "properties": {
+          "translated_text": {
+            "title": "Translated Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "translated_text"
+        ],
+        "title": "TranslateHoroscopeResponse",
+        "type": "object"
       },
       "TranslateRequest": {
         "properties": {
@@ -11308,6 +11412,285 @@
         ]
       }
     },
+    "/cms/horoscopes": {
+      "get": {
+        "operationId": "list_horoscopes_cms_horoscopes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sign",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ZodiacSign"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Sign"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/HoroscopePeriod"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Period"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoroscopeListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Horoscopes",
+        "tags": [
+          "CMS"
+        ]
+      },
+      "post": {
+        "operationId": "create_horoscope_cms_horoscopes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HoroscopeCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Horoscope"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Create Horoscope",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
+    "/cms/horoscopes/{horoscope_id}": {
+      "delete": {
+        "operationId": "delete_horoscope_cms_horoscopes__horoscope_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "horoscope_id",
+            "required": true,
+            "schema": {
+              "title": "Horoscope Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Horoscope",
+        "tags": [
+          "CMS"
+        ]
+      },
+      "get": {
+        "operationId": "get_horoscope_cms_horoscopes__horoscope_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "horoscope_id",
+            "required": true,
+            "schema": {
+              "title": "Horoscope Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Horoscope"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Horoscope",
+        "tags": [
+          "CMS"
+        ]
+      },
+      "put": {
+        "operationId": "update_horoscope_cms_horoscopes__horoscope_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "horoscope_id",
+            "required": true,
+            "schema": {
+              "title": "Horoscope Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HoroscopeUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Horoscope"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Horoscope",
+        "tags": [
+          "CMS"
+        ]
+      }
+    },
     "/cms/posts": {
       "get": {
         "operationId": "list_posts_cms_posts_get",
@@ -14106,6 +14489,48 @@
           }
         },
         "summary": "Numerology Profile",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
+    "/free-tools/translate": {
+      "post": {
+        "description": "Public, unauthenticated Hindi/English translation for horoscope page\ncopy. Rate-limited by IP since there's no user account to key off of.",
+        "operationId": "translate_horoscope_text_free_tools_translate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslateHoroscopeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslateHoroscopeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Translate Horoscope Text",
         "tags": [
           "Free Tools"
         ]

@@ -77,6 +77,13 @@ export const cms = {
         list: (params) => api.get('/cms/contact-inquiries', { params }),
         // Add update/delete if needed later
     },
+    horoscopes: {
+        list: (params) => api.get('/cms/horoscopes', { params }),
+        get: (id) => api.get(`/cms/horoscopes/${id}`),
+        create: (data) => api.post('/cms/horoscopes', data),
+        update: (id, data) => api.put(`/cms/horoscopes/${id}`, data),
+        delete: (id) => api.delete(`/cms/horoscopes/${id}`),
+    },
     upload: (formData) => api.post('/admin/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),

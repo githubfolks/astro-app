@@ -5,6 +5,7 @@ import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import PageHeading from '../../components/PageHeading';
+import { ZODIAC_SIGN_LIST } from '../../data/zodiacSigns';
 
 const faqs = [
     { question: 'What is the difference between a sun sign and moon sign horoscope?', answer: 'Sun sign horoscopes are based on your birth date (Western astrology). Moon sign horoscopes (Vedic/Indian) use the lunar sign, which many Vedic astrologers consider more accurate for daily and monthly predictions.' },
@@ -13,20 +14,7 @@ const faqs = [
     { question: 'How much does a daily horoscope consultation cost on Aadikarta Vedic Astrology?', answer: 'Daily horoscope consultations on Aadikarta Vedic Astrology start from ₹10 per minute. A quick daily or weekly reading typically takes 10–15 minutes.' },
 ];
 
-const SIGNS = [
-    { slug: 'aries', name: 'Aries', hindi: 'मेष', symbol: '♈', glyph: '🐏', dates: 'Mar 21 – Apr 19', element: 'Fire' },
-    { slug: 'taurus', name: 'Taurus', hindi: 'वृषभ', symbol: '♉', glyph: '🐂', dates: 'Apr 20 – May 20', element: 'Earth' },
-    { slug: 'gemini', name: 'Gemini', hindi: 'मिथुन', symbol: '♊', glyph: '👯', dates: 'May 21 – Jun 20', element: 'Air' },
-    { slug: 'cancer', name: 'Cancer', hindi: 'कर्क', symbol: '♋', glyph: '🦀', dates: 'Jun 21 – Jul 22', element: 'Water' },
-    { slug: 'leo', name: 'Leo', hindi: 'सिंह', symbol: '♌', glyph: '🦁', dates: 'Jul 23 – Aug 22', element: 'Fire' },
-    { slug: 'virgo', name: 'Virgo', hindi: 'कन्या', symbol: '♍', glyph: '👧', dates: 'Aug 23 – Sep 22', element: 'Earth' },
-    { slug: 'libra', name: 'Libra', hindi: 'तुला', symbol: '♎', glyph: '⚖️', dates: 'Sep 23 – Oct 22', element: 'Air' },
-    { slug: 'scorpio', name: 'Scorpio', hindi: 'वृश्चिक', symbol: '♏', glyph: '🦂', dates: 'Oct 23 – Nov 21', element: 'Water' },
-    { slug: 'sagittarius', name: 'Sagittarius', hindi: 'धनु', symbol: '♐', glyph: '🏹', dates: 'Nov 22 – Dec 21', element: 'Fire' },
-    { slug: 'capricorn', name: 'Capricorn', hindi: 'मकर', symbol: '♑', glyph: '🕷️', dates: 'Dec 22 – Jan 19', element: 'Earth' },
-    { slug: 'aquarius', name: 'Aquarius', hindi: 'कुंभ', symbol: '♒', glyph: '🏺', dates: 'Jan 20 – Feb 18', element: 'Air' },
-    { slug: 'pisces', name: 'Pisces', hindi: 'मीन', symbol: '♓', glyph: '🐟', dates: 'Feb 19 – Mar 20', element: 'Water' },
-];
+const SIGNS = ZODIAC_SIGN_LIST;
 
 const ELEMENT_COLORS: Record<string, string> = {
     Fire: 'from-orange-400 to-red-500',
@@ -93,6 +81,12 @@ const HoroscopeListing: React.FC = () => {
                             title="Horoscope by Zodiac Sign"
                             subtitle="Select your zodiac sign for personalised Vedic astrology insights — personality, predictions, and live readings from expert astrologers."
                         />
+                        <Link
+                            to="/services/horoscope/yearly"
+                            className="inline-block mt-6 text-sm font-medium text-amber-400 hover:text-amber-300 underline underline-offset-4"
+                        >
+                            Looking for your Yearly Horoscope? →
+                        </Link>
                     </div>
                 </section>
 

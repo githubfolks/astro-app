@@ -52,6 +52,10 @@ const CRITICAL_ROUTES = new Set([
     ...['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra',
         'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
         .map((s) => `/services/horoscope/${s}`),
+    '/services/horoscope/yearly',
+    ...['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra',
+        'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces']
+        .map((s) => `/services/horoscope/yearly/${s}`),
     '/tools/manglik-dosha-checker', '/tools/numerology-calculator',
     '/tools/kundli-matching', '/tools/kundli-chart', '/tools/navamsa-chart',
 ]);

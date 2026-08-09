@@ -130,6 +130,72 @@ def delete_post(post_id: int, db: Session = Depends(database.get_db)):
     db.commit()
     return {"message": "Post deleted"}
 
+# --- Horoscopes (editorial content: daily/weekly/monthly/yearly per sign) ---
+
+class HoroscopeListResponse(BaseModel):
+    total: int
+    horoscopes: List[schemas_cms.Horoscope]
+
+@router.post("/horoscopes", response_model=schemas_cms.Horoscope)
+def create_horoscope(horoscope: schemas_cms.HoroscopeCreate, db: Session = Depends(database.get_db)):
+    existing = db.query(models.Horoscope).filter(
+        models.Horoscope.sign == horoscope.sign,
+        models.Horoscope.period == horoscope.period,
+        models.Horoscope.date == horoscope.date,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="A horoscope entry for this sign, period, and date already exists")
+
+    db_horoscope = models.Horoscope(**horoscope.model_dump())
+    db.add(db_horoscope)
+    db.commit()
+    db.refresh(db_horoscope)
+    return db_horoscope
+
+@router.get("/horoscopes", response_model=HoroscopeListResponse)
+def list_horoscopes(
+    skip: int = 0,
+    limit: int = 20,
+    sign: Optional[schemas_cms.ZodiacSign] = None,
+    period: Optional[schemas_cms.HoroscopePeriod] = None,
+    db: Session = Depends(database.get_db),
+):
+    query = db.query(models.Horoscope)
+    if sign:
+        query = query.filter(models.Horoscope.sign == sign)
+    if period:
+        query = query.filter(models.Horoscope.period == period)
+    total = query.count()
+    horoscopes = query.order_by(models.Horoscope.date.desc()).offset(skip).limit(limit).all()
+    return {"total": total, "horoscopes": horoscopes}
+
+@router.get("/horoscopes/{horoscope_id}", response_model=schemas_cms.Horoscope)
+def get_horoscope(horoscope_id: int, db: Session = Depends(database.get_db)):
+    db_horoscope = db.query(models.Horoscope).filter(models.Horoscope.id == horoscope_id).first()
+    if not db_horoscope:
+        raise HTTPException(status_code=404, detail="Horoscope not found")
+    return db_horoscope
+
+@router.put("/horoscopes/{horoscope_id}", response_model=schemas_cms.Horoscope)
+def update_horoscope(horoscope_id: int, horoscope_update: schemas_cms.HoroscopeUpdate, db: Session = Depends(database.get_db)):
+    db_horoscope = db.query(models.Horoscope).filter(models.Horoscope.id == horoscope_id).first()
+    if not db_horoscope:
+        raise HTTPException(status_code=404, detail="Horoscope not found")
+    if horoscope_update.content is not None:
+        db_horoscope.content = horoscope_update.content
+    db.commit()
+    db.refresh(db_horoscope)
+    return db_horoscope
+
+@router.delete("/horoscopes/{horoscope_id}")
+def delete_horoscope(horoscope_id: int, db: Session = Depends(database.get_db)):
+    db_horoscope = db.query(models.Horoscope).filter(models.Horoscope.id == horoscope_id).first()
+    if not db_horoscope:
+        raise HTTPException(status_code=404, detail="Horoscope not found")
+    db.delete(db_horoscope)
+    db.commit()
+    return {"message": "Horoscope deleted"}
+
 # --- Social Media Share / Generation endpoints ---
 
 class GenerateSocialRequest(BaseModel):
