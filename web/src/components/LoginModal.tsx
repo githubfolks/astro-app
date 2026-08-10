@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import PasswordInput from './PasswordInput';
+import SocialLoginButtons from './SocialLoginButtons';
 import './LoginModal.css';
 
 interface Props {
@@ -33,6 +34,19 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
 
     if (!isOpen) return null;
 
+    const completeLogin = (data: { access_token: string; user_id: number; role: string; full_name?: string }) => {
+        const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
+        login(data.access_token, {
+            id: data.user_id,
+            role: role as 'SEEKER' | 'ASTROLOGER' | 'ADMIN' | 'TUTOR',
+            email: '',
+            phone_number: '',
+            full_name: data.full_name
+        });
+        onLoginSuccess();
+        onClose();
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -49,9 +63,7 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
                 localStorage.removeItem('saved_password');
             }
 
-            login(data.access_token, { id: data.user_id, role: data.role, email: '', phone_number: '', full_name: data.full_name });
-            onLoginSuccess();
-            onClose();
+            completeLogin(data);
         } catch (err) {
             setError(getErrorMessage(err) || 'Login failed');
         } finally {
@@ -107,6 +119,12 @@ const LoginModal: React.FC<Props> = ({ isOpen, onClose, onLoginSuccess }) => {
                         <small>Don't have an account? <a href="/signup">Sign up</a></small>
                     </div>
                 </form>
+
+                <SocialLoginButtons
+                    disabled={isLoading}
+                    onSuccess={completeLogin}
+                    onError={(msg) => setError(msg)}
+                />
             </div>
         </div>
     );

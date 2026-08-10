@@ -2,9 +2,11 @@ import { getErrorMessage } from '../utils/errors';
 import { getPasswordError, PASSWORD_REQUIREMENTS } from '../utils/password';
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import PasswordInput from '../components/PasswordInput';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 import './Auth.css';
 
 export const Signup: React.FC = () => {
@@ -16,7 +18,22 @@ export const Signup: React.FC = () => {
     });
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+
+    // Google/Facebook accounts already have a verified email, so unlike the
+    // password form above, social signup logs the user straight in.
+    const handleSocialSuccess = (data: { access_token: string; user_id: number; role: string; full_name?: string }) => {
+        const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
+        login(data.access_token, {
+            id: data.user_id,
+            role: role as 'SEEKER' | 'ASTROLOGER' | 'ADMIN' | 'TUTOR',
+            email: '',
+            phone_number: '',
+            full_name: data.full_name
+        });
+        navigate(role === 'ASTROLOGER' ? '/dashboard' : '/');
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,6 +111,12 @@ export const Signup: React.FC = () => {
                         {isLoading ? 'Creating Account...' : 'Create Account'}
                     </button>
                 </form>
+
+                <SocialLoginButtons
+                    disabled={isLoading}
+                    onSuccess={handleSocialSuccess}
+                    onError={(msg) => setError(msg)}
+                />
 
                 <div className="auth-footer">
                     <p>

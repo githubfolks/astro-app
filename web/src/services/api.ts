@@ -118,6 +118,24 @@ export const api = {
             return handleResponse(response, 'Login failed');
         },
 
+        google: async (idToken: string) => {
+            const response = await customFetch(`${API_URL}/auth/google`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id_token: idToken }),
+            });
+            return handleResponse(response, 'Google sign-in failed');
+        },
+
+        facebook: async (accessToken: string) => {
+            const response = await customFetch(`${API_URL}/auth/facebook`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ access_token: accessToken }),
+            });
+            return handleResponse(response, 'Facebook sign-in failed');
+        },
+
         signup: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/signup`, {
                 method: 'POST',

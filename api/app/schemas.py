@@ -79,6 +79,12 @@ class Token(BaseModel):
     role: str
     full_name: Optional[str] = None
 
+class GoogleLoginRequest(BaseModel):
+    id_token: str
+
+class FacebookLoginRequest(BaseModel):
+    access_token: str
+
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 

@@ -5,6 +5,7 @@ import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import PasswordInput from '../components/PasswordInput';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 import './Auth.css';
 
 export const Login: React.FC = () => {
@@ -28,6 +29,26 @@ export const Login: React.FC = () => {
         }
     }, []);
 
+    const completeLogin = (data: { access_token: string; user_id: number; role: string; full_name?: string }) => {
+        // Normalize role to handle potential casing/whitespace issues
+        const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
+
+        // Pass normalized role to AuthContext
+        login(data.access_token, {
+            id: data.user_id,
+            role: role as 'SEEKER' | 'ASTROLOGER' | 'ADMIN' | 'TUTOR',
+            email: '',
+            phone_number: '',
+            full_name: data.full_name
+        });
+
+        if (role === 'ASTROLOGER') {
+            navigate('/dashboard');
+        } else {
+            navigate('/');
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -43,24 +64,7 @@ export const Login: React.FC = () => {
                 localStorage.removeItem('saved_password');
             }
 
-            // Normalize role to handle potential casing/whitespace issues
-            const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
-
-
-            // Pass normalized role to AuthContext
-            login(data.access_token, {
-                id: data.user_id,
-                role: role as 'SEEKER' | 'ASTROLOGER' | 'ADMIN' | 'TUTOR',
-                email: '',
-                phone_number: '',
-                full_name: data.full_name
-            });
-
-            if (role === 'ASTROLOGER') {
-                navigate('/dashboard');
-            } else {
-                navigate('/');
-            }
+            completeLogin(data);
         } catch (err) {
             setError(getErrorMessage(err) || 'Login failed');
         } finally {
@@ -126,6 +130,12 @@ export const Login: React.FC = () => {
                         {isLoading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
+
+                <SocialLoginButtons
+                    disabled={isLoading}
+                    onSuccess={completeLogin}
+                    onError={(msg) => setError(msg)}
+                />
 
                 <div className="auth-footer">
                     <p>

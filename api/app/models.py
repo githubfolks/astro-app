@@ -60,6 +60,8 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     role = Column(Enum(UserRole), nullable=False)
     hashed_password = Column(String) # Valid for JWT auth
+    oauth_provider = Column(String, nullable=True)  # "google" | "facebook", null for password accounts
+    oauth_id = Column(String, nullable=True)  # provider-side subject/user id
     is_verified = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
