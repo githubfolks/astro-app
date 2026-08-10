@@ -6,6 +6,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import PasswordInput from '../components/PasswordInput';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import { isSeekerProfileComplete } from '../utils/profile';
 import './Auth.css';
 
 export const Login: React.FC = () => {
@@ -29,7 +30,7 @@ export const Login: React.FC = () => {
         }
     }, []);
 
-    const completeLogin = (data: { access_token: string; user_id: number; role: string; full_name?: string }) => {
+    const completeLogin = async (data: { access_token: string; user_id: number; role: string; full_name?: string }, viaSocial = false) => {
         // Normalize role to handle potential casing/whitespace issues
         const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
 
@@ -44,9 +45,30 @@ export const Login: React.FC = () => {
 
         if (role === 'ASTROLOGER') {
             navigate('/dashboard');
-        } else {
-            navigate('/');
+            return;
         }
+
+        // Social sign-ins skip any birth-details form, unlike password signup's
+        // onboarding — send first-time Google/Facebook seekers to complete their
+        // profile instead of dropping them on the home page. A brand-new seeker
+        // has no profile row at all yet, so the fetch 404s — that's the most
+        // incomplete case there is, so treat any fetch failure as "incomplete"
+        // rather than silently falling through to home. Scoped to SEEKER only —
+        // /seekers/profile 400s for ADMIN/TUTOR accounts, which aren't seekers.
+        if (viaSocial && role === 'SEEKER') {
+            try {
+                const profile = await api.seekers.getProfile();
+                if (isSeekerProfileComplete(profile)) {
+                    navigate('/');
+                    return;
+                }
+            } catch (e) {
+                console.error('Failed to check profile completeness', e);
+            }
+            navigate('/dashboard#seeker-my-profile-card');
+            return;
+        }
+        navigate('/');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -133,7 +155,7 @@ export const Login: React.FC = () => {
 
                 <SocialLoginButtons
                     disabled={isLoading}
-                    onSuccess={completeLogin}
+                    onSuccess={(data) => completeLogin(data, true)}
                     onError={(msg) => setError(msg)}
                 />
 

@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import PasswordInput from '../components/PasswordInput';
 import SocialLoginButtons from '../components/SocialLoginButtons';
+import { isSeekerProfileComplete } from '../utils/profile';
 import './Auth.css';
 
 export const Signup: React.FC = () => {
@@ -23,7 +24,7 @@ export const Signup: React.FC = () => {
 
     // Google/Facebook accounts already have a verified email, so unlike the
     // password form above, social signup logs the user straight in.
-    const handleSocialSuccess = (data: { access_token: string; user_id: number; role: string; full_name?: string }) => {
+    const handleSocialSuccess = async (data: { access_token: string; user_id: number; role: string; full_name?: string }) => {
         const role = data.role ? String(data.role).trim().toUpperCase() : 'SEEKER';
         login(data.access_token, {
             id: data.user_id,
@@ -32,7 +33,32 @@ export const Signup: React.FC = () => {
             phone_number: '',
             full_name: data.full_name
         });
-        navigate(role === 'ASTROLOGER' ? '/dashboard' : '/');
+
+        if (role === 'ASTROLOGER') {
+            navigate('/dashboard');
+            return;
+        }
+
+        // Brand-new social signups never fill in birth details anywhere else —
+        // send them to complete their profile instead of the home page. A
+        // brand-new seeker has no profile row yet, so the fetch 404s — that's
+        // the most incomplete case there is, so treat any fetch failure as
+        // "incomplete" rather than silently falling through to home. Scoped to
+        // SEEKER only — /seekers/profile 400s for ADMIN/TUTOR accounts.
+        if (role === 'SEEKER') {
+            try {
+                const profile = await api.seekers.getProfile();
+                if (isSeekerProfileComplete(profile)) {
+                    navigate('/');
+                    return;
+                }
+            } catch (e) {
+                console.error('Failed to check profile completeness', e);
+            }
+            navigate('/dashboard#seeker-my-profile-card');
+            return;
+        }
+        navigate('/');
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
