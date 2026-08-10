@@ -14,7 +14,7 @@ import { KundliContent } from '../components/KundliPanel';
 import { MatchContent } from '../components/MatchPanel';
 import PreChatQuestionsModal, { type PreChatAnswers } from '../components/PreChatQuestionsModal';
 import CityAutocomplete from '../components/CityAutocomplete';
-import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb, HeartHandshake } from 'lucide-react';
+import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb, HeartHandshake, Orbit } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, MatchData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
@@ -78,6 +78,7 @@ export const Chat: React.FC = () => {
     const [kundliError, setKundliError] = useState<string | null>(null);
     const [showAdhocKundliForm, setShowAdhocKundliForm] = useState(false);
     const [adhocKundliData, setAdhocKundliData] = useState({ full_name: '', date_of_birth: '', time_of_birth: '', place_of_birth: '' });
+    const [saveAdhocToProfile, setSaveAdhocToProfile] = useState(false);
     const [showCompatibility, setShowCompatibility] = useState(false);
     const [matchData, setMatchData] = useState<MatchData | null>(null);
     const [matchLoading, setMatchLoading] = useState(false);
@@ -484,7 +485,7 @@ export const Chat: React.FC = () => {
         });
     };
 
-    // Astrologer voice input: speak in Hindi, get Hinglish text appended to the composer.
+    // Astrologer voice input: speak in Hindi, get the recognized text appended to the composer.
     const speech = useSpeechToText();
     // Text already in the composer when the current listening session started —
     // interim (not-yet-final) results are rendered live on top of this so the
@@ -497,10 +498,10 @@ export const Chat: React.FC = () => {
             return;
         }
         voiceBaseRef.current = input;
-        speech.start((hinglishChunk) => {
+        speech.start((chunk) => {
             voiceBaseRef.current = voiceBaseRef.current
-                ? `${voiceBaseRef.current.trim()} ${hinglishChunk}`
-                : hinglishChunk;
+                ? `${voiceBaseRef.current.trim()} ${chunk}`
+                : chunk;
             setInput(voiceBaseRef.current);
         });
     };
@@ -679,10 +680,11 @@ export const Chat: React.FC = () => {
     };
 
     // Generates a Kundli from birth details the astrologer typed in manually
-    // (e.g. shared verbally by the seeker in chat) without touching the
-    // seeker's saved profile.
+    // (e.g. shared verbally by the seeker in chat). By default this doesn't
+    // touch the seeker's saved profile — saveAdhocToProfile opts into also
+    // persisting these details via the same endpoint the pencil-icon edit uses.
     const handleGenerateAdhocKundli = async () => {
-        if (!seeker) return;
+        if (!seeker?.user_id) return;
         const { full_name, date_of_birth, time_of_birth, place_of_birth } = adhocKundliData;
         if (!date_of_birth || !time_of_birth || !place_of_birth) return;
 
@@ -691,6 +693,15 @@ export const Chat: React.FC = () => {
         setKundliError(null);
 
         try {
+            if (saveAdhocToProfile) {
+                const updated = await api.seekers.updateOne(seeker.user_id, {
+                    full_name,
+                    date_of_birth,
+                    time_of_birth,
+                    place_of_birth,
+                });
+                setSeeker(updated);
+            }
             const data = await api.kundli.generate({
                 seeker_id: seeker.user_id,
                 full_name: full_name || seeker.full_name || 'Seeker',
@@ -1000,6 +1011,7 @@ export const Chat: React.FC = () => {
                                                             time_of_birth: seeker.time_of_birth || '',
                                                             place_of_birth: seeker.place_of_birth || '',
                                                         });
+                                                        setSaveAdhocToProfile(false);
                                                         setShowAdhocKundliForm(v => !v);
                                                     }}
                                                     className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors"
@@ -1011,7 +1023,7 @@ export const Chat: React.FC = () => {
                                             {showAdhocKundliForm ? (
                                                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 mb-4 space-y-3">
                                                     <p className="text-xs text-gray-500">
-                                                        Enter the birth details the seeker shared in chat. This won't change their saved profile.
+                                                        Enter the birth details the seeker shared in chat.
                                                     </p>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Name</label>
@@ -1029,6 +1041,15 @@ export const Chat: React.FC = () => {
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
                                                         <CityAutocomplete value={adhocKundliData.place_of_birth} onChange={place_of_birth => setAdhocKundliData({ ...adhocKundliData, place_of_birth })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" placeholder="City, State, Country" />
                                                     </div>
+                                                    <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={saveAdhocToProfile}
+                                                            onChange={e => setSaveAdhocToProfile(e.target.checked)}
+                                                            className="mt-0.5"
+                                                        />
+                                                        <span>Also update the seeker's saved profile with these details</span>
+                                                    </label>
                                                     <button
                                                         onClick={handleGenerateAdhocKundli}
                                                         disabled={!adhocKundliData.date_of_birth || !adhocKundliData.time_of_birth || !adhocKundliData.place_of_birth}
@@ -1095,8 +1116,7 @@ export const Chat: React.FC = () => {
                                     </div>
                                 ) : timerActive ? (
                                     <div className="flex items-center gap-1 md:gap-2 text-green-700 bg-green-50 px-2 md:px-3 py-1 rounded-full border border-green-200 text-xs md:text-sm font-medium">
-                                        <Clock size={14} className="md:hidden" />
-                                        <Clock size={16} className="hidden md:block" />
+                                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
                                         <span className="font-mono">Active</span>
                                     </div>
                                 ) : (
@@ -1140,9 +1160,9 @@ export const Chat: React.FC = () => {
                                 <button
                                     onClick={() => setShowSidebarMobile(true)}
                                     className="md:hidden p-2 text-gray-900 hover:text-[#E91E63] bg-gray-50 rounded-full border border-gray-200 transition-colors flex-shrink-0"
-                                    aria-label="View Profile Info"
+                                    aria-label="View Kundli & Profile Info"
                                 >
-                                    <Info size={18} />
+                                    <Orbit size={18} />
                                 </button>
 
                                 {user?.role === 'SEEKER' && (
@@ -1394,9 +1414,9 @@ export const Chat: React.FC = () => {
                                 const translation = showTranslation ? translatedText[msg.id as number] : undefined;
                                 return (
                                     <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                                        <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl shadow-sm ${isImage ? 'p-2' : 'p-4'} ${isMe
+                                        <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl shadow-sm ${isImage ? 'p-2' : 'px-4 py-2'} ${isMe
                                             ? 'bg-[#E91E63] text-white rounded-br-none'
-                                            : 'bg-white text-gray-800 border border-gray-100 rounded-bl-none'
+                                            : 'bg-white text-gray-900 border border-gray-100 rounded-bl-none'
                                             }`}>
                                             {isImage ? (
                                                 <button

@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { devanagariToHinglish } from '../utils/hinglish';
 
 /** Length of the longest shared prefix between `a` and `b`. */
 function commonPrefixLength(a: string, b: string): number {
@@ -37,9 +36,8 @@ declare global {
 }
 
 /**
- * Captures Hindi speech via the browser's Web Speech API and transliterates
- * the recognized Devanagari text into Hinglish (Roman script) — astrologers
- * can speak in Hindi and get text they can send straight into chat.
+ * Captures Hindi speech via the browser's native Web Speech API — astrologers
+ * can speak in Hindi and get the recognized text straight into chat.
  */
 export function useSpeechToText() {
     const [isSupported] = useState(() =>
@@ -64,7 +62,7 @@ export function useSpeechToText() {
         };
     }, []);
 
-    const start = useCallback((onFinalTranscript: (hinglishText: string) => void) => {
+    const start = useCallback((onFinalTranscript: (text: string) => void) => {
         if (!isSupported) {
             setError('Voice input is not supported in this browser.');
             return;
@@ -127,7 +125,7 @@ export function useSpeechToText() {
                 }
             }
             if (finalChunk) {
-                onFinalRef.current(devanagariToHinglish(finalChunk));
+                onFinalRef.current(finalChunk);
             }
             // Same re-finalization quirk as above can leak into the *interim*
             // tail too — the engine sometimes echoes words already committed to
@@ -141,7 +139,7 @@ export function useSpeechToText() {
                     interimChunk = '';
                 }
             }
-            setInterimText(interimChunk ? devanagariToHinglish(interimChunk) : '');
+            setInterimText(interimChunk);
         };
 
         recognition.onerror = (event) => {
