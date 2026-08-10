@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Keeps api/openapi.json in sync automatically so
+# test_openapi_matches_committed_snapshot (api/tests/test_openapi_contract.py)
+# never goes stale and blocks CI/deploy after the fact. Only runs when a
+# commit touches api/app/** or the schema-diff would trigger; otherwise it's
+# a no-op.
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+if ! git diff --cached --name-only | grep -q '^api/app/'; then
+    exit 0
+fi
+
+python_bin=""
+for candidate in "$repo_root/api/.venv/bin/python" "$repo_root/api/venv/bin/python"; do
+    if [ -x "$candidate" ]; then
+        python_bin="$candidate"
+        break
+    fi
+done
+if [ -z "$python_bin" ]; then
+    python_bin="$(command -v python3 || true)"
+fi
+
+if [ -z "$python_bin" ]; then
+    echo "pre-commit: no Python interpreter found to regenerate api/openapi.json; skipping (CI will still catch drift)." >&2
+    exit 0
+fi
+
+(cd api && "$python_bin" scripts/dump_openapi.py >/dev/null) || {
+    echo "pre-commit: failed to regenerate api/openapi.json (see error above); commit aborted." >&2
+    exit 1
+}
+
+if ! git diff --quiet -- api/openapi.json; then
+    git add api/openapi.json
+    echo "pre-commit: api/openapi.json was stale and has been regenerated + staged automatically."
+fi
