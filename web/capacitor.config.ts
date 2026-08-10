@@ -24,9 +24,15 @@ const config: CapacitorConfig = {
       style: 'LIGHT',
       backgroundColor: '#ffffff',
     },
+    // 'body' mode's own JS-driven resize got stuck reserving keyboard-sized
+    // space after backgrounding the app during an external OAuth flow (e.g.
+    // Google/Facebook sign-in), leaving a permanent gap at the bottom of
+    // every page afterward -- confirmed via window.innerHeight staying
+    // short by exactly the IME's inset hint even with the keyboard closed.
+    // The AndroidManifest activity now sets windowSoftInputMode="adjustResize"
+    // so the OS handles keyboard resizing natively instead.
     Keyboard: {
-      resize: 'body',
-      resizeOnFullScreen: true,
+      resize: 'none',
     },
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
