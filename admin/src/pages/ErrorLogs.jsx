@@ -20,6 +20,7 @@ export default function ErrorLogs() {
 
     const [pathFilter, setPathFilter] = useState("");
     const [errorTypeFilter, setErrorTypeFilter] = useState("");
+    const [sourceFilter, setSourceFilter] = useState("");
 
     const fetchLogs = useCallback(async () => {
         setLoading(true);
@@ -27,6 +28,7 @@ export default function ErrorLogs() {
             const params = { offset: page * rowsPerPage, limit: rowsPerPage };
             if (pathFilter) params.path = pathFilter;
             if (errorTypeFilter) params.error_type = errorTypeFilter;
+            if (sourceFilter) params.source = sourceFilter;
 
             const response = await api.get('/admin/error-logs', { params });
             setLogs(response.data.logs);
@@ -36,7 +38,7 @@ export default function ErrorLogs() {
         } finally {
             setLoading(false);
         }
-    }, [page, rowsPerPage, pathFilter, errorTypeFilter]);
+    }, [page, rowsPerPage, pathFilter, errorTypeFilter, sourceFilter]);
 
     useEffect(() => {
         fetchLogs();
@@ -48,15 +50,16 @@ export default function ErrorLogs() {
             fetchLogs();
         }, 500);
         return () => clearTimeout(timer);
-    }, [pathFilter, errorTypeFilter, fetchLogs]);
+    }, [pathFilter, errorTypeFilter, sourceFilter, fetchLogs]);
 
     return (
         <div className="space-y-6">
             <div>
                 <h1 className="text-3xl font-bold text-gray-900">Error Logs</h1>
                 <p className="text-sm text-gray-500 mt-1">
-                    Unhandled server exceptions (500s), captured with the full traceback and the
-                    user who triggered them, if authenticated.
+                    Unhandled server exceptions (500s) and frontend crash reports (uncaught JS
+                    errors, unhandled promise rejections, React render crashes), captured with
+                    the full traceback and the user who triggered them, if authenticated.
                 </p>
             </div>
 
@@ -78,6 +81,18 @@ export default function ErrorLogs() {
                             placeholder="e.g. KeyError, ValueError"
                         />
                     </div>
+                    <div className="w-full sm:w-48">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Source</label>
+                        <select
+                            className="h-9 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={sourceFilter}
+                            onChange={(e) => setSourceFilter(e.target.value)}
+                        >
+                            <option value="">All</option>
+                            <option value="server">Server</option>
+                            <option value="client">Client (app)</option>
+                        </select>
+                    </div>
 
                     <Button onClick={fetchLogs}>
                         <RefreshCw size={16} className="mr-2" /> Refresh
@@ -90,6 +105,7 @@ export default function ErrorLogs() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Date</TableHead>
+                            <TableHead>Source</TableHead>
                             <TableHead>Method</TableHead>
                             <TableHead>Path</TableHead>
                             <TableHead>User ID</TableHead>
@@ -107,6 +123,11 @@ export default function ErrorLogs() {
                                 <TableCell className="whitespace-nowrap">
                                     {new Date(l.created_at).toLocaleString()}
                                 </TableCell>
+                                <TableCell>
+                                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${l.source === 'client' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'}`}>
+                                        {l.source === 'client' ? 'App' : 'Server'}
+                                    </span>
+                                </TableCell>
                                 <TableCell>{l.method}</TableCell>
                                 <TableCell className="font-mono text-xs">{l.path}</TableCell>
                                 <TableCell>{l.user_id ?? '-'}</TableCell>
@@ -122,7 +143,7 @@ export default function ErrorLogs() {
                         ))}
                         {!loading && logs.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-gray-900">
+                                <TableCell colSpan={7} className="text-center py-8 text-gray-900">
                                     No error logs found
                                 </TableCell>
                             </TableRow>
@@ -172,6 +193,7 @@ export default function ErrorLogs() {
                 {selected && (
                     <div className="space-y-3 text-sm">
                         <div><span className="font-medium">Date:</span> {new Date(selected.created_at).toLocaleString()}</div>
+                        <div><span className="font-medium">Source:</span> {selected.source === 'client' ? 'App (client)' : 'Server'}</div>
                         <div><span className="font-medium">Request:</span> {selected.method} {selected.path}</div>
                         <div><span className="font-medium">User ID:</span> {selected.user_id ?? 'unauthenticated'}</div>
                         <div><span className="font-medium">Type:</span> {selected.error_type}</div>

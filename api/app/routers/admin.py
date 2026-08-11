@@ -1784,11 +1784,13 @@ def list_error_logs(
     path: Optional[str] = None,
     error_type: Optional[str] = None,
     user_id: Optional[int] = None,
+    source: Optional[str] = None,
     limit: int = 100,
     offset: int = 0,
     db: Session = Depends(database.get_db),
 ):
-    """Unhandled 500s captured by main.py's request middleware (ErrorLog table)."""
+    """Unhandled server-side 500s and frontend crash reports (ErrorLog table),
+    distinguished by `source` ("server" vs "client")."""
     query = db.query(models.ErrorLog)
     if path:
         query = query.filter(models.ErrorLog.path.ilike(f"%{path}%"))
@@ -1796,6 +1798,8 @@ def list_error_logs(
         query = query.filter(models.ErrorLog.error_type.ilike(f"%{error_type}%"))
     if user_id:
         query = query.filter(models.ErrorLog.user_id == user_id)
+    if source:
+        query = query.filter(models.ErrorLog.source == source)
 
     total = query.count()
     logs = query.order_by(models.ErrorLog.created_at.desc()).offset(offset).limit(limit).all()
@@ -1808,6 +1812,7 @@ def list_error_logs(
             "error_type": l.error_type,
             "message": l.message,
             "traceback": l.traceback,
+            "source": l.source,
             "created_at": l.created_at.isoformat() if l.created_at else None,
         }
         for l in logs

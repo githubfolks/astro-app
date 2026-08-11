@@ -939,5 +939,23 @@ export const api = {
             });
             return handleResponse(response, 'Failed to delete course material');
         }
+    },
+    clientErrors: {
+        report: async (data: { source: 'js_error' | 'unhandled_rejection' | 'react_error_boundary', message: string, stack?: string, path: string }) => {
+            // Fire-and-forget crash breadcrumb; never let a logging failure
+            // compound whatever already went wrong on screen.
+            try {
+                await customFetch(`${API_URL}/client-errors`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(await authHeaders())
+                    },
+                    body: JSON.stringify(data)
+                });
+            } catch {
+                // best-effort only
+            }
+        }
     }
 };

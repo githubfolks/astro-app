@@ -4,7 +4,7 @@ import os
 import json
 import asyncio
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes, realtime, ai_astrologer, content_studio, social_copy, panchang, matching, cron, free_tools, places, muhurat
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes, realtime, ai_astrologer, content_studio, social_copy, panchang, matching, cron, free_tools, places, muhurat, client_errors
 from . import models_edu # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -370,6 +370,7 @@ def _persist_error_log(request: Request, exc: Exception):
                 error_type=type(exc).__name__,
                 message=str(exc)[:2000],
                 traceback=tb_text[-8000:],
+                source="server",
             ))
             db.commit()
     except Exception as log_err:
@@ -424,6 +425,7 @@ app.include_router(payouts.router)
 app.include_router(kundli.router)
 app.include_router(panchang.router)
 app.include_router(muhurat.router)
+app.include_router(client_errors.router)
 app.include_router(matching.router)
 app.include_router(free_tools.router)
 app.include_router(places.router)

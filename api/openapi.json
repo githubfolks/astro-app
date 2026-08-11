@@ -2144,6 +2144,48 @@
         "title": "ClassSessionUpdate",
         "type": "object"
       },
+      "ClientErrorReport": {
+        "properties": {
+          "message": {
+            "maxLength": 2000,
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 500,
+            "title": "Path",
+            "type": "string"
+          },
+          "source": {
+            "enum": [
+              "js_error",
+              "unhandled_rejection",
+              "react_error_boundary"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "stack": {
+            "anyOf": [
+              {
+                "maxLength": 8000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack"
+          }
+        },
+        "required": [
+          "source",
+          "message",
+          "path"
+        ],
+        "title": "ClientErrorReport",
+        "type": "object"
+      },
       "CommissionUpdateRequest": {
         "properties": {
           "commission_percentage": {
@@ -8110,7 +8152,7 @@
     },
     "/admin/error-logs": {
       "get": {
-        "description": "Unhandled 500s captured by main.py's request middleware (ErrorLog table).",
+        "description": "Unhandled server-side 500s and frontend crash reports (ErrorLog table),\ndistinguished by `source` (\"server\" vs \"client\").",
         "operationId": "list_error_logs_admin_error_logs_get",
         "parameters": [
           {
@@ -8159,6 +8201,22 @@
                 }
               ],
               "title": "User Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
             }
           },
           {
@@ -11288,6 +11346,45 @@
         "summary": "Share Image",
         "tags": [
           "Chat"
+        ]
+      }
+    },
+    "/client-errors": {
+      "post": {
+        "operationId": "report_client_error_client_errors_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientErrorReport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report Client Error",
+        "tags": [
+          "Client Errors"
         ]
       }
     },

@@ -545,10 +545,13 @@ class AuditLog(Base):
 
 
 class ErrorLog(Base):
-    """Unhandled exceptions caught by main.py's top-level request middleware.
-    A durable record of server-side 500s, since stdout prints vanish once
-    nobody's watching the live log (see how PAYMENT_FAILED audit entries
-    solved the same blind spot for client-reported payment failures)."""
+    """Unhandled exceptions caught by main.py's top-level request middleware,
+    plus crash reports the frontend POSTs to /client-errors (uncaught JS
+    errors, unhandled promise rejections, React render crashes) — `source`
+    tells the two apart. A durable record of failures on either side, since
+    stdout prints and devtools/logcat output vanish once nobody's watching
+    the live log (see how PAYMENT_FAILED audit entries solved the same blind
+    spot for client-reported payment failures)."""
     __tablename__ = "error_logs"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -558,6 +561,7 @@ class ErrorLog(Base):
     error_type = Column(String, nullable=False, index=True)
     message = Column(Text, nullable=True)
     traceback = Column(Text, nullable=True)
+    source = Column(String, nullable=False, server_default="server", index=True)  # "server" or "client"
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
     user = relationship("User", foreign_keys=[user_id])

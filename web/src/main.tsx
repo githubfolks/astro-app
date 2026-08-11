@@ -4,11 +4,17 @@ import App from './App'
 import './index.css'
 
 import { HelmetProvider } from 'react-helmet-async';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { installGlobalErrorHandlers } from './errorReporting';
+
+installGlobalErrorHandlers();
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
     <React.StrictMode>
-        <HelmetProvider>
-            <App />
-        </HelmetProvider>
+        <ErrorBoundary>
+            <HelmetProvider>
+                <App />
+            </HelmetProvider>
+        </ErrorBoundary>
     </React.StrictMode>,
 )
