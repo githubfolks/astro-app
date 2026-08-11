@@ -226,6 +226,13 @@ def delete_user(user_id: int, db: Session = Depends(database.get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Financial audit trail — don't silently cascade-delete payment history.
+    if db.query(models.PaymentOrder).filter(models.PaymentOrder.user_id == user_id).first():
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete a user with payment order history. Contact support to archive the account instead.",
+        )
+
     # Nullify nullable FK references to preserve historical records
     db.query(models.Consultation).filter(models.Consultation.astrologer_id == user_id).update({"astrologer_id": None})
     db.query(models.Consultation).filter(models.Consultation.seeker_id == user_id).update({"seeker_id": None})
@@ -236,15 +243,31 @@ def delete_user(user_id: int, db: Session = Depends(database.get_db)):
     db.query(models.Payout).filter(models.Payout.astrologer_id == user_id).update({"astrologer_id": None})
     db.query(models.AuditLog).filter(models.AuditLog.actor_id == user_id).update({"actor_id": None})
     db.query(models.KundliReport).filter(models.KundliReport.seeker_id == user_id).update({"seeker_id": None})
+    db.query(models.KundliMatchReport).filter(models.KundliMatchReport.boy_seeker_id == user_id).update({"boy_seeker_id": None})
+    db.query(models.KundliMatchReport).filter(models.KundliMatchReport.girl_seeker_id == user_id).update({"girl_seeker_id": None})
 
     # Delete records with non-nullable FK references
     db.query(models.KundliReport).filter(models.KundliReport.generated_by == user_id).delete()
+    db.query(models.KundliMatchReport).filter(models.KundliMatchReport.generated_by == user_id).delete()
     db.query(models.Dispute).filter(models.Dispute.raised_by_id == user_id).delete()
     db.query(models.VerificationToken).filter(models.VerificationToken.user_id == user_id).delete()
     db.query(models.DeviceToken).filter(models.DeviceToken.user_id == user_id).delete()
+    db.query(models.AstrologerAllowedSeeker).filter(models.AstrologerAllowedSeeker.seeker_id == user_id).delete()
+    db.query(models.AvailabilityNotification).filter(models.AvailabilityNotification.seeker_id == user_id).delete()
+    db.query(models.AvailabilityNotification).filter(models.AvailabilityNotification.astrologer_id == user_id).delete()
+    db.query(models.ModerationFlag).filter(models.ModerationFlag.flagged_user_id == user_id).delete()
+    db.query(models.AstrologerOnlineSession).filter(models.AstrologerOnlineSession.astrologer_id == user_id).delete()
+    db.query(models.ContentStudioJob).filter(models.ContentStudioJob.created_by == user_id).delete()
 
-    db.delete(user)
-    db.commit()
+    try:
+        db.delete(user)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot delete user: related records still reference this account.",
+        )
     return {"message": "User deleted"}
 
 @router.put("/users/{user_id}/verify")
