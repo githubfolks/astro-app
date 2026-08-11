@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, HelpCircle } from 'lucide-react';
 import CityAutocomplete from './CityAutocomplete';
+import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
 
 export interface PreChatAnswers {
     topic: string;
@@ -127,22 +129,20 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
                                     <label className="block text-xs font-semibold text-gray-700 mb-1">
                                         Date of Birth
                                     </label>
-                                    <input
-                                        type="date"
+                                    <DatePicker
                                         value={spouseDob}
-                                        onChange={(e) => setSpouseDob(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                        onChange={setSpouseDob}
+                                        className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-gray-700 mb-1">
                                         Time of Birth
                                     </label>
-                                    <input
-                                        type="time"
+                                    <TimePicker
                                         value={spouseTob}
-                                        onChange={(e) => setSpouseTob(e.target.value)}
-                                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                        onChange={setSpouseTob}
+                                        className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                     />
                                 </div>
                             </div>

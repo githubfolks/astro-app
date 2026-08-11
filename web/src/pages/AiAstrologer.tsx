@@ -5,6 +5,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import CityAutocomplete from '../components/CityAutocomplete';
+import DatePicker from '../components/DatePicker';
+import TimePicker from '../components/TimePicker';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { AstrologerListItem } from '../types';
@@ -301,22 +303,18 @@ const AiAstrologer: React.FC = () => {
                                     </div>
                                     <div>
                                         <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Date of Birth *</label>
-                                        <input
-                                            type="date"
-                                            autoComplete="bday"
+                                        <DatePicker
                                             value={details.date_of_birth}
                                             max={new Date().toISOString().split('T')[0]}
-                                            onChange={e => setDetails({ ...details, date_of_birth: e.target.value })}
+                                            onChange={date_of_birth => setDetails({ ...details, date_of_birth })}
                                             className={inputBase}
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-indigo-100 text-xs md:text-sm font-medium mb-1 md:mb-2">Time of Birth <span className="text-indigo-300/50 font-normal">(if known)</span></label>
-                                        <input
-                                            type="time"
-                                            autoComplete="off"
+                                        <TimePicker
                                             value={details.time_of_birth}
-                                            onChange={e => setDetails({ ...details, time_of_birth: e.target.value })}
+                                            onChange={time_of_birth => setDetails({ ...details, time_of_birth })}
                                             className={inputBase}
                                         />
                                     </div>

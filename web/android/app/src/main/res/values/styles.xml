@@ -13,10 +13,72 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowBackground">#FFF9F0</item>
+        <!-- Opt the whole activity (and dialogs spawned from it, e.g. window.alert()) out
+             of system Force Dark, so device dark-mode settings (MIUI etc.) don't invert
+             our explicitly light-designed colors into low-contrast dark variants. -->
+        <item name="android:forceDarkAllowed">false</item>
+        <!-- The WebView's native <input type="date"> picker (android.app.DatePickerDialog)
+             inherits this activity theme. Theme.AppCompat is not a Material(Components/3)
+             theme, so it never defines colorSurface/colorOnSurface/textColorPrimary etc.
+             On newer Android versions the platform's calendar-mode DatePicker relies on
+             those attributes to color the header and day-of-month labels; left unresolved,
+             the day text renders white-on-white (the whole grid goes blank except the
+             selected day "1", whose accent-colored circle still shows its white text) and
+             the header/weekday row goes blank too. Point the dialog at an explicit,
+             fully-defined Device Default theme instead of letting it inherit AppCompat's
+             incomplete one. -->
+        <item name="android:datePickerDialogTheme">@style/AppTheme.DatePickerDialogTheme</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+    </style>
+
+    <!-- Dedicated theme for the native DatePickerDialog (see AppTheme.NoActionBar above).
+         Theme.DeviceDefault.Light.Dialog.Alert is a platform theme with every attribute
+         the framework's DatePicker/CalendarView widgets expect already defined, so the
+         header and calendar grid render correctly instead of inheriting gaps from
+         Theme.AppCompat. On API 31+ DeviceDefault pulls in Material You dynamic color,
+         which on this emulator (no wallpaper-derived palette) resolves calendar day text
+         to a near-white color against the light dialog surface, still invisible. Force
+         spinner mode instead, which doesn't use CalendarView/dynamic color at all.
+         Use the plain (non-.Alert) Dialog theme and suppress the title/icon: the .Alert
+         variant auto-populates the dialog's title icon from the app's launcher icon and
+         reserves a title bar for it, which is why the app logo was showing inside the
+         picker and the dialog was much taller than the spinner content needed. -->
+    <style name="AppTheme.DatePickerDialogTheme" parent="android:Theme.DeviceDefault.Light.Dialog">
+        <item name="android:datePickerStyle">@style/AppTheme.DatePickerStyle</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:forceDarkAllowed">false</item>
+        <!-- forceDarkAllowed=false alone wasn't enough: with system dark mode on,
+             Theme.DeviceDefault.Light.Dialog's own colors (colorBackground,
+             textColorPrimary, colorControlNormal) were still resolving to a dark
+             navy surface with near-invisible dark-on-dark text. This isn't force-dark
+             color inversion, it's the theme itself adapting via Material You dynamic
+             color regardless of its "Light" name. Pin every color explicitly so the
+             dialog looks the same no matter the device's system dark mode setting. -->
+        <item name="android:colorBackground">#FFF9F0</item>
+        <item name="android:colorBackgroundFloating">#FFF9F0</item>
+        <item name="android:windowBackground">#FFF9F0</item>
+        <!-- Set colorAccent/colorControlActivated etc. correctly and both got applied
+             (Set/Cancel/Clear turned pink), but the rounded-corner surface itself stayed
+             dark navy: this dialog is rendered as a Material You dynamic-color surface
+             (API 31+), which reads android:colorSurface/colorOnSurface specifically,
+             not colorBackground/colorBackgroundFloating. Those are the real governing
+             attributes for the card-like surface behind the spinner. -->
+        <item name="*android:colorSurface">#FFF9F0</item>
+        <item name="android:textColorPrimary">#1A1A1A</item>
+        <item name="android:textColorSecondary">#666666</item>
+        <item name="android:colorControlNormal">#1A1A1A</item>
+        <item name="android:colorControlActivated">#E91E63</item>
+        <item name="android:colorAccent">#E91E63</item>
+    </style>
+
+    <!-- Widget.DeviceDefault.Light.DatePicker is a private platform resource we can't
+         reference from app styles.xml; Widget.Material.Light.DatePicker is the public
+         equivalent it's built on and works the same for our purposes. -->
+    <style name="AppTheme.DatePickerStyle" parent="android:Widget.Material.Light.DatePicker">
+        <item name="android:datePickerMode">spinner</item>
     </style>
 </resources>

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { X, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 import CityAutocomplete from './CityAutocomplete';
+import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
 
 interface ProfileCompletionModalProps {
     isOpen: boolean;
@@ -91,22 +93,18 @@ const ProfileCompletionModal: React.FC<ProfileCompletionModalProps> = ({
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-1">Date of Birth *</label>
-                            <input
-                                type="date"
-                                autoComplete="bday"
+                            <DatePicker
                                 value={profile.date_of_birth}
-                                onChange={(e) => setProfile({ ...profile, date_of_birth: e.target.value })}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                onChange={(date_of_birth) => setProfile({ ...profile, date_of_birth })}
+                                className="w-full border border-gray-300 rounded-lg px-2 py-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-1">Time of Birth *</label>
-                            <input
-                                type="time"
-                                autoComplete="off"
+                            <TimePicker
                                 value={profile.time_of_birth}
-                                onChange={(e) => setProfile({ ...profile, time_of_birth: e.target.value })}
-                                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                onChange={(time_of_birth) => setProfile({ ...profile, time_of_birth })}
+                                className="w-full border border-gray-300 rounded-lg px-2 py-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                             />
                         </div>
                     </div>

@@ -7,6 +7,7 @@ import { User, GraduationCap, Camera, ShieldCheck, ArrowLeft, Sparkles, Award, G
 import './Auth.css';
 import SEO from '../components/SEO';
 import PasswordInput from '../components/PasswordInput';
+import TimePicker from '../components/TimePicker';
 
 const joinStructuredData = {
     '@context': 'https://schema.org',
@@ -276,19 +277,21 @@ export const JoinAsAstrologer: React.FC = () => {
                                 <div className="form-group">
                                     <label><Clock size={14} /> Preferred Working Hours</label>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                        <input
-                                            type="time"
-                                            value={formData.availability_start_time}
-                                            onChange={e => setFormData({ ...formData, availability_start_time: e.target.value })}
-                                            style={{ flex: 1 }}
-                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <TimePicker
+                                                value={formData.availability_start_time}
+                                                onChange={value => setFormData({ ...formData, availability_start_time: value })}
+                                                className="w-full min-h-[48px] px-3 py-2 border border-[#e0e0e0] rounded-xl text-[15px] bg-[#fcfcfc]"
+                                            />
+                                        </div>
                                         <span style={{ color: '#9ca3af', fontSize: 13 }}>to</span>
-                                        <input
-                                            type="time"
-                                            value={formData.availability_end_time}
-                                            onChange={e => setFormData({ ...formData, availability_end_time: e.target.value })}
-                                            style={{ flex: 1 }}
-                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <TimePicker
+                                                value={formData.availability_end_time}
+                                                onChange={value => setFormData({ ...formData, availability_end_time: value })}
+                                                className="w-full min-h-[48px] px-3 py-2 border border-[#e0e0e0] rounded-xl text-[15px] bg-[#fcfcfc]"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="form-group">

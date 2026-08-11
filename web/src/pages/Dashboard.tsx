@@ -12,6 +12,8 @@ import RatingModal from '../components/RatingModal';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import SeekerChatTranscriptModal from '../components/SeekerChatTranscriptModal';
 import CityAutocomplete from '../components/CityAutocomplete';
+import DatePicker from '../components/DatePicker';
+import TimePicker from '../components/TimePicker';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
@@ -443,20 +445,18 @@ export const Dashboard: React.FC = () => {
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
                                             <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Knock Window Start</label>
-                                            <input
-                                                type="time"
+                                            <TimePicker
                                                 value={availabilityStart}
-                                                onChange={(e) => setAvailabilityStart(e.target.value)}
-                                                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                                onChange={setAvailabilityStart}
+                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Knock Window End</label>
-                                            <input
-                                                type="time"
+                                            <TimePicker
                                                 value={availabilityEnd}
-                                                onChange={(e) => setAvailabilityEnd(e.target.value)}
-                                                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                                                onChange={setAvailabilityEnd}
+                                                className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
                                             />
                                         </div>
                                         <p className="text-xs text-gray-400 col-span-2 mt-1">Seekers will see this as your availability hours on your profile.</p>
@@ -1207,22 +1207,18 @@ export const Dashboard: React.FC = () => {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-900 mb-1">Date of Birth</label>
-                                        <input
-                                            type="date"
-                                            autoComplete="bday"
+                                        <DatePicker
                                             value={seekerProfile.date_of_birth || ''}
-                                            onChange={(e) => setSeekerProfile({ ...seekerProfile, date_of_birth: e.target.value })}
-                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                            onChange={(date_of_birth) => setSeekerProfile({ ...seekerProfile, date_of_birth })}
+                                            className="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                         />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-gray-900 mb-1">Time of Birth</label>
-                                        <input
-                                            type="time"
-                                            autoComplete="off"
+                                        <TimePicker
                                             value={seekerProfile.time_of_birth || ''}
-                                            onChange={(e) => setSeekerProfile({ ...seekerProfile, time_of_birth: e.target.value })}
-                                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                            onChange={(time_of_birth) => setSeekerProfile({ ...seekerProfile, time_of_birth })}
+                                            className="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                         />
                                     </div>
                                 </div>

@@ -6,6 +6,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { MatchContent } from '../components/MatchPanel';
 import CityAutocomplete from '../components/CityAutocomplete';
+import DatePicker from '../components/DatePicker';
+import TimePicker from '../components/TimePicker';
 import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search, Pencil, Trash2, X } from 'lucide-react';
 import SEO from '../components/SEO';
@@ -39,24 +41,20 @@ const PersonFields: React.FC<{ title: string; value: PersonForm; onChange: (v: P
         </div>
         <div>
             <label className={LABEL_CLASS}>Date of Birth *</label>
-            <input
-                type="date"
+            <DatePicker
                 required
-                autoComplete="off"
                 value={value.date_of_birth}
-                onChange={(e) => onChange({ ...value, date_of_birth: e.target.value })}
+                onChange={(date_of_birth) => onChange({ ...value, date_of_birth })}
                 className={INPUT_CLASS}
             />
         </div>
         <div>
             <label className={LABEL_CLASS}>Time of Birth *</label>
-            <input
-                type="time"
+            <TimePicker
                 required
-                step="1"
-                autoComplete="off"
+                withSeconds
                 value={value.time_of_birth}
-                onChange={(e) => onChange({ ...value, time_of_birth: e.target.value })}
+                onChange={(time_of_birth) => onChange({ ...value, time_of_birth })}
                 className={INPUT_CLASS}
             />
         </div>

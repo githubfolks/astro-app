@@ -11,6 +11,8 @@ import ConnectExpertCTA from '../../components/ConnectExpertCTA';
 import PageHeading from '../../components/PageHeading';
 import FAQSection from '../../components/FAQSection';
 import CityAutocomplete from '../../components/CityAutocomplete';
+import DatePicker from '../../components/DatePicker';
+import TimePicker from '../../components/TimePicker';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
@@ -323,22 +325,20 @@ const KundliChartViewer: React.FC = () => {
                             <div className="grid sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className={TOOL_LABEL_CLASS}>Date of Birth *</label>
-                                    <input
-                                        type="date"
+                                    <DatePicker
                                         required
                                         value={formData.date_of_birth}
-                                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                                        onChange={(date_of_birth) => setFormData({ ...formData, date_of_birth })}
                                         className={TOOL_INPUT_CLASS}
                                     />
                                 </div>
                                 <div>
                                     <label className={TOOL_LABEL_CLASS}>Time of Birth *</label>
-                                    <input
-                                        type="time"
+                                    <TimePicker
                                         required
-                                        step="1"
+                                        withSeconds
                                         value={formData.time_of_birth}
-                                        onChange={(e) => setFormData({ ...formData, time_of_birth: e.target.value })}
+                                        onChange={(time_of_birth) => setFormData({ ...formData, time_of_birth })}
                                         className={TOOL_INPUT_CLASS}
                                     />
                                 </div>

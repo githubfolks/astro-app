@@ -28,6 +28,18 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Without these, FCM falls back to the full launcher icon (the circular
+             Kundli badge) for heads-up notification banners like "knock" alerts,
+             which then renders as a large logo overlapping whatever's on screen,
+             including native dialogs, since heads-up banners are drawn by
+             SystemUI above every app window. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_notify" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notificationColor" />
     </application>
 
     <!-- Permissions -->

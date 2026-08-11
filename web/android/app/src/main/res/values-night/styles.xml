@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Dark-mode override for the native date picker dialog theme defined in
+         values/styles.xml. Attempts to force the dialog's surface itself to stay
+         light regardless of system dark mode (windowBackground, colorBackground,
+         colorBackgroundFloating, the private colorSurface) had no visible effect.
+         Whatever renders that dark-navy surface in system dark mode isn't reachable
+         through any of those. textColorPrimary/colorControlNormal are the attributes
+         that were confirmed to actually take effect (Set/Cancel/Clear went pink from
+         colorAccent), so rather than keep fighting the surface color, make the text
+         light so it's readable against the dark surface the system provides. -->
+    <style name="AppTheme.DatePickerDialogTheme" parent="android:Theme.DeviceDefault.Light.Dialog">
+        <item name="android:datePickerStyle">@style/AppTheme.DatePickerStyle</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:textColorPrimary">#FFF9F0</item>
+        <item name="android:textColorSecondary">#CCCCCC</item>
+        <item name="android:colorControlNormal">#FFF9F0</item>
+        <item name="android:colorControlActivated">#F48FB1</item>
+        <item name="android:colorAccent">#F48FB1</item>
+    </style>
+</resources>

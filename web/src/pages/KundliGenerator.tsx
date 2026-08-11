@@ -6,6 +6,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import KundliPanel from '../components/KundliPanel';
 import CityAutocomplete from '../components/CityAutocomplete';
+import DatePicker from '../components/DatePicker';
+import TimePicker from '../components/TimePicker';
 import { api } from '../services/api';
 import { ArrowLeft, Loader2, Search, Pencil, Trash2, X } from 'lucide-react';
 
@@ -202,12 +204,10 @@ const KundliGenerator: React.FC = () => {
                                     <label className={LABEL_CLASS}>
                                         Date of Birth *
                                     </label>
-                                    <input
-                                        type="date"
+                                    <DatePicker
                                         required
-                                        autoComplete="off"
                                         value={formData.date_of_birth}
-                                        onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
+                                        onChange={(date_of_birth) => setFormData({ ...formData, date_of_birth })}
                                         className={INPUT_CLASS}
                                     />
                                 </div>
@@ -216,13 +216,11 @@ const KundliGenerator: React.FC = () => {
                                     <label className={LABEL_CLASS}>
                                         Time of Birth *
                                     </label>
-                                    <input
-                                        type="time"
+                                    <TimePicker
                                         required
-                                        step="1"
-                                        autoComplete="off"
+                                        withSeconds
                                         value={formData.time_of_birth}
-                                        onChange={(e) => setFormData({ ...formData, time_of_birth: e.target.value })}
+                                        onChange={(time_of_birth) => setFormData({ ...formData, time_of_birth })}
                                         className={INPUT_CLASS}
                                     />
                                 </div>

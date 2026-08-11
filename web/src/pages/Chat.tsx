@@ -14,6 +14,8 @@ import { KundliContent } from '../components/KundliPanel';
 import { MatchContent } from '../components/MatchPanel';
 import PreChatQuestionsModal, { type PreChatAnswers } from '../components/PreChatQuestionsModal';
 import CityAutocomplete from '../components/CityAutocomplete';
+import DatePicker from '../components/DatePicker';
+import TimePicker from '../components/TimePicker';
 import { Send, Clock, User, ArrowLeft, Info, X, AlertTriangle, Mic, MicOff, PhoneOff, Megaphone, Lightbulb, HeartHandshake, Orbit } from 'lucide-react';
 import type { Astrologer, SeekerProfile, ChartData, MatchData, RazorpayResponse, RazorpayError } from '../types';
 import { api } from '../services/api';
@@ -901,11 +903,11 @@ export const Chat: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Date of Birth</label>
-                                                        <input type="date" value={adhocSpouseData.date_of_birth} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, date_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                        <DatePicker value={adhocSpouseData.date_of_birth} onChange={date_of_birth => setAdhocSpouseData({ ...adhocSpouseData, date_of_birth })} className="w-full mt-1 p-1.5 border rounded-lg text-sm bg-white" />
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Time of Birth</label>
-                                                        <input type="time" step="1" value={adhocSpouseData.time_of_birth} onChange={e => setAdhocSpouseData({ ...adhocSpouseData, time_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                        <TimePicker withSeconds value={adhocSpouseData.time_of_birth} onChange={time_of_birth => setAdhocSpouseData({ ...adhocSpouseData, time_of_birth })} className="w-full mt-1 p-1.5 border rounded-lg text-sm bg-white" />
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
@@ -939,11 +941,11 @@ export const Chat: React.FC = () => {
                                                     <div className="space-y-3">
                                                         <div>
                                                             <label className="text-xs font-bold text-gray-500 uppercase">Date of Birth</label>
-                                                            <input type="date" value={editSeekerData.date_of_birth} onChange={e => setEditSeekerData({...editSeekerData, date_of_birth: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                            <DatePicker value={editSeekerData.date_of_birth} onChange={date_of_birth => setEditSeekerData({...editSeekerData, date_of_birth})} className="w-full mt-1 p-1.5 border rounded-lg text-sm bg-white" />
                                                         </div>
                                                         <div>
                                                             <label className="text-xs font-bold text-gray-500 uppercase">Time of Birth</label>
-                                                            <input type="time" step="1" value={editSeekerData.time_of_birth} onChange={e => setEditSeekerData({...editSeekerData, time_of_birth: e.target.value})} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                            <TimePicker withSeconds value={editSeekerData.time_of_birth} onChange={time_of_birth => setEditSeekerData({...editSeekerData, time_of_birth})} className="w-full mt-1 p-1.5 border rounded-lg text-sm bg-white" />
                                                         </div>
                                                         <div>
                                                             <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
@@ -1031,11 +1033,11 @@ export const Chat: React.FC = () => {
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Date of Birth</label>
-                                                        <input type="date" value={adhocKundliData.date_of_birth} onChange={e => setAdhocKundliData({ ...adhocKundliData, date_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                        <DatePicker value={adhocKundliData.date_of_birth} onChange={date_of_birth => setAdhocKundliData({ ...adhocKundliData, date_of_birth })} className="w-full mt-1 p-1.5 border rounded-lg text-sm bg-white" />
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Time of Birth</label>
-                                                        <input type="time" step="1" value={adhocKundliData.time_of_birth} onChange={e => setAdhocKundliData({ ...adhocKundliData, time_of_birth: e.target.value })} className="w-full mt-1 p-2 border rounded-lg text-sm bg-white" />
+                                                        <TimePicker withSeconds value={adhocKundliData.time_of_birth} onChange={time_of_birth => setAdhocKundliData({ ...adhocKundliData, time_of_birth })} className="w-full mt-1 p-1.5 border rounded-lg text-sm bg-white" />
                                                     </div>
                                                     <div>
                                                         <label className="text-xs font-bold text-gray-500 uppercase">Place of Birth</label>
