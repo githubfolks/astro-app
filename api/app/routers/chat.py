@@ -872,7 +872,7 @@ async def _pause_active_consultation_on_disconnect(consultation_id: int, disconn
 
 # --- Message translation (Hindi <-> English) ---
 
-from ..translation_service import translate_text
+from ..translation_service import translate_text, _GROQ_URL as _TRANSLATE_GROQ_URL, _MODEL as _TRANSLATE_MODEL
 
 
 class TranslateRequest(BaseModel):
