@@ -53,6 +53,7 @@ export const Dashboard: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile>({});
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [profileSaving, setProfileSaving] = useState(false);
     const [myCourses, setMyCourses] = useState<Course[]>([]);
     const [courseMaterials, setCourseMaterials] = useState<Record<number, CourseMaterial[]>>({});
@@ -71,7 +72,14 @@ export const Dashboard: React.FC = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
+
+    // Seed the phone number field from the authenticated user once it loads —
+    // it lives on User, not SeekerProfile, so it isn't part of the
+    // api.seekers.getProfile() response below.
+    useEffect(() => {
+        setPhoneNumber(user?.phone_number || '');
+    }, [user?.phone_number]);
 
     // Helper to format session time
     const formatSessionTime = (startStr: string, endStr: string) => {
@@ -832,6 +840,10 @@ export const Dashboard: React.FC = () => {
         setProfileSaving(true);
         try {
             await api.seekers.updateProfile(seekerProfile);
+            if (phoneNumber && phoneNumber !== user?.phone_number) {
+                const result = await api.seekers.updatePhoneNumber(phoneNumber);
+                updateUser({ phone_number: result.phone_number });
+            }
             alert('Profile updated successfully!');
         } catch (e) {
             console.error(e);
@@ -842,6 +854,7 @@ export const Dashboard: React.FC = () => {
 
     const missingSeekerItems: string[] = [];
     if (!seekerProfile.full_name) missingSeekerItems.push('your name');
+    if (!phoneNumber) missingSeekerItems.push('mobile number');
     if (!seekerProfile.date_of_birth) missingSeekerItems.push('date of birth');
     if (!seekerProfile.time_of_birth) missingSeekerItems.push('time of birth');
     if (!seekerProfile.place_of_birth) missingSeekerItems.push('place of birth');
@@ -1202,6 +1215,17 @@ export const Dashboard: React.FC = () => {
                                         onChange={(e) => setSeekerProfile({ ...seekerProfile, full_name: e.target.value })}
                                         className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                         placeholder="Enter your name"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-900 mb-1">Mobile Number</label>
+                                    <input
+                                        type="tel"
+                                        autoComplete="tel"
+                                        value={phoneNumber}
+                                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                        placeholder="Enter your mobile number"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">

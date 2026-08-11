@@ -134,7 +134,12 @@ const NativeAppBar: React.FC = () => {
                 ) : (
                     <span className="native-app-bar-spacer" />
                 )}
-                <span className="native-app-bar-title">{getPageTitle(location.pathname)}</span>
+                <div className="native-app-bar-title-group">
+                    {location.pathname === '/' && (
+                        <img src="/assets/logo.webp" alt="" className="native-app-bar-logo" />
+                    )}
+                    <span className="native-app-bar-title">{getPageTitle(location.pathname)}</span>
+                </div>
                 <button
                     className="native-app-bar-menu"
                     onClick={() => setIsDrawerOpen(true)}

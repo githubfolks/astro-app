@@ -133,6 +133,14 @@
     color: #1e1b4b;
     letter-spacing: -0.02em;
     transition: color 0.3s ease;
+    /* At narrow card widths (360px single-column phones, 2-column grids on
+       foldables/tablets) there isn't room for the full name beside the
+       Premium badge on one line. Without wrap, the flex row stays nowrap and
+       the name's own text wraps mid-word instead while the badge floats
+       beside just the first line. Wrapping the row instead drops the whole
+       badge to its own line below the full, unbroken name. */
+    flex-wrap: wrap;
+    row-gap: 4px;
 }
 
 .astro-card:hover .astro-name {
@@ -171,11 +179,21 @@
     align-items: center;
     gap: 8px;
     margin-top: auto;
+    /* Same narrow-card squeeze as .astro-name: with the fixed-size action
+       buttons taking their share, the hours chip was left too little room
+       and its own text wrapped mid-string inside the pill. Wrapping the row
+       instead drops the buttons to their own line below the full chip. */
+    flex-wrap: wrap;
+    row-gap: 8px;
 }
 
 .astro-hours-wrap {
     flex-grow: 1;
     min-width: 0;
+}
+
+.astro-hours {
+    white-space: nowrap;
 }
 
 .rating {

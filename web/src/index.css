@@ -216,9 +216,24 @@ a {
   flex-shrink: 0;
 }
 
-.native-app-bar-title {
+.native-app-bar-title-group {
   flex: 1;
-  text-align: center;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.native-app-bar-logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.native-app-bar-title {
   font-weight: 600;
   font-size: 16px;
   color: #1f2937;

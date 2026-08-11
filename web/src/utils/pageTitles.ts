@@ -1,5 +1,5 @@
 const ROUTE_TITLES: Record<string, string> = {
-    '/': 'Aadikarta',
+    '/': 'Aadikarta Vedic Astrology',
     '/login': 'Login',
     '/signup': 'Sign Up',
     '/forgot-password': 'Forgot Password',

@@ -24,6 +24,14 @@ const config: CapacitorConfig = {
       style: 'LIGHT',
       backgroundColor: '#ffffff',
     },
+    // Android 16 (SDK 36, our targetSdkVersion) forces edge-to-edge with no
+    // opt-out, so the WebView content can render behind the system status/nav
+    // bars unless real inset values are supplied. 'css' mode injects them as
+    // --safe-area-inset-* custom properties on <html>, which index.css's
+    // .native-app rules already read (see the safe-area-bottom comment there).
+    SystemBars: {
+      insetsHandling: 'css',
+    },
     // 'body' mode's own JS-driven resize got stuck reserving keyboard-sized
     // space after backgrounding the app during an external OAuth flow (e.g.
     // Google/Facebook sign-in), leaving a permanent gap at the bottom of

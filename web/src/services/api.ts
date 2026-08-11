@@ -335,6 +335,17 @@ export const api = {
                 body: JSON.stringify(data)
             });
             return handleResponse(response, 'Failed to update seeker profile');
+        },
+        updatePhoneNumber: async (phoneNumber: string) => {
+            const response = await customFetch(`${API_URL}/seekers/phone-number`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ phone_number: phoneNumber })
+            });
+            return handleResponse(response, 'Failed to update phone number');
         }
     },
 
