@@ -88,7 +88,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ id, value, onChange, className,
     for (let d = minDayLimit; d <= maxDayLimit; d++) days.push(d);
 
     return (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-[1fr_1fr_1.3fr] gap-2">
             <SegmentSelect
                 id={id}
                 required={required}

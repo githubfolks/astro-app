@@ -63,7 +63,12 @@ const SeekerChatTranscriptModal: React.FC<Props> = ({ consultation, onClose }) =
                                     {consultation.astrologer_profile ? getAstrologerDisplayName(consultation.astrologer_profile) : `Astrologer #${consultation.astrologer_id}`}
                                 </h2>
                                 <p className="text-white/80 text-xs">
-                                    {new Date(consultation.created_at).toLocaleString()}
+                                    {(() => {
+                                        const d = new Date(consultation.created_at);
+                                        const dd = String(d.getDate()).padStart(2, '0');
+                                        const mm = String(d.getMonth() + 1).padStart(2, '0');
+                                        return `${dd}/${mm}/${d.getFullYear()}, ${d.toLocaleTimeString()}`;
+                                    })()}
                                 </p>
                             </div>
                         </div>

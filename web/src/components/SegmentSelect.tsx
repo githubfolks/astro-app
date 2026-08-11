@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-interface Option {
-    value: number;
+interface Option<T> {
+    value: T;
     label: string;
 }
 
-interface SegmentSelectProps {
+interface SegmentSelectProps<T> {
     id?: string;
-    value: number | undefined;
-    options: Option[];
-    onChange: (value: number) => void;
+    value: T | undefined;
+    options: Option<T>[];
+    onChange: (value: T) => void;
     className: string;
     placeholder: string;
     required?: boolean;
@@ -24,7 +24,7 @@ interface SegmentSelectProps {
  */
 const LIST_MAX_HEIGHT = 224; // px, matches max-h-56
 
-const SegmentSelect: React.FC<SegmentSelectProps> = ({ id, value, options, onChange, className, placeholder, required }) => {
+function SegmentSelect<T extends string | number>({ id, value, options, onChange, className, placeholder, required }: SegmentSelectProps<T>) {
     const [open, setOpen] = useState(false);
     // Compact modals/forms often have little room below a mid-form field, so a
     // dropdown that always opens downward spills over and hides whatever comes
@@ -118,7 +118,7 @@ const SegmentSelect: React.FC<SegmentSelectProps> = ({ id, value, options, onCha
                                 onChange(opt.value);
                                 setOpen(false);
                             }}
-                            className={`px-4 py-2 text-sm cursor-pointer ${opt.value === value ? 'bg-amber-500/20 font-semibold' : ''}`}
+                            className={`px-2 py-2 text-sm cursor-pointer ${opt.value === value ? 'bg-amber-500/20 font-semibold' : ''}`}
                         >
                             {opt.label}
                         </li>

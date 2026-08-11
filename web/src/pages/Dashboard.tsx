@@ -14,6 +14,7 @@ import SeekerChatTranscriptModal from '../components/SeekerChatTranscriptModal';
 import CityAutocomplete from '../components/CityAutocomplete';
 import DatePicker from '../components/DatePicker';
 import TimePicker from '../components/TimePicker';
+import SegmentSelect from '../components/SegmentSelect';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
@@ -36,6 +37,12 @@ export const Dashboard: React.FC = () => {
     const [isOnline, setIsOnline] = useState(false);
     const [availabilityStart, setAvailabilityStart] = useState('');
     const [availabilityEnd, setAvailabilityEnd] = useState('');
+    // Last-saved snapshot, used to disable "Update Availability Limit" until the
+    // astrologer actually changes something and to show an inline status instead
+    // of a native alert() (see the same pattern on the seeker's "Save Profile").
+    const [savedAvailabilityStart, setSavedAvailabilityStart] = useState('');
+    const [savedAvailabilityEnd, setSavedAvailabilityEnd] = useState('');
+    const [availabilitySaveMessage, setAvailabilitySaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [updatingProfile, setUpdatingProfile] = useState(false);
     const [astrologerProfile, setAstrologerProfile] = useState<AstrologerProfileType | null>(null);
     const [payoutHistory, setPayoutHistory] = useState<PayoutHistoryItem[]>([]);
@@ -55,6 +62,11 @@ export const Dashboard: React.FC = () => {
     const [seekerProfile, setSeekerProfile] = useState<SeekerProfile>({});
     const [phoneNumber, setPhoneNumber] = useState('');
     const [profileSaving, setProfileSaving] = useState(false);
+    // Last-saved snapshot, used to disable "Save Profile" until the seeker actually
+    // changes something and to show an inline status instead of a native alert().
+    const [savedSeekerProfile, setSavedSeekerProfile] = useState<SeekerProfile>({});
+    const [savedPhoneNumber, setSavedPhoneNumber] = useState('');
+    const [profileSaveMessage, setProfileSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [myCourses, setMyCourses] = useState<Course[]>([]);
     const [courseMaterials, setCourseMaterials] = useState<Record<number, CourseMaterial[]>>({});
     const [loadingMaterials, setLoadingMaterials] = useState<Record<number, boolean>>({});
@@ -79,6 +91,7 @@ export const Dashboard: React.FC = () => {
     // api.seekers.getProfile() response below.
     useEffect(() => {
         setPhoneNumber(user?.phone_number || '');
+        setSavedPhoneNumber(user?.phone_number || '');
     }, [user?.phone_number]);
 
     // Helper to format session time
@@ -111,8 +124,12 @@ export const Dashboard: React.FC = () => {
                 const profile = await api.astrologers.getProfile();
 
                 setIsOnline(profile.is_online);
-                setAvailabilityStart((profile.availability_start_time || '').slice(0, 5));
-                setAvailabilityEnd((profile.availability_end_time || '').slice(0, 5));
+                const start = (profile.availability_start_time || '').slice(0, 5);
+                const end = (profile.availability_end_time || '').slice(0, 5);
+                setAvailabilityStart(start);
+                setAvailabilityEnd(end);
+                setSavedAvailabilityStart(start);
+                setSavedAvailabilityEnd(end);
                 setAstrologerProfile(profile);
 
                 // Load payout history
@@ -157,7 +174,10 @@ export const Dashboard: React.FC = () => {
         if (user?.role === 'SEEKER') {
             api.wallet.getBalance().then(w => setWalletBalance(Number(w.balance))).catch(console.error);
             api.consultations.getHistory().then(data => setSeekerHistory(data)).catch(console.error);
-            api.seekers.getProfile().then(setSeekerProfile).catch(console.error);
+            api.seekers.getProfile().then((profile) => {
+                setSeekerProfile(profile);
+                setSavedSeekerProfile(profile);
+            }).catch(console.error);
             api.edu.getMyCourses().then(setMyCourses).catch(console.error);
         }
     }, [user]);
@@ -196,6 +216,13 @@ export const Dashboard: React.FC = () => {
         }
     });
 
+    // Auto-dismiss the inline availability-save status so it doesn't linger indefinitely.
+    useEffect(() => {
+        if (!availabilitySaveMessage) return;
+        const timer = setTimeout(() => setAvailabilitySaveMessage(null), 4000);
+        return () => clearTimeout(timer);
+    }, [availabilitySaveMessage]);
+
     // One chat at a time: is the astrologer already in a live session? (Q4)
     const hasActiveSession = history.some((c: Consultation) =>
         ['ACCEPTED', 'ACTIVE', 'ONGOING', 'PAUSED'].includes(c.status)
@@ -217,17 +244,22 @@ export const Dashboard: React.FC = () => {
         }
     };
 
+    const isAvailabilityDirty = availabilityStart !== savedAvailabilityStart || availabilityEnd !== savedAvailabilityEnd;
+
     const saveAvailability = async () => {
         try {
             setUpdatingProfile(true);
+            setAvailabilitySaveMessage(null);
             await api.astrologers.updateProfile({
                 availability_start_time: availabilityStart || null,
                 availability_end_time: availabilityEnd || null,
             });
-            alert('Availability updated successfully!');
+            setSavedAvailabilityStart(availabilityStart);
+            setSavedAvailabilityEnd(availabilityEnd);
+            setAvailabilitySaveMessage({ type: 'success', text: 'Availability updated successfully!' });
         } catch (e) {
             console.error(e);
-            alert('Failed to update availability');
+            setAvailabilitySaveMessage({ type: 'error', text: 'Failed to update availability' });
         } finally {
             setUpdatingProfile(false);
         }
@@ -472,11 +504,16 @@ export const Dashboard: React.FC = () => {
 
                                     <button
                                         onClick={saveAvailability}
-                                        disabled={updatingProfile}
-                                        className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                        disabled={updatingProfile || !isAvailabilityDirty}
+                                        className="w-full bg-gray-900 text-white font-bold py-3 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         Update Availability Limit
                                     </button>
+                                    {availabilitySaveMessage && (
+                                        <p className={`text-sm font-medium text-center ${availabilitySaveMessage.type === 'success' ? 'text-green-700' : 'text-red-600'}`}>
+                                            {availabilitySaveMessage.text}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -836,18 +873,34 @@ export const Dashboard: React.FC = () => {
         setRatingConsultation(null);
     };
 
+    const isSeekerProfileDirty = phoneNumber !== savedPhoneNumber
+        || JSON.stringify(seekerProfile) !== JSON.stringify(savedSeekerProfile);
+
+    // Auto-dismiss the inline save status so it doesn't linger on the page indefinitely.
+    useEffect(() => {
+        if (!profileSaveMessage) return;
+        const timer = setTimeout(() => setProfileSaveMessage(null), 4000);
+        return () => clearTimeout(timer);
+    }, [profileSaveMessage]);
+
     const handleProfileSave = async () => {
         setProfileSaving(true);
+        setProfileSaveMessage(null);
         try {
-            await api.seekers.updateProfile(seekerProfile);
+            const updated = await api.seekers.updateProfile(seekerProfile);
+            setSeekerProfile(updated);
+            setSavedSeekerProfile(updated);
             if (phoneNumber && phoneNumber !== user?.phone_number) {
                 const result = await api.seekers.updatePhoneNumber(phoneNumber);
                 updateUser({ phone_number: result.phone_number });
+                setSavedPhoneNumber(result.phone_number);
+            } else {
+                setSavedPhoneNumber(phoneNumber);
             }
-            alert('Profile updated successfully!');
+            setProfileSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
         } catch (e) {
             console.error(e);
-            alert(getErrorMessage(e) || 'Failed to save profile');
+            setProfileSaveMessage({ type: 'error', text: getErrorMessage(e) || 'Failed to save profile' });
         }
         setProfileSaving(false);
     };
@@ -1176,17 +1229,18 @@ export const Dashboard: React.FC = () => {
                                 My Wallet
                             </h3>
 
-                            <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] rounded-xl p-4 text-white mb-3">
-                                <div className="text-xs opacity-80 mb-1">Available Balance</div>
-                                <div className="text-2xl font-bold">₹{walletBalance.toFixed(2)}</div>
+                            <div className="bg-gradient-to-r from-[#E91E63] to-[#FF5722] rounded-xl p-4 text-white mb-3 flex items-center justify-between gap-3">
+                                <div>
+                                    <div className="text-xs opacity-80 mb-1">Available Balance</div>
+                                    <div className="text-2xl font-bold">₹{walletBalance.toFixed(2)}</div>
+                                </div>
+                                <button
+                                    onClick={() => setShowPaymentModal(true)}
+                                    className="shrink-0 bg-white text-gray-900 font-bold py-2 px-4 rounded-xl hover:bg-gray-100 transition-colors text-sm"
+                                >
+                                    + Add Money
+                                </button>
                             </div>
-
-                            <button
-                                onClick={() => setShowPaymentModal(true)}
-                                className="w-full bg-gray-900 text-white font-bold py-2 rounded-xl hover:bg-gray-800 transition-colors text-sm"
-                            >
-                                + Add Money
-                            </button>
 
                             <div className="mt-6 pt-4 border-t border-gray-100">
                                 <button
@@ -1257,25 +1311,30 @@ export const Dashboard: React.FC = () => {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-bold text-gray-900 mb-1">Gender</label>
-                                    <select
-                                        autoComplete="sex"
-                                        value={seekerProfile.gender || ''}
-                                        onChange={(e) => setSeekerProfile({ ...seekerProfile, gender: e.target.value })}
-                                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
-                                    >
-                                        <option value="">Select Gender</option>
-                                        <option value="MALE">Male</option>
-                                        <option value="FEMALE">Female</option>
-                                        <option value="OTHER">Other</option>
-                                    </select>
+                                    <SegmentSelect
+                                        value={seekerProfile.gender || undefined}
+                                        onChange={(gender) => setSeekerProfile({ ...seekerProfile, gender })}
+                                        options={[
+                                            { value: 'MALE', label: 'Male' },
+                                            { value: 'FEMALE', label: 'Female' },
+                                            { value: 'OTHER', label: 'Other' },
+                                        ]}
+                                        placeholder="Select Gender"
+                                        className="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
+                                    />
                                 </div>
                                 <button
                                     onClick={handleProfileSave}
-                                    disabled={profileSaving}
-                                    className="w-full bg-[#E91E63] text-white font-bold py-2 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50"
+                                    disabled={profileSaving || !isSeekerProfileDirty}
+                                    className="w-full bg-[#E91E63] text-white font-bold py-2 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {profileSaving ? 'Saving...' : 'Save Profile'}
                                 </button>
+                                {profileSaveMessage && (
+                                    <p className={`text-sm font-medium text-center ${profileSaveMessage.type === 'success' ? 'text-green-700' : 'text-red-600'}`}>
+                                        {profileSaveMessage.text}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>

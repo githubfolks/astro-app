@@ -81,4 +81,27 @@
     <style name="AppTheme.DatePickerStyle" parent="android:Widget.Material.Light.DatePicker">
         <item name="android:datePickerMode">spinner</item>
     </style>
+
+    <!-- Theme for the WebView's JS window.alert()/confirm()/prompt() dialogs (see
+         MainActivity's AppWebChromeClient). On API 35 (Android 15), which enforces
+         edge-to-edge, Capacitor's default BridgeWebChromeClient builds these with a
+         plain `new AlertDialog.Builder(context)` — under this activity's AppCompat
+         DayNight theme that resolves to a window that isn't explicitly floating, so
+         instead of a small centered box it stretches to fill the entire display
+         (confirmed on the AstroAppPhone/API 35 emulator: "Profile updated
+         successfully!" rendered as a near-blank full-screen page with the message at
+         the very top and OK near the bottom). windowIsFloating + explicit min-width
+         forces the width back to a normal dialog. Same as AppTheme.DatePickerDialogTheme
+         above: the plain `.Dialog.Alert` parent auto-populates a title icon from the
+         app's launcher icon and reserves a title bar for it — that's the floating
+         आदिकर्ता roundel and the leftover vertical whitespace seen once width was
+         fixed. Switch to the plain (non-.Alert) Dialog theme + windowNoTitle to drop
+         that reserved icon/title space, exactly as done there. -->
+    <style name="AppTheme.AlertDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowMinWidthMajor">80%</item>
+        <item name="android:windowMinWidthMinor">80%</item>
+        <item name="colorAccent">#E91E63</item>
+    </style>
 </resources>

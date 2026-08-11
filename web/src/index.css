@@ -429,6 +429,11 @@ a {
 
 .native-app main.dashboard-main {
   padding: 16px;
+  /* Restore the fixed-bottom-nav clearance from the generic ".native-app main"
+     rule above — this selector's higher specificity otherwise resets it to a
+     flat 16px, letting the last card (e.g. Dashboard's "Save Profile" button)
+     sit close enough to the OS nav bar that a tap can land on it instead. */
+  padding-bottom: calc(70px + var(--safe-area-bottom, 0px));
 }
 
 .native-app .dashboard-main .p-6,
