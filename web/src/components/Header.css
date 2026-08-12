@@ -19,6 +19,10 @@
     text-decoration: none;
 }
 
+.brand-text {
+    display: none;
+}
+
 .main-nav ul {
     display: flex;
     list-style: none;
@@ -156,6 +160,38 @@
     .logo-area {
         display: flex;
         align-items: center;
+        flex: 1;
+    }
+
+    .brand-logo {
+        flex: 1;
+    }
+
+    .brand-logo img {
+        height: 44px;
+        width: auto;
+    }
+
+    .brand-text {
+        display: block;
+        flex: 1;
+        text-align: center;
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 1.2;
+        color: var(--secondary, #1e1b4b);
+        margin-left: 12px;
+    }
+
+    @media (max-width: 480px) {
+        .brand-logo img {
+            height: 34px;
+        }
+
+        .brand-text {
+            font-size: 14px;
+            margin-left: 8px;
+        }
     }
 
     .main-nav {

@@ -4,7 +4,7 @@ import './Hero.css';
 
 const Hero: React.FC = () => {
     return (
-        <section className="hero-section spiritual-bg overflow-hidden relative min-h-screen lg:min-h-[640px] flex items-center">
+        <section className="hero-section spiritual-bg overflow-hidden relative max-[968px]:min-h-0 min-h-screen lg:min-h-[640px] flex items-center">
             <div className="container hero-content relative z-10 py-2">
                 <div className="hero-text">
                     <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-400/30 rounded-full px-4 py-1.5 mb-4 backdrop-blur-md">
@@ -56,7 +56,7 @@ const Hero: React.FC = () => {
                         width="800"
                         height="600"
                     />
-                    <div className="floating-card absolute -right-6 top-1/4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-2xl z-20 flex items-center gap-4 animate-bounce-slow">
+                    <div className="floating-card absolute -right-6 top-1/4 max-[640px]:right-2 max-[640px]:top-auto max-[640px]:-bottom-4 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-2xl z-20 flex items-center gap-4 animate-bounce-slow">
                         <span className="text-3xl">🧠</span>
                         <div className="text text-black">
                             <strong className="block text-sm">Memory Mastery</strong>

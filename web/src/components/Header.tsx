@@ -214,6 +214,7 @@ const Header: React.FC = () => {
                     </button>
                     <Link to="/" className="brand-logo" aria-label="Aadikarta Vedic Astrology Home">
                         <img src="/assets/logo.webp" alt="Aadikarta Vedic Astrology" className="h-20 w-auto" width="146" height="80" />
+                        <span className="brand-text">Aadikarta Vedic Astrology</span>
                     </Link>
                 </div>
 
