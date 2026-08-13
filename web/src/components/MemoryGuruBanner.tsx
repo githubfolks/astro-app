@@ -5,26 +5,25 @@ import './MemoryGuruBanner.css';
 
 const MemoryGuruBanner: React.FC = () => {
     return (
-        <section className="memory-guru-banner py-24 relative overflow-hidden bg-slate-50 border-y-4 border-indigo-100">
+        <section className="memory-guru-banner py-16 md:py-24 relative overflow-hidden bg-slate-50 border-y-4 border-indigo-100">
             {/* Section divider making clear this is a different offering, not an astrology feature */}
-            <div className="container mx-auto px-4 relative z-10 mb-14 text-center">
-                <span className="inline-flex items-center gap-2 bg-indigo-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full">
+            <div className="container mx-auto px-4 relative z-20 mb-12 text-center">
+                <span className="inline-flex items-center gap-2 bg-indigo-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
                     Also From Aadikarta
                 </span>
-                <p className="text-gray-500 text-sm mt-3 max-w-xl mx-auto">
+                <p className="text-gray-600 text-sm md:text-base mt-3 max-w-2xl mx-auto leading-relaxed">
                     Beyond astrology, we also run a memory-training vertical taught by our in-house guru — a separate offering, not part of your astrology consultation.
                 </p>
             </div>
 
             {/* Background Decorations */}
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-indigo-50/50 rounded-l-[100px] transform translate-x-32"></div>
-            <div className="absolute top-20 right-20 w-64 h-64 bg-indigo-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-            <div className="absolute top-40 right-40 w-64 h-64 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+            <div className="absolute top-20 right-20 w-64 h-64 bg-indigo-100/60 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob pointer-events-none"></div>
+            <div className="absolute top-40 right-40 w-64 h-64 bg-purple-100/60 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000 pointer-events-none"></div>
 
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="memory-guru-content flex flex-col lg:flex-row items-center gap-16">
+            <div className="container mx-auto px-4 relative z-20">
+                <div className="memory-guru-content flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
                     {/* Text Content */}
-                    <div className="lg:w-3/5" data-aos="fade-right">
+                    <div className="w-full lg:w-7/12" data-aos="fade-right">
                         <span className="text-indigo-600 font-semibold uppercase tracking-widest text-sm mb-4 block flex items-center gap-2">
                             <Brain size={18} />
                             Memory Mastery Program
@@ -82,7 +81,7 @@ const MemoryGuruBanner: React.FC = () => {
                     </div>
 
                     {/* Image / Photo Placeholder */}
-                    <div className="memory-guru-media lg:w-2/5" data-aos="fade-left">
+                    <div className="memory-guru-media w-full lg:w-5/12 shrink-0 mt-6 lg:mt-0" data-aos="fade-left">
                         <div className="bg-gradient-to-tr from-indigo-100 to-purple-50 rounded-[3rem] p-4 relative">
                             {/* Decorative border */}
                             <div className="absolute inset-0 border-2 border-indigo-200 border-dashed rounded-[3rem] -m-4"></div>
