@@ -32,6 +32,7 @@ const ChatHistoryPage = lazy(() => import('./pages/ChatHistoryPage'));
 const TransactionHistoryPage = lazy(() => import('./pages/TransactionHistoryPage'));
 const Chat = lazy(() => import('./pages/Chat').then(module => ({ default: module.Chat })));
 const AstrologersPage = lazy(() => import('./pages/AstrologersPage'));
+const CityAstrologers = lazy(() => import('./pages/CityAstrologers'));
 const AstrologerProfile = lazy(() => import('./pages/AstrologerProfile'));
 const AboutUs = lazy(() => import('./pages/AboutUs'));
 const ContactUs = lazy(() => import('./pages/ContactUs'));
@@ -217,6 +218,7 @@ function App() {
                             <Route path="/reset-password" element={<ResetPassword />} />
                             <Route path="/ai-astrologer" element={<AiAstrologer />} />
                             <Route path="/astrologers" element={<AstrologersPage />} />
+                            <Route path="/astrologers/city/:cityName" element={<CityAstrologers />} />
                             <Route path="/chat-with-astrologers" element={<Navigate to="/astrologers" replace />} />
                             <Route path="/astrologers/:id" element={<AstrologerProfile />} />
                             <Route path="/astrologer/:id" element={<AstrologerRedirect />} />

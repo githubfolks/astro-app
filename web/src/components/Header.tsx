@@ -7,6 +7,7 @@ import './Header.css';
 import { useAuth } from '../context/AuthContext';
 import { isNative } from '../utils/platform';
 import { getPageTitle } from '../utils/pageTitles';
+import PromoTopBar from './PromoTopBar';
 import { SERVICES_LIST, ASTROLOGER_TOOLS_LIST } from '../data/servicesList';
 
 const NATIVE_TAB_ROOTS = ['/', '/astrologers', '/dashboard'];
@@ -206,7 +207,9 @@ const Header: React.FC = () => {
     };
 
     return (
-        <header className="site-header">
+        <>
+            <PromoTopBar />
+            <header className="site-header">
             <div className="container header-content">
                 <div className="logo-area">
                     <button className="mobile-menu-btn" onClick={toggleMenu} aria-label={isMenuOpen ? "Close menu" : "Open menu"}>
@@ -345,6 +348,7 @@ const Header: React.FC = () => {
                 </div>
             </div>
         </header>
+        </>
     );
 };
 

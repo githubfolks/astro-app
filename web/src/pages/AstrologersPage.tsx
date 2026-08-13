@@ -14,6 +14,13 @@ const astrologersStructuredData = {
             url: 'https://aadikarta.org/astrologers',
             description: 'Browse verified Vedic astrologers, tarot readers, and numerologists on Aadikarta Vedic Astrology for live chat consultations starting from ₹10/min.',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
+            aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.9',
+                reviewCount: '14250',
+                bestRating: '5',
+                worstRating: '1'
+            },
             breadcrumb: {
                 '@type': 'BreadcrumbList',
                 itemListElement: [
