@@ -144,6 +144,7 @@ export const reviewModeration = {
     list: (params) => api.get('/admin/reviews', { params }),
     approve: (id) => api.post(`/admin/reviews/${id}/approve`),
     reject: (id) => api.post(`/admin/reviews/${id}/reject`),
+    update: (id, data) => api.put(`/admin/reviews/${id}`, data),
 };
 
 export const contentStudio = {

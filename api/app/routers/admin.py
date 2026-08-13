@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from sqlalchemy.exc import IntegrityError
+from pydantic import BaseModel, Field
 from typing import List, Optional
 import shutil
 import uuid
@@ -1918,6 +1919,49 @@ def reject_review(review_id: int, db: Session = Depends(database.get_db)):
     review.display_status = models.ReviewDisplayStatus.REJECTED
     db.commit()
     return {"status": "ok", "review_id": review_id, "new_status": review.display_status.value}
+
+
+class ReviewUpdateRequest(BaseModel):
+    rating: Optional[int] = Field(None, ge=1, le=5)
+    comment: Optional[str] = None
+    display_status: Optional[str] = None
+
+
+@router.put("/reviews/{review_id}")
+def update_review(review_id: int, request: ReviewUpdateRequest, db: Session = Depends(database.get_db)):
+    review = db.query(models.Review).filter(models.Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    if request.rating is not None:
+        review.rating = request.rating
+    if request.comment is not None:
+        review.comment = request.comment.strip()
+    if request.display_status is not None:
+        status_upper = request.display_status.upper()
+        if hasattr(models.ReviewDisplayStatus, status_upper):
+            review.display_status = getattr(models.ReviewDisplayStatus, status_upper)
+
+    db.commit()
+
+    # Recalculate astrologer average rating if applicable
+    if review.astrologer_id:
+        profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == review.astrologer_id).first()
+        if profile:
+            avg_rating = db.query(func.avg(models.Review.rating)).filter(models.Review.astrologer_id == review.astrologer_id).scalar()
+            if avg_rating is not None:
+                profile.rating_avg = Decimal(str(round(float(avg_rating), 2)))
+                db.commit()
+
+    return {
+        "status": "ok",
+        "review": {
+            "id": review.id,
+            "rating": review.rating,
+            "comment": review.comment,
+            "display_status": review.display_status.value if hasattr(review.display_status, "value") else review.display_status,
+        }
+    }
 
 
 @router.patch("/astrologers/{user_id}/commission")
