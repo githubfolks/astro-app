@@ -66,13 +66,14 @@ We're Aadikarta Vedic Astro Pvt Ltd, running aadikarta.org to connect users worl
 
 =====================================
 
-max concurrent chat support
-Hinglish words collection
-compatible contents of Privacy Policy, Refund Policy, Disclaimer, Terms of Service
+REVIEWS:
+
+Acharya Shiv provided extremely clear and accurate guidance on my career transit. His remedies were practical and easy to follow. Highly recommended for genuine Vedic predictions!
 
 
-Astrolger card:
-1. keep star and rate below to profile image
-2. Keep icon for profile and Chat/Offline. Keep in the same line of Availability Time
+Very detailed and insightful Kundli analysis. Acharya Shiv explained the planetary Dasha timing patiently and answered all my questions with great clarity.
 
 
+Insightful consultation! Acharya Shiv gave precise answers regarding relationship compatibility and Mahadasha changes. Felt much more confident after the chat session.
+
+Acharya Raman is an outstanding Vedic astrologer. He identified key planetary placements in my birth chart instantly and gave positive, realistic remedies.

@@ -49,7 +49,7 @@ const AiAstrologerBanner: React.FC = () => {
                                 <ArrowRight className="w-4 h-4" />
                             </Link>
                             <Link to="/astrologers" className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-7 py-3.5 rounded-2xl font-bold transition-all hover:scale-105">
-                                Talk to Human Astrologer
+                                Talk to Our Expert Astrologers
                             </Link>
                         </div>
                     </div>
