@@ -5229,6 +5229,20 @@
             "title": "Id",
             "type": "integer"
           },
+          "longtail_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longtail Keywords"
+          },
           "published_at": {
             "anyOf": [
               {
@@ -5240,6 +5254,20 @@
               }
             ],
             "title": "Published At"
+          },
+          "secondary_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Keywords"
           },
           "seo_keywords_facebook": {
             "anyOf": [
@@ -5281,6 +5309,20 @@
           "status": {
             "$ref": "#/components/schemas/PostStatus",
             "default": "DRAFT"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
           },
           "title": {
             "title": "Title",
@@ -5368,6 +5410,34 @@
             ],
             "title": "Featured Image"
           },
+          "longtail_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longtail Keywords"
+          },
+          "secondary_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Keywords"
+          },
           "seo_keywords_facebook": {
             "anyOf": [
               {
@@ -5415,6 +5485,20 @@
           "status": {
             "$ref": "#/components/schemas/PostStatus",
             "default": "DRAFT"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
           },
           "title": {
             "title": "Title",
@@ -5547,6 +5631,34 @@
             ],
             "title": "Featured Image"
           },
+          "longtail_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Longtail Keywords"
+          },
+          "secondary_keywords": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Keywords"
+          },
           "seo_keywords_facebook": {
             "anyOf": [
               {
@@ -5600,6 +5712,20 @@
                 "type": "null"
               }
             ]
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
           },
           "title": {
             "anyOf": [

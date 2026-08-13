@@ -403,6 +403,9 @@ class Post(Base):
     author_id = Column(Integer, ForeignKey("users.id"))
     author_name = Column(String, nullable=True)
     faqs = Column(JSON, nullable=True)  # [{question, answer}, ...] -> FAQPage schema on the public post
+    tags = Column(JSON, nullable=True)  # ["Vedic Astrology", "Kundli Remedies", ...]
+    secondary_keywords = Column(JSON, nullable=True)  # ["manglik dosha in 7th house", "mars remedies"]
+    longtail_keywords = Column(JSON, nullable=True)  # ["how to fix manglik dosha for marriage", ...]
     seo_keywords_facebook = Column(Text, nullable=True)
     seo_keywords_instagram = Column(Text, nullable=True)
     seo_keywords_youtube = Column(Text, nullable=True)

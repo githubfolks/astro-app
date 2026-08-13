@@ -38,6 +38,9 @@ class PostBase(BaseModel):
     featured_image: Optional[str] = None
     author_name: Optional[str] = None
     faqs: Optional[List[Dict[str, str]]] = None
+    tags: Optional[List[str]] = None
+    secondary_keywords: Optional[List[str]] = None
+    longtail_keywords: Optional[List[str]] = None
     seo_keywords_facebook: Optional[str] = None
     seo_keywords_instagram: Optional[str] = None
     seo_keywords_youtube: Optional[str] = None
@@ -54,6 +57,9 @@ class PostUpdate(BaseModel):
     featured_image: Optional[str] = None
     author_name: Optional[str] = None
     faqs: Optional[List[Dict[str, str]]] = None
+    tags: Optional[List[str]] = None
+    secondary_keywords: Optional[List[str]] = None
+    longtail_keywords: Optional[List[str]] = None
     seo_keywords_facebook: Optional[str] = None
     seo_keywords_instagram: Optional[str] = None
     seo_keywords_youtube: Optional[str] = None

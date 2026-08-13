@@ -27,6 +27,12 @@ const BlogPost: React.FC = () => {
                 "@id": `https://aadikarta.org/blog/${p.slug || slug}#article`,
                 "headline": p.title,
                 "url": `https://aadikarta.org/blog/${p.slug || slug}`,
+                "keywords": [
+                    p.title,
+                    ...(p.tags || []),
+                    ...(p.secondary_keywords || []),
+                    ...(p.longtail_keywords || [])
+                ].filter(Boolean).join(', '),
                 "mainEntityOfPage": {
                     "@type": "WebPage",
                     "@id": `https://aadikarta.org/blog/${p.slug || slug}`
@@ -108,10 +114,12 @@ const BlogPost: React.FC = () => {
         return (
             <div className="flex flex-col min-h-screen">
                 <Header />
-                <div className="flex-1 container mx-auto px-4 py-6 md:py-12 text-center">
-                    <h1 className="text-2xl md:text-4xl font-bold text-gray-800 mb-4">Post Not Found</h1>
-                    <p className="text-gray-600 mb-8">The article you're looking for might have been moved or deleted.</p>
-                    <Link to="/blog" className="text-indigo-600 hover:text-indigo-800 font-medium" aria-label="Return to blog list">Return to Blog</Link>
+                <div className="flex-1 container mx-auto px-4 py-16 text-center">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Article Not Found</h1>
+                    <p className="text-gray-600 mb-6">The blog article you are looking for does not exist or has been removed.</p>
+                    <Link to="/blog" className="inline-flex items-center text-indigo-600 font-semibold hover:underline">
+                        ← Back to Blog
+                    </Link>
                 </div>
                 <Footer />
             </div>
@@ -129,11 +137,14 @@ const BlogPost: React.FC = () => {
 
     const derivedKeywords = [
         post.title,
+        ...(post.tags || []),
+        ...(post.secondary_keywords || []),
+        ...(post.longtail_keywords || []),
         ...(post.slug ? [post.slug.replace(/-/g, ' ')] : []),
         "Aadikarta Vedic Astrology",
         "Kundli",
         "Horoscope & Jyotish Guidance"
-    ].join(', ');
+    ].filter(Boolean).join(', ');
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -173,7 +184,7 @@ const BlogPost: React.FC = () => {
                         <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">{post.title}</h1>
 
                         <div className="flex justify-center">
-                            <ShareButtons url={`${BASE_URL}/blog/${post.slug}`} title={post.title} />
+                            <ShareButtons url={`${BASE_URL}/blog/${post.slug || slug}`} title={post.title} />
                         </div>
 
                         {post.featured_image && (
@@ -187,6 +198,30 @@ const BlogPost: React.FC = () => {
                         className="post-content prose prose-indigo max-w-none"
                         dangerouslySetInnerHTML={{ __html: normalizeArticleHtml(DOMPurify.sanitize(post.content)) }}
                     />
+
+                    {/* Topic Tags, Secondary & Long-tail Keywords Section */}
+                    {((post.tags && post.tags.length > 0) || (post.secondary_keywords && post.secondary_keywords.length > 0) || (post.longtail_keywords && post.longtail_keywords.length > 0)) && (
+                        <div className="mt-8 pt-6 border-t border-gray-200">
+                            <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Tags & Focus Topics</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {post.tags?.map((tag, idx) => (
+                                    <span key={`tag-${idx}`} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                        # {tag}
+                                    </span>
+                                ))}
+                                {post.secondary_keywords?.map((kw, idx) => (
+                                    <span key={`sec-${idx}`} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200">
+                                        {kw}
+                                    </span>
+                                ))}
+                                {post.longtail_keywords?.map((kw, idx) => (
+                                    <span key={`lt-${idx}`} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-normal bg-gray-100 text-gray-700 border border-gray-200">
+                                        🔍 {kw}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {post.faqs && post.faqs.length > 0 && (
                         <div className="mt-12 rounded-3xl bg-gradient-to-b from-[#130c2c] to-[#04010a] overflow-hidden">

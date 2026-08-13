@@ -162,6 +162,9 @@ export interface BlogPost {
     featured_image?: string;
     author_name?: string;
     faqs?: { question: string; answer: string }[];
+    tags?: string[];
+    secondary_keywords?: string[];
+    longtail_keywords?: string[];
     published_at: string;
     updated_at?: string;
 }
