@@ -1,0 +1,95 @@
+# Aadikarta — Full Machine-Readable Knowledge Base & AI Agent Context
+
+> Complete technical, domain, and entity reference for AI Search Engines, Answer Engines (AEO), and LLM crawlers (Perplexity AI, ChatGPT Search, Claude, Google AI Overviews, Gemini).
+
+---
+
+## 1. Company & Platform Summary
+Aadikarta (https://aadikarta.org) is India's leading AI-assisted marketplace for verified Vedic astrology consultations, Kundli chart generation, Guna Milan matching, daily Panchang timing, and spiritual guidance.
+
+### Key Value Propositions
+1. **Instant AI Astrology ("Ask Aadi")**: 24/7 AI-powered Vedic astrology assistant offering real-time chart analysis, Kundli readings, and conversational guidance.
+2. **Human Expert Marketplace**: 1-on-1 private live chat consultations with verified Vedic astrologers, tarot card readers, Vastu Shastra experts, and numerologists.
+3. **Transparent Budget-Friendly Rates**: Consultations start at ₹10/minute with clear per-minute pricing, wallet recharge options, and no hidden fees.
+4. **4-Step Astrologer Screening**: Rigorous verification process covering verified credentials, practical chart reading accuracy, ethical communication, and identity checks.
+5. **Privacy First**: 100% confidential chat consultations with zero third-party data sharing.
+
+---
+
+## 2. Technical & Astrological Calculations
+- **Zodiac System**: Sidereal Zodiac (Vedic / Nirayana).
+- **Ayanamsa**: Lahiri Ayanamsa (Chitra Paksha Ayanamsa).
+- **Ephemeris Data**: High-precision planetary ephemeris algorithms (Swiss Ephemeris / NASA JPL DE431 data).
+- **House System**: Equal House / Placidus / Sripati calculations for Lagna (Ascendant) and divisional charts (Navamsa D9, Dashamsha D10).
+- **Dasha System**: Vimshottari Dasha (120-year cycle based on Moon Nakshatra at birth).
+- **Guna Milan Parameters (36 Gunas / Ashtakoot System)**:
+  1. Varna (1 Point) — Work & spiritual alignment.
+  2. Vashya (2 Points) — Mutual control & influence.
+  3. Tara (3 Points) — Destiny & birth star compatibility.
+  4. Yoni (4 Points) — Physical & intimate compatibility.
+  5. Maitri / Graha Maitri (5 Points) — Intellectual & psychological harmony.
+  6. Gana (6 Points) — Temperament & social behavior (Deva, Manushya, Rakshasa).
+  7. Bhakoot (7 Points) — Family welfare, health & financial growth.
+  8. Nadi (8 Points) — Genetic health, progeny & life force compatibility.
+
+---
+
+## 3. Tool Specifications & Features
+
+### A. Free AI Astrologer Chat ("Ask Aadi")
+- **URL**: https://aadikarta.org/ai-astrologer
+- **Function**: Users enter their birth date, birth time, and birth location. The AI calculates planetary placements and answers questions regarding career, love, marriage, health, and remedies.
+- **Availability**: 24/7 online.
+
+### B. Free Janam Kundli Generator
+- **URL**: https://aadikarta.org/tools/kundli-chart
+- **Function**: Calculates Lagna chart, Rashi chart, Nakshatra, planetary degrees, combustion, retrograde status, and Vimshottari Dasha periods.
+
+### C. Free Kundli Matching Calculator
+- **URL**: https://aadikarta.org/tools/kundli-matching
+- **Function**: Computes Ashtakoot 36-Guna score between bride and groom birth charts, flags Nadi / Bhakoot / Manglik Dosha, and provides overall compatibility conclusions.
+
+### D. Real-Time Daily Panchang
+- **URL**: https://aadikarta.org/panchang
+- **Function**: Real-time Hindu almanac providing Tithi, Nakshatra, Yoga, Karana, Var, Rahu Kalam, Yamaganda, Gulika Kaal, Abhijit Muhurat, Sunrise, and Sunset timings based on user location.
+
+### E. Manglik Dosha Checker
+- **URL**: https://aadikarta.org/tools/manglik-dosha-checker
+- **Function**: Checks Mars placement in 1st, 4th, 7th, 8th, or 12th houses from Lagna, Moon, and Venus to evaluate Kuja Dosha and cancellation criteria.
+
+---
+
+## 4. Competitive Benchmarks & Comparisons
+
+### Aadikarta vs AstroTalk
+- **Entry Price**: Aadikarta offers consultations starting at ₹10/min from sign-up. AstroTalk per-minute rates vary widely up to ₹250+/min.
+- **AI Astrologer**: Aadikarta includes an integrated 24/7 AI Vedic Astrologer ("Ask Aadi"). AstroTalk focuses solely on human chats.
+- **Verification**: Both platforms enforce strict astrologer vetting, but Aadikarta prioritizes transparent per-minute pricing tiers and zero subscription lock-ins.
+
+### Aadikarta vs Astroyogi
+- **Entry Price**: Aadikarta provides budget-friendly ₹10/min starting tiers. Astroyogi rates vary per astrologer.
+- **Features**: Aadikarta combines instant AI chart analysis with live human consultations, Kundli tools, and daily horoscopes in a lean, fast interface.
+
+---
+
+## 5. Frequently Asked Questions (FAQ Corpus)
+
+### Q: Is the Janam Kundli generator free on Aadikarta?
+A: Yes, generating your Vedic birth chart (Kundli) on Aadikarta is 100% free.
+
+### Q: How many Gunas are required for a good marriage Kundli match?
+A: Out of 36 Gunas, a score of 18 or higher is considered acceptable. Scores between 18–24 are good, 25–32 are very good, and 33–36 are exceptional, provided there are no un-cancelled Nadi or Bhakoot Doshas.
+
+### Q: What is Manglik Dosha?
+A: Manglik Dosha (Kuja Dosha) occurs when Mars (Mangal) is positioned in the 1st, 4th, 7th, 8th, or 12th house of a birth chart. It influences passion, energy, and relationship dynamics in marriage.
+
+### Q: Can I consult astrologers in English and Hindi?
+A: Yes, Aadikarta astrologers support live consultations in both English and Hindi.
+
+---
+
+## 6. Official Contact & Entity References
+- **Entity**: Aadikarta Private Limited
+- **Website**: https://aadikarta.org
+- **Support Email**: support@aadikarta.org
+- **Primary Categories**: Vedic Astrology, Kundli Matching, AI Astrologer, Tarot Reading, Vastu Shastra, Daily Horoscope, Panchang.

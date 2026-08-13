@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { Loader2, Compass, ShieldCheck, HeartHandshake, Sparkles, Layers, Users } from 'lucide-react';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
@@ -302,6 +303,17 @@ const KundliChartViewer: React.FC = () => {
                         eyebrow="Free Tool"
                         title={<>Free <span className="text-amber-500">Kundli</span> Generator</>}
                         subtitle="Enter your birth details to instantly generate your full Vedic birth chart — Ascendant, planets, dasha, yogas, and Panchang."
+                    />
+
+                    <AeoDirectAnswer
+                        question="How is a Vedic Janam Kundli calculated?"
+                        answer="A Janam Kundli (Vedic birth chart) is calculated by mapping the exact positions of the 9 Grahas (planets) across 12 Bhavas (houses) and 27 Nakshatras at the precise moment and location of birth using Lahiri Ayanamsa and sidereal astronomy algorithms."
+                        keyTakeaways={[
+                            { label: "Calculation Base", text: "Date, Exact Time & Birth Location" },
+                            { label: "Zodiac System", text: "Vedic Sidereal (Lahiri Ayanamsa)" },
+                            { label: "Key Outputs", text: "Ascendant (Lagna), Dasha Periods & Yogas" },
+                            { label: "Accuracy", text: "High Precision Swiss Ephemeris Math" }
+                        ]}
                     />
                 </div>
             </header>

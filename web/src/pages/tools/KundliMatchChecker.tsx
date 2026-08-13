@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { Loader2, HeartHandshake, ShieldCheck, Sparkles, Award, Users } from 'lucide-react';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
@@ -157,6 +158,17 @@ const KundliMatchChecker: React.FC = () => {
                         eyebrow="Free Tool"
                         title={<>Free <span className="text-amber-500">Kundli Matching</span></>}
                         subtitle="Enter both birth details to instantly generate a Kuta (Guna Milan) compatibility report."
+                    />
+
+                    <AeoDirectAnswer
+                        question="How does 36 Guna Milan Kundli Matching work?"
+                        answer="Guna Milan evaluates marital compatibility by comparing 8 Ashtakoot categories between birth charts: Varna (1 pt), Vashya (2 pts), Tara (3 pts), Yoni (4 pts), Maitri (5 pts), Gana (6 pts), Bhakoot (7 pts), and Nadi (8 pts). A total score of 18 or higher out of 36 indicates favorable compatibility."
+                        keyTakeaways={[
+                            { label: "Minimum Passing Score", text: "18 out of 36 Gunas" },
+                            { label: "Key Categories", text: "Ashtakoot System (8 Vedic Parameters)" },
+                            { label: "Critical Factors", text: "Nadi Dosha & Bhakoot Compatibility" },
+                            { label: "Dosha Checks", text: "Manglik (Mars) Placement Assessment" }
+                        ]}
                     />
                 </div>
             </header>

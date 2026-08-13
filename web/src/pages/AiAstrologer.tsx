@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Send, Star, Pencil, Loader2, BadgeCheck, CalendarHeart, MessagesSquare, UserCheck } from 'lucide-react';
+import AeoDirectAnswer from '../components/AeoDirectAnswer';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -291,9 +292,20 @@ const AiAstrologer: React.FC = () => {
                         <h1 className="text-2xl md:text-5xl text-white mb-2 md:mb-4 leading-tight">
                             Ask <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Aadi</span>, Your AI Astrologer
                         </h1>
-                        <p className="text-sm md:text-xl text-indigo-100/70 font-light max-w-2xl mx-auto">
+                        <p className="text-sm md:text-xl text-indigo-100/70 font-light max-w-2xl mx-auto mb-6">
                             Share your birth details and let ancient Vedic wisdom, powered by AI, illuminate your path — career, love, marriage and more.
                         </p>
+
+                        <AeoDirectAnswer
+                            question="What is Aadikarta AI Astrologer (Ask Aadi)?"
+                            answer="Aadi is Aadikarta's 24/7 AI Vedic astrologer that calculates your birth chart (Janam Kundli) using Lahiri Ayanamsa and Vedic algorithms to answer personal queries on career timing, marriage compatibility, love life, and remedies instantly."
+                            keyTakeaways={[
+                                { label: "Availability", text: "24/7 Instant Answers" },
+                                { label: "Engine", text: "Vedic Jyotish & Sidereal Chart Math" },
+                                { label: "Pricing", text: "100% Free Daily Queries" },
+                                { label: "Privacy", text: "100% Confidential & Encrypted" }
+                            ]}
+                        />
                     </div>
 
                     <div className={detailsConfirmed
