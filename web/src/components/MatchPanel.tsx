@@ -2,6 +2,7 @@ import type { MatchData, MatchKoota } from '../types';
 import React, { useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import { Loader2, AlertCircle, HeartHandshake, ShieldAlert, Share2 } from 'lucide-react';
+import ShareButton from './ShareButton';
 import { type Lang, hi, RASHI_HI, NAKSHATRA_HI, KOOTA_NAME_HI, UI_HI } from '../utils/kundliHindi';
 
 interface MatchPanelProps {
@@ -151,6 +152,16 @@ export const MatchContent: React.FC<MatchPanelProps> = ({ matchData, boyName = '
                         ))}
                     </div>
                 )}
+
+                <div className="mt-4 pt-3 border-t border-purple-200/60 flex justify-center">
+                    <ShareButton
+                        title={`Kundli Match: ${boyName} & ${girlName}`}
+                        text={`💖 Kundli Compatibility Match for ${boyName} & ${girlName}: ${ashtakoota.score}/36 Gunas (${ashtakoota.percentage}%)! ${ashtakoota.recommendation}.`}
+                        url="https://aadikarta.org/tools/kundli-matching"
+                        targetRef={scoreCardRef}
+                        buttonText="Share Card"
+                    />
+                </div>
             </div>
 
             {/* Moon Sign / Nakshatra */}
