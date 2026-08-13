@@ -127,11 +127,20 @@ const BlogPost: React.FC = () => {
         seoTitle = seoTitle.slice(0, 42).trim() + '...';
     }
 
+    const derivedKeywords = [
+        post.title,
+        ...(post.slug ? [post.slug.replace(/-/g, ' ')] : []),
+        "Aadikarta Vedic Astrology",
+        "Kundli",
+        "Horoscope & Jyotish Guidance"
+    ].join(', ');
+
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
                 title={seoTitle}
                 description={(post.excerpt || post.content.replace(/<[^>]*>/gm, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim()).substring(0, 155)}
+                keywords={derivedKeywords}
                 image={post.featured_image}
                 imageAlt={post.title}
                 type="article"
