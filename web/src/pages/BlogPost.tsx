@@ -118,10 +118,19 @@ const BlogPost: React.FC = () => {
         );
     }
 
+    // Calculate concise SERP title to ensure <= 55-60 chars in Google search results
+    let seoTitle = post.title;
+    if (seoTitle.includes(':')) {
+        seoTitle = seoTitle.split(':')[0].trim();
+    }
+    if (seoTitle.length > 45) {
+        seoTitle = seoTitle.slice(0, 42).trim() + '...';
+    }
+
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title={post.title}
+                title={seoTitle}
                 description={(post.excerpt || post.content.replace(/<[^>]*>/gm, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim()).substring(0, 155)}
                 image={post.featured_image}
                 imageAlt={post.title}

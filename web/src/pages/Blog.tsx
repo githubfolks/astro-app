@@ -67,7 +67,7 @@ const Blog: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-50">
             <SEO
-                title="Astrology Blog | Vedic Wisdom & Guidance | Aadikarta Vedic Astrology"
+                title="Vedic Astrology Blog & Guides | Aadikarta"
                 description="Read expert articles on Vedic astrology, horoscopes, kundli, tarot & spiritual guidance on Aadikarta Vedic Astrology."
                 keywords="Aadikarta Vedic Astrology blog, Vedic astrology articles, daily horoscope blog, astrology tips Aadikarta"
                 structuredData={structuredData}
