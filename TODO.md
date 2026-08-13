@@ -58,10 +58,17 @@ Request is discoverable in initial document
 degree, retrogate, debilated, combust, exaulted
 64392f96daac500b55c543cd
 
-auto-post-to-social
-job history/list page
-Keep male and female voice both
+# Strategy 3: AI Search Engine & Generative Engine Optimization (AEO / GEO)
+- [ ] Expand competitor comparison pages: `/vs/anytimeastro` (AnytimeAstro comparison) and `/vs/guruji`.
+- [ ] Update machine-readable knowledge base `public/llms.txt` and `public/llms-full.txt` with competitor pricing matrix & AI chat feature specifications.
+- [ ] Build structured Q&A Direct Answer Cards for Perplexity, ChatGPT Search, and Gemini citation indexing.
+- [ ] Register new comparison routes in `App.tsx` and `scripts/generate-sitemap.js`.
 
+# Strategy 5: YouTube Shorts & Instagram Reels Content Engine (auto-post-to-social)
+- [ ] Implement `POST /social/auto-post` endpoint in `api/app/routers/social_copy.py` for automated YouTube Shorts & Reels script generation.
+- [ ] Add 30-second Shorts/Reels script generator mode in `admin/src/pages/SocialCopyGenerator.jsx`.
+- [ ] Create viral 30-second hook script templates for Manglik remedies, Kundli matching, and daily horoscope predictions.
+- [ ] Integrate webhooks / auto-post scheduler for social media channels (`auto-post-to-social`).
 
 we have focused only on the chat feature in our application. I don't want to make the portal crowdy with lots of contents. compare below websites and prepare gap analysis to make us different from others:
 https://www.anytimeastro.com/chat-with-astrologer/
