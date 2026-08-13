@@ -60,7 +60,7 @@ const CityAstrologers: React.FC = () => {
         description: `Consult top verified Vedic astrologers in ${cityName} for online chat consultations, Kundli matching, and remedies from ₹10/min.`
     };
 
-    const formattedTitle = `Best Astrologers in ${cityInfo.name} | Online Consultation | Aadikarta`;
+    const formattedTitle = `Top Astrologers in ${cityInfo.name} | Aadikarta`;
     const canonicalPath = `/astrologers/city/${normalizedKey}`;
 
     const cityStructuredData = {
