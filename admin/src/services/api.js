@@ -180,6 +180,7 @@ export const socialCopy = {
     generateTwitter: (data) => api.post('/social-copy/twitter', data),
     generateLinkedin: (data) => api.post('/social-copy/linkedin', data),
     suggestKeywords: (data) => api.post('/social-copy/suggest-keywords', data),
+    autoPost: (data) => api.post('/social-copy/auto-post', data),
 };
 
 

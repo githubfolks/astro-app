@@ -65,6 +65,7 @@ const URLS = [
     { loc: '/tools/navamsa-chart',         changefreq: 'monthly', priority: '0.6' },
     { loc: '/vs/astrotalk',              changefreq: 'monthly', priority: '0.7' },
     { loc: '/vs/astroyogi',              changefreq: 'monthly', priority: '0.7' },
+    { loc: '/vs/anytimeastro',           changefreq: 'monthly', priority: '0.7' },
     { loc: '/about-us',                  changefreq: 'monthly', priority: '0.6' },
     { loc: '/contact-us',                changefreq: 'monthly', priority: '0.6' },
     { loc: '/join-as-astrologer',        changefreq: 'monthly', priority: '0.6' },

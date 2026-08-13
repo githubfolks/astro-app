@@ -1449,6 +1449,69 @@
         "title": "AstrologerProfileUPDATE",
         "type": "object"
       },
+      "AutoPostSocialRequest": {
+        "properties": {
+          "cta_link": {
+            "default": "https://aadikarta.org/tools/kundli-matching",
+            "maxLength": 200,
+            "title": "Cta Link",
+            "type": "string"
+          },
+          "target_platform": {
+            "default": "all",
+            "maxLength": 50,
+            "title": "Target Platform",
+            "type": "string"
+          },
+          "topic": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Topic",
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic"
+        ],
+        "title": "AutoPostSocialRequest",
+        "type": "object"
+      },
+      "AutoPostSocialResponse": {
+        "properties": {
+          "job_id": {
+            "title": "Job Id",
+            "type": "string"
+          },
+          "scheduled_platforms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Scheduled Platforms",
+            "type": "array"
+          },
+          "script_30s": {
+            "title": "Script 30S",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "viral_hook": {
+            "title": "Viral Hook",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "job_id",
+          "script_30s",
+          "viral_hook",
+          "scheduled_platforms"
+        ],
+        "title": "AutoPostSocialResponse",
+        "type": "object"
+      },
       "BadgesUpdate": {
         "properties": {
           "is_premium": {
@@ -16837,6 +16900,52 @@
           }
         },
         "summary": "Signup"
+      }
+    },
+    "/social-copy/auto-post": {
+      "post": {
+        "operationId": "auto_post_social_social_copy_auto_post_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AutoPostSocialRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AutoPostSocialResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Auto Post Social",
+        "tags": [
+          "Social Copy Generator"
+        ]
       }
     },
     "/social-copy/facebook": {
