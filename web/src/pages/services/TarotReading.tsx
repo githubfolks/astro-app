@@ -56,8 +56,8 @@ const TarotReading: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Online Tarot Card Reading | Expert Tarot Readers | Aadikarta Vedic Astrology"
-                description="Accurate online tarot readings on Aadikarta Vedic Astrology from expert readers. Guidance on love, career & life from ₹10/min."
+                title="Online Tarot Card Reading | Expert Readers | Aadikarta"
+                description="Accurate online tarot readings on Aadikarta from verified expert readers. Instant guidance on love, career & life decisions from ₹10/min."
                 keywords="Aadikarta Vedic Astrology, online tarot reading, tarot card reading Aadikarta, love tarot reading, talk to tarot reader"
                 structuredData={tarotStructuredData}
             />

@@ -185,10 +185,13 @@ async function main() {
                     // mounted; the extra wait lets client-side data fetches settle.
                     await page.goto(`${BASE}${route}`, { waitUntil: 'load', timeout: 20000 });
                 }
-                // Wait for react-helmet-async's title write rather than a fixed
-                // sleep — faster on light routes, still generous (10s) for
-                // heavy ones so real slowness doesn't get misread as a bug.
-                await page.waitForFunction(() => !!document.title, { timeout: 10000 }).catch(() => {});
+                // Wait for React lazy-loading to finish mounting the component DOM (h1 / main)
+                // rather than just document.title — helmet writes title immediately, but Suspense
+                // still shows the spinner loader fallback until the bundle loads.
+                await page.waitForFunction(() => {
+                    const app = document.querySelector('#app');
+                    return app && app.children.length > 0 && !app.querySelector('.animate-spin') && (document.querySelector('#app h1') || document.querySelector('#app main') || document.querySelector('#app footer'));
+                }, { timeout: 15000 }).catch(() => {});
                 const html = await page.content();
                 // A route that never actually rendered (JS error before mount,
                 // etc.) still resolves goto() successfully and still returns

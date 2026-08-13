@@ -113,6 +113,17 @@ const buildHomeStructuredData = (supportEmail: string, supportPhone: string) => 
                 "https://www.youtube.com/@astro-aadikarta",
                 "https://www.linkedin.com/in/aadikarta-vedic-astrology"
             ]
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": homeFaqs.map(faq => ({
+                "@type": "Question",
+                "name": faq.question,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.answer
+                }
+            }))
         }
     ]
 });
@@ -133,7 +144,7 @@ const Home: React.FC = () => {
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Talk to Verified Astrologers & Free AI Astrologer Online | Aadikarta"
+                title="Talk to Astrologers Online | Free AI Astrology | Aadikarta"
                 description="Instant free AI chart insights & live chat with top verified Vedic astrologers on Aadikarta. Kundli matching, tarot & love advice. From ₹10/min."
                 keywords="Aadikarta Vedic Astrology, Free AI Astrologer, AI astrology chat, talk to astrologers online, Vedic astrology online, online kundli matching, daily horoscope, tarot reading Aadikarta"
                 structuredData={buildHomeStructuredData(support_email, support_phone)}

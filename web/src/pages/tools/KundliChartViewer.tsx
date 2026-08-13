@@ -285,8 +285,8 @@ const KundliChartViewer: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Free Kundli (Birth Chart) Generator | Aadikarta Vedic Astrology"
-                description="Generate your free Vedic birth chart (Kundli) online — Ascendant, planets, dasha, yogas, and Panchang, instantly, on Aadikarta Vedic Astrology."
+                title="Free Janam Kundli Online (Birth Chart) | Aadikarta"
+                description="Generate your free Vedic birth chart (Kundli) online — Ascendant, planets, dasha, yogas, and Panchang instantly on Aadikarta."
                 keywords="free kundli generator, birth chart online, Vedic astrology chart free, Janam Kundli, Aadikarta Vedic Astrology"
                 structuredData={structuredData}
             />

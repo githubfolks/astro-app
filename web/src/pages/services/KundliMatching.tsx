@@ -56,8 +56,8 @@ const KundliMatching: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Kundli Matching for Marriage | Kundali Milan Online | Aadikarta Vedic Astrology"
-                description="Expert kundali milan (kundli matching) for marriage on Aadikarta Vedic Astrology — 36-guna analysis, manglik dosha check & compatibility report. From ₹10/min."
+                title="Kundli Matching for Marriage | 36 Guna Milan | Aadikarta"
+                description="Expert Kundali Milan (Kundli matching) for marriage on Aadikarta — 36-Guna analysis, Manglik Dosha check & compatibility report. From ₹10/min."
                 keywords="Aadikarta Vedic Astrology, Kundli matching online, Kundali milan, Gun milan online, marriage compatibility Aadikarta"
                 structuredData={kundliStructuredData}
             />

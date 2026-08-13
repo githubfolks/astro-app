@@ -56,8 +56,8 @@ const VastuShastra: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Vastu Shastra Consultation Online | Expert Vastu Advice | Aadikarta Vedic Astrology"
-                description="Expert Vastu Shastra consultation for home & office on Aadikarta Vedic Astrology from certified consultants. Room analysis, dosha remedies & energy balancing. From ₹10/min."
+                title="Vastu Shastra Consultation Online | Vastu Advice | Aadikarta"
+                description="Expert Vastu Shastra consultation for home & office on Aadikarta from certified consultants. Room layout analysis, remedies & energy balancing. From ₹10/min."
                 keywords="Aadikarta Vedic Astrology, Vastu Shastra online, Vastu consultation Aadikarta, home Vastu remedies, Vastu expert chat"
                 structuredData={vastuStructuredData}
             />

@@ -5,8 +5,8 @@ const AadikartaVsAstroyogi: React.FC = () => (
     <ComparisonPage
         competitorName="Astroyogi"
         competitorSlug="astroyogi"
-        metaTitle="Aadikarta vs Astroyogi: Pricing & Features Compared | Aadikarta Vedic Astrology"
-        metaDescription="Comparing Aadikarta and Astroyogi on pricing, astrologer verification, and features like AI astrology chat — see which fits your first consultation."
+        metaTitle="Aadikarta vs Astroyogi: Pricing & Features Compared"
+        metaDescription="Compare Aadikarta and Astroyogi on pricing, astrologer verification, and AI chart features to choose your consultation platform."
         keywords="Aadikarta vs Astroyogi, Astroyogi alternative, astrology app comparison, cheap astrology consultation India"
         intro="Both platforms connect you with astrologers over live chat and call. Here's how the entry pricing, verification, and feature set actually compare."
         dataAsOf="August 2026"

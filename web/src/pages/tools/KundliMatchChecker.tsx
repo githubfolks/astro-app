@@ -140,8 +140,8 @@ const KundliMatchChecker: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Free Kundli Matching (Guna Milan) Calculator | Aadikarta Vedic Astrology"
-                description="Generate a free Kuta (Guna Milan) compatibility report between two birth charts, instantly, on Aadikarta Vedic Astrology."
+                title="Free Kundli Matching for Marriage (36 Guna Milan) | Aadikarta"
+                description="Free Kundli matching for marriage. Perform 36 Guna Milan, check Manglik Dosha, and get instant Ashtakoot compatibility reports on Aadikarta."
                 keywords="free kundli matching, guna milan calculator, kundali milan free, marriage compatibility Vedic, Aadikarta Vedic Astrology"
                 structuredData={structuredData}
             />

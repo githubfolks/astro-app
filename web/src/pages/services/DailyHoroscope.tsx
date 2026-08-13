@@ -71,8 +71,8 @@ const DailyHoroscope: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Today's Horoscope | Personalized Zodiac Predictions | Aadikarta Vedic Astrology"
-                description="Get today's horoscope for all 12 zodiac signs on Aadikarta Vedic Astrology, plus personalized readings from expert astrologers. From ₹10/min."
+                title="Today Horoscope | Daily Zodiac Predictions | Aadikarta"
+                description="Read today horoscope for all 12 zodiac signs on Aadikarta, plus get personalized readings from verified expert astrologers. From ₹10/min."
                 keywords="Aadikarta Vedic Astrology, today horoscope, daily rashiphal, zodiac sign predictions, horoscope today Aadikarta"
                 structuredData={horoscopeStructuredData}
             />

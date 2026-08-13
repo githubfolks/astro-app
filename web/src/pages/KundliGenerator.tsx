@@ -138,8 +138,8 @@ const KundliGenerator: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Free Kundli Generator | Birth Chart Online | Aadikarta Vedic Astrology"
-                description="Generate your free Vedic Kundli online. Detailed birth chart (Janam Patrika), planetary positions & predictions with Aadikarta Vedic Astrology's accurate Kundli generator."
+                title="Free Janam Kundli Online (Birth Chart) | Aadikarta"
+                description="Generate your free Janam Kundli (Vedic birth chart) online by date of birth. Calculate planetary positions, Dasha, Yogas & Lagna chart instantly with Aadikarta."
                 keywords="Aadikarta Vedic Astrology, free Kundli generator, Janam Patrika online, Vedic birth chart, free online Kundli Aadikarta"
                 structuredData={structuredData}
             />

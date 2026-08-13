@@ -81,12 +81,37 @@ const HOW_IT_WORKS_STEPS = [
 
 const aiAstrologerStructuredData = {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Aadikarta AI Astrologer",
-    "url": "https://aadikarta.org/ai-astrologer",
-    "applicationCategory": "LifestyleApplication",
-    "description": "Free AI-powered Vedic astrology chat. Enter your birth details and ask 5 free questions about career, love, marriage and more.",
-    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
+    "@graph": [
+        {
+            "@type": "WebApplication",
+            "name": "Aadikarta AI Astrologer",
+            "url": "https://aadikarta.org/ai-astrologer",
+            "applicationCategory": "LifestyleApplication",
+            "description": "Free AI-powered Vedic astrology chat. Enter your birth details and ask free questions about career, love, marriage and more.",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
+        },
+        {
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Is the AI Astrologer chat free on Aadikarta?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, Aadikarta offers free AI astrology chat queries based on authentic Vedic astrology calculations."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "What birth details are required for an AI astrology reading?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "You need to provide your full name, date of birth, place of birth, and birth time (if known) for accurate planetary chart calculations."
+                    }
+                }
+            ]
+        }
+    ]
 };
 
 const AiAstrologer: React.FC = () => {
@@ -242,8 +267,8 @@ const AiAstrologer: React.FC = () => {
     return (
         <div className="ai-astrologer-page pb-20 md:pb-0">
             <SEO
-                title="Free AI Astrologer Chat | Ask Astrology Questions Online | Aadikarta Vedic Astrology"
-                description="Chat with Aadi, Aadikarta Vedic Astrology's AI Vedic astrologer. Enter your birth details and get 5 free instant answers on love, career & destiny."
+                title="Free AI Astrologer Chat Online | Ask Astrology | Aadikarta"
+                description="Chat with Aadi, your free AI Vedic astrologer. Get instant birth chart analysis, Kundli insights, love advice & daily horoscope predictions online 24/7."
                 keywords="Aadikarta Vedic Astrology, AI astrologer, free AI astrology chat, online AI Kundli chat, ask astrologer online Aadikarta"
                 structuredData={aiAstrologerStructuredData}
             />

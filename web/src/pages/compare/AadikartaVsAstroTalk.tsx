@@ -5,8 +5,8 @@ const AadikartaVsAstroTalk: React.FC = () => (
     <ComparisonPage
         competitorName="AstroTalk"
         competitorSlug="astrotalk"
-        metaTitle="Aadikarta vs AstroTalk: Pricing & Features Compared | Aadikarta Vedic Astrology"
-        metaDescription="Comparing Aadikarta and AstroTalk on pricing, astrologer verification, and features like AI astrology chat — see which fits your budget for your first consultation."
+        metaTitle="Aadikarta vs AstroTalk: Pricing & Features Compared"
+        metaDescription="Compare Aadikarta and AstroTalk on pricing, astrologer verification, and AI chart features to find the best online astrology platform."
         keywords="Aadikarta vs AstroTalk, AstroTalk alternative, astrology app comparison, cheap astrology consultation India"
         intro="Both platforms connect you with astrologers over live chat. Here's how the entry pricing, verification, and feature set actually compare."
         dataAsOf="August 2026"

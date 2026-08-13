@@ -40,8 +40,8 @@ const AboutUs: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
-                title="About Aadikarta Vedic Astrology | India's Trusted Online Astrology Platform"
-                description="Aadikarta Vedic Astrology is India's premier online marketplace for verified Vedic astrologers, tarot readers & numerologists. Learn about our mission and story."
+                title="About Aadikarta | India Trusted Online Astrology Platform"
+                description="Aadikarta is India premier online marketplace for verified Vedic astrologers, tarot readers & numerologists. Learn about our mission, vision and story."
                 keywords="About Aadikarta Vedic Astrology, Aadikarta Astro team, online astrology platform India, verified Vedic astrologers Aadikarta"
                 structuredData={structuredData}
             />

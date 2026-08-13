@@ -45,12 +45,8 @@ const SEO: React.FC<SEOProps> = ({
     const canonical = `${BASE_URL}${resolvedPath === '/' ? '/' : resolvedPath}`;
     
     let fullTitle = title;
-    if (!title.includes('Aadikarta Vedic Astrology')) {
-        if (title.includes('Aadikarta')) {
-            fullTitle = title.replace(/\bAadikarta\b/g, 'Aadikarta Vedic Astrology');
-        } else {
-            fullTitle = `${title} | Aadikarta Vedic Astrology`;
-        }
+    if (!title.includes('Aadikarta')) {
+        fullTitle = `${title} | Aadikarta`;
     }
     const resolvedImageAlt = imageAlt || fullTitle;
 

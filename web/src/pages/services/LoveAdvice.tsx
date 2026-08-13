@@ -56,8 +56,8 @@ const LoveAdvice: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Love & Relationship Astrology | Expert Advice | Aadikarta Vedic Astrology"
-                description="Personalized love & relationship astrology consultations on Aadikarta Vedic Astrology. Compatibility analysis, marriage timing & predictions from expert astrologers. From ₹10/min."
+                title="Love and Relationship Astrology | Expert Advice | Aadikarta"
+                description="Personalized love and relationship astrology consultations on Aadikarta. Compatibility analysis, marriage timing and predictions from top astrologers."
                 keywords="Aadikarta Vedic Astrology, love astrology online, relationship compatibility Aadikarta, marriage prediction, love astrologer chat"
                 structuredData={loveStructuredData}
             />

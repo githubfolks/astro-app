@@ -36,8 +36,8 @@ const Panchang: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Today's Panchang & Hindu Almanac | Aadikarta Vedic Astrology"
-                description="Real-time daily Panchang on Aadikarta Vedic Astrology — Tithi, Nakshatra, Yoga, Rahu Kalam & Abhijit Muhurat calculated with accurate Vedic astronomy."
+                title="Today Panchang & Hindu Calendar | Daily Tithi | Aadikarta"
+                description="Real-time daily Panchang on Aadikarta — Tithi, Nakshatra, Yoga, Rahu Kalam & Abhijit Muhurat calculated with accurate Vedic astronomy."
                 keywords="Aadikarta Vedic Astrology, today Panchang, daily Hindu calendar, today Tithi, Rahu Kalam today, Abhijit Muhurat Aadikarta"
                 structuredData={panchangStructuredData}
             />
