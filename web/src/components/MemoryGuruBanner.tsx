@@ -7,7 +7,7 @@ const MemoryGuruBanner: React.FC = () => {
     return (
         <section className="memory-guru-banner py-16 md:py-24 relative overflow-hidden bg-slate-50 border-y-4 border-indigo-100">
             {/* Section divider making clear this is a different offering, not an astrology feature */}
-            <div className="container mx-auto px-4 relative z-20 mb-12 text-center">
+            <div className="container mx-auto px-4 relative z-20 mb-14 md:mb-20 text-center">
                 <span className="inline-flex items-center gap-2 bg-indigo-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-sm">
                     Also From Aadikarta
                 </span>
@@ -81,10 +81,10 @@ const MemoryGuruBanner: React.FC = () => {
                     </div>
 
                     {/* Image / Photo Placeholder */}
-                    <div className="memory-guru-media w-full lg:w-5/12 shrink-0 mt-6 lg:mt-0" data-aos="fade-left">
+                    <div className="memory-guru-media w-full lg:w-5/12 shrink-0 mt-8 lg:mt-0 pt-2" data-aos="fade-left">
                         <div className="bg-gradient-to-tr from-indigo-100 to-purple-50 rounded-[3rem] p-4 relative">
                             {/* Decorative border */}
-                            <div className="absolute inset-0 border-2 border-indigo-200 border-dashed rounded-[3rem] -m-4"></div>
+                            <div className="absolute -inset-3 border-2 border-indigo-200/80 border-dashed rounded-[3.25rem] pointer-events-none"></div>
 
                             <img
                                 src="/assets/memory_guru/rajesh-1.jpeg"
