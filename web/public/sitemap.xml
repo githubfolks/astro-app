@@ -283,6 +283,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://aadikarta.org/services/ai-instant-reports</loc>
+    <lastmod>2026-08-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://aadikarta.org/tools/manglik-dosha-checker</loc>
     <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>

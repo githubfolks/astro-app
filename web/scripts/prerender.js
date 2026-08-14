@@ -40,7 +40,7 @@ const EXCLUDE_PREFIXES = [
     '/dashboard', '/chat-history', '/transaction-history', '/chat', '/kundli',
     '/muhurat', '/classroom', '/tutor',
     '/login', '/signup', '/verify-otp', '/verify-email',
-    '/forgot-password', '/reset-password',
+    '/forgot-password', '/reset-password', '/reports',
 ];
 
 // Highest-value routes for search/AEO — if these fail to prerender the build

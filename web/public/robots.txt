@@ -16,21 +16,33 @@ Disallow: /forgot-password
 Disallow: /verify-otp
 Disallow: /reset-password
 
-# AI crawlers — allow for AI search visibility (Perplexity, ChatGPT, Claude)
+# Personal AI report pages contain the buyer's (and, for Gun Milan, their
+# partner's) name and birth details — never crawlable, regardless of link discovery.
+Disallow: /reports/
+
+# AI crawlers — allow for AI search visibility (Perplexity, ChatGPT, Claude).
+# Each named user-agent group is evaluated independently of "User-agent: *",
+# so the personal-report Disallow above must be repeated here too, or these
+# bots would ignore it and remain free to crawl/index buyers' birth details.
 User-agent: PerplexityBot
 Allow: /
+Disallow: /reports/
 
 User-agent: GPTBot
 Allow: /
+Disallow: /reports/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /reports/
 
 User-agent: anthropic-ai
 Allow: /
+Disallow: /reports/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /reports/
 
 # Sitemaps
 Sitemap: https://aadikarta.org/sitemap.xml

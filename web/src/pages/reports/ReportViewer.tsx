@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react';
 import { api } from '../../services/api';
 import { resolveImageUrl } from '../../utils/url';
 import { KundliContent } from '../../components/KundliPanel';
+import SEO from '../../components/SEO';
 
 // The LLM synthesis uses light markdown (**bold** for section headers and
 // inline emphasis) that read literally as asterisks when shown as plain
@@ -188,6 +189,7 @@ export const ReportViewer: React.FC = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-100">
+                <SEO title="Loading Your Report" description="Retrieving your Vedic astrology report." noindex />
                 <div className="flex flex-col items-center gap-3">
                     <Sparkles className="w-8 h-8 text-amber-400 animate-pulse" />
                     <p className="text-sm font-serif text-amber-200">Retrieving your Vedic Aadikarta Report...</p>
@@ -199,6 +201,7 @@ export const ReportViewer: React.FC = () => {
     if (error || !report) {
         return (
             <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-100 p-4">
+                <SEO title="Report Unavailable" description="This report link is invalid or the payment is still pending." noindex />
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md text-center space-y-4">
                     <AlertCircle className="w-10 h-10 text-amber-400 mx-auto" />
                     <h2 className="text-lg font-serif font-bold text-amber-200">Unable to View Report</h2>
@@ -215,6 +218,11 @@ export const ReportViewer: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 pb-16">
+            <SEO
+                title="Your Vedic Astrology Report"
+                description="A private, personalized Vedic astrology report."
+                noindex
+            />
             {/* Header */}
             <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 py-3 flex items-center justify-between">
                 <Link to="/" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200">
