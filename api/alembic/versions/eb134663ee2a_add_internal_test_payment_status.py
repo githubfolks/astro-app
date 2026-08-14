@@ -19,8 +19,19 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    with op.get_context().autocommit_block():
-        op.execute("ALTER TYPE paymentstatus ADD VALUE IF NOT EXISTS 'INTERNAL_TEST'")
+    # report_leads/paymentstatus aren't created by a migration — they're
+    # created by Base.metadata.create_all() at app startup, which runs after
+    # `alembic upgrade head` (see api/Dockerfile's CMD). On a DB that hasn't
+    # booted the app yet, the type doesn't exist; create_all() will create it
+    # fresh with INTERNAL_TEST already included as a PaymentStatus member, so
+    # this migration only needs to act when the type already exists.
+    conn = op.get_bind()
+    type_exists = conn.execute(
+        sa.text("SELECT 1 FROM pg_type WHERE typname = 'paymentstatus'")
+    ).scalar()
+    if type_exists:
+        with op.get_context().autocommit_block():
+            op.execute("ALTER TYPE paymentstatus ADD VALUE IF NOT EXISTS 'INTERNAL_TEST'")
 
 
 def downgrade() -> None:
