@@ -33,7 +33,7 @@ function PreviewModal({ post, onClose }) {
                 </div>
                 <article className="p-8">
                     <header className="mb-10 text-center">
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">{post.title || 'Untitled post'}</h1>
+                        <h1 className="text-3xl md:text-4xl text-gray-900 mb-4 leading-tight">{post.title || 'Untitled post'}</h1>
                         {post.featured_image && (
                             <div className="mt-6 rounded-2xl overflow-hidden shadow-lg">
                                 <img src={toAbsoluteUrl(post.featured_image)} alt={post.title} className="w-full h-auto max-h-[420px] object-cover" />
@@ -351,7 +351,7 @@ export default function PostEditor() {
                     </button>
                     <div>
                         <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Content / Blog</span>
-                        <h1 className="text-2xl font-bold text-slate-800">{isEdit ? 'Edit Post' : 'New Post'}</h1>
+                        <h1 className="text-2xl text-slate-800">{isEdit ? 'Edit Post' : 'New Post'}</h1>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">

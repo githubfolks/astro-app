@@ -215,7 +215,7 @@ export default function ContentStudio() {
         <div className="space-y-6 w-full p-2">
             <div className="border-b border-slate-200 pb-4">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Content / Studio</span>
-                <h1 className="text-2xl font-bold text-slate-800">Content Studio</h1>
+                <h1 className="text-2xl text-slate-800">Content Studio</h1>
                 <p className="text-sm text-slate-500 mt-1">
                     Turn a topic into a narrated Vedic astrology video for Facebook, Instagram, and YouTube — generate scenes, review each image, then render.
                 </p>

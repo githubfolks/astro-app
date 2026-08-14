@@ -58,7 +58,7 @@ const AstrologerApprovals = () => {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-gray-800">Astrologer Applications</h1>
+                <h1 className="text-2xl text-gray-800">Astrologer Applications</h1>
                 <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
                     {pending.length} Pending
                 </span>

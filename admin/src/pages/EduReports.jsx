@@ -55,7 +55,7 @@ export default function EduReports() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-900">Education Reports</h1>
+                <h1 className="text-3xl text-gray-900">Education Reports</h1>
                 <div className="flex items-center gap-3">
                     <select 
                         className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"

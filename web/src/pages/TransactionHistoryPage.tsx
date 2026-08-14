@@ -31,7 +31,7 @@ const TransactionHistoryPage: React.FC = () => {
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <Header />
             <main className="flex-1 container mx-auto p-4 md:p-8 max-w-3xl">
-                <h1 className="text-xl font-bold text-gray-900 mb-4">Payout &amp; Transaction History</h1>
+                <h1 className="text-xl text-gray-900 mb-4">Payout &amp; Transaction History</h1>
 
                 {loading ? (
                     <div className="flex justify-center p-10">

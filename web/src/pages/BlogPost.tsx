@@ -126,7 +126,7 @@ const BlogPost: React.FC = () => {
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <div className="flex-1 container mx-auto px-4 py-16 text-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Article Not Found</h1>
+                    <h1 className="text-2xl text-gray-900 mb-4">Article Not Found</h1>
                     <p className="text-gray-600 mb-6">The blog article you are looking for does not exist or has been removed.</p>
                     <Link to="/blog" className="inline-flex items-center text-indigo-600 font-semibold hover:underline">
                         ← Back to Blog
@@ -192,7 +192,7 @@ const BlogPost: React.FC = () => {
                                 </span>
                             )}
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">{post.title}</h1>
+                        <h1 className="text-3xl md:text-5xl text-gray-900 mb-6 leading-tight">{post.title}</h1>
 
                         <div className="flex justify-center">
                             <ShareButtons url={`${BASE_URL}/blog/${post.slug || slug}`} title={post.title} />

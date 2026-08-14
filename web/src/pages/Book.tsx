@@ -161,7 +161,7 @@ const Book: React.FC = () => {
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="flex flex-col md:flex-row items-center justify-between gap-12 text-left">
                             <div className="w-full md:w-2/3">
-                                <h1 className="hero-title font-bold text-3xl md:text-4xl text-white mb-6" data-aos="fade-right" data-aos-delay="100">
+                                <h1 className="hero-title text-3xl md:text-4xl text-white mb-6" data-aos="fade-right" data-aos-delay="100">
                                     Our <span className="text-yellow-400">Courses</span>
                                 </h1>
                                 <p className="text-lg text-indigo-100 leading-relaxed text-justify" data-aos="fade-right" data-aos-delay="200">

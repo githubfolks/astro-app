@@ -55,7 +55,7 @@ const TrustBar: React.FC = () => {
                     {items.map((item) => (
                         <div key={item.label} className="flex flex-col items-center text-center gap-2 min-w-[140px] md:min-w-[180px]">
                             <item.icon size={24} className="text-amber-400" />
-                            <span className="text-2xl md:text-3xl text-white font-bold">{item.value}</span>
+                            <span className="text-2xl md:text-3xl text-white">{item.value}</span>
                             <span className="text-xs md:text-sm text-indigo-200/70 uppercase tracking-wide font-medium">{item.label}</span>
                         </div>
                     ))}

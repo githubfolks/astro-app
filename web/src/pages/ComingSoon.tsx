@@ -41,7 +41,7 @@ const ComingSoon: React.FC<ComingSoonProps> = ({ onEnter }) => {
                         <span className="inline-block px-4 py-1.5 mb-6 text-sm font-medium tracking-widest uppercase border border-amber-400/30 text-amber-400 bg-amber-400/5 rounded-full backdrop-blur-sm">
                             Opening Soon
                         </span>
-                        <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight tracking-tight">
+                        <h1 className="text-5xl md:text-7xl mb-8 leading-tight tracking-tight">
                             Bringing <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Ancient Wisdom</span> to Modern Life
                         </h1>
                         <p className="text-xl md:text-2xl text-indigo-100/70 mb-12 font-light leading-relaxed max-w-xl">

@@ -114,7 +114,7 @@ export default function Astrologers() {
         <div className="p-6 max-w-[1600px] mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Astrologers</h1>
+                    <h1 className="text-3xl text-gray-900">Astrologers</h1>
                     <p className="text-gray-900 mt-1">Manage your astrologer verification and profiles</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">

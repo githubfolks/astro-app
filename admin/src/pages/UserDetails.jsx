@@ -280,7 +280,7 @@ export default function UserDetails() {
                             alt="Profile"
                         />
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                            <h1 className="text-2xl text-gray-900 flex items-center gap-2">
                                 {profile.full_name || user.email || "Unknown User"}
                                 {user.is_verified ? <CheckCircle size={18} className="text-blue-500" /> : <XCircle size={18} className="text-gray-300" />}
                                 {user.role === 'ASTROLOGER' && (

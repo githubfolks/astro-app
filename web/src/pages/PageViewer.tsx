@@ -74,7 +74,7 @@ const PageViewer: React.FC = () => {
         <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">{page.title}</h1>
+                <h1 className="text-3xl md:text-4xl text-gray-900 mb-6">{page.title}</h1>
                 <div
                     className="cms-page-content"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.content) }}

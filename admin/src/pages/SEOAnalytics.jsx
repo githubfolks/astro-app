@@ -67,7 +67,7 @@ export default function SEOAnalytics() {
         <div className="p-8 max-w-7xl mx-auto">
             <div className="mb-8 flex justify-between items-end">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">SEO & PR Hub</h1>
+                    <h1 className="text-2xl text-slate-900">SEO & PR Hub</h1>
                     <p className="text-slate-500 mt-1">Google Search Console performance over the last 30 days.</p>
                 </div>
             </div>

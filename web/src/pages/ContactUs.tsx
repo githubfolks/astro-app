@@ -92,7 +92,7 @@ const ContactUs: React.FC = () => {
             <main className="flex-1 container mx-auto px-4 py-10 md:py-32">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-8 md:mb-16">
-                        <h1 className="text-2xl md:text-5xl font-bold text-gray-900 mb-3 md:mb-6">Get in Touch</h1>
+                        <h1 className="text-2xl md:text-5xl text-gray-900 mb-3 md:mb-6">Get in Touch</h1>
                         <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
                             Have questions or need assistance? We're here to help you on your spiritual journey.
                         </p>
@@ -155,7 +155,7 @@ const ContactUs: React.FC = () => {
 
                         {/* Right Side - Form */}
                         <div className="w-full md:w-7/12 p-6 md:p-14">
-                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-8">Send us a Message</h3>
+                            <h3 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-8">Send us a Message</h3>
 
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

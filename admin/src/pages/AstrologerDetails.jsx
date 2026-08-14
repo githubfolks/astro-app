@@ -113,7 +113,7 @@ export default function AstrologerDetails() {
                             alt="Profile"
                         />
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                            <h1 className="text-2xl text-gray-900 flex items-center gap-2">
                                 {profile.profile.full_name}
                                 {profile.profile.display_name && (
                                     <span

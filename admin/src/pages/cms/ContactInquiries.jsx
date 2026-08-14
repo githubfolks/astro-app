@@ -37,7 +37,7 @@ export default function ContactInquiries() {
 
     return (
         <div className="p-6">
-            <h1 className="text-2xl font-bold mb-6">Contact Inquiries</h1>
+            <h1 className="text-2xl mb-6">Contact Inquiries</h1>
 
             {loading && <p>Loading...</p>}
             {error && <p className="text-red-500">{error}</p>}

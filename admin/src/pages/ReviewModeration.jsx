@@ -73,7 +73,7 @@ export default function ReviewModeration() {
     return (
         <div className="p-6 relative">
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <h1 className="text-2xl text-gray-900 flex items-center gap-2">
                     <Star className="text-amber-500 fill-amber-500" /> Review Moderation & Management
                 </h1>
                 <select

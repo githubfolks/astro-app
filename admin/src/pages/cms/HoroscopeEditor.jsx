@@ -78,7 +78,7 @@ export default function HoroscopeEditor() {
                 </button>
                 <div>
                     <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Content / Horoscopes</span>
-                    <h1 className="text-2xl font-bold text-slate-800">{isEdit ? 'Edit Horoscope' : 'New Horoscope'}</h1>
+                    <h1 className="text-2xl text-slate-800">{isEdit ? 'Edit Horoscope' : 'New Horoscope'}</h1>
                 </div>
             </div>
 

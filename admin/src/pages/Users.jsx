@@ -104,7 +104,7 @@ export default function Users() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
+            <h1 className="text-3xl text-gray-900">User Management</h1>
 
             <Card className="p-4">
                 <div className="flex flex-col sm:flex-row gap-4 items-end">

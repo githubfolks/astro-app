@@ -54,7 +54,7 @@ export default function DashboardLayout() {
             >
                 <div className="h-16 flex items-center justify-center border-b border-slate-200">
                     {sidebarOpen ? (
-                        <h1 className="text-xl font-bold text-orange-600">Aadikarta</h1>
+                        <h1 className="text-xl text-orange-600">Aadikarta</h1>
                     ) : (
                         <span className="text-xl font-bold text-orange-600">A</span>
                     )}

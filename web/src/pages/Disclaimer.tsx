@@ -13,7 +13,7 @@ const Disclaimer: React.FC = () => {
             />
             <Header />
             <main className="flex-1 container mx-auto px-4 py-8 md:py-16 max-w-4xl mb-4">
-                <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mt-4 mb-4 md:mb-8 text-center">Disclaimer</h1>
+                <h1 className="text-2xl md:text-4xl text-gray-900 mt-4 mb-4 md:mb-8 text-center">Disclaimer</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
                     <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>

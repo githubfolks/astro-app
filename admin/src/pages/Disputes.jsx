@@ -66,7 +66,7 @@ export default function Disputes() {
     return (
         <div>
             <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Disputes</h1>
+                <h1 className="text-2xl text-gray-900">Disputes</h1>
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <select

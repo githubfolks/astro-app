@@ -40,7 +40,7 @@ export default function Dashboard() {
     return (
         <div className="p-6 max-w-[1600px] mx-auto space-y-8">
             <div className="mb-4">
-                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                <h1 className="text-3xl text-gray-900">Dashboard</h1>
                 <p className="text-gray-900 mt-1">Overview of your platform's performance</p>
             </div>
 

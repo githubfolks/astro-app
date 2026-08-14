@@ -191,7 +191,7 @@ export default function AstrologerForm() {
                     <ArrowLeft size={20} />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">
+                    <h1 className="text-2xl text-gray-900">
                         {isEditMode ? 'Edit Astrologer' : 'Add New Astrologer'}
                     </h1>
                     <p className="text-gray-900 text-sm">

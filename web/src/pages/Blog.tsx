@@ -75,7 +75,7 @@ const Blog: React.FC = () => {
             <Header />
             <main className="flex-1 container mx-auto px-4 py-6 md:py-12">
                 <div className="text-center mb-6 md:mb-12">
-                    <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-4 mt-4">Vedic Astrology Blog</h1>
+                    <h1 className="text-2xl md:text-4xl text-gray-900 mb-4 mt-4">Vedic Astrology Blog</h1>
                     <p className="text-base md:text-xl text-gray-600 max-w-2xl mx-auto">
                         Expert guidance on Vedic astrology, horoscopes, kundli matching & spiritual wisdom.
                     </p>

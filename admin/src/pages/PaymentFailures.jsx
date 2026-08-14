@@ -50,7 +50,7 @@ export default function PaymentFailures() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">Payment Failures</h1>
+                <h1 className="text-3xl text-gray-900">Payment Failures</h1>
                 <p className="text-sm text-gray-500 mt-1">
                     Razorpay checkouts that failed (card declined, cancelled, etc.) or the failure webhook —
                     use this to check a customer's "money was deducted" claim against what Razorpay actually reported.

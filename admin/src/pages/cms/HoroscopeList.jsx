@@ -50,7 +50,7 @@ export default function HoroscopeList() {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-gray-900">Horoscopes</h1>
+                <h1 className="text-3xl text-gray-900">Horoscopes</h1>
                 <Button onClick={() => navigate('/cms/horoscopes/new')}>
                     <Plus size={16} className="mr-2" /> New Horoscope
                 </Button>

@@ -438,7 +438,7 @@ export default function ContentStudioLibrary() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Content Studio Library</h1>
+                    <h1 className="text-3xl text-gray-900">Content Studio Library</h1>
                     <p className="text-sm text-gray-500 mt-1">All generated videos / voice-over content, with posting status for each platform.</p>
                 </div>
                 <Button onClick={() => setShowNewVideoModal(true)}>New Video</Button>

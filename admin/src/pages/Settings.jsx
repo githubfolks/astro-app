@@ -655,7 +655,7 @@ export default function Settings() {
 
     return (
         <div className="p-6 max-w-6xl w-full">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">Platform Settings</h1>
+            <h1 className="text-2xl text-gray-900 mb-1">Platform Settings</h1>
             <p className="text-gray-900 mb-6 text-sm">Configure WhatsApp notification gateway, moderation alerts, and system tunables.</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start mb-6">
