@@ -6,6 +6,8 @@ playwright-report
 test-results
 android
 .env
-.env.*
+.env.local
+.env.development
+.env.mobile
 *.md
 .DS_Store

@@ -16,6 +16,22 @@ export function normalizeArticleHtml(html: string): string {
             el.replaceWith(h2);
         }
     });
+    // Normalize dev/staging URLs to production domain for SEO link equity
+    container.querySelectorAll('a').forEach((link) => {
+        let href = link.getAttribute('href') || '';
+        if (href.includes('dev.aadikarta.org')) {
+            href = href.replace('dev.aadikarta.org', 'aadikarta.org');
+            link.setAttribute('href', href);
+        }
+        if (href.startsWith('https://aadikarta.org') || href.startsWith('/')) {
+            link.classList.add('text-indigo-600', 'font-semibold', 'underline', 'hover:text-indigo-800');
+        } else if (href.startsWith('http')) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer nofollow');
+            link.classList.add('text-indigo-600', 'hover:underline');
+        }
+    });
+
     // In-article images (unlike the featured image above the fold) are below
     // the fold by definition, so let the browser defer fetching them until
     // they're near the viewport instead of racing the visible content for

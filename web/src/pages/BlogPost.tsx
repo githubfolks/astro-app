@@ -79,6 +79,8 @@ const BlogPost: React.FC = () => {
         ]
     });
 
+    const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+
     useEffect(() => {
         if (slug) {
             fetchPost(slug);
@@ -90,6 +92,15 @@ const BlogPost: React.FC = () => {
         try {
             const data = await api.cms.getPostBySlug(postSlug);
             setPost(data);
+            
+            // Fetch related posts for internal backlink grid
+            try {
+                const res = await api.cms.getPosts(0, 5);
+                const filtered = (res.posts || []).filter((p: BlogPost) => p.slug !== postSlug).slice(0, 3);
+                setRelatedPosts(filtered);
+            } catch (relErr) {
+                console.warn('Could not load related posts', relErr);
+            }
         } catch (err) {
             console.error('Failed to fetch post', err);
             setError(true);
@@ -199,25 +210,72 @@ const BlogPost: React.FC = () => {
                         dangerouslySetInnerHTML={{ __html: normalizeArticleHtml(DOMPurify.sanitize(post.content)) }}
                     />
 
-                    {/* Topic Tags, Secondary & Long-tail Keywords Section */}
+                    {/* Contextual Internal Backlink Callout Card */}
+                    <div className="my-10 p-6 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-950 text-white shadow-xl">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div>
+                                <span className="inline-block px-3 py-1 bg-amber-400 text-gray-950 font-bold text-xs uppercase tracking-wider rounded-full mb-2">
+                                    Aadikarta Astrology Hub
+                                </span>
+                                <h3 className="text-xl font-bold text-white mb-2">Want Personal Answers for Your Birth Chart?</h3>
+                                <p className="text-indigo-200 text-sm max-w-xl">
+                                    Calculate your 36-Guna Kundli Match, get 24/7 instant AI insights, or consult verified Vedic experts starting at ₹10/min.
+                                </p>
+                            </div>
+                            <div className="flex flex-wrap md:flex-col gap-3 shrink-0">
+                                <Link
+                                    to="/astrologers"
+                                    className="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-gray-950 font-bold text-sm text-center shadow transition-all transform hover:scale-105"
+                                >
+                                    Talk to Astrologers →
+                                </Link>
+                                <Link
+                                    to="/tools/kundli-matching"
+                                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm text-center border border-white/20 transition-all"
+                                >
+                                    Free Kundli Match
+                                </Link>
+                                <Link
+                                    to="/ai-astrologer"
+                                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm text-center transition-all"
+                                >
+                                    Ask AI Astrologer 🤖
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Topic Tags, Secondary & Long-tail Keywords Backlink Section */}
                     {((post.tags && post.tags.length > 0) || (post.secondary_keywords && post.secondary_keywords.length > 0) || (post.longtail_keywords && post.longtail_keywords.length > 0)) && (
                         <div className="mt-8 pt-6 border-t border-gray-200">
                             <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">Tags & Focus Topics</h3>
                             <div className="flex flex-wrap gap-2">
                                 {post.tags?.map((tag, idx) => (
-                                    <span key={`tag-${idx}`} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    <Link
+                                        key={`tag-${idx}`}
+                                        to={`/blog?search=${encodeURIComponent(tag)}`}
+                                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 transition-colors"
+                                    >
                                         # {tag}
-                                    </span>
+                                    </Link>
                                 ))}
                                 {post.secondary_keywords?.map((kw, idx) => (
-                                    <span key={`sec-${idx}`} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-900 border border-amber-200">
+                                    <Link
+                                        key={`sec-${idx}`}
+                                        to={`/blog?search=${encodeURIComponent(kw)}`}
+                                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-colors"
+                                    >
                                         {kw}
-                                    </span>
+                                    </Link>
                                 ))}
                                 {post.longtail_keywords?.map((kw, idx) => (
-                                    <span key={`lt-${idx}`} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-normal bg-gray-100 text-gray-700 border border-gray-200">
+                                    <Link
+                                        key={`lt-${idx}`}
+                                        to={`/blog?search=${encodeURIComponent(kw)}`}
+                                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-normal bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-200 transition-colors"
+                                    >
                                         🔍 {kw}
-                                    </span>
+                                    </Link>
                                 ))}
                             </div>
                         </div>
@@ -229,10 +287,44 @@ const BlogPost: React.FC = () => {
                         </div>
                     )}
 
-                    <aside className="mt-8 mb-8 md:mt-12 md:mb-16 pt-4 md:pt-8 border-t border-gray-100">
-                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Related Services</h2>
+                    {/* Related Articles Internal Backlinks Grid */}
+                    {relatedPosts.length > 0 && (
+                        <div className="mt-12 pt-8 border-t border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-900 mb-6">Related Astrology Articles</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {relatedPosts.map((relPost) => (
+                                    <Link
+                                        key={relPost.id}
+                                        to={`/blog/${relPost.slug}`}
+                                        className="group block bg-white rounded-2xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                                    >
+                                        <div>
+                                            {relPost.featured_image && (
+                                                <img
+                                                    src={relPost.featured_image}
+                                                    alt={relPost.title}
+                                                    className="w-full h-32 object-cover rounded-xl mb-3"
+                                                />
+                                            )}
+                                            <h3 className="font-bold text-gray-900 text-sm group-hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
+                                                {relPost.title}
+                                            </h3>
+                                        </div>
+                                        <span className="text-xs text-indigo-600 font-semibold group-hover:underline mt-2 inline-flex items-center">
+                                            Read Article →
+                                        </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    <aside className="mt-8 mb-8 md:mt-12 md:mb-16 pt-6 border-t border-gray-100">
+                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Explore Related Services & Tools</h2>
                         <div className="flex flex-wrap gap-3">
-                            <Link to="/services/kundli-matching" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Kundli Matching</Link>
+                            <Link to="/tools/kundli-matching" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Free Kundli Matching</Link>
+                            <Link to="/tools/kundli-chart" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Janam Kundli Generator</Link>
+                            <Link to="/tools/manglik-dosha-checker" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Manglik Checker</Link>
                             <Link to="/services/love-advice" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Love Advice</Link>
                             <Link to="/services/tarot-reading" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Tarot Reading</Link>
                             <Link to="/services/vastu-shastra" className="px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors text-sm font-medium">Vastu Shastra</Link>
