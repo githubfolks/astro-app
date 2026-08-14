@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Sparkles, CheckCircle2, ArrowRight, Phone, Lock, Gift, User, Globe } from 'lucide-react';
+import { X, Sparkles, CheckCircle2, ArrowRight, Phone, Lock, User, Globe } from 'lucide-react';
 import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
 import SegmentSelect from './SegmentSelect';
 import DatePicker from './DatePicker';
@@ -471,11 +471,6 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                                 </div>
                             </div>
 
-                            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-2 text-xs text-amber-200">
-                                <Gift className="w-4 h-4 shrink-0 text-amber-400" />
-                                <span>Includes ₹50 Live Consultation Voucher valid for 30 days on aadikarta.org!</span>
-                            </div>
-
                             <div className="grid grid-cols-2 gap-3 pt-2">
                                 <button
                                     onClick={() => setStep(1)}
@@ -506,10 +501,6 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                             <p className="text-xs text-slate-300 max-w-md mx-auto">
                                 Your report has been generated successfully. A WhatsApp link has been dispatched to <strong>{phoneNumber}</strong>.
                             </p>
-
-                            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 max-w-md mx-auto text-xs text-amber-300">
-                                🎁 <strong>Bonus Voucher:</strong> Use code <code>AADI50LIVE</code> on aadikarta.org to get ₹50 OFF your next live astrologer consultation!
-                            </div>
 
                             <div className="flex flex-wrap justify-center gap-3 pt-2">
                                 {reportUrl && (

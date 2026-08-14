@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Sparkles, Download, MessageSquare, ShieldCheck, ChevronLeft, Gift, AlertCircle, Flame, Infinity as InfinityIcon, Orbit, Award } from 'lucide-react';
+import { Sparkles, Download, MessageSquare, ShieldCheck, ChevronLeft, AlertCircle, Flame, Infinity as InfinityIcon, Orbit, Award } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { api } from '../../services/api';
 import { resolveImageUrl } from '../../utils/url';
@@ -258,25 +258,6 @@ export const ReportViewer: React.FC = () => {
                         Ref Code: <code>{report.order_reference}</code> • Generated for {report_data?.seeker_details?.full_name || 'Seeker'}
                     </p>
                 </div>
-
-                {/* Consultation Voucher Banner */}
-                {report_data?.voucher_code && (
-                    <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-500/20 to-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <Gift className="w-6 h-6 text-amber-400 shrink-0" />
-                            <div>
-                                <h4 className="text-xs font-bold text-amber-200">₹50 Live Astrologer Voucher</h4>
-                                <p className="text-[11px] text-slate-300">{report_data.voucher_details}</p>
-                            </div>
-                        </div>
-                        <Link
-                            to="/astrologers"
-                            className="shrink-0 py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg"
-                        >
-                            Consult Astrologer
-                        </Link>
-                    </div>
-                )}
 
                 {/* Full Birth Chart — same chart & detail tables used in the astrologer chat panel */}
                 {report.report_type === 'FULL_KUNDLI' && report_data?.chart_data?.chart && (

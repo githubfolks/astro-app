@@ -42,7 +42,7 @@ const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; p
 const faqs = [
     { question: 'How fast do I get my report?', answer: 'Your AI-synthesized Vedic report is generated within moments of a successful payment — no waiting for an astrologer to become available. You get an instant web report plus a downloadable PDF, and a WhatsApp link is sent to your mobile number.' },
     { question: 'Do I need to create an account?', answer: 'No. Enter your birth details, pay, and get your report — no login or wallet balance required.' },
-    { question: "What's the difference between an instant report and a live consultation?", answer: 'An instant report is a one-time AI-generated PDF based on your exact birth chart — ideal for a quick, detailed reading. A live consultation lets you ask follow-up questions to a real astrologer in real time. Every report includes a ₹50 voucher toward your first live consultation.' },
+    { question: "What's the difference between an instant report and a live consultation?", answer: 'An instant report is a one-time AI-generated PDF based on your exact birth chart — ideal for a quick, detailed reading. A live consultation lets you ask follow-up questions to a real astrologer in real time.' },
     { question: 'Which languages are reports available in?', answer: 'English and Hindi.' },
 ];
 
@@ -109,7 +109,7 @@ const InstantReports: React.FC = () => {
                     <PageHeading
                         eyebrow="AI Instant Reports"
                         title="Your Vedic Report, Ready in Moments"
-                        subtitle="No login. No wallet top-up. Enter your birth details, pay once, and get an AI-synthesized report as a web page and downloadable PDF — plus a ₹50 voucher toward your next live consultation."
+                        subtitle="No login. No wallet top-up. Enter your birth details, pay once, and get an AI-synthesized report as a web page and downloadable PDF."
                     />
                 </div>
 

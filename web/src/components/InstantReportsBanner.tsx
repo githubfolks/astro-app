@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ScrollText, Zap, Gift, ArrowRight, FileHeart, HeartHandshake, Briefcase } from 'lucide-react';
+import { ScrollText, Zap, MessageSquare, ArrowRight, FileHeart, HeartHandshake, Briefcase } from 'lucide-react';
 import './InstantReportsBanner.css';
 
 const InstantReportsBanner: React.FC = () => {
@@ -41,7 +41,7 @@ const InstantReportsBanner: React.FC = () => {
 
                         <div className="reports-banner-features flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-indigo-100/80 text-sm mb-8">
                             <span className="flex items-center gap-2"><Zap className="w-4 h-4 text-amber-400" /> Delivered instantly</span>
-                            <span className="flex items-center gap-2"><Gift className="w-4 h-4 text-amber-400" /> ₹50 live consultation voucher included</span>
+                            <span className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-amber-400" /> WhatsApp delivery</span>
                         </div>
 
                         <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
