@@ -141,9 +141,9 @@ const KundliMatchChecker: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Free Kundli Matching for Marriage (36 Guna Milan) | Aadikarta"
-                description="Free Kundli matching for marriage. Perform 36 Guna Milan, check Manglik Dosha, and get instant Ashtakoot compatibility reports on Aadikarta."
-                keywords="free kundli matching, guna milan calculator, kundali milan free, marriage compatibility Vedic, Aadikarta Vedic Astrology"
+                title="Free Kundli Matching Online for Marriage (36 Guna Milan) | Aadikarta"
+                description="100% Free & Ad-Free Kundli matching for marriage. Perform 36 Guna Milan, check Manglik Dosha, and get instant Ashtakoot compatibility reports on Aadikarta."
+                keywords="free kundli matching, free kundli matching online, free kundli matching without ads, 36 guna milan free, guna milan calculator, kundali milan free, marriage compatibility Vedic, Aadikarta Vedic Astrology"
                 structuredData={structuredData}
             />
             <Header />
@@ -154,10 +154,13 @@ const KundliMatchChecker: React.FC = () => {
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                 <div className="max-w-4xl mx-auto relative z-10">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <ShieldCheck size={14} /> 100% Free & Ad-Free Tool
+                    </div>
                     <PageHeading
-                        eyebrow="Free Tool"
+                        eyebrow="Free Compatibility Calculator"
                         title={<>Free <span className="text-amber-500">Kundli Matching</span></>}
-                        subtitle="Enter both birth details to instantly generate a Kuta (Guna Milan) compatibility report."
+                        subtitle="Enter both birth details to instantly generate a 36 Guna Milan compatibility report — zero ads or registration required."
                     />
 
                     <AeoDirectAnswer

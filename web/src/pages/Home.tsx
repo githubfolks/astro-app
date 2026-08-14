@@ -144,9 +144,9 @@ const Home: React.FC = () => {
     return (
         <div className="home-page pb-20 md:pb-0">
             <SEO
-                title="Talk to Astrologers Online | Free AI Astrology | Aadikarta"
-                description="Instant free AI chart insights & live chat with top verified Vedic astrologers on Aadikarta. Kundli matching, tarot & love advice. From ₹10/min."
-                keywords="Aadikarta Vedic Astrology, Free AI Astrologer, AI astrology chat, talk to astrologers online, Vedic astrology online, online kundli matching, daily horoscope, tarot reading Aadikarta"
+                title="Free Astrology & Vedic Insights | Talk to Astrologers Online | Aadikarta"
+                description="Get instant free astrology predictions, free AI birth chart insights & live consultations with top verified Vedic astrologers on Aadikarta. Kundli matching, daily horoscope & tarot. From ₹10/min."
+                keywords="free astrology, free online astrology, free vedic astrology, Aadikarta Vedic Astrology, Free AI Astrologer, AI astrology chat, free janam kundli, talk to astrologers online, Vedic astrology online, online kundli matching, daily horoscope, tarot reading Aadikarta"
                 structuredData={buildHomeStructuredData(support_email, support_phone)}
             />
             <Helmet>

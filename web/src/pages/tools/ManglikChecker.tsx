@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { Loader2, Flame, ShieldCheck, HeartHandshake, Sparkles, Home, Users, Mars } from 'lucide-react';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
@@ -125,7 +126,6 @@ const faqs = [
     { question: 'Is Manglik Dosha always harmful for marriage?', answer: 'Not necessarily. Its effect depends on the strength of Mars, its sign, aspects from other planets, and the overall chart. Many astrologers also consider it neutralized when both partners are Manglik.' },
     { question: 'What information do I need to check my Manglik status?', answer: 'You need your exact date of birth, time of birth, and place of birth. Since Mars placement is sensitive to the ascendant, accurate birth time matters for a reliable result.' },
     { question: 'Are there remedies for Manglik Dosha?', answer: 'Yes. Common remedies include specific pujas, fasting on Tuesdays, wearing red coral after consultation, and Kumbh Vivah in some traditions. An astrologer can recommend remedies suited to your exact chart.' },
-    { question: 'Is this Manglik Dosha checker free?', answer: 'Yes, this tool is completely free to use. For a deeper reading with personalized remedies, you can connect with a verified astrologer on Aadikarta.' },
 ];
 
 const structuredData = {
@@ -190,9 +190,9 @@ const ManglikChecker: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Free Manglik Dosha Checker | Aadikarta Vedic Astrology"
-                description="Check if you have Manglik (Mangal) Dosha and other Vedic yogas in your birth chart, free and instant, on Aadikarta Vedic Astrology."
-                keywords="Manglik Dosha checker, Mangal Dosha check free, Kuja Dosha, Vedic yoga checker, Aadikarta Vedic Astrology"
+                title="Free Manglik Dosha Checker Online (Mangal Dosha) | Aadikarta"
+                description="100% Free & Ad-Free Manglik Dosha checker. Instantly calculate Kuja / Mangal Dosha placement in your birth chart with zero ads on Aadikarta."
+                keywords="free manglik dosha checker, manglik dosha checker online, free mangal dosha check without ads, Kuja Dosha calculator, Vedic yoga checker, Aadikarta Vedic Astrology"
                 structuredData={structuredData}
             />
             <Header />
@@ -203,10 +203,24 @@ const ManglikChecker: React.FC = () => {
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                 <div className="max-w-4xl mx-auto relative z-10">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-4 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <ShieldCheck size={14} /> 100% Free & Ad-Free Tool
+                    </div>
                     <PageHeading
-                        eyebrow="Free Tool"
+                        eyebrow="Free Dosha Calculator"
                         title={<>Free <span className="text-amber-500">Manglik Dosha</span> Checker</>}
-                        subtitle="Enter your birth details to instantly check for Manglik (Mangal) Dosha and other Vedic yogas in your chart."
+                        subtitle="Enter your birth details to instantly check for Manglik (Mangal) Dosha and Kuja placements in your chart."
+                    />
+
+                    <AeoDirectAnswer
+                        question="What is Manglik (Mangal) Dosha in Vedic Astrology?"
+                        answer="Manglik Dosha (also known as Kuja Dosha) occurs when Mars (Mangal) is placed in the 1st, 2nd, 4th, 7th, 8th, or 12th house of a birth chart. In Vedic astrology, Mars represents energy and passion; certain house placements may create tension in relationships unless canceled by a partner's chart or planetary remedies."
+                        keyTakeaways={[
+                            { label: "Dosha Houses", text: "1st, 2nd, 4th, 7th, 8th, 12th Houses" },
+                            { label: "Ruling Planet", text: "Mars (Mangal)" },
+                            { label: "Cancellation Factor", text: "High Mars placement in partner chart or age 28+" },
+                            { label: "Remedial Measures", text: "Kumbh Vivah, Hanuman Chalisa, Coral Gemstone" }
+                        ]}
                     />
                 </div>
             </header>

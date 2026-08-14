@@ -56,9 +56,9 @@ const VedicAstrology: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="Vedic Astrology Consultation Online | Jyotish | Aadikarta"
-                description="Authentic Vedic astrology consultations on Aadikarta from top Jyotish experts. Natal chart analysis, planetary transits, dasha predictions. From ₹10/min."
-                keywords="Aadikarta Vedic Astrology, Vedic astrology online, Jyotish consultation, Kundli reading Aadikarta, talk to Jyotish expert"
+                title="Free Vedic Astrology & Online Jyotish Consultation | Aadikarta"
+                description="Get free Vedic astrology chart insights & authentic Jyotish consultations on Aadikarta. Natal chart analysis, planetary transits, dasha predictions. From ₹10/min."
+                keywords="free astrology, free vedic astrology, free online astrology, Aadikarta Vedic Astrology, Vedic astrology online, Jyotish consultation, Kundli reading Aadikarta, talk to Jyotish expert"
                 structuredData={vedicStructuredData}
             />
             <Header />

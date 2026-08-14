@@ -72,6 +72,7 @@ const LoveAdvice = lazy(() => import('./pages/services/LoveAdvice'));
 const DailyHoroscope = lazy(() => import('./pages/services/DailyHoroscope'));
 const VedicAstrology = lazy(() => import('./pages/services/VedicAstrology'));
 const AadikartaVsAstroTalk = lazy(() => import('./pages/compare/AadikartaVsAstroTalk'));
+const AadikartaVsAstroSage = lazy(() => import('./pages/compare/AadikartaVsAstroSage'));
 const AadikartaVsAstroyogi = lazy(() => import('./pages/compare/AadikartaVsAstroyogi'));
 const AadikartaVsAnytimeAstro = lazy(() => import('./pages/compare/AadikartaVsAnytimeAstro'));
 const TarotReading = lazy(() => import('./pages/services/TarotReading'));
@@ -250,6 +251,8 @@ function App() {
                             <Route path="/services/tarot-reading" element={<TarotReading />} />
                             <Route path="/services/vastu-shastra" element={<VastuShastra />} />
                             <Route path="/vs/astrotalk" element={<AadikartaVsAstroTalk />} />
+                            <Route path="/vs/astrosage" element={<AadikartaVsAstroSage />} />
+                            <Route path="/compare/aadikarta-vs-astrosage" element={<AadikartaVsAstroSage />} />
                             <Route path="/vs/astroyogi" element={<AadikartaVsAstroyogi />} />
                             <Route path="/vs/anytimeastro" element={<AadikartaVsAnytimeAstro />} />
                             <Route path="/memory-guru" element={<MemoryGuruAbout />} />

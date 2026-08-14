@@ -106,9 +106,9 @@ const YearlyHoroscopeSign: React.FC = () => {
     return (
         <div className="horoscope-sign-page min-h-screen">
             <SEO
-                title={`${data.name} Yearly Horoscope ${year} (${data.hindi}) | Aadikarta Vedic Astrology`}
-                description={`${data.name} horoscope for ${year} — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. Get your personalized ${data.name} yearly reading on Aadikarta Vedic Astrology.`}
-                keywords={`Aadikarta Vedic Astrology, ${data.name} yearly horoscope ${year}, ${data.hindi} varshik rashiphal, ${data.name} astrology reading, talk to astrologer for ${data.name}`}
+                title={`${data.name} Yearly Horoscope ${year} (${data.hindi}) | Free Predictions | Aadikarta`}
+                description={`Free ${data.name} yearly horoscope for ${year} — dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}. Get your free ${data.name} annual reading on Aadikarta.`}
+                keywords={`free astrology, ${data.name} yearly horoscope ${year}, ${data.hindi} varshik rashiphal, ${data.name} astrology reading, talk to astrologer for ${data.name}, Aadikarta Vedic Astrology`}
                 noindex={!loading && !prediction?.overview}
                 structuredData={structuredData}
             />

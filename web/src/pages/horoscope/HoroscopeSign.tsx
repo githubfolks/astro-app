@@ -165,9 +165,9 @@ const HoroscopeSign: React.FC = () => {
     return (
         <div className="horoscope-sign-page min-h-screen">
             <SEO
-                title={`${data.name} Horoscope Today (${data.hindi} राशि) | Aadikarta`}
-                description={`${data.name} horoscope today (dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}). Get daily predictions & personalized reading on Aadikarta.`}
-                keywords={`Aadikarta Vedic Astrology, ${data.name} horoscope today, ${data.hindi} rashiphal, ${data.name} astrology reading, talk to astrologer for ${data.name}`}
+                title={`${data.name} Horoscope Today (${data.hindi} राशि) | Free Predictions | Aadikarta`}
+                description={`Free ${data.name} horoscope today (${data.hindi} rashiphal, dates ${data.dates}, element ${data.element}, ruling planet ${data.ruling_planet}). Get daily astrology predictions & consultation on Aadikarta.`}
+                keywords={`free astrology, ${data.name} horoscope today, ${data.hindi} rashiphal, ${data.name} astrology reading, talk to astrologer for ${data.name}, Aadikarta Vedic Astrology`}
                 structuredData={structuredData}
             />
             <Header />
