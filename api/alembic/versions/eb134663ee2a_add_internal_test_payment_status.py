@@ -19,7 +19,8 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute("ALTER TYPE paymentstatus ADD VALUE IF NOT EXISTS 'INTERNAL_TEST'")
+    with op.get_context().autocommit_block():
+        op.execute("ALTER TYPE paymentstatus ADD VALUE IF NOT EXISTS 'INTERNAL_TEST'")
 
 
 def downgrade() -> None:
