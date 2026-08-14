@@ -58,8 +58,8 @@ class AutoPostSocialRequest(BaseModel):
 
 class AutoPostSocialResponse(BaseModel):
     status: str
-    job_id: str
+    content_id: str
     script_30s: str
     viral_hook: str
-    scheduled_platforms: list[str]
+    target_platforms: list[str]
 

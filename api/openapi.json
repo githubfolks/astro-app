@@ -1478,16 +1478,9 @@
       },
       "AutoPostSocialResponse": {
         "properties": {
-          "job_id": {
-            "title": "Job Id",
+          "content_id": {
+            "title": "Content Id",
             "type": "string"
-          },
-          "scheduled_platforms": {
-            "items": {
-              "type": "string"
-            },
-            "title": "Scheduled Platforms",
-            "type": "array"
           },
           "script_30s": {
             "title": "Script 30S",
@@ -1497,6 +1490,13 @@
             "title": "Status",
             "type": "string"
           },
+          "target_platforms": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Target Platforms",
+            "type": "array"
+          },
           "viral_hook": {
             "title": "Viral Hook",
             "type": "string"
@@ -1504,10 +1504,10 @@
         },
         "required": [
           "status",
-          "job_id",
+          "content_id",
           "script_30s",
           "viral_hook",
-          "scheduled_platforms"
+          "target_platforms"
         ],
         "title": "AutoPostSocialResponse",
         "type": "object"
