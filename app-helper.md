@@ -77,3 +77,14 @@ Very detailed and insightful Kundli analysis. Acharya Shiv explained the planeta
 Insightful consultation! Acharya Shiv gave precise answers regarding relationship compatibility and Mahadasha changes. Felt much more confident after the chat session.
 
 Acharya Raman is an outstanding Vedic astrologer. He identified key planetary placements in my birth chart instantly and gave positive, realistic remedies.
+
+
+Name: Vikram Kumar
+Date: 27
+Month: 08
+Year: 1975
+HH: 04
+MM: 40
+SS: 0
+Place: Katihar, Bihar, India
+

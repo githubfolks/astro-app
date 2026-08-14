@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from .. import database
 from ..services.onboarding_reminder_service import send_onboarding_reminders
+from ..services.report_nudge_service import send_abandoned_checkout_nudges
 
 router = APIRouter(prefix="/cron", tags=["Cron"])
 
@@ -33,3 +34,14 @@ def trigger_onboarding_reminders(
     _check_cron_secret(request)
     sent = send_onboarding_reminders(db, background_tasks)
     return {"reminders_sent": sent}
+
+
+@router.post("/reports/send-checkout-nudges")
+def trigger_report_checkout_nudges(
+    request: Request,
+    db: Session = Depends(database.get_db),
+):
+    """Nudge report leads who captured birth details but never paid. Call every ~15 min."""
+    _check_cron_secret(request)
+    sent = send_abandoned_checkout_nudges(db)
+    return {"nudges_sent": sent}

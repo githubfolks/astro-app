@@ -585,6 +585,38 @@ export const api = {
             }
         }
     },
+    reports: {
+        captureLead: async (data: object) => {
+            const response = await customFetch(`${API_URL}/reports/lead-capture`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Failed to capture lead');
+        },
+        createDirectOrder: async (data: { lead_id: number, report_type: string, language: string }) => {
+            const response = await customFetch(`${API_URL}/reports/create-direct-order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Order creation failed');
+        },
+        verifyPayment: async (data: { order_reference: string, razorpay_order_id: string, razorpay_payment_id: string, razorpay_signature: string }) => {
+            const response = await customFetch(`${API_URL}/reports/verify-payment`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Payment verification failed');
+        },
+        getReport: async (orderReference: string) => {
+            const response = await customFetch(`${API_URL}/reports/${orderReference}`, {
+                method: 'GET',
+            });
+            return handleResponse(response, 'Failed to load report');
+        },
+    },
     updateDeviceToken: async (token: string, platform = 'web') => {
         const response = await customFetch(`${API_URL}/users/device-token`, {
             method: 'POST',

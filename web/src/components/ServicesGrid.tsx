@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Star, AlertTriangle, Grid3x3, Hash, FileHeart, Sparkles } from 'lucide-react';
+import { Sun, Layers, Home as HomeIcon, HeartHandshake, CalendarDays, Star, AlertTriangle, Grid3x3, Hash, FileHeart, Sparkles, ScrollText } from 'lucide-react';
 import { SERVICES_LIST } from '../data/servicesList';
 
 const ICONS_AND_COLORS: Record<string, { icon: React.ReactNode; color: string }> = {
@@ -12,6 +12,7 @@ const ICONS_AND_COLORS: Record<string, { icon: React.ReactNode; color: string }>
     'Free Manglik Checker': { icon: <AlertTriangle size={28} />, color: 'from-red-500 to-orange-600' },
     'Free Navamsa (D9) Chart': { icon: <Grid3x3 size={28} />, color: 'from-fuchsia-400 to-purple-600' },
     'Free Numerology Calculator': { icon: <Hash size={28} />, color: 'from-sky-400 to-blue-600' },
+    'AI Instant Reports': { icon: <ScrollText size={28} />, color: 'from-amber-500 to-orange-600' },
     'Vedic Astrology Consultation': { icon: <Star size={28} />, color: 'from-amber-400 to-yellow-500' },
     'Tarot Reading Consultation': { icon: <Layers size={28} />, color: 'from-purple-400 to-indigo-500' },
     'Vastu Shastra Consultation': { icon: <HomeIcon size={28} />, color: 'from-emerald-400 to-teal-500' },

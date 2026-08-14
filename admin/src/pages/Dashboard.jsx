@@ -1,18 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import {
-    Users, DollarSign, MessageCircle, TrendingUp, Calendar, UserPlus, Star, Clock
+    Users, DollarSign, MessageCircle, TrendingUp, Calendar, UserPlus, Star, Clock, Sparkles
 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend
 } from 'recharts';
-import api from '../services/api';
+import api, { reports } from '../services/api';
 
 export default function Dashboard() {
     const [stats, setStats] = useState(null);
+    const [reportRevenue, setReportRevenue] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchStats();
+        // Separate, best-effort call — report analytics living on its own
+        // endpoint shouldn't block the main dashboard if it fails.
+        reports.analyticsDashboard()
+            .then((res) => setReportRevenue(res.data.total_revenue_inr))
+            .catch((error) => console.error("Failed to fetch report revenue", error));
     }, []);
 
     const fetchStats = async () => {
@@ -45,7 +51,7 @@ export default function Dashboard() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                 <StatCard
                     title="Total Revenue"
                     value={`₹${summary.total_revenue.toLocaleString()}`}
@@ -75,6 +81,12 @@ export default function Dashboard() {
                     value={summary.astrologers_under_onboarding}
                     icon={<Clock className="text-purple-600" size={24} />}
                     color="bg-purple-50"
+                />
+                <StatCard
+                    title="Report Revenue"
+                    value={reportRevenue == null ? '—' : `₹${reportRevenue.toLocaleString()}`}
+                    icon={<Sparkles className="text-amber-600" size={24} />}
+                    color="bg-amber-50"
                 />
             </div>
 

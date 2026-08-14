@@ -3146,6 +3146,28 @@
         "title": "DeviceTokenSchema",
         "type": "object"
       },
+      "DirectOrderRequest": {
+        "properties": {
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "lead_id": {
+            "title": "Lead Id",
+            "type": "integer"
+          },
+          "report_type": {
+            "$ref": "#/components/schemas/ReportType"
+          }
+        },
+        "required": [
+          "lead_id",
+          "report_type"
+        ],
+        "title": "DirectOrderRequest",
+        "type": "object"
+      },
       "DisputeCreate": {
         "properties": {
           "consultation_id": {
@@ -3931,6 +3953,139 @@
         "title": "InstagramCopy",
         "type": "object"
       },
+      "InternalTestGenerateRequest": {
+        "properties": {
+          "campaign_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "aadikarta.org",
+            "title": "Campaign Source"
+          },
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "MALE",
+            "title": "Gender"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "partner_date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Date Of Birth"
+          },
+          "partner_full_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Full Name"
+          },
+          "partner_place_of_birth": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Place Of Birth"
+          },
+          "partner_time_of_birth": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Time Of Birth"
+          },
+          "phone_number": {
+            "maxLength": 15,
+            "minLength": 10,
+            "title": "Phone Number",
+            "type": "string"
+          },
+          "place_of_birth": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "report_type": {
+            "$ref": "#/components/schemas/ReportType"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_name",
+          "phone_number",
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth",
+          "report_type"
+        ],
+        "title": "InternalTestGenerateRequest",
+        "type": "object"
+      },
       "Job": {
         "properties": {
           "content_type": {
@@ -4434,6 +4589,134 @@
           "kyc_verified"
         ],
         "title": "KycVerifyUpdate",
+        "type": "object"
+      },
+      "LeadCaptureRequest": {
+        "properties": {
+          "campaign_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "aadikarta.org",
+            "title": "Campaign Source"
+          },
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "full_name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Full Name",
+            "type": "string"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "MALE",
+            "title": "Gender"
+          },
+          "partner_date_of_birth": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Date Of Birth"
+          },
+          "partner_full_name": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Full Name"
+          },
+          "partner_place_of_birth": {
+            "anyOf": [
+              {
+                "maxLength": 150,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Place Of Birth"
+          },
+          "partner_time_of_birth": {
+            "anyOf": [
+              {
+                "format": "time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partner Time Of Birth"
+          },
+          "phone_number": {
+            "maxLength": 15,
+            "minLength": 10,
+            "title": "Phone Number",
+            "type": "string"
+          },
+          "place_of_birth": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "report_type": {
+            "$ref": "#/components/schemas/ReportType"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "full_name",
+          "phone_number",
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth",
+          "report_type"
+        ],
+        "title": "LeadCaptureRequest",
         "type": "object"
       },
       "LinkedInCopy": {
@@ -5896,6 +6179,15 @@
         "title": "RejectAstrologerRequest",
         "type": "object"
       },
+      "ReportType": {
+        "enum": [
+          "FULL_KUNDLI",
+          "GUN_MILAN",
+          "CAREER_FINANCE"
+        ],
+        "title": "ReportType",
+        "type": "string"
+      },
       "RequestMissingInfoRequest": {
         "properties": {
           "missing_items": {
@@ -6972,6 +7264,34 @@
           "otp"
         ],
         "title": "VerifyOTPRequest",
+        "type": "object"
+      },
+      "VerifyPaymentRequest": {
+        "properties": {
+          "order_reference": {
+            "title": "Order Reference",
+            "type": "string"
+          },
+          "razorpay_order_id": {
+            "title": "Razorpay Order Id",
+            "type": "string"
+          },
+          "razorpay_payment_id": {
+            "title": "Razorpay Payment Id",
+            "type": "string"
+          },
+          "razorpay_signature": {
+            "title": "Razorpay Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_reference",
+          "razorpay_order_id",
+          "razorpay_payment_id",
+          "razorpay_signature"
+        ],
+        "title": "VerifyPaymentRequest",
         "type": "object"
       },
       "VisibilityUpdate": {
@@ -13924,6 +14244,26 @@
         ]
       }
     },
+    "/cron/reports/send-checkout-nudges": {
+      "post": {
+        "description": "Nudge report leads who captured birth details but never paid. Call every ~15 min.",
+        "operationId": "trigger_report_checkout_nudges_cron_reports_send_checkout_nudges_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Trigger Report Checkout Nudges",
+        "tags": [
+          "Cron"
+        ]
+      }
+    },
     "/disputes/": {
       "get": {
         "operationId": "list_all_disputes_disputes__get",
@@ -16677,6 +17017,522 @@
         "summary": "Waplex Inbound",
         "tags": [
           "Public Content"
+        ]
+      }
+    },
+    "/reports/analytics/dashboard": {
+      "get": {
+        "description": "Admin Telemetry Dashboard endpoint for reports analytics.",
+        "operationId": "get_report_analytics_dashboard_reports_analytics_dashboard_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Report Analytics Dashboard",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/create-direct-order": {
+      "post": {
+        "description": "Step 2: Create a real Razorpay order for direct payment (no wallet balance required).",
+        "operationId": "create_direct_order_reports_create_direct_order_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DirectOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Direct Order",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/internal-test-generate": {
+      "post": {
+        "description": "Admin-only QA bypass: generates a real AI report end-to-end (synthesis, PDF,\nWhatsApp dispatch to the phone number supplied in the request) WITHOUT going\nthrough Razorpay, so the team can review report quality for free. Marked\nPaymentStatus.INTERNAL_TEST so it's excluded from revenue/conversion metrics\nin the analytics dashboard and leads list. The phone number entered is where\nthe WhatsApp report link is sent \u2014 use your own test number, not a real\ncustomer's, since this dispatches an actual WhatsApp message.",
+        "operationId": "generate_internal_test_report_reports_internal_test_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InternalTestGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Internal Test Report",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/lead-capture": {
+      "post": {
+        "description": "Step 1: Capture basic seeker details & mobile number BEFORE payment.\nSaves lead to report_leads table for marketing remarketing from aadikarta.org.",
+        "operationId": "capture_report_lead_reports_lead_capture_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadCaptureRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Report Lead",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/leads": {
+      "get": {
+        "description": "Paginated, filterable list of captured report leads for the admin drill-down view.",
+        "operationId": "list_report_leads_reports_leads_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "report_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReportType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Report Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "converted_only",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Converted Only",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Report Leads",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/leads/export": {
+      "get": {
+        "description": "CSV export of captured leads (Full Name, Mobile, Email + context) for\nmarketing follow-up / remarketing use, per admin request.",
+        "operationId": "export_report_leads_reports_leads_export_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "report_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ReportType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Report Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "converted_only",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Converted Only",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Export Report Leads",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/leads/{lead_id}": {
+      "get": {
+        "description": "Drill-down view of a single lead: full birth/partner details plus every order they placed.",
+        "operationId": "get_report_lead_detail_reports_leads__lead_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "title": "Lead Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Report Lead Detail",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/payment-webhook": {
+      "post": {
+        "description": "Server-to-server Razorpay webhook \u2014 reliable backup to the client-side\n/verify-payment flow. Requires a valid X-Razorpay-Signature; a client-supplied\nstatus is never trusted (same pattern as /payment/razorpay-webhook).",
+        "operationId": "process_payment_webhook_reports_payment_webhook_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Process Payment Webhook",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/verify-payment": {
+      "post": {
+        "description": "Step 3: Client-side callback after Razorpay Checkout succeeds. Verifies the\npayment signature server-side (never trusts the browser's word alone) before\nmarking the order paid and generating the report \u2014 mirrors /payment/verify.",
+        "operationId": "verify_report_payment_reports_verify_payment_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Report Payment",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/{order_reference}": {
+      "get": {
+        "description": "Fetch report JSON payload for interactive Web Viewer.\nKeyed by the unguessable order_reference (not the sequential DB id) so a\nreport link can't be enumerated to read another customer's PII.",
+        "operationId": "get_report_details_reports__order_reference__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_reference",
+            "required": true,
+            "schema": {
+              "title": "Order Reference",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report Details",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/{order_reference}/pdf": {
+      "get": {
+        "description": "Stream the generated report PDF. Same access model as get_report_details:\ngated on the unguessable order_reference plus a PAID (or admin INTERNAL_TEST) payment status.",
+        "operationId": "get_report_pdf_reports__order_reference__pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_reference",
+            "required": true,
+            "schema": {
+              "title": "Order Reference",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Report Pdf",
+        "tags": [
+          "Ad-Hoc Reports"
         ]
       }
     },

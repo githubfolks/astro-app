@@ -4,8 +4,8 @@ import os
 import json
 import asyncio
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes, realtime, ai_astrologer, content_studio, social_copy, panchang, matching, cron, free_tools, places, muhurat, client_errors
-from . import models_edu # To ensure tables are created
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, packages, disputes, realtime, ai_astrologer, content_studio, social_copy, panchang, matching, cron, free_tools, places, muhurat, client_errors, reports
+from . import models_edu, models_reports # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -249,13 +249,23 @@ async def csrf_middleware(request: Request, call_next):
         # Astrologer onboarding: applicant has no account/session yet, same as signup above.
         "/astrologers/onboarding",
         "/astrologers/onboarding/photo",
+        # Ad-hoc public report checkout & webhooks (visitors have no session yet)
+        "/reports/lead-capture",
+        "/reports/create-direct-order",
+        "/reports/verify-payment",
+        "/reports/payment-webhook",
     ]
     
     # Also exempt requests with Bearer token (JWT) as they are inherently CSRF-protected
     auth_header = request.headers.get("Authorization")
     is_jwt = auth_header and auth_header.startswith("Bearer ")
 
-    if request.method in ["POST", "PUT", "DELETE", "PATCH"] and request.url.path not in exempt_paths and not is_jwt:
+    # Cron endpoints are called by an external scheduler (system cron / Vercel
+    # Cron) with no browser session and no JWT — they're protected by their
+    # own X-Cron-Secret check (see routers/cron.py) instead of CSRF.
+    is_cron = request.url.path.startswith("/cron/")
+
+    if request.method in ["POST", "PUT", "DELETE", "PATCH"] and request.url.path not in exempt_paths and not is_jwt and not is_cron:
         header_token = request.headers.get("X-CSRF-Token")
         if not header_token or header_token != csrf_token:
             from fastapi.responses import JSONResponse
@@ -436,6 +446,7 @@ app.include_router(realtime.router)
 app.include_router(ai_astrologer.router)
 app.include_router(content_studio.router)
 app.include_router(social_copy.router)
+app.include_router(reports.router)
 app.include_router(cron.router)
 
 @app.get("/")

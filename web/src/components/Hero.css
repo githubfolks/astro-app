@@ -63,8 +63,22 @@
 
 .hero-actions {
     display: flex;
-    gap: 16px;
+    flex-direction: column;
     margin-bottom: 48px;
+}
+
+.hero-actions > a {
+    align-self: center;
+}
+
+@media (min-width: 640px) {
+    .hero-actions > a {
+        align-self: flex-start;
+    }
+}
+
+.hero-actions-secondary {
+    width: 100%;
 }
 
 .hero-btn {

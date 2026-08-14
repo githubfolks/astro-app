@@ -58,6 +58,7 @@ const URLS = [
     { loc: '/services/daily-horoscope',  changefreq: 'daily',   priority: '0.7' },
     { loc: '/services/tarot-reading',    changefreq: 'monthly', priority: '0.7' },
     { loc: '/services/vastu-shastra',    changefreq: 'monthly', priority: '0.7' },
+    { loc: '/services/ai-instant-reports', changefreq: 'monthly', priority: '0.7' },
     { loc: '/tools/manglik-dosha-checker', changefreq: 'monthly', priority: '0.7' },
     { loc: '/tools/numerology-calculator', changefreq: 'monthly', priority: '0.7' },
     { loc: '/tools/kundli-matching',       changefreq: 'monthly', priority: '0.7' },

@@ -75,3 +75,53 @@ def send_whatsapp(to_phone: str, template_key: str, params: dict | None = None):
         logger.info(f"[WAPlex] sent to {to_phone} (template={template_key})")
     except Exception as e:
         logger.error(f"[WAPlex] send failed to {to_phone}: {e}")
+
+
+def send_report_pdf(to_phone: str, full_name: str, report_title: str, pdf_url: str) -> bool:
+    """Deliver a completed ad-hoc report's PDF as a WhatsApp document via WAPlex.
+    pdf_url must be a publicly reachable HTTPS URL — WAPlex fetches it directly."""
+    api_key = get_setting("waplex_api_key")
+    if not api_key:
+        logger.info(f"[MOCK WAPlex] (Not connected) Report PDF to {to_phone} ({full_name}): {pdf_url}")
+        return False
+
+    config = _get_config()
+    if not config.base_url or not to_phone:
+        logger.warning("WAPlex report PDF send skipped — missing base_url or recipient phone")
+        return False
+
+    try:
+        sender = WaplexSender(config)
+        result = sender.send_media(
+            api_key, to_phone, media_url=pdf_url, media_type="document",
+            caption=f"Namaste {full_name}, your {report_title} from Aadikarta.org is ready. Download it here.",
+            filename=f"{report_title}.pdf",
+        )
+        return result is not None
+    except Exception as e:
+        logger.error(f"[WAPlex] report PDF send failed to {to_phone}: {e}")
+        return False
+
+
+def send_checkout_nudge(to_phone: str, full_name: str, report_type: str) -> bool:
+    """Abandoned checkout recovery nudge — sent to a lead who captured details but never paid."""
+    api_key = get_setting("waplex_api_key")
+    if not api_key:
+        logger.info(f"[MOCK WAPlex] (Not connected) Checkout nudge to {to_phone} ({full_name}) for {report_type}")
+        return False
+
+    config = _get_config()
+    if not config.base_url or not to_phone:
+        return False
+
+    try:
+        sender = WaplexSender(config)
+        result = sender.send_text(
+            api_key, to_phone,
+            f"Namaste {full_name}, your {report_type.replace('_', ' ').title()} report on Aadikarta.org is "
+            "just a payment away. Complete your purchase to get your personalized Vedic reading instantly.",
+        )
+        return result is not None
+    except Exception as e:
+        logger.error(f"[WAPlex] checkout nudge failed to {to_phone}: {e}")
+        return False

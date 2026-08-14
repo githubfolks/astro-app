@@ -1837,6 +1837,16 @@ def update_app_settings(values: dict, db: Session = Depends(database.get_db)):
 
 # --- Moderation flags ---
 
+def _display_name_for_user(user: Optional[models.User]) -> Optional[str]:
+    if not user:
+        return None
+    if user.seeker_profile and user.seeker_profile.full_name:
+        return user.seeker_profile.full_name
+    if user.astrologer_profile:
+        return user.astrologer_profile.display_name or user.astrologer_profile.full_name
+    return user.email or user.phone_number
+
+
 @router.get("/moderation-flags")
 def list_moderation_flags(status: Optional[str] = None, limit: int = 100, offset: int = 0, db: Session = Depends(database.get_db)):
     q = db.query(models.ModerationFlag)
@@ -1850,6 +1860,9 @@ def list_moderation_flags(status: Optional[str] = None, limit: int = 100, offset
             "consultation_id": f.consultation_id,
             "message_id": f.message_id,
             "flagged_user_id": f.flagged_user_id,
+            "flagged_user_name": _display_name_for_user(f.flagged_user),
+            "seeker_name": _display_name_for_user(f.consultation.seeker) if f.consultation else None,
+            "astrologer_name": _display_name_for_user(f.consultation.astrologer) if f.consultation else None,
             "reason": f.reason,
             "snippet": f.snippet,
             "status": f.status.value if hasattr(f.status, "value") else f.status,

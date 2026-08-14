@@ -32,6 +32,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const ModerationFlags = lazy(() => import('./pages/ModerationFlags'));
 const ReviewModeration = lazy(() => import('./pages/ReviewModeration'));
 const SEOAnalytics = lazy(() => import('./pages/SEOAnalytics'));
+const AdminReportAnalytics = lazy(() => import('./pages/AdminReportAnalytics'));
 
 function RequireAuth({ children }) {
   const { user, loading } = useAuth();
@@ -89,6 +90,7 @@ function App() {
             <Route path="/reviews" element={<ReviewModeration />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/seo-analytics" element={<SEOAnalytics />} />
+            <Route path="/report-analytics" element={<AdminReportAnalytics />} />
           </Route>
         </Routes>
         </Suspense>

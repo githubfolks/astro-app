@@ -135,6 +135,13 @@ export const settings = {
     disconnectWhatsapp: () => api.post('/admin/whatsapp/disconnect'),
 };
 
+export const reports = {
+    analyticsDashboard: () => api.get('/reports/analytics/dashboard'),
+    listLeads: (params) => api.get('/reports/leads', { params }),
+    getLead: (leadId) => api.get(`/reports/leads/${leadId}`),
+    generateInternalTest: (data) => api.post('/reports/internal-test-generate', data),
+};
+
 export const moderation = {
     list: (params) => api.get('/admin/moderation-flags', { params }),
     resolve: (id, status = 'REVIEWED') => api.post(`/admin/moderation-flags/${id}/resolve`, null, { params: { status } }),

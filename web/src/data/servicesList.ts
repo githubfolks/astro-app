@@ -19,6 +19,9 @@ export const SERVICES_LIST: ServiceLink[] = [
     { title: 'Free Navamsa (D9) Chart', to: '/tools/navamsa-chart' },
     { title: 'Free Numerology Calculator', to: '/tools/numerology-calculator' },
 
+    // AI INSTANT REPORTS (one-time paid, no login required)
+    { title: 'AI Instant Reports', to: '/services/ai-instant-reports' },
+
     // PAID CONSULTATIONS
     { title: 'Vedic Astrology Consultation', to: '/services/vedic-astrology' },
     { title: 'Tarot Reading Consultation', to: '/services/tarot-reading' },

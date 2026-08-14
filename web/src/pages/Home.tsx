@@ -14,6 +14,7 @@ import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import MemoryGuruBanner from '../components/MemoryGuruBanner';
 import AiAstrologerBanner from '../components/AiAstrologerBanner';
+import InstantReportsBanner from '../components/InstantReportsBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
 import PanchangSection from '../components/PanchangSection';
 import FAQSection from '../components/FAQSection';
@@ -161,6 +162,7 @@ const Home: React.FC = () => {
                 <AstrologerList limit={10} topRankingOnly={false} showFilters={true} />
                 <MemoryGuruBanner />
                 <ServicesGrid />
+                <InstantReportsBanner />
                 <HoroscopeSection />
 
                 {/* Daily Panchang Section */}

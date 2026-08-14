@@ -105,6 +105,50 @@ async def generate_full_kundli(
     return await _post("/api/v2/vedic/calculate", payload)
 
 
+async def check_sade_sati(
+    year: int,
+    month: int,
+    day: int,
+    hour: int,
+    minute: int,
+    latitude: float,
+    longitude: float,
+    reference_date: str,
+    timezone: str = "Asia/Kolkata",
+    ayanamsha: str = "lahiri",
+) -> dict:
+    """
+    Lightweight Sade Sati status check as of `reference_date` (YYYY-MM-DD) —
+    same /vedic/calculate endpoint as generate_full_kundli but with every
+    optional section (yogas, panchang, shadbala, ashtakavarga, vargas, dasha)
+    switched off, so only chart.sade_sati is computed. Used to bisect for the
+    precise start/end of the current Sade Sati window without paying for a
+    full chart calculation on every sample point.
+    """
+    payload = {
+        "year": year,
+        "month": month,
+        "day": day,
+        "hour": hour,
+        "minute": minute,
+        "lat": latitude,
+        "lng": longitude,
+        "tz_str": timezone,
+        "ayanamsha": ayanamsha,
+        "house_system": "whole_sign",
+        "vargas": [],
+        "include_avastha": False,
+        "include_yogas": False,
+        "include_panchang": False,
+        "include_shadbala": False,
+        "include_ashtakavarga": False,
+        "dasha_levels": 0,
+        "reference_date": reference_date,
+    }
+    result = await _post("/api/v2/vedic/calculate", payload)
+    return result.get("chart", {}).get("sade_sati") or {}
+
+
 async def generate_panchang(
     year: int,
     month: int,

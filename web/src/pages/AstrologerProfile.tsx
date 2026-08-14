@@ -259,8 +259,8 @@ const AstrologerProfile: React.FC = () => {
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <SEO
-                title={`Talk to ${displayName} (${astrologer.rating_avg ? `${astrologer.rating_avg.toFixed(1)}★` : 'Verified'}) | Astrologer | Aadikarta`}
-                description={`Consult with ${displayName} (${astrologer.rating_avg ? `${astrologer.rating_avg.toFixed(1)}★` : '5.0★'} rating, ${astrologer.experience_years}+ yrs exp) on Aadikarta from ₹${astrologer.consultation_fee_per_min || 10}/min. Expert in ${specialtiesArray.slice(0, 3).join(', ')}.`}
+                title={`Talk to ${displayName} (${Number(astrologer.rating_avg) > 0 ? `${Number(astrologer.rating_avg).toFixed(1)}★` : 'Verified'}) | Astrologer | Aadikarta`}
+                description={`Consult with ${displayName} (${Number(astrologer.rating_avg) > 0 ? `${Number(astrologer.rating_avg).toFixed(1)}★` : '5.0★'} rating, ${astrologer.experience_years}+ yrs exp) on Aadikarta from ₹${astrologer.consultation_fee_per_min || 10}/min. Expert in ${specialtiesArray.slice(0, 3).join(', ')}.`}
                 keywords={`Aadikarta Vedic Astrology, ${displayName}, talk to ${displayName}, ${specialtiesArray.slice(0, 3).join(', ')}, online astrologer consultation`}
                 image={resolveImageUrl(astrologer.profile_picture_url, displayName)}
                 structuredData={getStructuredData(astrologer)}

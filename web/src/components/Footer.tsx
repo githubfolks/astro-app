@@ -94,6 +94,7 @@ const Footer: React.FC = () => {
                                     <li><Link to="/panchang" onClick={scrollToTop}>Free Panchang</Link></li>
                                     <li><Link to="/tools/kundli-chart" onClick={scrollToTop}>Free Kundli Generator</Link></li>
                                     <li><Link to="/tools/kundli-matching" onClick={scrollToTop}>Free Kundli Matching</Link></li>
+                                    <li><Link to="/services/ai-instant-reports" onClick={scrollToTop}>AI Instant Reports</Link></li>
                                     <li><Link to="/services/vedic-astrology" onClick={scrollToTop}>Vedic Astrology</Link></li>
                                     <li><Link to="/services/tarot-reading" onClick={scrollToTop}>Tarot Reading</Link></li>
                                 </ul>

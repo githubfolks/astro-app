@@ -65,6 +65,7 @@ const NavamsaViewer = lazy(() => import('./pages/tools/NavamsaViewer'));
 const KundliChartViewer = lazy(() => import('./pages/tools/KundliChartViewer'));
 const KundliMatchChecker = lazy(() => import('./pages/tools/KundliMatchChecker'));
 const NumerologyCalculator = lazy(() => import('./pages/tools/NumerologyCalculator'));
+const ReportViewer = lazy(() => import('./pages/reports/ReportViewer'));
 
 // Service Pages
 const KundliMatching = lazy(() => import('./pages/services/KundliMatching'));
@@ -77,6 +78,7 @@ const AadikartaVsAstroyogi = lazy(() => import('./pages/compare/AadikartaVsAstro
 const AadikartaVsAnytimeAstro = lazy(() => import('./pages/compare/AadikartaVsAnytimeAstro'));
 const TarotReading = lazy(() => import('./pages/services/TarotReading'));
 const VastuShastra = lazy(() => import('./pages/services/VastuShastra'));
+const InstantReports = lazy(() => import('./pages/services/InstantReports'));
 
 // Redirect /astrologer/:id → /astrologers/:id preserving the param
 const AstrologerRedirect: React.FC = () => {
@@ -250,6 +252,7 @@ function App() {
                             <Route path="/services/vedic-astrology" element={<VedicAstrology />} />
                             <Route path="/services/tarot-reading" element={<TarotReading />} />
                             <Route path="/services/vastu-shastra" element={<VastuShastra />} />
+                            <Route path="/services/ai-instant-reports" element={<InstantReports />} />
                             <Route path="/vs/astrotalk" element={<AadikartaVsAstroTalk />} />
                             <Route path="/vs/astrosage" element={<AadikartaVsAstroSage />} />
                             <Route path="/compare/aadikarta-vs-astrosage" element={<AadikartaVsAstroSage />} />
@@ -263,6 +266,7 @@ function App() {
                             <Route path="/tools/kundli-chart" element={<KundliChartViewer />} />
                             <Route path="/tools/kundli-matching" element={<KundliMatchChecker />} />
                             <Route path="/tools/numerology-calculator" element={<NumerologyCalculator />} />
+                            <Route path="/reports/:orderId" element={<ReportViewer />} />
 
                             {/* Dynamic Page Route - Must be last to avoid catching specific routes */}
                             <Route path="/:slug" element={<PageViewer />} />

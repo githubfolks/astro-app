@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { moderation } from '../services/api';
 import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
 import { AlertTriangle } from 'lucide-react';
 
 const STATUS_COLORS = {
@@ -13,6 +14,7 @@ export default function ModerationFlags() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('');
+    const [selectedFlag, setSelectedFlag] = useState(null);
 
     const fetchFlags = useCallback(async () => {
         try {
@@ -66,7 +68,9 @@ export default function ModerationFlags() {
                             <tr>
                                 <th className="p-3">When</th>
                                 <th className="p-3">Consultation</th>
-                                <th className="p-3">User</th>
+                                <th className="p-3">Seeker</th>
+                                <th className="p-3">Astrologer</th>
+                                <th className="p-3">Flagged User</th>
                                 <th className="p-3">Reason</th>
                                 <th className="p-3">Snippet</th>
                                 <th className="p-3">Status</th>
@@ -78,9 +82,19 @@ export default function ModerationFlags() {
                                 <tr key={f.id} className="hover:bg-gray-50">
                                     <td className="p-3 text-gray-900">{f.created_at ? new Date(f.created_at).toLocaleString() : '-'}</td>
                                     <td className="p-3">#{f.consultation_id}</td>
-                                    <td className="p-3">#{f.flagged_user_id}</td>
+                                    <td className="p-3">{f.seeker_name || '-'}</td>
+                                    <td className="p-3">{f.astrologer_name || '-'}</td>
+                                    <td className="p-3 font-medium text-gray-900">{f.flagged_user_name || `#${f.flagged_user_id}`}</td>
                                     <td className="p-3"><span className="font-mono text-xs text-red-600">{f.reason}</span></td>
-                                    <td className="p-3 max-w-xs truncate text-gray-700" title={f.snippet}>{f.snippet}</td>
+                                    <td className="p-3 max-w-xs">
+                                        <button
+                                            onClick={() => setSelectedFlag(f)}
+                                            className="truncate block max-w-xs text-left text-gray-700 hover:text-indigo-600 hover:underline"
+                                            title="Click to view full snippet"
+                                        >
+                                            {f.snippet}
+                                        </button>
+                                    </td>
                                     <td className="p-3">
                                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${STATUS_COLORS[f.status] || ''}`}>{f.status}</span>
                                     </td>
@@ -98,6 +112,25 @@ export default function ModerationFlags() {
                     </table>
                 </div>
             )}
+
+            <Modal isOpen={!!selectedFlag} onClose={() => setSelectedFlag(null)} title="Flagged Message Snippet" className="max-w-2xl">
+                {selectedFlag && (
+                    <div className="space-y-3 text-sm">
+                        <div><span className="font-medium">When:</span> {selectedFlag.created_at ? new Date(selectedFlag.created_at).toLocaleString() : '-'}</div>
+                        <div><span className="font-medium">Consultation:</span> #{selectedFlag.consultation_id}</div>
+                        <div><span className="font-medium">Seeker:</span> {selectedFlag.seeker_name || '-'}</div>
+                        <div><span className="font-medium">Astrologer:</span> {selectedFlag.astrologer_name || '-'}</div>
+                        <div><span className="font-medium">Flagged User:</span> {selectedFlag.flagged_user_name || `#${selectedFlag.flagged_user_id}`}</div>
+                        <div><span className="font-medium">Reason:</span> <span className="font-mono text-xs text-red-600">{selectedFlag.reason}</span></div>
+                        <div>
+                            <div className="font-medium mb-1">Snippet:</div>
+                            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 text-gray-800 whitespace-pre-wrap break-words">
+                                {selectedFlag.snippet}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }
