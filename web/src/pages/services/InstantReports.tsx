@@ -15,7 +15,7 @@ type ReportType = 'FULL_KUNDLI' | 'GUN_MILAN' | 'CAREER_FINANCE';
 const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; price: string; strikePrice: string; blurb: string }> = [
     {
         type: 'FULL_KUNDLI',
-        icon: <FileHeart size={28} />,
+        icon: <FileHeart size={18} />,
         title: 'Full Life Kundli & Planetary Dasha Report',
         price: '₹199',
         strikePrice: '₹499',
@@ -23,7 +23,7 @@ const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; p
     },
     {
         type: 'GUN_MILAN',
-        icon: <HeartHandshake size={28} />,
+        icon: <HeartHandshake size={18} />,
         title: 'Gun Milan & Marriage Compatibility Report',
         price: '₹149',
         strikePrice: '₹349',
@@ -31,7 +31,7 @@ const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; p
     },
     {
         type: 'CAREER_FINANCE',
-        icon: <Briefcase size={28} />,
+        icon: <Briefcase size={18} />,
         title: 'Career & Financial Transit Report',
         price: '₹199',
         strikePrice: '₹499',
@@ -124,21 +124,25 @@ const InstantReports: React.FC = () => {
                 <section className="grid grid-cols-1 md:grid-cols-3 gap-6" data-aos="fade-up">
                     {REPORTS.map((report) => (
                         <div key={report.type} className="service-glass-panel p-6 md:p-8 flex flex-col">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 flex items-center justify-center mb-5 shadow-lg">
-                                {report.icon}
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-9 h-9 shrink-0 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 flex items-center justify-center shadow-lg">
+                                    {report.icon}
+                                </div>
+                                <h3 className="text-lg md:text-xl font-normal text-white">{report.title}</h3>
                             </div>
-                            <h3 className="text-lg md:text-xl font-normal text-white mb-2">{report.title}</h3>
                             <p className="text-sm text-gray-300 font-light leading-relaxed mb-6 flex-1">{report.blurb}</p>
-                            <div className="flex items-baseline gap-2 mb-4">
-                                <span className="text-2xl font-normal text-amber-500">{report.price}</span>
-                                <span className="text-sm text-gray-500 line-through">{report.strikePrice}</span>
+                            <div className="flex items-center justify-between gap-3 flex-wrap">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-2xl font-normal text-amber-500">{report.price}</span>
+                                    <span className="text-sm text-gray-500 line-through">{report.strikePrice}</span>
+                                </div>
+                                <button
+                                    onClick={() => openModalFor(report.type)}
+                                    className="bg-amber-500 hover:bg-amber-400 text-indigo-950 px-5 py-2.5 rounded-full font-normal text-sm shadow-xl shadow-amber-500/10 hover:scale-105 active:scale-95 transition-all shrink-0"
+                                >
+                                    Get This Report
+                                </button>
                             </div>
-                            <button
-                                onClick={() => openModalFor(report.type)}
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-indigo-950 px-6 py-3 rounded-full font-normal text-base shadow-xl shadow-amber-500/10 hover:scale-105 active:scale-95 transition-all"
-                            >
-                                Get This Report
-                            </button>
                         </div>
                     ))}
                 </section>

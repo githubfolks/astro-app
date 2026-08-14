@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Sparkles, FileText, BrainCircuit, ArrowRight } from 'lucide-react';
+import { MessageCircle, Sparkles, FileText, BrainCircuit } from 'lucide-react';
 import './Hero.css';
 
 const Hero: React.FC = () => {
@@ -21,36 +21,33 @@ const Hero: React.FC = () => {
                         Get instant free AI chart insights or connect with India's top Vedic astrologers for live chat consultations on Kundli, Tarot, Love & Career.
                     </p>
                     <div className="hero-actions mt-8">
-                        <Link
-                            to="/astrologers"
-                            className="group w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white px-8 py-4 rounded-2xl font-bold transition-all hover:scale-[1.02] shadow-xl shadow-indigo-900/30 flex items-center justify-center gap-3"
-                        >
-                            <MessageCircle size={20} className="shrink-0" />
-                            <span>Chat with Astrologer</span>
-                            <span className="text-xs bg-white/15 px-2.5 py-1 rounded-full font-semibold">From ₹10/min</span>
-                            <ArrowRight size={16} className="shrink-0 opacity-0 -ml-2 group-hover:opacity-100 group-hover:ml-0 transition-all" />
-                        </Link>
-
-                        <div className="hero-actions-secondary mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="hero-actions-grid grid grid-cols-2 gap-3 max-w-xs sm:max-w-sm mx-auto sm:mx-0">
+                            <Link
+                                to="/astrologers"
+                                className="hero-square-btn bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-900/30"
+                            >
+                                <MessageCircle size={32} className="shrink-0" />
+                                <span>Chat with Astrologer</span>
+                            </Link>
                             <Link
                                 to="/ai-astrologer"
-                                className="bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 px-5 py-3.5 rounded-xl font-bold transition-all hover:scale-[1.03] shadow-lg shadow-amber-900/20 flex items-center justify-center gap-2 text-sm"
+                                className="hero-square-btn bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 shadow-lg shadow-amber-900/20"
                             >
-                                <Sparkles size={17} className="shrink-0" />
+                                <Sparkles size={32} className="shrink-0" />
                                 <span>Ask Free AI Astrologer</span>
                             </Link>
                             <Link
                                 to="/services/ai-instant-reports"
-                                className="bg-emerald-500/15 hover:bg-emerald-500/25 backdrop-blur-md text-emerald-200 border border-emerald-400/30 px-5 py-3.5 rounded-xl font-bold transition-all hover:scale-[1.03] flex items-center justify-center gap-2 text-sm"
+                                className="hero-square-btn bg-emerald-500/15 text-emerald-200 border border-emerald-400/30"
                             >
-                                <FileText size={17} className="shrink-0" />
+                                <FileText size={32} className="shrink-0" />
                                 <span>AI Instant Report</span>
                             </Link>
                             <Link
                                 to="/memory-guru"
-                                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 px-5 py-3.5 rounded-xl font-bold transition-all hover:scale-[1.03] flex items-center justify-center gap-2 text-sm"
+                                className="hero-square-btn bg-white/10 text-white border border-white/20"
                             >
-                                <BrainCircuit size={17} className="shrink-0" />
+                                <BrainCircuit size={32} className="shrink-0" />
                                 <span>Memory Guru</span>
                             </Link>
                         </div>

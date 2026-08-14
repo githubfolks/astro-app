@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { X, Sparkles, CheckCircle2, ArrowRight, Phone, Lock, Gift, User, Globe } from 'lucide-react';
 import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
+import SegmentSelect from './SegmentSelect';
+import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
 import type { RazorpayResponse, RazorpayError } from '../types';
@@ -22,7 +25,6 @@ const REPORT_INFO = {
             'Full 5-Year Chronological Vimshottari Dasha Forecast',
             'Personality, Wealth, Health & Marriage Analysis',
             'Custom Mantras & Gemstone Recommendations',
-            'Includes ₹50 Voucher for Live Consultation',
         ],
     },
     GUN_MILAN: {
@@ -35,7 +37,6 @@ const REPORT_INFO = {
             'Manglik & Nadi Dosha Assessment + Remedies',
             'Emotional, Physical & Wealth Compatibility',
             'Marital Harmony & Long-term Stability Guidance',
-            'Includes ₹50 Voucher for Live Consultation',
         ],
     },
     CAREER_FINANCE: {
@@ -48,7 +49,6 @@ const REPORT_INFO = {
             'Upcoming Job Change & Promotion Windows',
             'Financial Wealth Yogas & Ashtakavarga Ratings',
             'Business vs Employment Suitability Analysis',
-            'Includes ₹50 Voucher for Live Consultation',
         ],
     },
 };
@@ -91,6 +91,14 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
             document.body.style.overflow = previousOverflow;
         };
     }, [isOpen]);
+
+    // `reportType`'s initial value only reads `initialReportType` on first mount, so without this
+    // effect every subsequent open kept showing whichever report was selected the very first time
+    // (e.g. clicking "Get This Report" on the Gun Milan card would open the modal on Full Kundli).
+    useEffect(() => {
+        if (!isOpen) return;
+        setReportType(initialReportType);
+    }, [isOpen, initialReportType]);
 
     if (!isOpen) return null;
 
@@ -256,7 +264,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                                 ))}
                             </ul>
                         </div>
-                        <div className="flex flex-col items-end shrink-0">
+                        <div className="flex flex-col items-center text-center w-full md:w-auto">
                             <span className="text-xs text-slate-500 line-through">{currentInfo.strikePrice}</span>
                             <span className="text-2xl font-bold text-amber-400">{currentInfo.price}</span>
                             <span className="text-[10px] text-slate-400">Direct Payment • No Wallet Req.</span>
@@ -272,20 +280,23 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                     {/* STEP 1: LEAD CAPTURE FORM */}
                     {step === 1 && (
                         <form onSubmit={handleLeadSubmit} className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-xs uppercase font-bold tracking-wider text-amber-300 flex items-center gap-1.5">
-                                    <User className="w-4 h-4" /> Enter Seeker Details (Step 1 of 2)
+                            <div className="flex items-start justify-between gap-3">
+                                <h4 className="text-xs uppercase font-bold tracking-wider text-amber-300 flex items-start gap-1.5">
+                                    <User className="w-4 h-4 shrink-0 mt-0.5" />
+                                    <span>Enter Your Details<br />(Step 1 of 2)</span>
                                 </h4>
-                                <div className="flex items-center gap-2">
-                                    <Globe className="w-3.5 h-3.5 text-slate-400" />
-                                    <select
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                    <SegmentSelect
                                         value={language}
-                                        onChange={(e) => setLanguage(e.target.value as 'en' | 'hi')}
-                                        className="bg-slate-950 border border-slate-800 text-xs rounded-md px-2 py-1 text-slate-200"
-                                    >
-                                        <option value="en">English Report</option>
-                                        <option value="hi">हिंदी रिपोर्ट</option>
-                                    </select>
+                                        onChange={setLanguage}
+                                        options={[
+                                            { value: 'en', label: 'English Report' },
+                                            { value: 'hi', label: 'हिंदी रिपोर्ट' },
+                                        ]}
+                                        placeholder="Language"
+                                        className="w-28 bg-slate-950 border border-slate-800 text-xs rounded-md px-2 py-1.5 text-slate-200"
+                                    />
                                 </div>
                             </div>
 
@@ -303,34 +314,35 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                                 </div>
                                 <div>
                                     <label className="block text-slate-400 mb-1">Gender</label>
-                                    <select
+                                    <SegmentSelect
                                         value={gender}
-                                        onChange={(e) => setGender(e.target.value)}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 outline-none"
-                                    >
-                                        <option value="MALE">Male</option>
-                                        <option value="FEMALE">Female</option>
-                                        <option value="OTHER">Other</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-slate-400 mb-1">Date of Birth *</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={dob}
-                                        onChange={(e) => setDob(e.target.value)}
+                                        onChange={setGender}
+                                        options={[
+                                            { value: 'MALE', label: 'Male' },
+                                            { value: 'FEMALE', label: 'Female' },
+                                            { value: 'OTHER', label: 'Other' },
+                                        ]}
+                                        placeholder="Select Gender"
                                         className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 outline-none"
                                     />
                                 </div>
                                 <div>
+                                    <label className="block text-slate-400 mb-1">Date of Birth *</label>
+                                    <DatePicker
+                                        required
+                                        value={dob}
+                                        onChange={setDob}
+                                        max={new Date().toISOString().slice(0, 10)}
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-slate-100 focus:border-amber-500 outline-none"
+                                    />
+                                </div>
+                                <div>
                                     <label className="block text-slate-400 mb-1">Time of Birth *</label>
-                                    <input
-                                        type="time"
+                                    <TimePicker
                                         required
                                         value={tob}
-                                        onChange={(e) => setTob(e.target.value)}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 outline-none"
+                                        onChange={setTob}
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-slate-100 focus:border-amber-500 outline-none"
                                     />
                                 </div>
                                 <div className="md:col-span-2">
@@ -388,22 +400,21 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                                         </div>
                                         <div>
                                             <label className="block text-slate-400 mb-1">Partner's Date of Birth *</label>
-                                            <input
-                                                type="date"
+                                            <DatePicker
                                                 required
                                                 value={partnerDob}
-                                                onChange={(e) => setPartnerDob(e.target.value)}
-                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 outline-none"
+                                                onChange={setPartnerDob}
+                                                max={new Date().toISOString().slice(0, 10)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-slate-100 focus:border-amber-500 outline-none"
                                             />
                                         </div>
                                         <div>
                                             <label className="block text-slate-400 mb-1">Partner's Time of Birth *</label>
-                                            <input
-                                                type="time"
+                                            <TimePicker
                                                 required
                                                 value={partnerTob}
-                                                onChange={(e) => setPartnerTob(e.target.value)}
-                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-100 focus:border-amber-500 outline-none"
+                                                onChange={setPartnerTob}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 text-slate-100 focus:border-amber-500 outline-none"
                                             />
                                         </div>
                                         <div>
