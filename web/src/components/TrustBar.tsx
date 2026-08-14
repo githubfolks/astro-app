@@ -51,9 +51,9 @@ const TrustBar: React.FC = () => {
     return (
         <section className="trust-bar-section py-10 bg-indigo-950/95 border-y border-indigo-800/40">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 max-w-6xl mx-auto">
                     {items.map((item) => (
-                        <div key={item.label} className="flex flex-col items-center text-center gap-2">
+                        <div key={item.label} className="flex flex-col items-center text-center gap-2 min-w-[140px] md:min-w-[180px]">
                             <item.icon size={24} className="text-amber-400" />
                             <span className="text-2xl md:text-3xl text-white font-bold">{item.value}</span>
                             <span className="text-xs md:text-sm text-indigo-200/70 uppercase tracking-wide font-medium">{item.label}</span>

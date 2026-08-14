@@ -61,7 +61,7 @@ const PageViewer: React.FC = () => {
             <div className="flex flex-col min-h-screen">
                 <Header />
                 <div className="flex-1 container mx-auto px-4 py-12 text-center">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-4 mt-4">404</h1>
+                    <h1 className="text-4xl text-gray-800 mb-4 mt-4">404</h1>
                     <p className="text-gray-600 mb-8">Page not found</p>
                     <a href="/" className="text-indigo-600 hover:text-indigo-800 font-medium">Return Home</a>
                 </div>
