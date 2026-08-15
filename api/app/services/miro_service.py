@@ -22,10 +22,18 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 # MiroTalk Configuration
 MIROTALK_URL = os.getenv("MIROTALK_URL", "http://localhost:4020").rstrip("/")
-MIROTALK_JWT_SECRET = os.getenv("MIROTALK_JWT_SECRET", "mirotalksfu_jwt_secret")
+
+# Secret key + peer password settings — must be set in the environment; no insecure fallback
+MIROTALK_JWT_SECRET = os.getenv("MIROTALK_JWT_SECRET")
+if not MIROTALK_JWT_SECRET:
+    raise RuntimeError("MIROTALK_JWT_SECRET environment variable is not set. Refusing to start.")
+
 # password embedded in the token. Only enforced when the SFU runs with host
 # protection / user_auth; harmless otherwise. Keep in sync with the SFU host config.
-MIROTALK_PEER_PASSWORD = os.getenv("MIROTALK_PEER_PASSWORD", "password")
+MIROTALK_PEER_PASSWORD = os.getenv("MIROTALK_PEER_PASSWORD")
+if not MIROTALK_PEER_PASSWORD:
+    raise RuntimeError("MIROTALK_PEER_PASSWORD environment variable is not set. Refusing to start.")
+
 ALGORITHM = "HS256"
 
 

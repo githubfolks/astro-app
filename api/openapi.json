@@ -1107,6 +1107,17 @@
             "title": "Total Consultations",
             "type": "integer"
           },
+          "total_reviews": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Reviews"
+          },
           "user_id": {
             "title": "User Id",
             "type": "integer"
