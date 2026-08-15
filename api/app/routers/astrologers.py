@@ -101,6 +101,31 @@ def _decorate_availability(db: Session, profile: models.AstrologerProfile):
     return _apply_availability(profile, queue_length, is_busy)
 
 
+def _decorate_review_count(db: Session, profile: models.AstrologerProfile):
+    """Attach the real Review row count backing rating_avg (same basis: all
+    reviews for this astrologer, not just publicly-displayed ones) so callers
+    never have to fabricate a reviewCount for structured data or UI."""
+    profile.total_reviews = db.query(models.Review).filter(
+        models.Review.astrologer_id == profile.user_id
+    ).count()
+    return profile
+
+
+def _decorate_review_count_bulk(db: Session, profiles: List[models.AstrologerProfile]):
+    ids = [p.user_id for p in profiles]
+    if not ids:
+        return profiles
+    counts = dict(
+        db.query(models.Review.astrologer_id, func.count(models.Review.id))
+        .filter(models.Review.astrologer_id.in_(ids))
+        .group_by(models.Review.astrologer_id)
+        .all()
+    )
+    for p in profiles:
+        p.total_reviews = counts.get(p.user_id, 0)
+    return profiles
+
+
 def _decorate_availability_bulk(db: Session, profiles: List[models.AstrologerProfile]):
     """Batch variant of _decorate_availability: two grouped queries for the whole
     page instead of two queries per profile."""
@@ -295,6 +320,7 @@ def list_astrologers(
 
     profiles = query.offset(skip).limit(limit).all()
     _decorate_availability_bulk(db, profiles)
+    _decorate_review_count_bulk(db, profiles)
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)
@@ -661,6 +687,7 @@ def get_astrologer_by_identifier(
     if not profile:
         raise HTTPException(status_code=404, detail="Astrologer not found or not approved")
     _decorate_availability(db, profile)
+    _decorate_review_count(db, profile)
     return profile
 
 

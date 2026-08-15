@@ -62,11 +62,16 @@ const AstrologerProfile: React.FC = () => {
                 "name": `${getAstrologerDisplayName(ast)} - Vedic Astrologer on Aadikarta`,
                 "image": ast.profile_picture_url,
                 "priceRange": "₹₹",
-                "aggregateRating": {
-                    "@type": "AggregateRating",
-                    "ratingValue": ast.rating_avg || 5,
-                    "reviewCount": ast.total_consultations || 10
-                }
+                // Only emit aggregateRating when there are real reviews behind it —
+                // schema.org/Google review-snippet policy requires ratingValue and
+                // reviewCount to reflect actual reviews, never a placeholder.
+                ...(ast.total_reviews && ast.total_reviews > 0 ? {
+                    "aggregateRating": {
+                        "@type": "AggregateRating",
+                        "ratingValue": ast.rating_avg,
+                        "reviewCount": ast.total_reviews
+                    }
+                } : {})
             }
         ]
     });

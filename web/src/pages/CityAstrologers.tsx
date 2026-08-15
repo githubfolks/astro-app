@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -7,6 +7,7 @@ import SEO from '../components/SEO';
 import PageHeading from '../components/PageHeading';
 import AeoDirectAnswer from '../components/AeoDirectAnswer';
 import FAQSection from '../components/FAQSection';
+import { api } from '../services/api';
 
 const CITY_MAP: Record<string, { name: string; state: string; description: string }> = {
     delhi: {
@@ -63,35 +64,6 @@ const CityAstrologers: React.FC = () => {
     const formattedTitle = `Top Astrologers in ${cityInfo.name} | Aadikarta`;
     const canonicalPath = `/astrologers/city/${normalizedKey}`;
 
-    const cityStructuredData = {
-        '@context': 'https://schema.org',
-        '@graph': [
-            {
-                '@type': 'CollectionPage',
-                '@id': `https://aadikarta.org${canonicalPath}#page`,
-                name: `Best Astrologers in ${cityInfo.name} — Aadikarta Vedic Astrology`,
-                url: `https://aadikarta.org${canonicalPath}`,
-                description: cityInfo.description,
-                publisher: { '@id': 'https://aadikarta.org/#organization' },
-                aggregateRating: {
-                    '@type': 'AggregateRating',
-                    ratingValue: '4.9',
-                    reviewCount: '14250',
-                    bestRating: '5',
-                    worstRating: '1'
-                },
-                breadcrumb: {
-                    '@type': 'BreadcrumbList',
-                    itemListElement: [
-                        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
-                        { '@type': 'ListItem', position: 2, name: 'Astrologers', item: 'https://aadikarta.org/astrologers' },
-                        { '@type': 'ListItem', position: 3, name: cityInfo.name, item: `https://aadikarta.org${canonicalPath}` }
-                    ]
-                }
-            }
-        ]
-    };
-
     const faqs = [
         {
             question: `How can I consult an astrologer in ${cityInfo.name} online?`,
@@ -102,6 +74,58 @@ const CityAstrologers: React.FC = () => {
             answer: `Yes, Aadikarta provides 24/7 online availability with verified astrologers speaking Hindi, English, and regional languages.`
         }
     ];
+
+    const [trustStats, setTrustStats] = useState<{ total_reviews: number, average_rating: number } | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        api.cms.getTrustStats()
+            .then((data) => { if (!cancelled) setTrustStats(data); })
+            .catch(() => { /* keep aggregateRating omitted rather than show placeholder numbers */ });
+        return () => { cancelled = true; };
+    }, []);
+
+    const cityStructuredData = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': `https://aadikarta.org${canonicalPath}#page`,
+                name: `Best Astrologers in ${cityInfo.name} — Aadikarta Vedic Astrology`,
+                url: `https://aadikarta.org${canonicalPath}`,
+                description: cityInfo.description,
+                publisher: { '@id': 'https://aadikarta.org/#organization' },
+                // Only emit aggregateRating when there are real platform reviews behind
+                // it — Google's review-snippet policy requires this to reflect actual
+                // reviews, never a placeholder number.
+                ...(trustStats && trustStats.total_reviews > 0 ? {
+                    aggregateRating: {
+                        '@type': 'AggregateRating',
+                        ratingValue: trustStats.average_rating,
+                        reviewCount: trustStats.total_reviews,
+                        bestRating: '5',
+                        worstRating: '1'
+                    }
+                } : {}),
+                breadcrumb: {
+                    '@type': 'BreadcrumbList',
+                    itemListElement: [
+                        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aadikarta.org' },
+                        { '@type': 'ListItem', position: 2, name: 'Astrologers', item: 'https://aadikarta.org/astrologers' },
+                        { '@type': 'ListItem', position: 3, name: cityInfo.name, item: `https://aadikarta.org${canonicalPath}` }
+                    ]
+                }
+            },
+            {
+                '@type': 'FAQPage',
+                mainEntity: faqs.map(faq => ({
+                    '@type': 'Question',
+                    name: faq.question,
+                    acceptedAnswer: { '@type': 'Answer', text: faq.answer }
+                }))
+            }
+        ]
+    };
 
     return (
         <div className="city-astrologers-page min-h-screen">

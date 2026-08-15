@@ -6,6 +6,7 @@ export interface Astrologer {
     full_name: string;
     display_name?: string | null;
     total_consultations?: number;
+    total_reviews?: number;
     profile_picture_url?: string;
     specialties: string;
     languages: string;

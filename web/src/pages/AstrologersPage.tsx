@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AstrologerList from '../components/AstrologerList';
 import SEO from '../components/SEO';
+import { api } from '../services/api';
 
-const astrologersStructuredData = {
+const buildStructuredData = (trustStats: { total_reviews: number, average_rating: number } | null) => ({
     '@context': 'https://schema.org',
     '@graph': [
         {
@@ -14,13 +15,18 @@ const astrologersStructuredData = {
             url: 'https://aadikarta.org/astrologers',
             description: 'Browse verified Vedic astrologers, tarot readers, and numerologists on Aadikarta Vedic Astrology for live chat consultations starting from ₹10/min.',
             publisher: { '@id': 'https://aadikarta.org/#organization' },
-            aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.9',
-                reviewCount: '14250',
-                bestRating: '5',
-                worstRating: '1'
-            },
+            // Only emit aggregateRating when there are real platform reviews behind
+            // it — Google's review-snippet policy requires this to reflect actual
+            // reviews, never a placeholder number.
+            ...(trustStats && trustStats.total_reviews > 0 ? {
+                aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: trustStats.average_rating,
+                    reviewCount: trustStats.total_reviews,
+                    bestRating: '5',
+                    worstRating: '1'
+                }
+            } : {}),
             breadcrumb: {
                 '@type': 'BreadcrumbList',
                 itemListElement: [
@@ -42,16 +48,26 @@ const astrologersStructuredData = {
             ],
         },
     ],
-};
+});
 
 const AstrologersPage: React.FC = () => {
+    const [trustStats, setTrustStats] = useState<{ total_reviews: number, average_rating: number } | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        api.cms.getTrustStats()
+            .then((data) => { if (!cancelled) setTrustStats(data); })
+            .catch(() => { /* keep aggregateRating omitted rather than show placeholder numbers */ });
+        return () => { cancelled = true; };
+    }, []);
+
     return (
         <div className="astrologers-page pb-20 md:pb-0">
             <SEO
                 title="Talk to Astrologers Online | Live Chat and Call | Aadikarta"
                 description="Browse top verified astrologers on Aadikarta. Instant live chat for Vedic astrology, Kundli matching, tarot & career guidance from ₹10/min."
                 keywords="Aadikarta Vedic Astrology, online astrologers, talk to astrologer Aadikarta, chat with Vedic astrologer, tarot readers online"
-                structuredData={astrologersStructuredData}
+                structuredData={buildStructuredData(trustStats)}
             />
             <Header />
             <main id="main-content">

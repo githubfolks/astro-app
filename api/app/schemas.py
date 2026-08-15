@@ -215,6 +215,7 @@ class AstrologerProfile(AstrologerProfileBase):
     availability_status: Optional[str] = None  # ONLINE | BUSY | OFFLINE
     queue_length: Optional[int] = None         # seekers currently waiting (REQUESTED)
     knockable: Optional[bool] = None           # OFFLINE and within the astrologer's availability window
+    total_reviews: Optional[int] = None        # count of Review rows backing rating_avg — real, not fabricated
     class Config:
         from_attributes = True
 
