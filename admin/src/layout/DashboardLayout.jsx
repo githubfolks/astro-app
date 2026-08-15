@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video, ListVideo, Receipt, Activity, MessageSquareQuote, XCircle, Bug, Megaphone, Sparkles, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Star, FileText, LogOut, Menu, Files, Moon, DollarSign, Mail, ShieldCheck, GraduationCap, AlertCircle, AlertTriangle, Settings, Video, ListVideo, Receipt, Activity, MessageSquareQuote, XCircle, Bug, Megaphone, Sparkles, BarChart3, Gift } from 'lucide-react';
 
 import { Button } from '../components/ui/Button';
 import clsx from 'clsx';
@@ -25,6 +25,7 @@ export default function DashboardLayout() {
         { text: 'Onboarding', icon: <ShieldCheck size={20} />, path: '/astrologer-onboarding' },
         { text: 'Payouts', icon: <DollarSign size={20} />, path: '/payouts' },
         { text: 'Transactions', icon: <Receipt size={20} />, path: '/transactions' },
+        { text: 'Wallet Packages', icon: <Gift size={20} />, path: '/wallet-packages' },
         { text: 'Payment Failures', icon: <XCircle size={20} />, path: '/payment-failures' },
         { text: 'Report Analytics', icon: <BarChart3 size={20} />, path: '/report-analytics' },
         { text: 'Error Logs', icon: <Bug size={20} />, path: '/error-logs' },

@@ -122,6 +122,13 @@ export const edu = {
     getStats: (params) => api.get('/admin/edu/stats', { params })
 };
 
+export const walletPackages = {
+    list: () => api.get('/wallet-packages/admin'),
+    create: (data) => api.post('/wallet-packages/', data),
+    update: (id, data) => api.patch(`/wallet-packages/${id}`, data),
+    deactivate: (id) => api.delete(`/wallet-packages/${id}`),
+};
+
 export const disputes = {
     list: (params) => api.get('/disputes/', { params }),
     resolve: (id, data) => api.put(`/disputes/${id}`, data),

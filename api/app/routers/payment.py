@@ -55,6 +55,7 @@ def get_razorpay_client(mode: str | None = None):
 
 class OrderCreate(BaseModel):
     amount: float # In Rupees
+    wallet_package_id: int | None = None
 
 class PaymentVerification(BaseModel):
     razorpay_order_id: str
@@ -81,6 +82,21 @@ def create_payment_order(
     if order.amount <= 0:
         raise HTTPException(status_code=400, detail="Amount must be positive")
 
+    # If a wallet package was selected, the amount actually charged and the
+    # bonus credited both come from the server-side package row — never from
+    # whatever the client sent — so a tampered request can't buy a bonus it
+    # didn't pay for.
+    bonus_amount = Decimal("0")
+    if order.wallet_package_id is not None:
+        package = db.query(models.WalletPackage).filter(
+            models.WalletPackage.id == order.wallet_package_id,
+            models.WalletPackage.is_active == True,
+        ).first()
+        if not package:
+            raise HTTPException(status_code=404, detail="Wallet package not found or inactive")
+        order.amount = float(package.amount)
+        bonus_amount = package.bonus_amount
+
     # Enforce the wallet balance cap before charging the card — checking
     # post-capture (in /verify or the webhook) would leave a seeker's money
     # taken but un-creditable, which is worse than rejecting the top-up here.
@@ -88,7 +104,8 @@ def create_payment_order(
     if cap is not None:
         wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == current_user.id).first()
         current_balance = wallet.balance if wallet else Decimal("0")
-        if Decimal(str(current_balance)) + Decimal(str(order.amount)) > cap:
+        total_credit = Decimal(str(order.amount)) + bonus_amount
+        if Decimal(str(current_balance)) + total_credit > cap:
             raise HTTPException(
                 status_code=400,
                 detail=f"This top-up would exceed the maximum wallet balance of ₹{cap} allowed for your account. Please recharge a smaller amount or use it before adding more."
@@ -119,6 +136,8 @@ def create_payment_order(
             order_id=razorpay_order['id'], user_id=current_user.id,
             amount_paise=razorpay_order['amount'], is_mock=False,
             razorpay_mode=mode,
+            wallet_package_id=order.wallet_package_id,
+            bonus_amount=bonus_amount,
         ))
         db.commit()
         return {
@@ -193,11 +212,16 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             wallet = models.UserWallet(user_id=current_user.id, balance=0.0)
             db.add(wallet)
         
-        # 3. Add Balance. wallet.balance is a DECIMAL column, so coerce the float
-        # amount to Decimal to avoid `Decimal + float` TypeErrors.
-        wallet.balance = (wallet.balance or Decimal("0")) + Decimal(str(amount_paid_inr))
-        
-        # 4. Record Transaction
+        # 3. Add Balance — the amount actually paid, plus any bonus this
+        # order's wallet package was snapshotted with at creation time.
+        # wallet.balance is a DECIMAL column, so coerce the float amount to
+        # Decimal to avoid `Decimal + float` TypeErrors.
+        bonus_amount = order.bonus_amount or Decimal("0")
+        wallet.balance = (wallet.balance or Decimal("0")) + Decimal(str(amount_paid_inr)) + bonus_amount
+
+        # 4. Record Transaction(s) — the bonus is a separate transaction row
+        # (not folded into the gateway amount) so refund accounting, which
+        # only refunds real money, stays accurate.
         txn = models.WalletTransaction(
             user_id=current_user.id,
             amount=amount_paid_inr,
@@ -207,6 +231,14 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             gateway_payment_id=data.razorpay_payment_id
         )
         db.add(txn)
+        if bonus_amount > 0:
+            db.add(models.WalletTransaction(
+                user_id=current_user.id,
+                amount=bonus_amount,
+                transaction_type=models.TransactionType.WALLET_BONUS,
+                description=f"Wallet package bonus (recharge ₹{amount_paid_inr:.0f})",
+                reference_id=data.razorpay_order_id,
+            ))
         order.consumed = True
 
         try:
@@ -327,10 +359,17 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
     payment_id = payment_entity.get("id")
     amount_paise = payment_entity.get("amount", 0)
     notes = payment_entity.get("notes", {})
-    user_id = notes.get("user_id")
+
+    # Every order is persisted at creation time in POST /payment/order — look
+    # up the platform's own record rather than relying solely on Razorpay's
+    # "notes" payload (which /payment/order doesn't currently populate), and
+    # use it to get the bonus_amount a wallet package was snapshotted with.
+    order = db.query(models.PaymentOrder).filter(models.PaymentOrder.order_id == order_id).first() if order_id else None
+    user_id = order.user_id if order else notes.get("user_id")
+    bonus_amount = order.bonus_amount if order else Decimal("0")
 
     if not order_id or not user_id:
-        return {"status": "skipped", "reason": "missing order_id or user_id in notes"}
+        return {"status": "skipped", "reason": "missing order_id or user_id"}
 
     # Idempotency: skip if already credited
     existing = db.query(models.WalletTransaction).filter(
@@ -345,7 +384,7 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
         wallet = models.UserWallet(user_id=int(user_id), balance=0.0)
         db.add(wallet)
 
-    wallet.balance = (wallet.balance or Decimal("0")) + Decimal(str(amount_inr))
+    wallet.balance = (wallet.balance or Decimal("0")) + Decimal(str(amount_inr)) + bonus_amount
     txn = models.WalletTransaction(
         user_id=int(user_id),
         amount=amount_inr,
@@ -355,8 +394,18 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
         gateway_payment_id=payment_id
     )
     db.add(txn)
+    if bonus_amount > 0:
+        db.add(models.WalletTransaction(
+            user_id=int(user_id),
+            amount=bonus_amount,
+            transaction_type=models.TransactionType.WALLET_BONUS,
+            description=f"Wallet package bonus (recharge ₹{amount_inr:.0f})",
+            reference_id=order_id,
+        ))
+    if order:
+        order.consumed = True
     audit.log(db, "WALLET_TOPPED_UP_VIA_WEBHOOK", resource_type="user", resource_id=user_id,
-              details={"amount": amount_inr, "order_id": order_id, "payment_id": payment_id})
+              details={"amount": amount_inr, "bonus_amount": float(bonus_amount), "order_id": order_id, "payment_id": payment_id})
 
     # See /verify: the order-creation cap check already blocks most overages;
     # this only catches the rare race of two concurrent orders. Money's

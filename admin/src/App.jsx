@@ -15,6 +15,7 @@ const UserDetails = lazy(() => import('./pages/UserDetails'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Payouts = lazy(() => import('./pages/Payouts'));
 const Transactions = lazy(() => import('./pages/Transactions'));
+const WalletPackages = lazy(() => import('./pages/WalletPackages'));
 const PaymentFailures = lazy(() => import('./pages/PaymentFailures'));
 const ErrorLogs = lazy(() => import('./pages/ErrorLogs'));
 const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
@@ -67,6 +68,7 @@ function App() {
             <Route path="/astrologers/view/:id" element={<AstrologerDetails />} />
             <Route path="/payouts" element={<Payouts />} />
             <Route path="/transactions" element={<Transactions />} />
+            <Route path="/wallet-packages" element={<WalletPackages />} />
             <Route path="/payment-failures" element={<PaymentFailures />} />
             <Route path="/error-logs" element={<ErrorLogs />} />
 

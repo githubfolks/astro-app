@@ -41,6 +41,7 @@ class TransactionType(str, enum.Enum):
     PAYMENT_REFUND = "PAYMENT_REFUND"
     COURSE_PURCHASE = "COURSE_PURCHASE"
     PACKAGE_PURCHASE = "PACKAGE_PURCHASE"
+    WALLET_BONUS = "WALLET_BONUS"
 
 class OnboardingStage(str, enum.Enum):
     APPLIED = "APPLIED"
@@ -217,6 +218,26 @@ class PaymentOrder(Base):
     # flips the mode in Settings while the order is still in flight. Null for
     # mock orders, where it's irrelevant.
     razorpay_mode = Column(String, nullable=True)
+    # If this top-up was placed against a WalletPackage, its bonus is recorded
+    # here at order-creation time (server-side, from the package row) so
+    # /verify and the webhook credit the bonus without trusting anything the
+    # client sends back at verification time.
+    wallet_package_id = Column(Integer, ForeignKey("wallet_packages.id"), nullable=True)
+    bonus_amount = Column(DECIMAL(10, 2), nullable=False, server_default='0')
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class WalletPackage(Base):
+    """Admin-configured bonus recharge tiers, e.g. 'pay 500, get 550 wallet
+    credit' — purely a pricing/promo table; PaymentOrder.bonus_amount is
+    snapshotted from here at order-creation time so later edits/deactivation
+    don't retroactively change an in-flight or historical order's payout.
+    """
+    __tablename__ = "wallet_packages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    amount = Column(DECIMAL(10, 2), nullable=False)
+    bonus_amount = Column(DECIMAL(10, 2), nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class ChatPackage(Base):

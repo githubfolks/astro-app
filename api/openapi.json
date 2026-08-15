@@ -5217,6 +5217,17 @@
           "amount": {
             "title": "Amount",
             "type": "number"
+          },
+          "wallet_package_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wallet Package Id"
           }
         },
         "required": [
@@ -6797,7 +6808,8 @@
           "PAYMENT_GATEWAY",
           "PAYMENT_REFUND",
           "COURSE_PURCHASE",
-          "PACKAGE_PURCHASE"
+          "PACKAGE_PURCHASE",
+          "WALLET_BONUS"
         ],
         "title": "TransactionType",
         "type": "string"
@@ -7353,6 +7365,117 @@
           "amount"
         ],
         "title": "WalletAdjustmentRequest",
+        "type": "object"
+      },
+      "WalletPackageCreate": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Amount"
+          },
+          "bonus_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Bonus Amount"
+          }
+        },
+        "required": [
+          "amount",
+          "bonus_amount"
+        ],
+        "title": "WalletPackageCreate",
+        "type": "object"
+      },
+      "WalletPackageOut": {
+        "properties": {
+          "amount": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Amount",
+            "type": "string"
+          },
+          "bonus_amount": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Bonus Amount",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "amount",
+          "bonus_amount",
+          "is_active"
+        ],
+        "title": "WalletPackageOut",
+        "type": "object"
+      },
+      "WalletPackageUpdate": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "bonus_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bonus Amount"
+          },
+          "is_active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Active"
+          }
+        },
+        "title": "WalletPackageUpdate",
         "type": "object"
       },
       "WalletTransaction": {
@@ -18421,6 +18544,205 @@
           }
         },
         "summary": "Verify Otp"
+      }
+    },
+    "/wallet-packages/": {
+      "get": {
+        "operationId": "list_wallet_packages_wallet_packages__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPackageOut"
+                  },
+                  "title": "Response List Wallet Packages Wallet Packages  Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Wallet Packages",
+        "tags": [
+          "Wallet Packages"
+        ]
+      },
+      "post": {
+        "operationId": "create_wallet_package_wallet_packages__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPackageCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletPackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Create Wallet Package",
+        "tags": [
+          "Wallet Packages"
+        ]
+      }
+    },
+    "/wallet-packages/admin": {
+      "get": {
+        "operationId": "list_all_wallet_packages_wallet_packages_admin_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WalletPackageOut"
+                  },
+                  "title": "Response List All Wallet Packages Wallet Packages Admin Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List All Wallet Packages",
+        "tags": [
+          "Wallet Packages"
+        ]
+      }
+    },
+    "/wallet-packages/{package_id}": {
+      "delete": {
+        "operationId": "deactivate_wallet_package_wallet_packages__package_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "title": "Package Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Deactivate Wallet Package",
+        "tags": [
+          "Wallet Packages"
+        ]
+      },
+      "patch": {
+        "operationId": "update_wallet_package_wallet_packages__package_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "package_id",
+            "required": true,
+            "schema": {
+              "title": "Package Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletPackageUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletPackageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Wallet Package",
+        "tags": [
+          "Wallet Packages"
+        ]
       }
     },
     "/wallet/add-money": {

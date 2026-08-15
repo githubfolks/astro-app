@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, CreditCard, Smartphone, Wallet, CheckCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, CreditCard, Smartphone, Wallet, CheckCircle, Gift } from 'lucide-react';
 import { api } from '../services/api';
 import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
 import type { RazorpayResponse, RazorpayError } from '../types';
@@ -11,6 +11,13 @@ interface PaymentModalProps {
     onSuccess: (amount: number) => void;
 }
 
+interface WalletPackage {
+    id: number;
+    amount: number;
+    bonus_amount: number;
+    is_active: boolean;
+}
+
 type PaymentMethod = 'card' | 'upi' | 'paytm';
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess }) => {
@@ -18,10 +25,27 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
     const [processing, setProcessing] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [walletPackages, setWalletPackages] = useState<WalletPackage[]>([]);
+    const [selectedPackage, setSelectedPackage] = useState<WalletPackage | null>(null);
 
     const presetAmounts = [100, 200, 500, 1000, 2000];
 
+    useEffect(() => {
+        if (!isOpen) return;
+        api.walletPackages.list().then(setWalletPackages).catch(() => setWalletPackages([]));
+    }, [isOpen]);
+
     if (!isOpen) return null;
+
+    const selectPreset = (preset: number) => {
+        setAmount(preset);
+        setSelectedPackage(null);
+    };
+
+    const selectPackage = (pkg: WalletPackage) => {
+        setAmount(Number(pkg.amount));
+        setSelectedPackage(pkg);
+    };
 
     const handlePayment = async () => {
         if (amount <= 0) return;
@@ -37,7 +61,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
             patchRazorpaySafeArea();
 
             // 1. Create Order
-            const orderData = await api.payment.createOrder(amount);
+            const orderData = await api.payment.createOrder(amount, selectedPackage?.id);
 
             // 2. Open Razorpay
             const options = {
@@ -59,6 +83,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                             onSuccess(amount);
                             setSuccess(false);
                             setAmount(100);
+                            setSelectedPackage(null);
                         }, 1500);
                     } catch (err) {
                         console.error(err);
@@ -105,7 +130,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                         <CheckCircle className="text-green-500" size={48} />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
-                    <p className="text-gray-600">₹{amount} added to your wallet</p>
+                    <p className="text-gray-600">
+                        ₹{amount} added to your wallet
+                        {selectedPackage && Number(selectedPackage.bonus_amount) > 0 && (
+                            <> + ₹{selectedPackage.bonus_amount} bonus</>
+                        )}
+                    </p>
                 </div>
             </div>
         );
@@ -136,8 +166,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                             {presetAmounts.map(preset => (
                                 <button
                                     key={preset}
-                                    onClick={() => setAmount(preset)}
-                                    className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${amount === preset
+                                    onClick={() => selectPreset(preset)}
+                                    className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${!selectedPackage && amount === preset
                                             ? 'bg-[#E91E63] text-white'
                                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                         }`}
@@ -151,12 +181,41 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                             <input
                                 type="number"
                                 value={amount}
-                                onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                                onChange={(e) => {
+                                    setAmount(Math.max(0, parseInt(e.target.value) || 0));
+                                    setSelectedPackage(null);
+                                }}
                                 className="w-full border border-gray-300 rounded-lg pl-7 pr-3 py-2 text-base font-bold focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                 min="1"
                             />
                         </div>
                     </div>
+
+                    {/* Bonus Packages — alternative to custom amount, admin-configured */}
+                    {walletPackages.length > 0 && (
+                        <div>
+                            <label className="block text-xs font-medium text-gray-900 mb-2 flex items-center gap-1">
+                                <Gift size={14} className="text-[#E91E63]" /> Recharge with Bonus
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5">
+                                {walletPackages.map(pkg => (
+                                    <button
+                                        key={pkg.id}
+                                        onClick={() => selectPackage(pkg)}
+                                        className={`p-2 rounded-lg border-2 text-left transition-all ${selectedPackage?.id === pkg.id
+                                                ? 'border-[#E91E63] bg-pink-50'
+                                                : 'border-gray-200 hover:border-gray-300'
+                                            }`}
+                                    >
+                                        <div className="font-bold text-sm text-gray-900">₹{pkg.amount}</div>
+                                        <div className="text-[10px] text-green-600 font-medium">
+                                            +₹{pkg.bonus_amount} bonus
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Payment Method */}
                     <div>
@@ -209,6 +268,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
 
                 {/* Footer */}
                 <div className="px-4 pb-4">
+                    {selectedPackage && Number(selectedPackage.bonus_amount) > 0 && (
+                        <p className="text-center text-xs text-green-600 font-medium mb-2">
+                            You'll get ₹{Number(selectedPackage.amount) + Number(selectedPackage.bonus_amount)} in your wallet
+                        </p>
+                    )}
                     <button
                         onClick={handlePayment}
                         disabled={amount <= 0 || processing}

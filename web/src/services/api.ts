@@ -546,14 +546,14 @@ export const api = {
         }
     },
     payment: {
-        createOrder: async (amount: number) => {
+        createOrder: async (amount: number, walletPackageId?: number) => {
             const response = await customFetch(`${API_URL}/payment/order`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...(await authHeaders())
                 },
-                body: JSON.stringify({ amount })
+                body: JSON.stringify({ amount, wallet_package_id: walletPackageId })
             });
             return handleResponse(response, 'Failed to create payment order');
         },
@@ -583,6 +583,12 @@ export const api = {
             } catch {
                 // best-effort only
             }
+        }
+    },
+    walletPackages: {
+        list: async (): Promise<Array<{ id: number, amount: number, bonus_amount: number, is_active: boolean }>> => {
+            const response = await customFetch(`${API_URL}/wallet-packages/`);
+            return handleResponse(response, 'Failed to load wallet packages');
         }
     },
     reports: {
