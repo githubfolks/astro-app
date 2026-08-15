@@ -14,7 +14,6 @@ const AboutUs: React.FC = () => {
             disable: 'mobile',
             offset: 50
         });
-        AOS.refresh();
     }, []);
 
     const structuredData = {

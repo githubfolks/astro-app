@@ -4,9 +4,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { RealtimeProvider } from './context/RealtimeContext';
 import { isNative, isMobileViewport, useIsMobileViewport, getPlatform } from './utils/platform';
 import { storage } from './utils/storage';
-import { App as CapApp } from '@capacitor/app';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { SplashScreen } from '@capacitor/splash-screen';
 import { MobileNavBar } from './components/MobileNavBar';
 import ScrollToTop from './components/ScrollToTop';
 import Analytics from './components/Analytics';
@@ -139,27 +136,41 @@ const NativeInitializer: React.FC = () => {
 
         if (!isNative()) return;
 
-        // Configure status bar
-        StatusBar.setStyle({ style: Style.Light }).catch(() => { });
-        if (getPlatform() === 'android') {
-            StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(() => { });
-        }
-
-        // Hide splash screen after app is ready
-        SplashScreen.hide().catch(() => { });
-
-        // Hardware back button handler
-        const backHandler = CapApp.addListener('backButton', ({ canGoBack }) => {
-            if (canGoBack) {
-                navigate(-1);
-            } else {
-                CapApp.exitApp();
-            }
-        });
-
-        // Tapping a "knock" ring push (or a new consultation request) should take the astrologer straight to their queue
+        // These plugins are only meaningful inside the native shell, and their
+        // registration side effects run at import time — dynamic-importing
+        // them keeps @capacitor/app, /status-bar and /splash-screen out of the
+        // web bundle's critical entry chunk for the vast majority of visitors
+        // who are on the website, not the app.
+        let backHandler: Promise<{ remove: () => void }> | undefined;
         let pushHandler: Promise<{ remove: () => void }> | undefined;
-        import('@capacitor/push-notifications').then(({ PushNotifications }) => {
+
+        const setup = async () => {
+            const [{ App: CapApp }, { StatusBar, Style }, { SplashScreen }] = await Promise.all([
+                import('@capacitor/app'),
+                import('@capacitor/status-bar'),
+                import('@capacitor/splash-screen'),
+            ]);
+
+            // Configure status bar
+            StatusBar.setStyle({ style: Style.Light }).catch(() => { });
+            if (getPlatform() === 'android') {
+                StatusBar.setBackgroundColor({ color: '#ffffff' }).catch(() => { });
+            }
+
+            // Hide splash screen after app is ready
+            SplashScreen.hide().catch(() => { });
+
+            // Hardware back button handler
+            backHandler = CapApp.addListener('backButton', ({ canGoBack }) => {
+                if (canGoBack) {
+                    navigate(-1);
+                } else {
+                    CapApp.exitApp();
+                }
+            });
+
+            // Tapping a "knock" ring push (or a new consultation request) should take the astrologer straight to their queue
+            const { PushNotifications } = await import('@capacitor/push-notifications');
             pushHandler = PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
                 if (action.notification.data?.type === 'KNOCK' || action.notification.data?.type === 'NEW_REQUEST') {
                     navigate('/dashboard');
@@ -168,10 +179,11 @@ const NativeInitializer: React.FC = () => {
                     window.dispatchEvent(new Event('dashboard:refresh'));
                 }
             });
-        }).catch(() => { });
+        };
+        setup().catch(() => { });
 
         return () => {
-            backHandler.then(h => h.remove());
+            backHandler?.then(h => h.remove());
             pushHandler?.then(h => h.remove());
         };
     }, [navigate]);

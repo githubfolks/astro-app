@@ -138,8 +138,6 @@ const Home: React.FC = () => {
             disable: 'mobile',
             offset: 50
         });
-        // Refresh AOS to ensure it picks up dynamically rendered content
-        AOS.refresh();
     }, []);
 
     return (

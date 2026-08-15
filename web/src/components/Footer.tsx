@@ -87,7 +87,7 @@ const Footer: React.FC = () => {
                     {!isAstrologer && (
                         <div className="footer-column">
                             <div className="info-group">
-                                <h4 className="footer-title">Services</h4>
+                                <h3 className="footer-title">Services</h3>
                                 <ul className="footer-links">
                                     <li><Link to="/ai-astrologer" onClick={scrollToTop}>Free AI Astrologer</Link></li>
                                     <li><Link to="/services/horoscope" onClick={scrollToTop}>Free Daily Horoscope</Link></li>
@@ -105,7 +105,7 @@ const Footer: React.FC = () => {
                     {/* Company Column */}
                     <div className="footer-column">
                         <div className="info-group">
-                            <h4 className="footer-title">Company</h4>
+                            <h3 className="footer-title">Company</h3>
                             <ul className="footer-links">
                                 <li><Link to="/about-us" onClick={scrollToTop}>About Us</Link></li>
                                 <li><Link to="/blog" onClick={scrollToTop}>Blog</Link></li>
@@ -121,7 +121,7 @@ const Footer: React.FC = () => {
                     {/* Contact Us Column */}
                     <div className="footer-column">
                         <div className="info-group">
-                            <h4 className="footer-title">Contact Us</h4>
+                            <h3 className="footer-title">Contact Us</h3>
                             <ul className="contact-list">
                                 <li>
                                     <Mail size={16} className="contact-icon" />

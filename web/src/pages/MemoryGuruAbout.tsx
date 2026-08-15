@@ -29,7 +29,6 @@ const MemoryGuruAbout: React.FC = () => {
             mirror: true,
             offset: 100
         });
-        AOS.refresh();
     }, []);
 
     return (

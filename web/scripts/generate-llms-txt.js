@@ -40,7 +40,21 @@ Aadikarta provides live chat consultations starting from ₹10/min. We bridge an
 - Organization Name: Aadikarta
 - Website: ${BASE}
 - Starting Price: ₹10 per minute
-- Specialty: Vedic Astrology, Tarot, Kundli, Numerology, Vastu`;
+- Specialty: Vedic Astrology, Tarot, Kundli, Numerology, Vastu
+
+## Key Pages
+- [Home](${BASE}/): Overview of Aadikarta's live astrology consultations.
+- [Talk to Astrologers](${BASE}/astrologers): Browse and chat with verified Vedic astrologers.
+- [Free AI Astrologer](${BASE}/ai-astrologer): Instant AI-assisted astrology insights at no cost.
+- [Vedic Astrology](${BASE}/services/vedic-astrology): Live Vedic astrology (Jyotish) consultations.
+- [Kundli Matching](${BASE}/services/kundli-matching): Guna Milan compatibility matching for marriage.
+- [Tarot Reading](${BASE}/services/tarot-reading): Live tarot card reading consultations.
+- [Daily Horoscope](${BASE}/services/daily-horoscope): Daily sun-sign and moon-sign predictions.
+- [Vastu Shastra](${BASE}/services/vastu-shastra): Vastu consultations for homes and workplaces.
+- [Free Kundli Generator](${BASE}/tools/kundli-chart): Generate a Vedic birth chart for free.
+- [Daily Panchang](${BASE}/panchang): Today's Panchang — tithi, nakshatra, and muhurat timings.
+- [Blog](${BASE}/blog): Articles on Vedic astrology, Jyotish, and spiritual guidance.
+- [Join as Astrologer](${BASE}/join-as-astrologer): Apply to become a verified astrologer on Aadikarta.`;
 
 async function fetchAllPosts() {
     const out = [];

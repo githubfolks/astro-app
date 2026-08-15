@@ -188,6 +188,12 @@ async def upload_onboarding_photo(request: Request, file: UploadFile = File(...)
     if file_ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail=f"File extension {file_ext} not allowed. Please upload a JPG, PNG, or WEBP image.")
 
+    # Largest size this photo is ever displayed at (astrologer profile page,
+    # w-52 h-52 @ 2x for retina) — downscaling phone-camera originals (often
+    # 3000px+) to this before saving avoids shipping multi-MB avatars to a
+    # ~200px <img>.
+    MAX_DIMENSION = 800
+
     try:
         UPLOAD_DIR = "uploads/astrologer_onboarding"
         os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -197,14 +203,30 @@ async def upload_onboarding_photo(request: Request, file: UploadFile = File(...)
                 image = Image.open(io.BytesIO(content)).convert("RGB")
             except Exception:
                 raise HTTPException(status_code=400, detail="Could not read this HEIC/HEIF photo. Please try a JPG or PNG instead.")
+            image.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
             filename = f"{uuid.uuid4().hex}.jpg"
             file_path = os.path.join(UPLOAD_DIR, filename)
-            image.save(file_path, format="JPEG", quality=88)
+            image.save(file_path, format="JPEG", quality=85, optimize=True)
         else:
+            try:
+                image = Image.open(io.BytesIO(content))
+                image_format = image.format  # JPEG / PNG / WEBP
+                if image.mode not in ("RGB", "RGBA"):
+                    image = image.convert("RGBA" if "A" in image.mode else "RGB")
+                image.thumbnail((MAX_DIMENSION, MAX_DIMENSION), Image.LANCZOS)
+            except Exception:
+                raise HTTPException(status_code=400, detail="Could not read this image. Please try a JPG, PNG, or WEBP instead.")
+
             filename = f"{uuid.uuid4().hex}{file_ext}"
             file_path = os.path.join(UPLOAD_DIR, filename)
-            with open(file_path, "wb") as buffer:
-                buffer.write(content)
+            save_kwargs = {"optimize": True}
+            if image_format == "JPEG":
+                if image.mode == "RGBA":
+                    image = image.convert("RGB")
+                save_kwargs["quality"] = 85
+            elif image_format == "WEBP":
+                save_kwargs["quality"] = 85
+            image.save(file_path, format=image_format, **save_kwargs)
 
         return {"url": f"/static/astrologer_onboarding/{filename}"}
     except HTTPException:

@@ -89,7 +89,7 @@ const Testimonials: React.FC = () => {
                                     {initialsOf(review.name)}
                                 </div>
                                 <div>
-                                    <h4 className="font-semibold text-gray-900">{review.name}</h4>
+                                    <h3 className="font-semibold text-gray-900">{review.name}</h3>
                                     <div className="text-amber-500 text-sm" aria-label={`${review.rating} out of 5 stars`}>
                                         {'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}
                                     </div>

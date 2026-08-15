@@ -50,8 +50,21 @@ export default defineConfig({
         cssCodeSplit: true,
         rollupOptions: {
             output: {
-                manualChunks: {
-                    vendor: ['react', 'react-dom', 'react-router-dom', 'lucide-react']
+                // The plain { vendor: [pkg names] } shorthand only reliably matches a
+                // package's main entry point — react-dom is imported here via the
+                // 'react-dom/client' subpath (see main.tsx), which that shorthand
+                // missed, so react/react-dom/scheduler were silently landing in the
+                // main entry chunk instead of vendor. Matching by node_modules path
+                // catches every subpath/import specifier for these packages.
+                manualChunks(id) {
+                    if (id.includes('node_modules')) {
+                        if (/node_modules\/(react|react-dom|scheduler|react-router-dom|react-router)\//.test(id)) {
+                            return 'vendor';
+                        }
+                        if (id.includes('node_modules/lucide-react')) {
+                            return 'vendor-icons';
+                        }
+                    }
                 }
             }
         }

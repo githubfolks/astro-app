@@ -76,7 +76,6 @@ const AstrologerBenefits: React.FC = () => {
             disable: 'mobile',
             offset: 50,
         });
-        AOS.refresh();
     }, []);
 
     return (
