@@ -47,7 +47,13 @@ export default defineConfig({
     ],
     build: {
         target: 'esnext',
-        cssCodeSplit: true,
+        // Per-chunk CSS splitting scatters styles shared across many routes
+        // (Header, Footer, AstrologerList, aos.css, ...) into a dozen tiny
+        // files that all become separate render-blocking <link> requests on
+        // first load (each paying full request latency on mobile). Total CSS
+        // for the whole app is ~34KB gzipped — cheaper as one request than as
+        // many small ones.
+        cssCodeSplit: false,
         rollupOptions: {
             output: {
                 // The plain { vendor: [pkg names] } shorthand only reliably matches a
