@@ -1,22 +1,16 @@
 
-# Astrologer and seeker communication:
-1. How seeker knows whether astrologer is available to talk?
-2. How seeker knows that astrolger is busy with another seeker?
-3. How astrologer knows seeker wants to talk?
-4. What astrologer can do if multiple seekers knocks at a time?
-5. What seeker can do; if astrolger is unavailable/offline?
-6. Are we capturing the chat contents? This is required and if any spam is found or personal contact number is shared in conversation; an intemation should be sent to the super admin. Or a strong alarm should appear in both (seeker and astrologer) panel.
-7. Should we hide astrologer's personal identity from the seeker? What other similar portals are doing on this?
-
-# Astrolger onboarding:
-1. An interview will be scheduled for the astrologer. Step 1 email will be sent.
-2. After successful interview, astrologer profile activation Step 2 email will be sent
-3. Step 3 email will be sent to intimate that onboard process will start.
-4. Step 4 email will be sent on start of onboarding.
-5. Step 5 email will be sent when astrolger will be scheduled for application training.
-Above process will be conducted by the Admin of the portal. You may create Kanban for the process.
-
-
+# Business priorities (from financials discussion, 2026-08-15):
+1. [DONE 2026-08-15] Ship the SSR fix — ₹10/min pricing and content are invisible to every crawler; this is blocking the entire organic channel, not a nice-to-have.
+   Verified live in prod via `curl -A Googlebot`: homepage, all 12 horoscope pages, /astrologers, /ai-astrologer, and the free tool pages (manglik/numerology/kundli) all serve fully-rendered HTML with ₹10/min pricing to crawlers. www redirect and blog/astrologer-profile prerendering not yet verified (api.aadikarta.org was down during this check — see outage note below).
+   [OPEN INCIDENT] api.aadikarta.org is returning 502 on every endpoint as of 2026-08-15: commit f0808f9 made MIROTALK_JWT_SECRET/MIROTALK_PEER_PASSWORD required at startup (correctly removing insecure hardcoded fallbacks), but the VPS .env doesn't have them set, so the api container crash-loops. Fix: set both vars in the VPS .env (`openssl rand -hex 32` each) and restart the api service. No SSH access from this environment to apply it. Also: TLS cert for aadikarta.org/api.aadikarta.org expires 2026-08-16 07:51 GMT — worth confirming certbot renewal is still working while on the VPS.
+2. Onboard more astrologers — supply-capped at 1-5 regardless of demand.
+3. [SCAFFOLDED 2026-08-15] Get real analytics wired up (GA4 + Search Console) — without it, revenue/traffic projections stay guesses.
+   Code is now in place and no-ops until real values are supplied: `web/src/utils/analytics.ts` (GA4 init + trackPageView), `web/src/components/Analytics.tsx` (SPA page-view tracking on route change + GSC verification meta tag, wired into App.tsx), env vars added to `web/.env.production` — VITE_GA_MEASUREMENT_ID and VITE_GSC_VERIFICATION, both currently blank. REMAINING: (a) create/access the GA4 property and paste its G-XXXXXXX measurement ID into VITE_GA_MEASUREMENT_ID; (b) verify the site in Search Console (HTML tag method) and paste the verification content into VITE_GSC_VERIFICATION, then submit sitemap.xml (already generated + referenced in robots.txt) in the GSC UI. Neither value is a secret — both become public in rendered HTML — so they're safe to commit once filled in.
+4. [VERIFIED 2026-08-15] Paid ad-hoc PDF report flow (`reports.py` create-direct-order) is fully built and live (real Razorpay orders, HMAC-verified payment, AI report + PDF + WhatsApp delivery) — but ONLY reachable via `/services/ai-instant-reports` (home/hero/footer). The Manglik/Numerology/Kundli-Match free tools have zero CTA into it; their result screens only link to astrologer consultation. Remaining work: add a CTA on each free tool's result screen (ManglikChecker.tsx, KundliMatchChecker.tsx, NumerologyCalculator.tsx) that opens ReportPurchaseModal with the matching report_type (Gun Milan for kundli match, Full Kundli/Career for the others).
+5. Add bonus-credit wallet recharge packages (`packages.py`) — e.g. "recharge ₹500, get ₹550 wallet" — to lift ARPU without needing more astrologers.
+6. Build organic social media (Instagram/YouTube Shorts with daily horoscope/short readings) as a top-of-funnel channel driving to the free tools → paid report funnel.
+7. Once astrologer count exceeds ~10-15, add astrologer-side subscriptions/premium profile placement as a revenue line.
+ 
 # The SEO title is 77 characters long, which is too long.
 Aadikarta — Talk to Expert Astrologers Online | Vedic Astrology, Tarot & More
 # The meta description is 196 characters long, which is too long.
@@ -69,10 +63,4 @@ degree, retrogate, debilated, combust, exaulted
 - [ ] Add 30-second Shorts/Reels script generator mode in `admin/src/pages/SocialCopyGenerator.jsx`.
 - [ ] Create viral 30-second hook script templates for Manglik remedies, Kundli matching, and daily horoscope predictions.
 - [ ] Integrate webhooks / auto-post scheduler for social media channels (`auto-post-to-social`).
-
-we have focused only on the chat feature in our application. I don't want to make the portal crowdy with lots of contents. compare below websites and prepare gap analysis to make us different from others:
-https://www.anytimeastro.com/chat-with-astrologer/
-https://www.astroyogi.com/astrologer/free-astrology-chat
-https://astrotalk.com/chat-with-astrologer
-
-Check other websites as well for chat features
+ 

@@ -9,6 +9,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { MobileNavBar } from './components/MobileNavBar';
 import ScrollToTop from './components/ScrollToTop';
+import Analytics from './components/Analytics';
 
 // Lazy load pages
 const Home = lazy(() => import('./pages/Home'));
@@ -208,6 +209,7 @@ function App() {
             <AuthProvider>
                 <RealtimeProvider>
                     <ScrollToTop />
+                    <Analytics />
                     <AppModeClass />
                     <NativeInitializer />
                     <OnboardingGate>
