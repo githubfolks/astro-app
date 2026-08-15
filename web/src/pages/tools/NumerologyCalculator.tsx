@@ -5,6 +5,7 @@ import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
+import ReportUpsellCTA from '../../components/ReportUpsellCTA';
 import PageHeading from '../../components/PageHeading';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
@@ -225,6 +226,12 @@ const NumerologyCalculator: React.FC = () => {
                         <div ref={resultRef} className="mt-8 scroll-mt-24">
                             <h2 className="text-lg font-normal text-white mb-4">Your Numerology Profile</h2>
                             <NumerologyResult data={result} />
+                            <div className="mt-6">
+                                <ReportUpsellCTA
+                                    reportType="CAREER_FINANCE"
+                                    description="Go deeper than your numbers with a full Vedic astrology PDF on your career transits, upcoming opportunities, and financial yogas — delivered on WhatsApp."
+                                />
+                            </div>
                         </div>
                     ) : null}
 

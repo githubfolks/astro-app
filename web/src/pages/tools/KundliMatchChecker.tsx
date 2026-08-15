@@ -8,6 +8,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
+import ReportUpsellCTA from '../../components/ReportUpsellCTA';
 import PageHeading from '../../components/PageHeading';
 import FAQSection from '../../components/FAQSection';
 import CityAutocomplete from '../../components/CityAutocomplete';
@@ -209,6 +210,12 @@ const KundliMatchChecker: React.FC = () => {
                                     girlName={girl.full_name || 'Girl'}
                                     loading={false}
                                     error={null}
+                                />
+                            </div>
+                            <div className="mt-6">
+                                <ReportUpsellCTA
+                                    reportType="GUN_MILAN"
+                                    description="Get the full Gun Milan PDF with a detailed breakdown of every Koota, Dosha remedies, and long-term compatibility guidance — delivered on WhatsApp."
                                 />
                             </div>
                         </div>

@@ -9,6 +9,7 @@ import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
 import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
+import ReportUpsellCTA from '../../components/ReportUpsellCTA';
 import PageHeading from '../../components/PageHeading';
 import FAQSection from '../../components/FAQSection';
 import CityAutocomplete from '../../components/CityAutocomplete';
@@ -291,6 +292,12 @@ const ManglikChecker: React.FC = () => {
                                 <h2 className="text-xl font-normal text-white">Your Yogas & Doshas</h2>
                             </div>
                             <ManglikResult data={result} />
+                            <div className="mt-6">
+                                <ReportUpsellCTA
+                                    reportType="FULL_KUNDLI"
+                                    description="Get your full birth chart analysis with a 5-year Dasha forecast and personalized remedies for any Dosha found above — delivered as a PDF on WhatsApp."
+                                />
+                            </div>
                         </div>
                     ) : null}
                 </div>

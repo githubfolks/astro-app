@@ -14,7 +14,7 @@ interface ReportPurchaseModalProps {
     initialReportType?: 'FULL_KUNDLI' | 'GUN_MILAN' | 'CAREER_FINANCE';
 }
 
-const REPORT_INFO = {
+export const REPORT_INFO = {
     FULL_KUNDLI: {
         title: 'Full Life Kundli & Planetary Dasha Report',
         price: '₹199',
