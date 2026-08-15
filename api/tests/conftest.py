@@ -6,11 +6,14 @@ contract is exercised without touching Postgres, Redis or the mail provider.
 """
 import os
 
-# The app reads these at import time and refuses to start without JWT_SECRET_KEY,
-# so they must be set before importing anything under `app`. The SQLite URL keeps
+# The app reads these at import time and refuses to start without JWT_SECRET_KEY
+# (and, via miro_service, MIROTALK_JWT_SECRET/MIROTALK_PEER_PASSWORD), so they
+# must be set before importing anything under `app`. The SQLite URL keeps
 # database.py's module-level engine harmless; every request uses the overridden
 # session below instead.
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-not-for-production")
+os.environ.setdefault("MIROTALK_JWT_SECRET", "test-mirotalk-secret-not-for-production")
+os.environ.setdefault("MIROTALK_PEER_PASSWORD", "test-mirotalk-peer-password")
 os.environ.setdefault("SQLALCHEMY_DATABASE_URL", "sqlite://")
 
 import pytest

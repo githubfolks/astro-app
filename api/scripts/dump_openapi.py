@@ -14,6 +14,8 @@ import sys
 
 # The app requires these at import time; match the test environment.
 os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-not-for-production")
+os.environ.setdefault("MIROTALK_JWT_SECRET", "test-mirotalk-secret-not-for-production")
+os.environ.setdefault("MIROTALK_PEER_PASSWORD", "test-mirotalk-peer-password")
 os.environ.setdefault("SQLALCHEMY_DATABASE_URL", "sqlite://")
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
