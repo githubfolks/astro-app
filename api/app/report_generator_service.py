@@ -192,8 +192,6 @@ async def generate_full_kundli_report(
         "chart_data": chart_data,
         "dasha_insights": dasha_insights,
         "ai_synthesis": llm_analysis,
-        "voucher_code": "AADI50LIVE",
-        "voucher_details": "Use code AADI50LIVE on aadikarta.org to get ₹50 OFF your first live astrologer consultation.",
     }
 
 
@@ -225,8 +223,6 @@ async def generate_gun_milan_report(
         "person2": person2,
         "match_data": match_data,
         "ai_synthesis": llm_analysis,
-        "voucher_code": "AADI50MATCH",
-        "voucher_details": "Use code AADI50MATCH on aadikarta.org to get ₹50 OFF your first live astrologer consultation.",
     }
 
 
@@ -281,6 +277,4 @@ async def generate_career_finance_report(
         },
         "chart_data": chart_data,
         "ai_synthesis": llm_analysis,
-        "voucher_code": "AADI50CAREER",
-        "voucher_details": "Use code AADI50CAREER on aadikarta.org to get ₹50 OFF your first live astrologer consultation.",
     }
