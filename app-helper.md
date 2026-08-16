@@ -23,29 +23,25 @@ docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
 
 
+# 1. pull the latest code so sync-cert-store.sh is on the VPS
+cd /root/aadikarta-app/production
+git pull origin main
 
-# mobile app emulation:
-cd web && npm run mobile:run
+# 2. make it executable
+chmod +x deploy/sync-cert-store.sh
 
+# 3. do a dry test run first -- since certs currently match (we just fixed
+#    both), this should exit silently with no log output
+./deploy/sync-cert-store.sh
+cat /root/global-proxy/certbot/sync-cert-store.log 2>&1   # expect: no new lines, or file doesn't exist yet
 
+# 4. install the cron job (3am daily)
+crontab -l > /tmp/cron.bak 2>/dev/null || true
+(crontab -l 2>/dev/null; echo "0 3 * * * /root/aadikarta-app/production/deploy/sync-cert-store.sh") | crontab -
 
-npm run build && npx cap sync
+# 5. confirm it's installed
+crontab -l
 
-# Create a new migration (after changing models.py):
-
-python3 migrate.py create "message_describing_change"
-
-# Apply all pending migrations (Upgrade):
-
-python3 migrate.py up
-
-# Downgrade last migration:
-
-python3 migrate.py down
-
-# Run specific revision:
-
-python3 migrate.py run <revision_id>
 
 
 http://manage.bigrock.in/linkhandler/servlet/ViewCustomerTransactionsServlet?transid=139482007&role=customer

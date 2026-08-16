@@ -26,28 +26,28 @@ const Hero: React.FC = () => {
                                 to="/astrologers"
                                 className="hero-square-btn bg-gradient-to-br from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-900/30"
                             >
-                                <MessageCircle size={32} className="shrink-0" />
+                                <MessageCircle size={62} className="shrink-0" />
                                 <span>Chat with Astrologer</span>
                             </Link>
                             <Link
                                 to="/ai-astrologer"
                                 className="hero-square-btn bg-gradient-to-br from-amber-400 to-amber-600 text-indigo-950 shadow-lg shadow-amber-900/20"
                             >
-                                <Sparkles size={32} className="shrink-0" />
+                                <Sparkles size={62} className="shrink-0" />
                                 <span>Ask Free AI Astrologer</span>
                             </Link>
                             <Link
                                 to="/services/ai-instant-reports"
                                 className="hero-square-btn bg-emerald-500/15 text-emerald-200 border border-emerald-400/30"
                             >
-                                <FileText size={32} className="shrink-0" />
+                                <FileText size={62} className="shrink-0" />
                                 <span>AI Instant Report</span>
                             </Link>
                             <Link
                                 to="/memory-guru"
                                 className="hero-square-btn bg-white/10 text-white border border-white/20"
                             >
-                                <BrainCircuit size={32} className="shrink-0" />
+                                <BrainCircuit size={62} className="shrink-0" />
                                 <span>Memory Guru</span>
                             </Link>
                         </div>
