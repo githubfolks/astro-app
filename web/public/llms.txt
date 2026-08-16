@@ -24,6 +24,20 @@ Aadikarta provides live chat consultations starting from ₹10/min. We bridge an
 - Starting Price: ₹10 per minute
 - Specialty: Vedic Astrology, Tarot, Kundli, Numerology, Vastu
 
+## Key Pages
+- [Home](https://aadikarta.org/): Overview of Aadikarta's live astrology consultations.
+- [Talk to Astrologers](https://aadikarta.org/astrologers): Browse and chat with verified Vedic astrologers.
+- [Free AI Astrologer](https://aadikarta.org/ai-astrologer): Instant AI-assisted astrology insights at no cost.
+- [Vedic Astrology](https://aadikarta.org/services/vedic-astrology): Live Vedic astrology (Jyotish) consultations.
+- [Kundli Matching](https://aadikarta.org/services/kundli-matching): Guna Milan compatibility matching for marriage.
+- [Tarot Reading](https://aadikarta.org/services/tarot-reading): Live tarot card reading consultations.
+- [Daily Horoscope](https://aadikarta.org/services/daily-horoscope): Daily sun-sign and moon-sign predictions.
+- [Vastu Shastra](https://aadikarta.org/services/vastu-shastra): Vastu consultations for homes and workplaces.
+- [Free Kundli Generator](https://aadikarta.org/tools/kundli-chart): Generate a Vedic birth chart for free.
+- [Daily Panchang](https://aadikarta.org/panchang): Today's Panchang — tithi, nakshatra, and muhurat timings.
+- [Blog](https://aadikarta.org/blog): Articles on Vedic astrology, Jyotish, and spiritual guidance.
+- [Join as Astrologer](https://aadikarta.org/join-as-astrologer): Apply to become a verified astrologer on Aadikarta.
+
 ## Recent Blog Articles
 - "What Is Vedic Astrology?" — https://aadikarta.org/blog/what-is-vedic-astrology
   Discover what Vedic astrology (Jyotish) really is — its origins, core principles, birth chart basics and how it differs from Western astrology. A clear, myth-fr…
