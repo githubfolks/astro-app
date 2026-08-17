@@ -452,7 +452,9 @@ def generate_caption(request: Request, job_id: int, db: Session = Depends(databa
     job = db.get(models.ContentStudioJob, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    return schemas_content_studio.CaptionSuggestion(caption=content_studio_llm.generate_social_caption(job.topic))
+    return schemas_content_studio.CaptionSuggestion(
+        caption=content_studio_llm.generate_social_caption(job.topic, job.short_description)
+    )
 
 
 class GenerateSocialCopyRequest(BaseModel):
@@ -465,7 +467,7 @@ def generate_social_copy(request: Request, job_id: int, payload: GenerateSocialC
     job = db.get(models.ContentStudioJob, job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    result = content_studio_llm.generate_social_copy(job.topic, payload.platform)
+    result = content_studio_llm.generate_social_copy(job.topic, payload.platform, job.short_description)
     return schemas_content_studio.SocialCopySuggestion(**result)
 
 
@@ -515,7 +517,8 @@ async def post_youtube(
 ):
     job = _get_ready_job(job_id, db)
     tags = [t.strip() for t in payload.seo_keywords.split(",") if t.strip()] if payload.seo_keywords else None
-    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, payload.caption, tags)
+    description = f"{job.short_description}\n\n{payload.caption}" if job.short_description else payload.caption
+    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, description, tags)
     job.posted_youtube_at = datetime.now(timezone.utc)
     job.youtube_video_id = result.get("id")
     job.seo_keywords_youtube = payload.seo_keywords

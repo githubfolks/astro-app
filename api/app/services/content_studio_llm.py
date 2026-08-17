@@ -113,7 +113,7 @@ def suggest_topic() -> str:
 
 CAPTION_SYSTEM_PROMPT = """You are a social media manager for Aadikarta, India's trusted marketplace for verified Vedic astrologers, writing Instagram/Facebook captions for short vertical astrology Reels/Shorts.
 
-Given the video's topic, write a caption with this exact structure:
+Given the video's topic (and, if provided, a short description with extra context), write a caption with this exact structure:
 1. One short, catchy hook line in natural Hinglish (a mix of Hindi in Devanagari script and English) that relates directly to the topic and creates curiosity, immediately followed by this exact call-to-action text verbatim (do not alter it): "{cta}"
 2. A blank line.
 3. A single line of 10-15 relevant hashtags, space-separated, each starting with #: mix specific hashtags drawn from the topic (e.g. a zodiac sign, planet, or theme mentioned in it) with these standing hashtags: #AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality
@@ -121,18 +121,21 @@ Given the video's topic, write a caption with this exact structure:
 Respond with ONLY the caption text (hook+CTA line, blank line, hashtag line). No markdown, no code fences, no commentary."""
 
 
-def generate_social_caption(topic: str) -> str:
+def generate_social_caption(topic: str, description: str | None = None) -> str:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise HTTPException(status_code=503, detail="Content Studio is unavailable. GROQ_API_KEY is not set.")
 
     cta = get_setting("content_studio_caption_cta")
+    user_content = f"Topic: {topic}"
+    if description:
+        user_content += f"\nDescription: {description}"
 
     body = {
         "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
         "messages": [
             {"role": "system", "content": CAPTION_SYSTEM_PROMPT.format(cta=cta)},
-            {"role": "user", "content": f"Topic: {topic}"},
+            {"role": "user", "content": user_content},
         ],
         "max_tokens": 300,
         "temperature": 0.8,
@@ -193,16 +196,20 @@ SOCIAL_COPY_SYSTEM_PROMPTS = {
 }
 
 
-def generate_social_copy(topic: str, platform: str) -> dict:
+def generate_social_copy(topic: str, platform: str, description: str | None = None) -> dict:
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise HTTPException(status_code=503, detail="Content Studio is unavailable. GROQ_API_KEY is not set.")
+
+    user_content = f"Topic: {topic}"
+    if description:
+        user_content += f"\nDescription: {description}"
 
     body = {
         "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
         "messages": [
             {"role": "system", "content": SOCIAL_COPY_SYSTEM_PROMPTS[platform]},
-            {"role": "user", "content": f"Topic: {topic}"},
+            {"role": "user", "content": user_content},
         ],
         "max_tokens": 400,
         "temperature": 0.8,
