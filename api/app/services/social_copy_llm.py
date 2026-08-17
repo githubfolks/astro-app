@@ -15,7 +15,7 @@ from fastapi import HTTPException
 from .. import schemas_social_copy
 
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 _UPSTREAM_ERROR = HTTPException(
     status_code=502,
@@ -56,6 +56,7 @@ def _call_groq(system_prompt: str, user_content: str, max_tokens: int, temperatu
         ],
         "max_tokens": max_tokens,
         "temperature": temperature,
+        "reasoning_effort": "low",
     }
 
     try:

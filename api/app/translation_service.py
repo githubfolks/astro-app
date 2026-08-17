@@ -11,7 +11,7 @@ from fastapi import HTTPException
 logger = logging.getLogger(__name__)
 
 _GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-_MODEL = "llama-3.3-70b-versatile"
+_MODEL = "openai/gpt-oss-120b"
 _LANG_NAMES = {"hi": "Hindi", "en": "English"}
 
 
@@ -36,6 +36,7 @@ def translate_text(text: str, target_lang: str) -> str:
         ],
         "max_tokens": 500,
         "temperature": 0.2,
+        "reasoning_effort": "low",
     }
 
     try:

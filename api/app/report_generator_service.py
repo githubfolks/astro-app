@@ -76,7 +76,7 @@ async def _resolve_sade_sati_window(dob: date, tob: time, lat: float, lon: float
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = os.getenv("AI_REPORT_MODEL", "llama-3.3-70b-versatile")
+DEFAULT_MODEL = os.getenv("AI_REPORT_MODEL", "openai/gpt-oss-120b")
 
 
 async def _call_llm(system_prompt: str, user_prompt: str) -> str:
@@ -97,6 +97,7 @@ async def _call_llm(system_prompt: str, user_prompt: str) -> str:
         ],
         "temperature": 0.5,
         "max_tokens": 2000,
+        "reasoning_effort": "low",
     }
 
     try:

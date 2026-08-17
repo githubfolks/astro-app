@@ -5,7 +5,7 @@ astrologer.
 Powered by the Groq API (OpenAI-compatible chat-completions endpoint).
 Configure with:
   GROQ_API_KEY        — Groq API key (from console.groq.com)
-  AI_ASTROLOGER_MODEL — optional model override (default: Llama 3.3 70B)
+  AI_ASTROLOGER_MODEL — optional model override (default: GPT-OSS 120B)
 """
 import os
 from datetime import date, datetime, time, timedelta, timezone
@@ -28,7 +28,7 @@ router = APIRouter(prefix="/ai-astrologer", tags=["AI Astrologer"])
 FREE_QUESTION_LIMIT = 5
 IST_OFFSET_HOURS = 5.5  # matches free_tools.py's daily-horoscope cache convention
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 # Used as the birth time when the seeker doesn't know theirs, so we can still
 # compute a chart. Ascendant/houses are time-sensitive (change every ~2h) and
@@ -253,6 +253,7 @@ async def ai_chat(request: Request, payload: AiChatRequest, db: Session = Depend
         ],
         "max_tokens": 600,
         "temperature": 0.7,
+        "reasoning_effort": "low",
     }
 
     try:

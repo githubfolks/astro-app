@@ -16,7 +16,7 @@ from . import content_studio_claude
 from .settings_service import get_setting
 
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 
 DEFAULT_SCENE_COUNT = {
     models.ContentType.VOICE_OVER_IMAGE: 2,
@@ -81,6 +81,7 @@ def suggest_topic() -> str:
         ],
         "max_tokens": 100,
         "temperature": 1.0,
+        "reasoning_effort": "low",
     }
 
     try:
@@ -135,6 +136,7 @@ def generate_social_caption(topic: str) -> str:
         ],
         "max_tokens": 300,
         "temperature": 0.8,
+        "reasoning_effort": "low",
     }
 
     try:
@@ -204,6 +206,7 @@ def generate_social_copy(topic: str, platform: str) -> dict:
         ],
         "max_tokens": 400,
         "temperature": 0.8,
+        "reasoning_effort": "low",
     }
 
     try:
@@ -259,6 +262,7 @@ def generate_scenes(topic: str, content_type: "models.ContentType", scene_count:
         ],
         "max_tokens": 2000,
         "temperature": 0.7,
+        "reasoning_effort": "low",
     }
 
     try:

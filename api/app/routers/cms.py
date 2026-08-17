@@ -263,13 +263,14 @@ def generate_social_post(payload: GenerateSocialRequest):
         )
 
     body = {
-        "model": os.getenv("AI_ASTROLOGER_MODEL", "llama-3.3-70b-versatile"),
+        "model": os.getenv("AI_ASTROLOGER_MODEL", "openai/gpt-oss-120b"),
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Blog Title: {payload.title}\n\nBlog Content:\n{cleaned_content}"}
         ],
         "max_tokens": 500,
         "temperature": 0.7,
+        "reasoning_effort": "low",
     }
 
     try:
@@ -331,13 +332,14 @@ def generate_featured_image(payload: GenerateFeaturedImageRequest):
     )
 
     body = {
-        "model": os.getenv("AI_ASTROLOGER_MODEL", "llama-3.3-70b-versatile"),
+        "model": os.getenv("AI_ASTROLOGER_MODEL", "openai/gpt-oss-120b"),
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Blog Title: {payload.title}\n\nBlog Content:\n{cleaned_content}"},
         ],
         "max_tokens": 150,
         "temperature": 0.8,
+        "reasoning_effort": "low",
     }
 
     try:
@@ -403,13 +405,14 @@ def generate_gallery_image(payload: GenerateGalleryImageRequest, db: Session = D
     )
 
     body = {
-        "model": os.getenv("AI_ASTROLOGER_MODEL", "llama-3.3-70b-versatile"),
+        "model": os.getenv("AI_ASTROLOGER_MODEL", "openai/gpt-oss-120b"),
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": cleaned_content},
         ],
         "max_tokens": 150,
         "temperature": 0.8,
+        "reasoning_effort": "low",
     }
 
     try:
