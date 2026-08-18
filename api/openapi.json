@@ -9723,6 +9723,31 @@
         ]
       }
     },
+    "/admin/settings/social-token-status": {
+      "get": {
+        "description": "Checks Facebook Page / Instagram access token validity and expiry via\nthe Graph API, surfaced in Settings so a stale token is caught proactively\ninstead of Content Studio posting failing with a confusing error.",
+        "operationId": "get_social_token_status_admin_settings_social_token_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Social Token Status",
+        "tags": [
+          "Admin"
+        ]
+      }
+    },
     "/admin/transactions": {
       "get": {
         "description": "All wallet transactions for a given role (defaults to seekers), for admin auditing.",

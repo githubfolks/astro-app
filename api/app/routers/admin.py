@@ -1835,6 +1835,61 @@ def update_app_settings(values: dict, db: Session = Depends(database.get_db)):
     return settings_service.get_all(mask_secrets=True)
 
 
+def _debug_facebook_token(token: str) -> dict:
+    """Inspects a Facebook/Instagram Graph API token via /debug_token so the
+    admin can see validity and expiry before posting silently starts failing.
+    A page/system-user token that never expires reports expires_at=0."""
+    if not token:
+        return {"configured": False}
+
+    import httpx
+    from datetime import datetime, timezone
+
+    try:
+        res = httpx.get(
+            "https://graph.facebook.com/debug_token",
+            params={"input_token": token, "access_token": token},
+            timeout=15.0,
+        )
+    except httpx.HTTPError as e:
+        return {"configured": True, "valid": None, "error": f"Failed to reach Graph API: {e}"}
+
+    body = res.json()
+    if res.status_code != 200:
+        return {"configured": True, "valid": False, "error": (body.get("error") or {}).get("message") or res.text[:300]}
+
+    data = body.get("data") or {}
+    expires_at = data.get("expires_at") or 0
+    never_expires = expires_at == 0
+    expires_iso = None
+    days_left = None
+    if not never_expires:
+        expires_dt = datetime.fromtimestamp(expires_at, tz=timezone.utc)
+        expires_iso = expires_dt.isoformat()
+        days_left = (expires_dt - datetime.now(timezone.utc)).days
+
+    return {
+        "configured": True,
+        "valid": bool(data.get("is_valid")),
+        "never_expires": never_expires,
+        "expires_at": expires_iso,
+        "days_left": days_left,
+        "error": (data.get("error") or {}).get("message") if data.get("error") else None,
+    }
+
+
+@router.get("/settings/social-token-status")
+def get_social_token_status():
+    """Checks Facebook Page / Instagram access token validity and expiry via
+    the Graph API, surfaced in Settings so a stale token is caught proactively
+    instead of Content Studio posting failing with a confusing error."""
+    from ..services import settings_service
+    return {
+        "facebook": _debug_facebook_token(settings_service.get_setting("facebook_access_token")),
+        "instagram": _debug_facebook_token(settings_service.get_setting("instagram_access_token")),
+    }
+
+
 # --- Moderation flags ---
 
 def _display_name_for_user(user: Optional[models.User]) -> Optional[str]:

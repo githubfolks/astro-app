@@ -140,6 +140,7 @@ export const settings = {
     getWhatsappStatus: () => api.get('/admin/whatsapp/status'),
     connectWhatsapp: (phone_number) => api.post('/admin/whatsapp/connect', { phone_number }),
     disconnectWhatsapp: () => api.post('/admin/whatsapp/disconnect'),
+    getSocialTokenStatus: () => api.get('/admin/settings/social-token-status'),
 };
 
 export const reports = {

@@ -8,7 +8,9 @@ output_video_url (a relative /static/... path) must be turned into a public,
 internet-reachable URL first — via the admin-configured
 content_studio_public_base_url setting (they cannot reach localhost).
 """
+import re
 import time
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import HTTPException
@@ -16,6 +18,11 @@ from fastapi import HTTPException
 from .settings_service import get_setting
 
 GRAPH_API_VERSION = "v19.0"
+
+# Instagram rejects (or silently drops) captions with more than 30 hashtags.
+INSTAGRAM_MAX_HASHTAGS = 30
+
+_NON_PUBLIC_HOSTS = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
 
 
 def _public_video_url(output_video_url: str) -> str:
@@ -26,7 +33,29 @@ def _public_video_url(output_video_url: str) -> str:
             detail="Content Studio public base URL is not configured in Settings. "
                    "Facebook/Instagram need a public URL to fetch the video from.",
         )
+    hostname = (urlparse(base_url).hostname or "").lower()
+    if hostname in _NON_PUBLIC_HOSTS or hostname.endswith(".local"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Content Studio public base URL ('{base_url}') is not internet-reachable "
+                   "(looks like a local/private host). Facebook/Instagram cannot fetch the video from it -- "
+                   "set it to a real public URL in Settings.",
+        )
     return f"{base_url.rstrip('/')}{output_video_url}"
+
+
+def _cap_hashtags(caption: str, max_hashtags: int = INSTAGRAM_MAX_HASHTAGS) -> str:
+    """Trims a caption down to at most max_hashtags '#tag' tokens, dropping
+    the excess from the end, so Instagram doesn't reject/strip the post for
+    exceeding its 30-hashtag limit."""
+    count = 0
+    out_end = len(caption)
+    for m in re.finditer(r"#\w+", caption):
+        count += 1
+        if count > max_hashtags:
+            out_end = m.start()
+            break
+    return caption[:out_end].rstrip()
 
 
 def post_to_facebook(output_video_url: str, caption: str):
@@ -63,6 +92,7 @@ def post_to_instagram(output_video_url: str, caption: str):
         )
 
     video_url = _public_video_url(output_video_url)
+    caption = _cap_hashtags(caption)
 
     try:
         # Step 1: create a Reels media container

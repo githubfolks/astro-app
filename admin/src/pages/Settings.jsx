@@ -93,6 +93,78 @@ const GROUPS = [
     },
 ];
 
+function TokenStatusRow({ label, status }) {
+    if (!status) return null;
+    if (!status.configured) {
+        return <p className="text-xs text-gray-400">{label}: not configured</p>;
+    }
+    if (status.error) {
+        return (
+            <p className="text-xs text-red-600 flex items-start gap-1">
+                <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                {label}: {status.error}
+            </p>
+        );
+    }
+    if (!status.valid) {
+        return (
+            <p className="text-xs text-red-600 flex items-start gap-1">
+                <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                {label}: token is invalid or expired — posting will fail until it's renewed.
+            </p>
+        );
+    }
+    if (status.never_expires) {
+        return <p className="text-xs text-emerald-600">{label}: valid, does not expire.</p>;
+    }
+    const soon = status.days_left != null && status.days_left <= 14;
+    return (
+        <p className={`text-xs flex items-start gap-1 ${soon ? 'text-amber-600' : 'text-emerald-600'}`}>
+            {soon && <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />}
+            {label}: valid, expires in {status.days_left} day{status.days_left === 1 ? '' : 's'}
+            {soon ? ' — renew soon.' : '.'}
+        </p>
+    );
+}
+
+function SocialTokenStatusPanel() {
+    const [status, setStatus] = useState(null);
+    const [checking, setChecking] = useState(false);
+    const [error, setError] = useState('');
+
+    const check = async () => {
+        setChecking(true);
+        setError('');
+        try {
+            const res = await settingsApi.getSocialTokenStatus();
+            setStatus(res.data);
+        } catch (e) {
+            setError(e.message || 'Failed to check token status.');
+        } finally {
+            setChecking(false);
+        }
+    };
+
+    return (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-1">
+                <h2 className="font-bold text-gray-800">Facebook / Instagram Token Status</h2>
+                <Button size="sm" variant="outlined" onClick={check} disabled={checking}>
+                    {checking ? 'Checking…' : 'Check Now'}
+                </Button>
+            </div>
+            <p className="text-xs text-gray-900 mb-3">Verifies the saved access tokens against the Graph API and shows expiry, so a stale token is caught before Content Studio posting fails.</p>
+            {error && <p className="text-xs text-red-600">{error}</p>}
+            {status && (
+                <div className="space-y-1.5">
+                    <TokenStatusRow label="Facebook" status={status.facebook} />
+                    <TokenStatusRow label="Instagram" status={status.instagram} />
+                </div>
+            )}
+        </div>
+    );
+}
+
 function WhatsAppPanel({ isConfigured, waStatus, isConnecting, isStopping, phone, onPhoneChange, onConnect, onStop, error }) {
     const state = String(waStatus?.status || '').toUpperCase();
     const isConnected = state === 'CONNECTED';
@@ -678,7 +750,10 @@ export default function Settings() {
 
                 {/* Right Column */}
                 <div className="space-y-6">
-                    {GROUPS.filter(g => ['Moderation Alerts', 'Facebook & Instagram Integration', 'Content Studio (Bhashini Hindi Voice)', 'Content Studio (Google TTS Fallback)', 'Content Studio (Social Posting)'].includes(g.title)).map(renderGroup)}
+                    {GROUPS.filter(g => g.title === 'Moderation Alerts').map(renderGroup)}
+                    {GROUPS.filter(g => g.title === 'Facebook & Instagram Integration').map(renderGroup)}
+                    <SocialTokenStatusPanel />
+                    {GROUPS.filter(g => ['Content Studio (Bhashini Hindi Voice)', 'Content Studio (Google TTS Fallback)', 'Content Studio (Social Posting)'].includes(g.title)).map(renderGroup)}
                 </div>
             </div>
 
