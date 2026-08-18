@@ -7567,6 +7567,19 @@
         "title": "YouTubeCopy",
         "type": "object"
       },
+      "YoutubeTagsSuggestion": {
+        "properties": {
+          "tags": {
+            "title": "Tags",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "YoutubeTagsSuggestion",
+        "type": "object"
+      },
       "ZodiacSign": {
         "enum": [
           "ARIES",
@@ -13776,6 +13789,53 @@
           }
         ],
         "summary": "Generate Social Copy",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/generate-youtube-tags": {
+      "post": {
+        "operationId": "generate_youtube_tags_content_studio_jobs__job_id__generate_youtube_tags_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/YoutubeTagsSuggestion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Youtube Tags",
         "tags": [
           "Content Studio"
         ]

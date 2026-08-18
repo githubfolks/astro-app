@@ -180,6 +180,7 @@ export const contentStudio = {
     updateJob: (jobId, data) => api.put(`/content-studio/jobs/${jobId}`, data),
     deleteJob: (jobId) => api.delete(`/content-studio/jobs/${jobId}`),
     generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
+    generateYoutubeTags: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-youtube-tags`),
     generateSocialCopy: (jobId, platform) => api.post(`/content-studio/jobs/${jobId}/generate-social-copy`, { platform }),
     postFacebook: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption, seo_keywords: seoKeywords }),
     postInstagram: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption, seo_keywords: seoKeywords }),

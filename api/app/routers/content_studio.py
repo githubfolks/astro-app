@@ -457,6 +457,17 @@ def generate_caption(request: Request, job_id: int, db: Session = Depends(databa
     )
 
 
+@router.post("/jobs/{job_id}/generate-youtube-tags", response_model=schemas_content_studio.YoutubeTagsSuggestion)
+@limiter.limit("10/minute")
+def generate_youtube_tags(request: Request, job_id: int, db: Session = Depends(database.get_db)):
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return schemas_content_studio.YoutubeTagsSuggestion(
+        tags=content_studio_llm.generate_youtube_tags(job.topic, job.short_description)
+    )
+
+
 class GenerateSocialCopyRequest(BaseModel):
     platform: Literal["twitter", "linkedin"]
 

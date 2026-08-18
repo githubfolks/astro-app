@@ -169,6 +169,64 @@ def generate_social_caption(topic: str, description: str | None = None) -> str:
     return caption
 
 
+YOUTUBE_TAGS_SYSTEM_PROMPT = """You are an SEO specialist for Aadikarta, India's trusted marketplace for verified Vedic astrologers, writing YouTube video tags (the keywords field in YouTube Studio, NOT hashtags) for a short vertical astrology Short.
+
+Given the video's topic (and, if provided, a short description with extra context), write 10-15 relevant YouTube SEO tags/keywords as a single comma-separated line: short keyword phrases (1-4 words each, no # symbol), mixing terms specific to the topic (e.g. a zodiac sign, planet, or theme mentioned in it) with these standing terms: astrology, vedic astrology, horoscope, zodiac signs, hindi astrology, aadikarta, kundli, spirituality, astrology shorts. Keep the combined line under 480 characters total.
+
+Respond with ONLY the comma-separated tags line. No markdown, no code fences, no commentary, no leading/trailing punctuation."""
+
+
+def generate_youtube_tags(topic: str, description: str | None = None) -> str:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Content Studio is unavailable. GROQ_API_KEY is not set.")
+
+    user_content = f"Topic: {topic}"
+    if description:
+        user_content += f"\nDescription: {description}"
+
+    body = {
+        "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
+        "messages": [
+            {"role": "system", "content": YOUTUBE_TAGS_SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
+        ],
+        "max_tokens": 200,
+        "temperature": 0.7,
+        "reasoning_effort": "low",
+    }
+
+    try:
+        response = httpx.post(
+            GROQ_CHAT_URL,
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        print(f"Content Studio: Groq YouTube tags request failed: {e}")
+        raise _UPSTREAM_ERROR
+
+    if response.status_code != 200:
+        print(f"Content Studio: Groq YouTube tags error {response.status_code}: {response.text[:500]}")
+        raise _UPSTREAM_ERROR
+
+    try:
+        tags = (response.json()["choices"][0]["message"]["content"] or "").strip().strip('"')
+    except (KeyError, IndexError, ValueError) as e:
+        print(f"Content Studio: unexpected Groq YouTube tags response shape: {e}")
+        raise _UPSTREAM_ERROR
+
+    if not tags:
+        raise _UPSTREAM_ERROR
+
+    # YouTube caps the combined tags metadata at 500 chars; keep a safety margin.
+    if len(tags) > 480:
+        tags = tags[:480].rsplit(",", 1)[0].strip()
+
+    return tags
+
+
 STANDING_HASHTAGS = "#AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality"
 
 # X/LinkedIn have no publish API configured for Content Studio, so this is

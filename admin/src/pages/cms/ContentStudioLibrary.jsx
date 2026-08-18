@@ -116,6 +116,7 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
     const [caption, setCaption] = useState('');
     const [seoKeywords, setSeoKeywords] = useState(job[platform.keywordsField] || '');
     const [generating, setGenerating] = useState(true);
+    const [keywordsGenerating, setKeywordsGenerating] = useState(false);
     const [sending, setSending] = useState(false);
 
     const generate = useCallback(async () => {
@@ -127,6 +128,18 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
             alert(e.message || 'Failed to generate caption.');
         } finally {
             setGenerating(false);
+        }
+    }, [job.id]);
+
+    const generateKeywords = useCallback(async () => {
+        setKeywordsGenerating(true);
+        try {
+            const res = await contentStudio.generateYoutubeTags(job.id);
+            setSeoKeywords(res.data.tags || '');
+        } catch (e) {
+            alert(e.message || 'Failed to generate YouTube tags.');
+        } finally {
+            setKeywordsGenerating(false);
         }
     }, [job.id]);
 
@@ -168,22 +181,36 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
                     disabled={generating}
                     className="h-40"
                 />
-                <TextArea
-                    fullWidth
-                    label={`SEO Keywords (${platform.label})`}
-                    placeholder={platform.key === 'youtube' ? 'Comma-separated tags, e.g. astrology, horoscope, zodiac' : 'Comma-separated keywords for discovery'}
-                    value={seoKeywords}
-                    onChange={(e) => setSeoKeywords(e.target.value)}
-                    disabled={generating}
-                    className="h-20"
-                />
+                <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-medium text-slate-700">SEO Keywords ({platform.label})</label>
+                        {platform.key === 'youtube' && (
+                            <button
+                                type="button"
+                                onClick={generateKeywords}
+                                disabled={keywordsGenerating || generating}
+                                className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-30 cursor-pointer"
+                            >
+                                {keywordsGenerating ? 'Generating...' : 'Generate with AI'}
+                            </button>
+                        )}
+                    </div>
+                    <TextArea
+                        fullWidth
+                        placeholder={platform.key === 'youtube' ? 'Comma-separated tags, e.g. astrology, horoscope, zodiac' : 'Comma-separated keywords for discovery'}
+                        value={seoKeywords}
+                        onChange={(e) => setSeoKeywords(e.target.value)}
+                        disabled={generating || keywordsGenerating}
+                        className="h-20"
+                    />
+                </div>
                 <div className="flex items-center justify-between pt-2">
                     <Button variant="outlined" size="sm" onClick={generate} disabled={generating} className="cursor-pointer">
                         {generating ? 'Generating...' : 'Regenerate with AI'}
                     </Button>
                     <div className="flex gap-2">
                         <Button variant="outlined" size="sm" onClick={onClose} disabled={sending} className="cursor-pointer">Cancel</Button>
-                        <Button size="sm" onClick={handlePost} disabled={generating || sending} className="cursor-pointer">
+                        <Button size="sm" onClick={handlePost} disabled={generating || keywordsGenerating || sending} className="cursor-pointer">
                             {sending ? 'Posting...' : `Post to ${platform.label}`}
                         </Button>
                     </div>
