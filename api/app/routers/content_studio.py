@@ -468,6 +468,24 @@ def generate_youtube_tags(request: Request, job_id: int, db: Session = Depends(d
     )
 
 
+@router.post("/jobs/{job_id}/generate-youtube-copy", response_model=schemas_content_studio.YoutubeCopySuggestion)
+@limiter.limit("10/minute")
+def generate_youtube_copy(
+    request: Request,
+    job_id: int,
+    payload: schemas_content_studio.GenerateYoutubeCopyRequest = schemas_content_studio.GenerateYoutubeCopyRequest(),
+    db: Session = Depends(database.get_db),
+):
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return schemas_content_studio.YoutubeCopySuggestion(
+        **content_studio_llm.generate_youtube_copy(
+            job.topic, job.short_description, payload.current_title, payload.current_description
+        )
+    )
+
+
 class GenerateSocialCopyRequest(BaseModel):
     platform: Literal["twitter", "linkedin"]
 
@@ -528,10 +546,67 @@ async def post_youtube(
 ):
     job = _get_ready_job(job_id, db)
     tags = [t.strip() for t in payload.seo_keywords.split(",") if t.strip()] if payload.seo_keywords else None
-    description = f"{job.short_description}\n\n{payload.caption}" if job.short_description else payload.caption
-    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, job.topic, description, tags)
+    # payload.caption is expected to already be the full YouTube-formatted
+    # description (keyword-rich intro, CTA, hashtag block) from
+    # generate-youtube-copy -- unlike Facebook/Instagram, it is not prefixed
+    # with short_description again so the keyword-rich opening lines stay
+    # first, which is what YouTube's search indexing reads.
+    title = (payload.title or job.topic).strip()
+    result = await asyncio.to_thread(content_studio_youtube.post_to_youtube, job.output_video_url, title, payload.caption, tags)
     job.posted_youtube_at = datetime.now(timezone.utc)
     job.youtube_video_id = result.get("id")
+    job.youtube_title = title
+    job.youtube_description = payload.caption
+    job.seo_keywords_youtube = payload.seo_keywords
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+@router.get("/jobs/{job_id}/youtube-video/live", response_model=schemas_content_studio.Job)
+@limiter.limit("10/minute")
+async def get_live_youtube_video(request: Request, job_id: int, db: Session = Depends(database.get_db)):
+    """Pulls the video's current live metadata straight from YouTube and
+    overwrites our stored copy with it -- used before showing the edit form,
+    so edits start from what's actually published (which can drift from our
+    last-known copy if the video was ever edited directly in YouTube Studio)."""
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not job.youtube_video_id:
+        raise HTTPException(status_code=400, detail="This video has not been posted to YouTube yet.")
+
+    live = await asyncio.to_thread(content_studio_youtube.get_youtube_video, job.youtube_video_id)
+    job.youtube_title = live["title"]
+    job.youtube_description = live["description"]
+    if live["tags"]:
+        job.seo_keywords_youtube = ", ".join(live["tags"])
+    db.commit()
+    db.refresh(job)
+    return job
+
+
+@router.put("/jobs/{job_id}/youtube-video", response_model=schemas_content_studio.Job)
+@limiter.limit("5/minute")
+async def update_youtube_video(
+    request: Request,
+    job_id: int,
+    payload: schemas_content_studio.UpdateYoutubeVideoRequest,
+    db: Session = Depends(database.get_db),
+):
+    job = db.get(models.ContentStudioJob, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if not job.youtube_video_id:
+        raise HTTPException(status_code=400, detail="This video has not been posted to YouTube yet.")
+
+    tags = [t.strip() for t in payload.seo_keywords.split(",") if t.strip()] if payload.seo_keywords else None
+    title = payload.title.strip()
+    await asyncio.to_thread(
+        content_studio_youtube.update_youtube_video, job.youtube_video_id, title, payload.description, tags
+    )
+    job.youtube_title = title
+    job.youtube_description = payload.description
     job.seo_keywords_youtube = payload.seo_keywords
     db.commit()
     db.refresh(job)

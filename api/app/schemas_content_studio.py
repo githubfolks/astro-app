@@ -72,8 +72,25 @@ class YoutubeTagsSuggestion(BaseModel):
     tags: str
 
 
+class YoutubeCopySuggestion(BaseModel):
+    title: str
+    description: str
+
+
+class GenerateYoutubeCopyRequest(BaseModel):
+    current_title: Optional[str] = Field(None, max_length=100)
+    current_description: Optional[str] = Field(None, max_length=5000)
+
+
 class PostSocialRequest(BaseModel):
     caption: str = Field(..., min_length=1, max_length=2200)
+    seo_keywords: Optional[str] = None
+    title: Optional[str] = Field(None, max_length=100)
+
+
+class UpdateYoutubeVideoRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=100)
+    description: str = Field(..., min_length=1, max_length=5000)
     seo_keywords: Optional[str] = None
 
 
@@ -91,6 +108,8 @@ class Job(BaseModel):
     posted_instagram_at: Optional[datetime] = None
     posted_youtube_at: Optional[datetime] = None
     youtube_video_id: Optional[str] = None
+    youtube_title: Optional[str] = None
+    youtube_description: Optional[str] = None
     seo_keywords_facebook: Optional[str] = None
     seo_keywords_instagram: Optional[str] = None
     seo_keywords_youtube: Optional[str] = None

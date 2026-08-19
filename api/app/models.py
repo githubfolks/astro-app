@@ -861,6 +861,8 @@ class ContentStudioJob(Base):
     posted_instagram_at = Column(DateTime(timezone=True), nullable=True)
     posted_youtube_at = Column(DateTime(timezone=True), nullable=True)
     youtube_video_id = Column(String, nullable=True)
+    youtube_title = Column(String, nullable=True)
+    youtube_description = Column(Text, nullable=True)
     seo_keywords_facebook = Column(Text, nullable=True)
     seo_keywords_instagram = Column(Text, nullable=True)
     seo_keywords_youtube = Column(Text, nullable=True)

@@ -182,10 +182,18 @@ export const contentStudio = {
     deleteJob: (jobId) => api.delete(`/content-studio/jobs/${jobId}`),
     generateCaption: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-caption`),
     generateYoutubeTags: (jobId) => api.post(`/content-studio/jobs/${jobId}/generate-youtube-tags`),
+    generateYoutubeCopy: (jobId, currentTitle, currentDescription) =>
+        api.post(`/content-studio/jobs/${jobId}/generate-youtube-copy`, {
+            current_title: currentTitle || undefined,
+            current_description: currentDescription || undefined,
+        }),
     generateSocialCopy: (jobId, platform) => api.post(`/content-studio/jobs/${jobId}/generate-social-copy`, { platform }),
     postFacebook: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/facebook`, { caption, seo_keywords: seoKeywords }),
     postInstagram: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/instagram`, { caption, seo_keywords: seoKeywords }),
-    postYoutube: (jobId, caption, seoKeywords) => api.post(`/content-studio/jobs/${jobId}/post/youtube`, { caption, seo_keywords: seoKeywords }),
+    postYoutube: (jobId, caption, seoKeywords, title) => api.post(`/content-studio/jobs/${jobId}/post/youtube`, { caption, seo_keywords: seoKeywords, title }),
+    updateYoutubeVideo: (jobId, title, description, seoKeywords) =>
+        api.put(`/content-studio/jobs/${jobId}/youtube-video`, { title, description, seo_keywords: seoKeywords }),
+    getLiveYoutubeVideo: (jobId) => api.get(`/content-studio/jobs/${jobId}/youtube-video/live`),
 };
 
 

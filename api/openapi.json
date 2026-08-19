@@ -3698,6 +3698,36 @@
         "title": "GenerateSocialRequest",
         "type": "object"
       },
+      "GenerateYoutubeCopyRequest": {
+        "properties": {
+          "current_description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Description"
+          },
+          "current_title": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Title"
+          }
+        },
+        "title": "GenerateYoutubeCopyRequest",
+        "type": "object"
+      },
       "GoogleLoginRequest": {
         "properties": {
           "id_token": {
@@ -4241,6 +4271,28 @@
           },
           "voice_gender": {
             "$ref": "#/components/schemas/VoiceGender"
+          },
+          "youtube_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Youtube Description"
+          },
+          "youtube_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Youtube Title"
           },
           "youtube_video_id": {
             "anyOf": [
@@ -5919,6 +5971,18 @@
               }
             ],
             "title": "Seo Keywords"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 100,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
           }
         },
         "required": [
@@ -6986,6 +7050,39 @@
         "title": "UpdateScenesRequest",
         "type": "object"
       },
+      "UpdateYoutubeVideoRequest": {
+        "properties": {
+          "description": {
+            "maxLength": 5000,
+            "minLength": 1,
+            "title": "Description",
+            "type": "string"
+          },
+          "seo_keywords": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seo Keywords"
+          },
+          "title": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "UpdateYoutubeVideoRequest",
+        "type": "object"
+      },
       "UserCreate": {
         "properties": {
           "email": {
@@ -7565,6 +7662,24 @@
           "pinned_comment"
         ],
         "title": "YouTubeCopy",
+        "type": "object"
+      },
+      "YoutubeCopySuggestion": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "description"
+        ],
+        "title": "YoutubeCopySuggestion",
         "type": "object"
       },
       "YoutubeTagsSuggestion": {
@@ -13819,6 +13934,63 @@
         ]
       }
     },
+    "/content-studio/jobs/{job_id}/generate-youtube-copy": {
+      "post": {
+        "operationId": "generate_youtube_copy_content_studio_jobs__job_id__generate_youtube_copy_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateYoutubeCopyRequest",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/YoutubeCopySuggestion"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Generate Youtube Copy",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
     "/content-studio/jobs/{job_id}/generate-youtube-tags": {
       "post": {
         "operationId": "generate_youtube_tags_content_studio_jobs__job_id__generate_youtube_tags_post",
@@ -14385,6 +14557,111 @@
           }
         ],
         "summary": "Upload Video",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/youtube-video": {
+      "put": {
+        "operationId": "update_youtube_video_content_studio_jobs__job_id__youtube_video_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateYoutubeVideoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Youtube Video",
+        "tags": [
+          "Content Studio"
+        ]
+      }
+    },
+    "/content-studio/jobs/{job_id}/youtube-video/live": {
+      "get": {
+        "description": "Pulls the video's current live metadata straight from YouTube and\noverwrites our stored copy with it -- used before showing the edit form,\nso edits start from what's actually published (which can drift from our\nlast-known copy if the video was ever edited directly in YouTube Studio).",
+        "operationId": "get_live_youtube_video_content_studio_jobs__job_id__youtube_video_live_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "job_id",
+            "required": true,
+            "schema": {
+              "title": "Job Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Get Live Youtube Video",
         "tags": [
           "Content Studio"
         ]

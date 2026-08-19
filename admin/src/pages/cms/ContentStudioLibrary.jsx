@@ -5,6 +5,7 @@ import {
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TextArea } from '../../components/ui/TextArea';
+import { Input } from '../../components/ui/Input';
 import { Facebook, Instagram, Youtube, Download, X, Trash2, Upload, Twitter, Linkedin, Copy, Check } from 'lucide-react';
 import { contentStudio } from '../../services/api';
 import clsx from 'clsx';
@@ -112,24 +113,49 @@ function NewVideoModal({ onClose, onCreated }) {
     );
 }
 
-function CaptionModal({ job, platform, onClose, onPosted }) {
-    const [caption, setCaption] = useState('');
+function CaptionModal({ job, platform, editMode, onClose, onPosted, onSynced }) {
+    const isYoutube = platform.key === 'youtube';
+    const [title, setTitle] = useState(editMode ? (job.youtube_title || '') : '');
+    const [caption, setCaption] = useState(editMode ? (job.youtube_description || '') : '');
     const [seoKeywords, setSeoKeywords] = useState(job[platform.keywordsField] || '');
-    const [generating, setGenerating] = useState(true);
+    // In edit mode the fields start out prefilled from our last-known copy,
+    // then get overwritten by whatever is actually live on YouTube once the
+    // sync below resolves -- our copy drifts if the video was ever edited
+    // directly in YouTube Studio instead of through this admin.
+    const [generating, setGenerating] = useState(!editMode);
+    const [syncing, setSyncing] = useState(editMode);
+    const [syncFailed, setSyncFailed] = useState(false);
     const [keywordsGenerating, setKeywordsGenerating] = useState(false);
     const [sending, setSending] = useState(false);
+    // Mirrors title/caption without going in generate()'s dependency array --
+    // generate() must keep a stable identity so the mount-only useEffect below
+    // doesn't refire on every keystroke, but "Regenerate with AI" still needs
+    // to read whatever is currently in the fields at click time.
+    const draftRef = useRef({ title, caption });
+    draftRef.current = { title, caption };
 
     const generate = useCallback(async () => {
         setGenerating(true);
         try {
-            const res = await contentStudio.generateCaption(job.id);
-            setCaption(res.data.caption || '');
+            if (isYoutube) {
+                // Passing the current draft lets the model refine what's already
+                // there (hand-edited or already published) instead of guessing a
+                // fresh, unrelated title/description from just the topic every
+                // time "Regenerate with AI" is clicked.
+                const { title: currentTitle, caption: currentCaption } = draftRef.current;
+                const res = await contentStudio.generateYoutubeCopy(job.id, currentTitle, currentCaption);
+                setTitle(res.data.title || '');
+                setCaption(res.data.description || '');
+            } else {
+                const res = await contentStudio.generateCaption(job.id);
+                setCaption(res.data.caption || '');
+            }
         } catch (e) {
             alert(e.message || 'Failed to generate caption.');
         } finally {
             setGenerating(false);
         }
-    }, [job.id]);
+    }, [job.id, isYoutube]);
 
     const generateKeywords = useCallback(async () => {
         setKeywordsGenerating(true);
@@ -143,19 +169,52 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
         }
     }, [job.id]);
 
-    useEffect(() => { generate(); }, [generate]);
+    const syncFromYoutube = useCallback(async () => {
+        setSyncing(true);
+        setSyncFailed(false);
+        try {
+            const res = await contentStudio.getLiveYoutubeVideo(job.id);
+            setTitle(res.data.youtube_title || '');
+            setCaption(res.data.youtube_description || '');
+            setSeoKeywords(res.data.seo_keywords_youtube || '');
+            onSynced?.(res.data);
+        } catch (e) {
+            // Keep the last-known (possibly stale) values already in the
+            // fields rather than blocking the edit -- surface the failure so
+            // the admin knows they may be looking at a stale copy.
+            setSyncFailed(true);
+            console.error('Failed to sync YouTube video metadata', e);
+        } finally {
+            setSyncing(false);
+        }
+    }, [job.id, onSynced]);
+
+    useEffect(() => {
+        if (editMode) {
+            syncFromYoutube();
+        } else {
+            generate();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [editMode]);
 
     const handlePost = async () => {
         if (!caption.trim()) {
             alert('Caption cannot be empty.');
             return;
         }
+        if (isYoutube && !title.trim()) {
+            alert('Title cannot be empty.');
+            return;
+        }
         setSending(true);
         try {
-            const res = await contentStudio[platform.action](job.id, caption.trim(), seoKeywords.trim());
+            const res = editMode
+                ? await contentStudio.updateYoutubeVideo(job.id, title.trim(), caption.trim(), seoKeywords.trim())
+                : await contentStudio[platform.action](job.id, caption.trim(), seoKeywords.trim(), isYoutube ? title.trim() : undefined);
             onPosted(res.data);
         } catch (e) {
-            alert(e.message || `Failed to post to ${platform.label}.`);
+            alert(e.message || `Failed to ${editMode ? 'update' : 'post to'} ${platform.label}.`);
         } finally {
             setSending(false);
         }
@@ -166,19 +225,48 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
             <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4">
                 <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-                        <platform.icon size={18} /> Post to {platform.label}
+                        <platform.icon size={18} /> {editMode ? `Edit ${platform.label} Video` : `Post to ${platform.label}`}
                     </h3>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <X size={20} />
                     </button>
                 </div>
                 <p className="text-xs text-slate-500 truncate" title={job.topic}>{job.topic}</p>
+                {syncing && (
+                    <p className="text-xs text-slate-500">Syncing current title/description from YouTube...</p>
+                )}
+                {syncFailed && (
+                    <p className="text-xs text-amber-600">
+                        Couldn't fetch the latest metadata from YouTube -- showing our last-known copy, which may be
+                        out of date if this video was edited directly in YouTube Studio.{' '}
+                        <button type="button" onClick={syncFromYoutube} className="underline font-semibold cursor-pointer">
+                            Retry
+                        </button>
+                    </p>
+                )}
+                {isYoutube && (
+                    <div className="space-y-1">
+                        <Input
+                            fullWidth
+                            label="Title"
+                            value={generating ? 'Generating title...' : (syncing ? 'Syncing...' : title)}
+                            onChange={(e) => setTitle(e.target.value)}
+                            disabled={generating || syncing}
+                            maxLength={100}
+                        />
+                        {!generating && !syncing && (
+                            <p className={clsx('text-[11px] text-right', title.length > 100 ? 'text-red-500' : 'text-slate-400')}>
+                                {title.length}/100
+                            </p>
+                        )}
+                    </div>
+                )}
                 <TextArea
                     fullWidth
-                    label="Caption"
-                    value={generating ? 'Generating caption...' : caption}
+                    label={isYoutube ? 'Description' : 'Caption'}
+                    value={generating ? (isYoutube ? 'Generating description...' : 'Generating caption...') : (syncing ? 'Syncing...' : caption)}
                     onChange={(e) => setCaption(e.target.value)}
-                    disabled={generating}
+                    disabled={generating || syncing}
                     className="h-40"
                 />
                 <div className="space-y-1.5">
@@ -188,7 +276,7 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
                             <button
                                 type="button"
                                 onClick={generateKeywords}
-                                disabled={keywordsGenerating || generating}
+                                disabled={keywordsGenerating || generating || syncing}
                                 className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 disabled:opacity-30 cursor-pointer"
                             >
                                 {keywordsGenerating ? 'Generating...' : 'Generate with AI'}
@@ -200,18 +288,18 @@ function CaptionModal({ job, platform, onClose, onPosted }) {
                         placeholder={platform.key === 'youtube' ? 'Comma-separated tags, e.g. astrology, horoscope, zodiac' : 'Comma-separated keywords for discovery'}
                         value={seoKeywords}
                         onChange={(e) => setSeoKeywords(e.target.value)}
-                        disabled={generating || keywordsGenerating}
+                        disabled={generating || keywordsGenerating || syncing}
                         className="h-20"
                     />
                 </div>
                 <div className="flex items-center justify-between pt-2">
-                    <Button variant="outlined" size="sm" onClick={generate} disabled={generating} className="cursor-pointer">
+                    <Button variant="outlined" size="sm" onClick={generate} disabled={generating || syncing} className="cursor-pointer">
                         {generating ? 'Generating...' : 'Regenerate with AI'}
                     </Button>
                     <div className="flex gap-2">
                         <Button variant="outlined" size="sm" onClick={onClose} disabled={sending} className="cursor-pointer">Cancel</Button>
-                        <Button size="sm" onClick={handlePost} disabled={generating || keywordsGenerating || sending} className="cursor-pointer">
-                            {sending ? 'Posting...' : `Post to ${platform.label}`}
+                        <Button size="sm" onClick={handlePost} disabled={generating || syncing || keywordsGenerating || sending} className="cursor-pointer">
+                            {sending ? (editMode ? 'Saving...' : 'Posting...') : (editMode ? 'Save Changes' : `Post to ${platform.label}`)}
                         </Button>
                     </div>
                 </div>
@@ -412,9 +500,21 @@ export default function ContentStudioLibrary() {
         }
     };
 
+    const handleEditYoutube = (job) => {
+        setCaptionModal({ job, platform: PLATFORMS.find(p => p.key === 'youtube'), editMode: true });
+    };
+
     const handlePosted = (updatedJob) => {
         setJobs(prev => prev.map(j => (j.id === updatedJob.id ? updatedJob : j)));
         setCaptionModal(null);
+    };
+
+    // Keeps the row list's cached youtube_title/youtube_description in step
+    // with what the edit modal just pulled live from YouTube, without
+    // closing the modal (unlike handlePosted, which is only for a completed
+    // post/save).
+    const handleSynced = (updatedJob) => {
+        setJobs(prev => prev.map(j => (j.id === updatedJob.id ? updatedJob : j)));
     };
 
     const handleVideoCreated = (job) => {
@@ -497,15 +597,24 @@ export default function ContentStudioLibrary() {
                                         <TableCell key={platform.key} onClick={(e) => e.stopPropagation()}>
                                             {postedAt ? (
                                                 platform.key === 'youtube' && job.youtube_video_id ? (
-                                                    <a
-                                                        href={`https://youtube.com/watch?v=${job.youtube_video_id}`}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className="inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:underline"
-                                                        title={new Date(postedAt).toLocaleString()}
-                                                    >
-                                                        <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
-                                                    </a>
+                                                    <div className="flex items-center gap-2">
+                                                        <a
+                                                            href={`https://youtube.com/watch?v=${job.youtube_video_id}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="inline-flex items-center gap-1 text-xs font-medium text-green-700 hover:underline"
+                                                            title={new Date(postedAt).toLocaleString()}
+                                                        >
+                                                            <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
+                                                        </a>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEditYoutube(job)}
+                                                            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    </div>
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700" title={new Date(postedAt).toLocaleString()}>
                                                         <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
@@ -619,8 +728,10 @@ export default function ContentStudioLibrary() {
                 <CaptionModal
                     job={captionModal.job}
                     platform={captionModal.platform}
+                    editMode={captionModal.editMode}
                     onClose={() => setCaptionModal(null)}
                     onPosted={handlePosted}
+                    onSynced={handleSynced}
                 />
             )}
 

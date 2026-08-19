@@ -227,6 +227,137 @@ def generate_youtube_tags(topic: str, description: str | None = None) -> str:
     return tags
 
 
+YOUTUBE_COPY_SYSTEM_PROMPT = """You are a YouTube Shorts strategist for Aadikarta, India's trusted marketplace for verified Vedic astrologers, writing the title and description for a short vertical astrology Short.
+
+Given the video's topic (and, if provided, a short description with extra context), write:
+
+TITLE: An emotional hook or curiosity-driven question in natural Hinglish (a mix of Hindi in Devanagari script and English) that puts the topic's problem/curiosity front and center -- never start with the channel/brand name or background info. Follow the hook with one relevant emoji, then exactly one core hashtag drawn from the topic (e.g. a rashi or graha name, like #MeenRashi). Aim for 40-60 characters total; never exceed 90 characters.
+
+DESCRIPTION: Write in this exact structure:
+1. First 1-2 lines: a keyword-rich summary in Hindi using the main search terms from the topic (what the video is about and why it matters) -- this is what YouTube's search/recommendation system reads to index the video.
+2. A blank line, then a short call-to-action line inviting the viewer to subscribe and comment, immediately followed by this exact text verbatim (do not alter it): "{cta}"
+3. A blank line, then a single line of exactly 3 to 5 hashtags, space-separated, each starting with #, in this order: #Shorts (always first), then 1-2 broad niche tags (from: #Astrology #Jyotish #VedicAstrology #Rashifal), then 1-2 specific topic tags drawn from the topic (e.g. a rashi or graha name). Do not rely only on a channel/brand-only hashtag.
+
+If a "Current title" and/or "Current description" are given below, treat them as the admin's current draft (which may already be edited by hand or already published on YouTube) and REFINE it rather than inventing an unrelated one from scratch: keep whatever specific details, phrasing, or hashtags already work, and only change what's needed to fix problems or better follow the structure above.
+
+Respond with ONLY:
+===TITLE===
+<the title>
+===DESCRIPTION===
+<the description>
+
+No markdown, no code fences, no commentary."""
+
+_YOUTUBE_HASHTAG_RE = re.compile(r"(?:^|\n)([^\n]*#\S+(?:\s+#\S+)*\s*)$")
+
+
+def _enforce_youtube_hashtags(description: str) -> str:
+    """Normalizes the trailing hashtag line: ensures #Shorts leads, dedupes,
+    and caps at 5 tags so YouTube doesn't silently ignore all hashtags for
+    going over its 15-hashtag limit (we aim well under that, at 3-5)."""
+    match = _YOUTUBE_HASHTAG_RE.search(description)
+    if not match:
+        return description
+
+    line = match.group(1)
+    tags = [t for t in line.split() if t.startswith("#")]
+    if not tags:
+        return description
+
+    seen = set()
+    deduped = []
+    for tag in tags:
+        key = tag.lower()
+        if key not in seen:
+            seen.add(key)
+            deduped.append(tag)
+
+    if not any(t.lower() == "#shorts" for t in deduped):
+        deduped.insert(0, "#Shorts")
+    else:
+        deduped = ["#Shorts"] + [t for t in deduped if t.lower() != "#shorts"]
+
+    deduped = deduped[:5]
+
+    return description[:match.start(1)] + " ".join(deduped)
+
+
+def generate_youtube_copy(
+    topic: str,
+    description: str | None = None,
+    current_title: str | None = None,
+    current_description: str | None = None,
+) -> dict:
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=503, detail="Content Studio is unavailable. GROQ_API_KEY is not set.")
+
+    cta = get_setting("content_studio_caption_cta")
+    user_content = f"Topic: {topic}"
+    if description:
+        user_content += f"\nDescription: {description}"
+    if current_title:
+        user_content += f"\nCurrent title: {current_title}"
+    if current_description:
+        user_content += f"\nCurrent description: {current_description}"
+
+    body = {
+        "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
+        "messages": [
+            {"role": "system", "content": YOUTUBE_COPY_SYSTEM_PROMPT.format(cta=cta)},
+            {"role": "user", "content": user_content},
+        ],
+        "max_tokens": 400,
+        "temperature": 0.8,
+        "reasoning_effort": "low",
+    }
+
+    try:
+        response = httpx.post(
+            GROQ_CHAT_URL,
+            json=body,
+            headers={"Authorization": f"Bearer {api_key}"},
+            timeout=30.0,
+        )
+    except httpx.HTTPError as e:
+        print(f"Content Studio: Groq YouTube copy request failed: {e}")
+        raise _UPSTREAM_ERROR
+
+    if response.status_code != 200:
+        print(f"Content Studio: Groq YouTube copy error {response.status_code}: {response.text[:500]}")
+        raise _UPSTREAM_ERROR
+
+    try:
+        raw = (response.json()["choices"][0]["message"]["content"] or "").strip()
+    except (KeyError, IndexError, ValueError) as e:
+        print(f"Content Studio: unexpected Groq YouTube copy response shape: {e}")
+        raise _UPSTREAM_ERROR
+
+    if raw.startswith("```"):
+        raw = re.sub(r"^```[a-zA-Z]*\n", "", raw)
+        raw = re.sub(r"\n```$", "", raw)
+
+    title_match = re.search(r"===TITLE===\s*(.+?)\s*===DESCRIPTION===\s*(.+)\s*$", raw, re.DOTALL)
+    if not title_match:
+        print(f"Content Studio: failed to parse YouTube copy sections. Raw: {raw[:500]}")
+        raise _UPSTREAM_ERROR
+
+    title = title_match.group(1).strip()
+    yt_description = title_match.group(2).strip()
+
+    if not title or not yt_description:
+        raise _UPSTREAM_ERROR
+
+    # Safety net: YouTube hard-caps titles at 100 chars; the prompt targets
+    # 40-90 but never trust the model's count.
+    if len(title) > 100:
+        title = title[:97] + "..."
+
+    yt_description = _enforce_youtube_hashtags(yt_description)
+
+    return {"title": title, "description": yt_description}
+
+
 STANDING_HASHTAGS = "#AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality"
 
 # X/LinkedIn have no publish API configured for Content Studio, so this is

@@ -1,5 +1,6 @@
 """One-off script: run locally (not on the server) to authorize Content
-Studio's YouTube upload access and print a refresh token to save in .env.
+Studio's YouTube upload + metadata-edit access and print a refresh token to
+save in .env.
 
 Usage:
     pip install google-auth-oauthlib
@@ -7,14 +8,23 @@ Usage:
 
 A browser window opens -- log in as the Google account that owns/manages the
 target YouTube channel and approve. The refresh token this prints authorizes
-uploads to whichever channel that account is signed into, and does not expire
-until manually revoked from the Google account's third-party access settings.
+uploads to (and edits of) whichever channel that account is signed into, and
+does not expire until manually revoked from the Google account's third-party
+access settings.
 """
 import sys
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
+# youtube.upload alone only authorizes videos.insert (the initial upload).
+# Editing an already-published video's title/description/tags via
+# videos.update requires the broader youtube.force-ssl scope -- see
+# content_studio_youtube.py's update_youtube_video(). Re-run this script and
+# replace YOUTUBE_REFRESH_TOKEN if the existing token predates this scope.
+SCOPES = [
+    "https://www.googleapis.com/auth/youtube.upload",
+    "https://www.googleapis.com/auth/youtube.force-ssl",
+]
 
 
 def main():
