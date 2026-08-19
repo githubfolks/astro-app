@@ -16,7 +16,7 @@ from fastapi import HTTPException
 
 TOKEN_URL = "https://oauth2.googleapis.com/token"
 UPLOAD_URL = "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status"
-VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos?part=snippet"
+VIDEOS_URL = "https://www.googleapis.com/youtube/v3/videos"
 
 # "People & Blogs" -- a reasonable default category for astrology commentary;
 # change if YouTube Studio analytics suggest a better-performing category.
@@ -133,7 +133,7 @@ def get_youtube_video(video_id: str) -> dict:
     try:
         res = httpx.get(
             VIDEOS_URL,
-            params={"id": video_id},
+            params={"id": video_id, "part": "snippet"},
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=30.0,
         )
@@ -170,6 +170,7 @@ def update_youtube_video(video_id: str, title: str, description: str, tags: list
     try:
         res = httpx.put(
             VIDEOS_URL,
+            params={"part": "snippet"},
             headers={
                 "Authorization": f"Bearer {access_token}",
                 "Content-Type": "application/json; charset=UTF-8",
