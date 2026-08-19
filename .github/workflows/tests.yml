@@ -57,6 +57,19 @@ jobs:
       # headless Chromium via playwright-core, so the browser binary needs
       # to be present even though this job doesn't run Playwright's test
       # runner itself.
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> "$GITHUB_OUTPUT"
+
+      # Runners are fresh VMs every run, so this only skips re-downloading the
+      # Chromium binary on a cache hit -- --with-deps' apt-get install of
+      # system libs below still runs unconditionally every time regardless.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
@@ -79,6 +92,16 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/@playwright/test'].version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
