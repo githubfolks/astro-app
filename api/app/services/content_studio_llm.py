@@ -18,6 +18,10 @@ from .settings_service import get_setting
 GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_MODEL = "openai/gpt-oss-120b"
 
+# Fixed legal disclaimer appended to post captions/descriptions -- a fuller
+# variant of the on-video watermark text (see DISCLAIMER_TEXT in content_studio_video.py).
+DISCLAIMER_TEXT = "भविष्यवाणियाँ केवल ज्योतिषीय आकलन हैं, यह किसी पेशेवर सलाह (चिकित्सा, कानूनी या वित्तीय) का विकल्प नहीं हैं।"
+
 DEFAULT_SCENE_COUNT = {
     models.ContentType.VOICE_OVER_IMAGE: 2,
     models.ContentType.SHORT_VIDEO: 5,
@@ -117,8 +121,9 @@ Given the video's topic (and, if provided, a short description with extra contex
 1. One short, catchy hook line in natural Hinglish (a mix of Hindi in Devanagari script and English) that relates directly to the topic and creates curiosity, immediately followed by this exact call-to-action text verbatim (do not alter it): "{cta}"
 2. A blank line.
 3. A single line of 10-15 relevant hashtags, space-separated, each starting with #: mix specific hashtags drawn from the topic (e.g. a zodiac sign, planet, or theme mentioned in it) with these standing hashtags: #AstrologyReels #Astrology #Horoscope #Zodiac #ZodiacSigns #HindiAstrology #AadikartaAstrology #ReelsIndia #Kundli #Spirituality
+4. A blank line, then this exact disclaimer text verbatim (do not alter it): "{disclaimer}"
 
-Respond with ONLY the caption text (hook+CTA line, blank line, hashtag line). No markdown, no code fences, no commentary."""
+Respond with ONLY the caption text (hook+CTA line, blank line, hashtag line, blank line, disclaimer line). No markdown, no code fences, no commentary."""
 
 
 def generate_social_caption(topic: str, description: str | None = None) -> str:
@@ -134,7 +139,7 @@ def generate_social_caption(topic: str, description: str | None = None) -> str:
     body = {
         "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
         "messages": [
-            {"role": "system", "content": CAPTION_SYSTEM_PROMPT.format(cta=cta)},
+            {"role": "system", "content": CAPTION_SYSTEM_PROMPT.format(cta=cta, disclaimer=DISCLAIMER_TEXT)},
             {"role": "user", "content": user_content},
         ],
         "max_tokens": 300,
@@ -242,7 +247,8 @@ In both cases: follow the title with one relevant emoji, then exactly one core h
 DESCRIPTION: Write in this exact structure:
 1. First 1-2 lines: a keyword-rich summary in Hindi using the main search terms from the topic (what the video is about and why it matters) -- this is what YouTube's search/recommendation system reads to index the video.
 2. A blank line, then a short call-to-action line inviting the viewer to subscribe and comment, immediately followed by this exact text verbatim (do not alter it): "{cta}"
-3. A blank line, then a single line of exactly 3 to 5 hashtags, space-separated, each starting with #, in this order: #Shorts (always first), then 1-2 broad niche tags (from: #Astrology #Jyotish #VedicAstrology #Rashifal), then 1-2 specific topic tags drawn from the topic (e.g. a rashi or graha name). Do not rely only on a channel/brand-only hashtag.
+3. A blank line, then this exact disclaimer text verbatim (do not alter it): "{disclaimer}"
+4. A blank line, then a single line of exactly 3 to 5 hashtags, space-separated, each starting with #, in this order: #Shorts (always first), then 1-2 broad niche tags (from: #Astrology #Jyotish #VedicAstrology #Rashifal), then 1-2 specific topic tags drawn from the topic (e.g. a rashi or graha name). Do not rely only on a channel/brand-only hashtag.
 
 If a "Current title" and/or "Current description" are given below, treat them as the admin's current draft (which may already be edited by hand or already published on YouTube) and REFINE it rather than inventing an unrelated one from scratch: keep whatever specific details, phrasing, or hashtags already work, and only change what's needed to fix problems or better follow the structure above.
 
@@ -310,7 +316,7 @@ def generate_youtube_copy(
     body = {
         "model": os.getenv("AI_ASTROLOGER_MODEL", DEFAULT_MODEL),
         "messages": [
-            {"role": "system", "content": YOUTUBE_COPY_SYSTEM_PROMPT.format(cta=cta)},
+            {"role": "system", "content": YOUTUBE_COPY_SYSTEM_PROMPT.format(cta=cta, disclaimer=DISCLAIMER_TEXT)},
             {"role": "user", "content": user_content},
         ],
         "max_tokens": 400,
@@ -376,6 +382,7 @@ SOCIAL_COPY_SYSTEM_PROMPTS = {
         "Write a concise, engaging post for X (Twitter) promoting a short vertical astrology video (Reel/Short), under "
         "260 characters, with an attention-grabbing hook in natural Hinglish (a mix of Hindi in Devanagari script and "
         "English). Do not include hashtags in the post body, markdown headers, titles, HTML tags, or code block markers. "
+        f"End the post body with this exact disclaimer text verbatim (do not alter it): \"{DISCLAIMER_TEXT}\". "
         "After the post body, on a new line, write 'TAGS:' followed by 5-8 relevant hashtags (single line, "
         f"space-separated), mixing hashtags specific to the topic with these standing hashtags: {STANDING_HASHTAGS}."
     ),
@@ -384,7 +391,9 @@ SOCIAL_COPY_SYSTEM_PROMPTS = {
         "Write a professional, thought-leadership style LinkedIn post promoting a short vertical astrology video "
         "(Reel/Short) -- a short hook line, 2-4 short paragraphs or bullet points grounded in authentic Vedic astrology "
         "terms, and a closing line inviting engagement. Do not include hashtags in the post body, markdown headers, "
-        "titles, HTML tags, or code block markers. After the post body, on a new line, write 'TAGS:' followed by 5-8 "
+        "titles, HTML tags, or code block markers. "
+        f"End the post body with this exact disclaimer text verbatim (do not alter it): \"{DISCLAIMER_TEXT}\". "
+        "After the post body, on a new line, write 'TAGS:' followed by 5-8 "
         f"relevant hashtags (single line, space-separated), mixing hashtags specific to the topic with these standing "
         f"hashtags: {STANDING_HASHTAGS}."
     ),
