@@ -84,3 +84,18 @@ MM: 40
 SS: 0
 Place: Katihar, Bihar, India
 
+please test chat feature at seeker and astrologer ends.
+1. UI/UX behaviour in mobile and website
+2. behaviour of mic at astrologer end
+3. accuracy in translation of texts
+4. Speed of text translation
+5. deletion of texts from backsace
+6. text append issues
+7. texts repeate issue using mic
+8. money deduction process and wallaet recharge
+Chat feature is the heart of this business and development. Any bug or accidents during the chat may down the business. I am strict on its quality and behaviour.
+User may chat in following ways:
+1. seeker 1 from website, astrologer 2 from mobile
+2. seeker from mobile, astrologer from website
+3. Both from mobile
+4. Both from website

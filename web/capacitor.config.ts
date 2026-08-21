@@ -1,12 +1,26 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// mobile:run:dev sets this so a local build can reach the developer's own
+// Docker backend over plain HTTP/WS (10.0.2.2 is the Android emulator's
+// alias for the host's localhost) instead of production HTTPS/WSS — the
+// default (unset) path below is byte-identical to before for every other
+// build command. Pairs with android/app/src/main/res/xml/network_security_config.xml,
+// which scopes the matching cleartext allowance to debuggable builds only.
+const isDev = process.env.CAPACITOR_ENV === 'development';
+
 const config: CapacitorConfig = {
   appId: 'com.aadikarta.web',
   appName: 'Aadikarta Vedic Astrology',
   webDir: 'dist',
   server: {
     // Allow API calls to production server
-    allowNavigation: ['aadikarta.org', 'api.aadikarta.org'],
+    allowNavigation: isDev
+      ? ['aadikarta.org', 'api.aadikarta.org', '10.0.2.2', 'localhost']
+      : ['aadikarta.org', 'api.aadikarta.org'],
+    // Capacitor defaults to serving the WebView over https://, which makes a
+    // plain ws:// chat connection get blocked as mixed content — only an
+    // issue for local dev, since production always talks wss://.
+    ...(isDev ? { androidScheme: 'http' } : {}),
   },
   plugins: {
     CapacitorHttp: {

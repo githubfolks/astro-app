@@ -452,6 +452,13 @@ export const Chat: React.FC = () => {
         prevInputLenRef.current = value.length;
         isDeletingRef.current = isDeleting;
         setInput(value);
+        if (speech.isListening) {
+            // Keep the voice-dictation base in sync with manual edits made
+            // while listening — otherwise the next speech chunk re-renders
+            // from a stale base and silently undoes what was just typed or
+            // backspaced.
+            voiceBaseRef.current = value;
+        }
         if (isDeleting) {
             // Deleting text shouldn't run the suggestion engine at all — its
             // heaviest path (edit-distance spell-check, triggered as soon as the

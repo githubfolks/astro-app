@@ -105,6 +105,13 @@ export function useSpeechToText() {
                         newPart = transcript.slice(total.length);
                     } else if (total.endsWith(transcript)) {
                         newPart = '';
+                    } else if (transcript && total.includes(transcript)) {
+                        // Same re-finalization quirk, but for a *middle* segment
+                        // rather than the trailing one — the engine re-emits an
+                        // exact phrase from earlier in the sentence under a brand
+                        // new index. A trailing-only check misses this, so also
+                        // check for the phrase anywhere in what's already been said.
+                        newPart = '';
                     } else if (transcript.startsWith(alreadySentAtIndex)) {
                         newPart = transcript.slice(alreadySentAtIndex.length);
                     } else {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default (release/production) config: no cleartext exceptions, same as
+  Android's built-in default. A debug-build-only override that permits
+  cleartext to the emulator/local host lives at
+  android/app/src/debug/res/xml/network_security_config.xml — Gradle's
+  src/debug resource set replaces this file for assembleDebug only, so a
+  release APK never sees the exception.
+-->
+<network-security-config>
+</network-security-config>
