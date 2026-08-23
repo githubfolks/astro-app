@@ -616,9 +616,18 @@ export default function ContentStudioLibrary() {
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700" title={new Date(postedAt).toLocaleString()}>
-                                                        <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="inline-flex items-center gap-1 text-xs font-medium text-green-700" title={new Date(postedAt).toLocaleString()}>
+                                                            <platform.icon size={14} /> Sent {new Date(postedAt).toLocaleDateString()}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSend(job, platform)}
+                                                            className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700 cursor-pointer"
+                                                        >
+                                                            Repost
+                                                        </button>
+                                                    </div>
                                                 )
                                             ) : (
                                                 <Button

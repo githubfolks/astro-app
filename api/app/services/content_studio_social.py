@@ -8,6 +8,7 @@ output_video_url (a relative /static/... path) must be turned into a public,
 internet-reachable URL first — via the admin-configured
 content_studio_public_base_url setting (they cannot reach localhost).
 """
+import logging
 import re
 import time
 from urllib.parse import urlparse
@@ -17,7 +18,9 @@ from fastapi import HTTPException
 
 from .settings_service import get_setting
 
-GRAPH_API_VERSION = "v19.0"
+logger = logging.getLogger(__name__)
+
+GRAPH_API_VERSION = "v23.0"
 
 # Instagram rejects (or silently drops) captions with more than 30 hashtags.
 INSTAGRAM_MAX_HASHTAGS = 30
@@ -59,6 +62,10 @@ def _cap_hashtags(caption: str, max_hashtags: int = INSTAGRAM_MAX_HASHTAGS) -> s
 
 
 def post_to_facebook(output_video_url: str, caption: str):
+    """Publishes a Content Studio video as a Facebook Page Reel via the
+    Graph API's video_reels 3-phase upload flow (start -> hosted-URL upload
+    -> finish/PUBLISHED). The legacy /{page-id}/videos endpoint creates a
+    plain Page video post, not a Reel, so it must not be used here."""
     page_id = get_setting("facebook_page_id")
     access_token = get_setting("facebook_access_token")
     if not page_id or not access_token:
@@ -68,17 +75,58 @@ def post_to_facebook(output_video_url: str, caption: str):
         )
 
     video_url = _public_video_url(output_video_url)
+    reels_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{page_id}/video_reels"
 
     try:
-        res = httpx.post(
-            f"https://graph-video.facebook.com/{GRAPH_API_VERSION}/{page_id}/videos",
-            data={"file_url": video_url, "description": caption, "access_token": access_token},
-            timeout=60.0,
+        # Phase 1: start the upload session.
+        res_start = httpx.post(
+            reels_url,
+            data={"upload_phase": "start", "access_token": access_token},
+            timeout=30.0,
         )
-        if res.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Facebook Graph API Error: {res.text}")
-        return res.json()
+        if res_start.status_code != 200:
+            logger.error("Facebook Reels upload_phase=start failed: %s", res_start.text)
+            raise HTTPException(status_code=400, detail=f"Facebook Graph API Error (start): {res_start.text}")
+
+        start_data = res_start.json()
+        video_id = start_data.get("video_id")
+        upload_url = start_data.get("upload_url")
+        if not video_id or not upload_url:
+            logger.error("Facebook Reels start response missing video_id/upload_url: %s", start_data)
+            raise HTTPException(status_code=500, detail="Facebook did not return a video_id/upload_url.")
+
+        # Phase 2: hand Facebook the hosted video URL to fetch and ingest.
+        res_upload = httpx.post(
+            upload_url,
+            headers={
+                "Authorization": f"OAuth {access_token}",
+                "file_url": video_url,
+            },
+            timeout=120.0,
+        )
+        if res_upload.status_code != 200 or not res_upload.json().get("success"):
+            logger.error("Facebook Reels video upload failed: %s", res_upload.text)
+            raise HTTPException(status_code=400, detail=f"Facebook Graph API Error (upload): {res_upload.text}")
+
+        # Phase 3: finish the session and publish the Reel.
+        res_finish = httpx.post(
+            reels_url,
+            data={
+                "upload_phase": "finish",
+                "video_id": video_id,
+                "video_state": "PUBLISHED",
+                "description": caption,
+                "access_token": access_token,
+            },
+            timeout=30.0,
+        )
+        if res_finish.status_code != 200 or not res_finish.json().get("success"):
+            logger.error("Facebook Reels upload_phase=finish failed: %s", res_finish.text)
+            raise HTTPException(status_code=400, detail=f"Facebook Graph API Error (finish): {res_finish.text}")
+
+        return {"video_id": video_id, **res_finish.json()}
     except httpx.HTTPError as e:
+        logger.error("Failed to reach Facebook API for Reels publish: %s", e)
         raise HTTPException(status_code=502, detail=f"Failed to reach Facebook API: {e}")
 
 
@@ -103,10 +151,12 @@ def post_to_instagram(output_video_url: str, caption: str):
             timeout=60.0,
         )
         if res_c.status_code != 200:
+            logger.error("Instagram container creation failed: %s", res_c.text)
             raise HTTPException(status_code=400, detail=f"Instagram Container Creation Error: {res_c.text}")
 
         creation_id = res_c.json().get("id")
         if not creation_id:
+            logger.error("Instagram container creation missing id: %s", res_c.json())
             raise HTTPException(status_code=500, detail="Instagram did not return a creation_id.")
 
         # Step 2: poll until the video finishes processing (videos take longer than images)
@@ -123,11 +173,13 @@ def post_to_instagram(output_video_url: str, caption: str):
                     if status_code == "FINISHED":
                         break
                     elif status_code in ("ERROR", "EXPIRED"):
+                        logger.error("Instagram media processing failed: %s", res_s.text)
                         raise HTTPException(status_code=400, detail=f"Instagram media processing failed: {res_s.text}")
             except httpx.HTTPError:
                 pass
             time.sleep(5.0)
         else:
+            logger.error("Instagram media processing timed out for creation_id=%s", creation_id)
             raise HTTPException(status_code=504, detail="Instagram media processing timed out.")
 
         # Step 3: publish the container
@@ -138,7 +190,9 @@ def post_to_instagram(output_video_url: str, caption: str):
             timeout=30.0,
         )
         if res_p.status_code != 200:
+            logger.error("Instagram publish failed: %s", res_p.text)
             raise HTTPException(status_code=400, detail=f"Instagram Publish Error: {res_p.text}")
         return res_p.json()
     except httpx.HTTPError as e:
+        logger.error("Failed to reach Instagram API for Reels publish: %s", e)
         raise HTTPException(status_code=502, detail=f"Failed to reach Instagram API: {e}")
