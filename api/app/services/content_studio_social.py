@@ -114,9 +114,11 @@ def post_to_facebook(output_video_url: str, caption: str):
         # state that never goes live, so wait for processing to finish first.
         status_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{video_id}"
         status_params = {"fields": "status", "access_token": access_token}
+        last_status_response = None
         for _ in range(60):  # poll up to ~5 minutes
             try:
                 res_s = httpx.get(status_url, params=status_params, timeout=10.0)
+                last_status_response = f"HTTP {res_s.status_code}: {res_s.text}"
                 if res_s.status_code == 200:
                     video_status = res_s.json().get("status", {}).get("video_status")
                     if video_status == "ready":
@@ -124,12 +126,22 @@ def post_to_facebook(output_video_url: str, caption: str):
                     elif video_status in ("error", "expired"):
                         logger.error("Facebook Reels video processing failed: %s", res_s.text)
                         raise HTTPException(status_code=400, detail=f"Facebook Reels video processing failed: {res_s.text}")
-            except httpx.HTTPError:
-                pass
+                    elif video_status not in ("processing", None):
+                        logger.warning("Facebook Reels unexpected video_status %r: %s", video_status, res_s.text)
+                else:
+                    logger.warning("Facebook Reels status check returned HTTP %s: %s", res_s.status_code, res_s.text)
+            except httpx.HTTPError as e:
+                last_status_response = f"request failed: {e}"
             time.sleep(5.0)
         else:
-            logger.error("Facebook Reels video processing timed out for video_id=%s", video_id)
-            raise HTTPException(status_code=504, detail="Facebook Reels video processing timed out.")
+            logger.error(
+                "Facebook Reels video processing timed out for video_id=%s; last status response: %s",
+                video_id, last_status_response,
+            )
+            raise HTTPException(
+                status_code=504,
+                detail=f"Facebook Reels video processing timed out. Last status: {last_status_response}",
+            )
 
         # Phase 3: finish the session and publish the Reel.
         res_finish = httpx.post(
