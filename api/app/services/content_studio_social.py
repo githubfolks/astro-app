@@ -114,7 +114,7 @@ def post_to_facebook(output_video_url: str, caption: str):
         # state that never goes live, so wait for processing to finish first.
         status_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{video_id}"
         status_params = {"fields": "status", "access_token": access_token}
-        for _ in range(30):  # poll up to ~2.5 minutes
+        for _ in range(60):  # poll up to ~5 minutes
             try:
                 res_s = httpx.get(status_url, params=status_params, timeout=10.0)
                 if res_s.status_code == 200:
