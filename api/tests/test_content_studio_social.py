@@ -39,7 +39,12 @@ def test_post_to_facebook_uses_video_reels_flow(monkeypatch):
             return MockResponse(json_data={"success": True})
         raise AssertionError(f"Unexpected call to {url}")
 
+    def mock_get(url, **kwargs):
+        assert url == "https://graph.facebook.com/v23.0/vid123"
+        return MockResponse(json_data={"status": {"video_status": "ready"}})
+
     monkeypatch.setattr(httpx, "post", mock_post)
+    monkeypatch.setattr(httpx, "get", mock_get)
 
     result = content_studio_social.post_to_facebook("/static/out.mp4", "Check out this reel!")
 
@@ -47,6 +52,39 @@ def test_post_to_facebook_uses_video_reels_flow(monkeypatch):
     assert len(calls) == 3
     # Every call must hit the real Reels endpoints, never the legacy /videos post endpoint.
     assert all("/videos" not in url or "/video_reels" in url for url, _ in calls)
+
+
+def test_post_to_facebook_waits_for_video_to_be_ready_before_finishing(monkeypatch):
+    """Calling upload_phase=finish before Facebook's video_status reaches
+    "ready" completes without error but silently leaves the reel stuck in a
+    "draft" publish state that never goes live -- this is exactly the bug
+    that left a real reel invisible to the public despite "success": true
+    on every call, so the finish call must not fire until status is ready."""
+    poll_count = {"n": 0}
+
+    def mock_post(url, **kwargs):
+        if url.endswith("/video_reels") and kwargs["data"].get("upload_phase") == "start":
+            return MockResponse(json_data={"video_id": "vid123", "upload_url": "https://rupload.facebook.com/upload/vid123"})
+        if url == "https://rupload.facebook.com/upload/vid123":
+            return MockResponse(json_data={"success": True})
+        if url.endswith("/video_reels") and kwargs["data"].get("upload_phase") == "finish":
+            assert poll_count["n"] >= 2, "finish must not be called before status_video_status reaches 'ready'"
+            return MockResponse(json_data={"success": True})
+        raise AssertionError(f"Unexpected call to {url}")
+
+    def mock_get(url, **kwargs):
+        poll_count["n"] += 1
+        status = "processing" if poll_count["n"] < 2 else "ready"
+        return MockResponse(json_data={"status": {"video_status": status}})
+
+    monkeypatch.setattr(httpx, "post", mock_post)
+    monkeypatch.setattr(httpx, "get", mock_get)
+    monkeypatch.setattr(content_studio_social.time, "sleep", lambda _: None)
+
+    result = content_studio_social.post_to_facebook("/static/out.mp4", "caption")
+
+    assert result["video_id"] == "vid123"
+    assert poll_count["n"] == 2
 
 
 def test_post_to_facebook_surfaces_start_phase_error(monkeypatch):

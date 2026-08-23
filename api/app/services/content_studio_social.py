@@ -108,6 +108,29 @@ def post_to_facebook(output_video_url: str, caption: str):
             logger.error("Facebook Reels video upload failed: %s", res_upload.text)
             raise HTTPException(status_code=400, detail=f"Facebook Graph API Error (upload): {res_upload.text}")
 
+        # Facebook processes the ingested video asynchronously -- calling
+        # upload_phase=finish before video_status reaches "ready" completes
+        # without error but silently leaves the reel in a "draft" publish
+        # state that never goes live, so wait for processing to finish first.
+        status_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{video_id}"
+        status_params = {"fields": "status", "access_token": access_token}
+        for _ in range(30):  # poll up to ~2.5 minutes
+            try:
+                res_s = httpx.get(status_url, params=status_params, timeout=10.0)
+                if res_s.status_code == 200:
+                    video_status = res_s.json().get("status", {}).get("video_status")
+                    if video_status == "ready":
+                        break
+                    elif video_status in ("error", "expired"):
+                        logger.error("Facebook Reels video processing failed: %s", res_s.text)
+                        raise HTTPException(status_code=400, detail=f"Facebook Reels video processing failed: {res_s.text}")
+            except httpx.HTTPError:
+                pass
+            time.sleep(5.0)
+        else:
+            logger.error("Facebook Reels video processing timed out for video_id=%s", video_id)
+            raise HTTPException(status_code=504, detail="Facebook Reels video processing timed out.")
+
         # Phase 3: finish the session and publish the Reel.
         res_finish = httpx.post(
             reels_url,
