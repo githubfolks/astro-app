@@ -120,8 +120,12 @@ def post_to_facebook(output_video_url: str, caption: str):
                 res_s = httpx.get(status_url, params=status_params, timeout=10.0)
                 last_status_response = f"HTTP {res_s.status_code}: {res_s.text}"
                 if res_s.status_code == 200:
-                    video_status = res_s.json().get("status", {}).get("video_status")
-                    if video_status in ("ready", "complete", "published"):
+                    status_obj = res_s.json().get("status", {})
+                    video_status = status_obj.get("video_status")
+                    proc_status = status_obj.get("processing_phase", {}).get("status")
+                    upload_status = status_obj.get("uploading_phase", {}).get("status")
+                    
+                    if video_status in ("ready", "complete", "published", "upload_complete") or proc_status == "complete" or upload_status == "complete":
                         break
                     elif video_status in ("error", "expired"):
                         logger.error("Facebook Reels video processing failed: %s", res_s.text)
