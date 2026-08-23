@@ -87,12 +87,9 @@ def test_post_to_facebook_waits_for_video_to_be_ready_before_finishing(monkeypat
     assert poll_count["n"] == 2
 
 
-def test_post_to_facebook_timeout_surfaces_last_status_response(monkeypatch):
-    """A polling loop that always logs the same generic "timed out" message
-    hides whatever Facebook is actually returning (an error, a permission
-    problem, an unexpected field) behind 5 minutes of silent retries -- the
-    error detail must include the real last response so this is diagnosable
-    without re-triggering and waiting again."""
+def test_post_to_facebook_status_check_error_fails_immediately(monkeypatch):
+    """When Facebook status check returns a 40x permission or API error, fail
+    immediately (HTTP 400) rather than hanging for 5 minutes retrying."""
     def mock_post(url, **kwargs):
         if url.endswith("/video_reels") and kwargs["data"].get("upload_phase") == "start":
             return MockResponse(json_data={"video_id": "vid123", "upload_url": "https://rupload.facebook.com/upload/vid123"})
@@ -110,8 +107,32 @@ def test_post_to_facebook_timeout_surfaces_last_status_response(monkeypatch):
     with pytest.raises(HTTPException) as exc_info:
         content_studio_social.post_to_facebook("/static/out.mp4", "caption")
 
-    assert exc_info.value.status_code == 504
+    assert exc_info.value.status_code == 400
     assert "Missing permission" in exc_info.value.detail
+
+
+def test_post_to_facebook_timeout_surfaces_last_status_response(monkeypatch):
+    """When video processing status remains 'processing' past max iterations,
+    it surfaces a 504 status code with the last status response."""
+    def mock_post(url, **kwargs):
+        if url.endswith("/video_reels") and kwargs["data"].get("upload_phase") == "start":
+            return MockResponse(json_data={"video_id": "vid123", "upload_url": "https://rupload.facebook.com/upload/vid123"})
+        if url == "https://rupload.facebook.com/upload/vid123":
+            return MockResponse(json_data={"success": True})
+        raise AssertionError(f"Unexpected call to {url}")
+
+    def mock_get(url, **kwargs):
+        return MockResponse(status_code=200, json_data={"status": {"video_status": "processing"}})
+
+    monkeypatch.setattr(httpx, "post", mock_post)
+    monkeypatch.setattr(httpx, "get", mock_get)
+    monkeypatch.setattr(content_studio_social.time, "sleep", lambda _: None)
+
+    with pytest.raises(HTTPException) as exc_info:
+        content_studio_social.post_to_facebook("/static/out.mp4", "caption")
+
+    assert exc_info.value.status_code == 504
+    assert "video_status" in exc_info.value.detail
 
 
 def test_post_to_facebook_surfaces_start_phase_error(monkeypatch):

@@ -115,24 +115,30 @@ def post_to_facebook(output_video_url: str, caption: str):
         status_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{video_id}"
         status_params = {"fields": "status", "access_token": access_token}
         last_status_response = None
-        for _ in range(60):  # poll up to ~5 minutes
+        for _ in range(40):  # poll up to ~2 minutes with 3s intervals
             try:
                 res_s = httpx.get(status_url, params=status_params, timeout=10.0)
                 last_status_response = f"HTTP {res_s.status_code}: {res_s.text}"
                 if res_s.status_code == 200:
                     video_status = res_s.json().get("status", {}).get("video_status")
-                    if video_status == "ready":
+                    if video_status in ("ready", "complete", "published"):
                         break
                     elif video_status in ("error", "expired"):
                         logger.error("Facebook Reels video processing failed: %s", res_s.text)
                         raise HTTPException(status_code=400, detail=f"Facebook Reels video processing failed: {res_s.text}")
                     elif video_status not in ("processing", None):
                         logger.warning("Facebook Reels unexpected video_status %r: %s", video_status, res_s.text)
+                elif res_s.status_code in (400, 401, 403, 404):
+                    logger.error("Facebook Reels status check failed with HTTP %s: %s", res_s.status_code, res_s.text)
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Facebook Reels status check failed (HTTP {res_s.status_code}): {res_s.text}",
+                    )
                 else:
                     logger.warning("Facebook Reels status check returned HTTP %s: %s", res_s.status_code, res_s.text)
             except httpx.HTTPError as e:
                 last_status_response = f"request failed: {e}"
-            time.sleep(5.0)
+            time.sleep(3.0)
         else:
             logger.error(
                 "Facebook Reels video processing timed out for video_id=%s; last status response: %s",
@@ -199,10 +205,12 @@ def post_to_instagram(output_video_url: str, caption: str):
         # status_code alone (IN_PROGRESS/FINISHED/ERROR/EXPIRED) gives no reason
         # on failure -- status carries the actual human-readable explanation.
         status_params = {"fields": "status_code,status", "access_token": access_token}
+        last_status_response = None
 
-        for _ in range(30):  # poll up to ~2.5 minutes
+        for _ in range(30):  # poll up to ~1.5 minutes
             try:
                 res_s = httpx.get(status_url, params=status_params, timeout=10.0)
+                last_status_response = f"HTTP {res_s.status_code}: {res_s.text}"
                 if res_s.status_code == 200:
                     status_code = res_s.json().get("status_code")
                     if status_code == "FINISHED":
@@ -210,12 +218,18 @@ def post_to_instagram(output_video_url: str, caption: str):
                     elif status_code in ("ERROR", "EXPIRED"):
                         logger.error("Instagram media processing failed: %s", res_s.text)
                         raise HTTPException(status_code=400, detail=f"Instagram media processing failed: {res_s.text}")
-            except httpx.HTTPError:
-                pass
-            time.sleep(5.0)
+                elif res_s.status_code in (400, 401, 403, 404):
+                    logger.error("Instagram status check returned HTTP %s: %s", res_s.status_code, res_s.text)
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Instagram media status check failed (HTTP {res_s.status_code}): {res_s.text}",
+                    )
+            except httpx.HTTPError as e:
+                last_status_response = f"request failed: {e}"
+            time.sleep(3.0)
         else:
-            logger.error("Instagram media processing timed out for creation_id=%s", creation_id)
-            raise HTTPException(status_code=504, detail="Instagram media processing timed out.")
+            logger.error("Instagram media processing timed out for creation_id=%s; last status: %s", creation_id, last_status_response)
+            raise HTTPException(status_code=504, detail=f"Instagram media processing timed out. Last status: {last_status_response}")
 
         # Step 3: publish the container
         publish_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{ig_acct_id}/media_publish"
