@@ -20,7 +20,7 @@ export interface ZodiacSignData {
 export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     aries: {
         slug: 'aries', name: 'Aries', hindi: 'मेष', symbol: '♈', glyph: '🐏',
-        dates: 'March 21 – April 19',
+        dates: 'April 13 – May 14',
         element: 'Fire', ruling_planet: 'Mars', quality: 'Cardinal',
         traits: ['Bold', 'Energetic', 'Pioneering', 'Competitive', 'Direct'],
         strengths: 'Natural leadership, courage, enthusiasm, and an unstoppable drive to initiate.',
@@ -30,7 +30,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     taurus: {
         slug: 'taurus', name: 'Taurus', hindi: 'वृषभ', symbol: '♉', glyph: '🐂',
-        dates: 'April 20 – May 20',
+        dates: 'May 15 – June 14',
         element: 'Earth', ruling_planet: 'Venus', quality: 'Fixed',
         traits: ['Reliable', 'Patient', 'Sensual', 'Determined', 'Practical'],
         strengths: 'Rock-solid reliability, financial acumen, sensory appreciation, and deep loyalty.',
@@ -40,7 +40,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     gemini: {
         slug: 'gemini', name: 'Gemini', hindi: 'मिथुन', symbol: '♊', glyph: '👯',
-        dates: 'May 21 – June 20',
+        dates: 'June 15 – July 14',
         element: 'Air', ruling_planet: 'Mercury', quality: 'Mutable',
         traits: ['Witty', 'Versatile', 'Curious', 'Communicative', 'Adaptable'],
         strengths: 'Quick intellect, outstanding communication, social agility, and creative thinking.',
@@ -50,7 +50,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     cancer: {
         slug: 'cancer', name: 'Cancer', hindi: 'कर्क', symbol: '♋', glyph: '🦀',
-        dates: 'June 21 – July 22',
+        dates: 'July 15 – August 14',
         element: 'Water', ruling_planet: 'Moon', quality: 'Cardinal',
         traits: ['Nurturing', 'Intuitive', 'Protective', 'Emotional', 'Loyal'],
         strengths: 'Deep empathy, powerful intuition, fierce loyalty, and the ability to create home and belonging.',
@@ -60,7 +60,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     leo: {
         slug: 'leo', name: 'Leo', hindi: 'सिंह', symbol: '♌', glyph: '🦁',
-        dates: 'July 23 – August 22',
+        dates: 'August 15 – September 15',
         element: 'Fire', ruling_planet: 'Sun', quality: 'Fixed',
         traits: ['Charismatic', 'Generous', 'Confident', 'Creative', 'Warm-hearted'],
         strengths: 'Natural magnetism, generous heart, creative brilliance, and unshakeable confidence.',
@@ -70,7 +70,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     virgo: {
         slug: 'virgo', name: 'Virgo', hindi: 'कन्या', symbol: '♍', glyph: '👧',
-        dates: 'August 23 – September 22',
+        dates: 'September 16 – October 15',
         element: 'Earth', ruling_planet: 'Mercury', quality: 'Mutable',
         traits: ['Analytical', 'Meticulous', 'Helpful', 'Reliable', 'Modest'],
         strengths: 'Unmatched analytical skills, attention to detail, strong work ethic, and deep desire to serve.',
@@ -80,7 +80,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     libra: {
         slug: 'libra', name: 'Libra', hindi: 'तुला', symbol: '♎', glyph: '⚖️',
-        dates: 'September 23 – October 22',
+        dates: 'October 16 – November 14',
         element: 'Air', ruling_planet: 'Venus', quality: 'Cardinal',
         traits: ['Diplomatic', 'Fair-minded', 'Social', 'Gracious', 'Idealistic'],
         strengths: 'Natural diplomacy, aesthetic sense, charm, and an innate ability to see all sides.',
@@ -90,7 +90,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     scorpio: {
         slug: 'scorpio', name: 'Scorpio', hindi: 'वृश्चिक', symbol: '♏', glyph: '🦂',
-        dates: 'October 23 – November 21',
+        dates: 'November 15 – December 14',
         element: 'Water', ruling_planet: 'Mars & Ketu', quality: 'Fixed',
         traits: ['Intense', 'Perceptive', 'Determined', 'Passionate', 'Resourceful'],
         strengths: 'Depth of perception, unwavering determination, transformative power, and magnetic presence.',
@@ -100,7 +100,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     sagittarius: {
         slug: 'sagittarius', name: 'Sagittarius', hindi: 'धनु', symbol: '♐', glyph: '🏹',
-        dates: 'November 22 – December 21',
+        dates: 'December 15 – January 13',
         element: 'Fire', ruling_planet: 'Jupiter', quality: 'Mutable',
         traits: ['Optimistic', 'Adventurous', 'Philosophical', 'Honest', 'Freedom-loving'],
         strengths: 'Boundless optimism, thirst for knowledge, philosophical wisdom, and inspiring generosity.',
@@ -110,7 +110,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     capricorn: {
         slug: 'capricorn', name: 'Capricorn', hindi: 'मकर', symbol: '♑', glyph: '🕷️',
-        dates: 'December 22 – January 19',
+        dates: 'January 14 – February 13',
         element: 'Earth', ruling_planet: 'Saturn', quality: 'Cardinal',
         traits: ['Disciplined', 'Ambitious', 'Responsible', 'Strategic', 'Persistent'],
         strengths: 'Extraordinary discipline, long-term strategic vision, leadership, and the ability to build lasting structures.',
@@ -120,7 +120,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     aquarius: {
         slug: 'aquarius', name: 'Aquarius', hindi: 'कुंभ', symbol: '♒', glyph: '🏺',
-        dates: 'January 20 – February 18',
+        dates: 'February 14 – March 13',
         element: 'Air', ruling_planet: 'Saturn & Rahu', quality: 'Fixed',
         traits: ['Innovative', 'Humanitarian', 'Independent', 'Intellectual', 'Eccentric'],
         strengths: 'Visionary thinking, humanitarian ideals, technological brilliance, and fierce independence.',
@@ -130,7 +130,7 @@ export const ZODIAC_SIGNS: Record<string, ZodiacSignData> = {
     },
     pisces: {
         slug: 'pisces', name: 'Pisces', hindi: 'मीन', symbol: '♓', glyph: '🐟',
-        dates: 'February 19 – March 20',
+        dates: 'March 14 – April 12',
         element: 'Water', ruling_planet: 'Jupiter & Neptune', quality: 'Mutable',
         traits: ['Compassionate', 'Intuitive', 'Artistic', 'Dreamy', 'Selfless'],
         strengths: 'Deep compassion, boundless creativity, spiritual sensitivity, and healing presence.',

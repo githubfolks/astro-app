@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 import './HoroscopeSection.css';
 
 const zodiacSigns = [
-    { name: 'Mesh', translation: 'Aries', dates: 'Mar 21 - Apr 19', slug: 'aries', element: 'Fire', glyph: '🐏' },
-    { name: 'Vrishabh', translation: 'Taurus', dates: 'Apr 20 - May 20', slug: 'taurus', element: 'Earth', glyph: '🐂' },
-    { name: 'Mithun', translation: 'Gemini', dates: 'May 21 - Jun 20', slug: 'gemini', element: 'Air', glyph: '👯' },
-    { name: 'Kark', translation: 'Cancer', dates: 'Jun 21 - Jul 22', slug: 'cancer', element: 'Water', glyph: '🦀' },
-    { name: 'Simha', translation: 'Leo', dates: 'Jul 23 - Aug 22', slug: 'leo', element: 'Fire', glyph: '🦁' },
-    { name: 'Kanya', translation: 'Virgo', dates: 'Aug 23 - Sep 22', slug: 'virgo', element: 'Earth', glyph: '👧' },
-    { name: 'Tula', translation: 'Libra', dates: 'Sep 23 - Oct 22', slug: 'libra', element: 'Air', glyph: '⚖️' },
-    { name: 'Vrishchik', translation: 'Scorpio', dates: 'Oct 23 - Nov 21', slug: 'scorpio', element: 'Water', glyph: '🦂' },
-    { name: 'Dhanu', translation: 'Sagittarius', dates: 'Nov 22 - Dec 21', slug: 'sagittarius', element: 'Fire', glyph: '🏹' },
-    { name: 'Makar', translation: 'Capricorn', dates: 'Dec 22 - Jan 19', slug: 'capricorn', element: 'Earth', glyph: '🕷️' },
-    { name: 'Kumbha', translation: 'Aquarius', dates: 'Jan 20 - Feb 18', slug: 'aquarius', element: 'Air', glyph: '🏺' },
-    { name: 'Meen', translation: 'Pisces', dates: 'Feb 19 - Mar 20', slug: 'pisces', element: 'Water', glyph: '🐟' }
+    { name: 'Mesh', translation: 'Aries', dates: 'Apr 13 - May 14', slug: 'aries', element: 'Fire', glyph: '🐏' },
+    { name: 'Vrishabh', translation: 'Taurus', dates: 'May 15 - Jun 14', slug: 'taurus', element: 'Earth', glyph: '🐂' },
+    { name: 'Mithun', translation: 'Gemini', dates: 'Jun 15 - Jul 14', slug: 'gemini', element: 'Air', glyph: '👯' },
+    { name: 'Kark', translation: 'Cancer', dates: 'Jul 15 - Aug 14', slug: 'cancer', element: 'Water', glyph: '🦀' },
+    { name: 'Simha', translation: 'Leo', dates: 'Aug 15 - Sep 15', slug: 'leo', element: 'Fire', glyph: '🦁' },
+    { name: 'Kanya', translation: 'Virgo', dates: 'Sep 16 - Oct 15', slug: 'virgo', element: 'Earth', glyph: '👧' },
+    { name: 'Tula', translation: 'Libra', dates: 'Oct 16 - Nov 14', slug: 'libra', element: 'Air', glyph: '⚖️' },
+    { name: 'Vrishchik', translation: 'Scorpio', dates: 'Nov 15 - Dec 14', slug: 'scorpio', element: 'Water', glyph: '🦂' },
+    { name: 'Dhanu', translation: 'Sagittarius', dates: 'Dec 15 - Jan 13', slug: 'sagittarius', element: 'Fire', glyph: '🏹' },
+    { name: 'Makar', translation: 'Capricorn', dates: 'Jan 14 - Feb 13', slug: 'capricorn', element: 'Earth', glyph: '🕷️' },
+    { name: 'Kumbha', translation: 'Aquarius', dates: 'Feb 14 - Mar 13', slug: 'aquarius', element: 'Air', glyph: '🏺' },
+    { name: 'Meen', translation: 'Pisces', dates: 'Mar 14 - Apr 12', slug: 'pisces', element: 'Water', glyph: '🐟' }
 ];
 
 const getZodiacSVG = (glyph: string, name: string) => {
