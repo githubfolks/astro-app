@@ -17,7 +17,7 @@ const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; p
         type: 'FULL_KUNDLI',
         icon: <FileHeart size={18} />,
         title: 'Full Life Kundli & Planetary Dasha Report',
-        price: '₹199',
+        price: 'FREE',
         strikePrice: '₹499',
         blurb: 'D1, D9 & D10 charts, a 5-year Vimshottari Dasha forecast, and personality, wealth, health & marriage analysis.',
     },
@@ -25,7 +25,7 @@ const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; p
         type: 'GUN_MILAN',
         icon: <HeartHandshake size={18} />,
         title: 'Gun Milan & Marriage Compatibility Report',
-        price: '₹149',
+        price: 'FREE',
         strikePrice: '₹349',
         blurb: '36 Guna score breakdown, Manglik & Nadi Dosha assessment, and emotional, physical & wealth compatibility.',
     },
@@ -33,15 +33,15 @@ const REPORTS: Array<{ type: ReportType; icon: React.ReactNode; title: string; p
         type: 'CAREER_FINANCE',
         icon: <Briefcase size={18} />,
         title: 'Career & Financial Transit Report',
-        price: '₹199',
+        price: 'FREE',
         strikePrice: '₹499',
         blurb: 'D10 Dasamsha chart strength, upcoming job-change windows, and business vs employment suitability.',
     },
 ];
 
 const faqs = [
-    { question: 'How fast do I get my report?', answer: 'Your AI-synthesized Vedic report is generated within moments of a successful payment — no waiting for an astrologer to become available. You get an instant web report plus a downloadable PDF, and a WhatsApp link is sent to your mobile number.' },
-    { question: 'Do I need to create an account?', answer: 'No. Enter your birth details, pay, and get your report — no login or wallet balance required.' },
+    { question: 'How fast do I get my report?', answer: 'Your AI-synthesized Vedic report is generated within moments of submitting your birth details — no waiting for an astrologer to become available. You get an instant web report plus a downloadable PDF, and a WhatsApp link is sent to your mobile number.' },
+    { question: 'Do I need to create an account?', answer: 'No. Enter your birth details and get your report instantly — no login, payment, or wallet balance required.' },
     { question: "What's the difference between an instant report and a live consultation?", answer: 'An instant report is a one-time AI-generated PDF based on your exact birth chart — ideal for a quick, detailed reading. A live consultation lets you ask follow-up questions to a real astrologer in real time.' },
     { question: 'Which languages are reports available in?', answer: 'English and Hindi.' },
 ];
@@ -54,10 +54,10 @@ const structuredData = {
             '@id': 'https://aadikarta.org/services/ai-instant-reports#service',
             name: 'AI Instant Vedic Astrology Reports on Aadikarta',
             provider: { '@id': 'https://aadikarta.org/#organization' },
-            description: 'Instant AI-generated Vedic astrology reports — Full Kundli & Dasha, Gun Milan compatibility, and Career & Finance transit reports — delivered as a web report and downloadable PDF within moments of payment.',
+            description: 'Instant AI-generated Vedic astrology reports — Full Kundli & Dasha, Gun Milan compatibility, and Career & Finance transit reports — delivered free as a web report and downloadable PDF within moments of submitting your birth details.',
             areaServed: 'IN',
             offers: REPORTS.map((r) => ({
-                '@type': 'Offer', name: r.title, priceCurrency: 'INR', price: r.price.replace('₹', ''),
+                '@type': 'Offer', name: r.title, priceCurrency: 'INR', price: '0',
             })),
         },
         {
@@ -94,8 +94,8 @@ const InstantReports: React.FC = () => {
     return (
         <div className="service-detail-page min-h-screen">
             <SEO
-                title="AI Instant Vedic Astrology Reports | Kundli, Gun Milan & Career | Aadikarta"
-                description="Get an instant AI-generated Vedic astrology report — Full Kundli & Dasha, Gun Milan compatibility, or Career & Finance. No login needed, delivered in moments. From ₹149."
+                title="Free AI Instant Vedic Astrology Reports | Kundli, Gun Milan & Career | Aadikarta"
+                description="Get a free, instant AI-generated Vedic astrology report — Full Kundli & Dasha, Gun Milan compatibility, or Career & Finance. No login or payment needed, delivered in moments."
                 keywords="Aadikarta AI report, instant kundli report, gun milan report online, career astrology report, AI vedic astrology PDF"
                 structuredData={structuredData}
             />
@@ -108,8 +108,8 @@ const InstantReports: React.FC = () => {
                 <div className="max-w-4xl mx-auto relative z-10">
                     <PageHeading
                         eyebrow="AI Instant Reports"
-                        title="Your Vedic Report, Ready in Moments"
-                        subtitle="No login. No wallet top-up. Enter your birth details, pay once, and get an AI-synthesized report as a web page and downloadable PDF."
+                        title="Your Vedic Report, Free & Ready in Moments"
+                        subtitle="No login. No payment. Enter your birth details and get an AI-synthesized report as a web page and downloadable PDF, instantly."
                     />
                 </div>
 
@@ -140,7 +140,7 @@ const InstantReports: React.FC = () => {
                                     onClick={() => openModalFor(report.type)}
                                     className="bg-amber-500 hover:bg-amber-400 text-indigo-950 px-5 py-2.5 rounded-full font-normal text-sm shadow-xl shadow-amber-500/10 hover:scale-105 active:scale-95 transition-all shrink-0"
                                 >
-                                    Get This Report
+                                    Get This Report Free
                                 </button>
                             </div>
                         </div>
@@ -152,7 +152,7 @@ const InstantReports: React.FC = () => {
                     <div className="grid md:grid-cols-3 gap-4 md:gap-6 text-left mt-8">
                         {[
                             { title: '1. Enter Birth Details', desc: 'Full name, date, time & place of birth (and your partner\'s, for Gun Milan) — no account needed.' },
-                            { title: '2. Pay Securely', desc: 'One-time payment via UPI or card through Razorpay. No wallet balance required.' },
+                            { title: '2. It\'s Free', desc: 'No payment, no wallet balance — every instant report on Aadikarta is free.' },
                             { title: '3. Get Your Report', desc: 'Your AI-synthesized report is ready instantly as a web page and PDF, with a link sent to WhatsApp.' },
                         ].map((step, idx) => (
                             <div key={idx} className="custom-list-item">

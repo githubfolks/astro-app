@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { X, Sparkles, CheckCircle2, ArrowRight, Phone, Lock, User, Globe } from 'lucide-react';
-import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
+import { X, Sparkles, CheckCircle2, ArrowRight, Phone, User, Globe } from 'lucide-react';
 import SegmentSelect from './SegmentSelect';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
-import type { RazorpayResponse, RazorpayError } from '../types';
 
 interface ReportPurchaseModalProps {
     isOpen: boolean;
@@ -17,7 +15,7 @@ interface ReportPurchaseModalProps {
 export const REPORT_INFO = {
     FULL_KUNDLI: {
         title: 'Full Life Kundli & Planetary Dasha Report',
-        price: '₹199',
+        price: 'FREE',
         strikePrice: '₹499',
         badge: 'Most Popular',
         features: [
@@ -29,7 +27,7 @@ export const REPORT_INFO = {
     },
     GUN_MILAN: {
         title: 'Gun Milan & Marriage Compatibility Report',
-        price: '₹149',
+        price: 'FREE',
         strikePrice: '₹349',
         badge: 'High Accuracy',
         features: [
@@ -41,7 +39,7 @@ export const REPORT_INFO = {
     },
     CAREER_FINANCE: {
         title: 'Career & Financial Transit Report',
-        price: '₹199',
+        price: 'FREE',
         strikePrice: '₹499',
         badge: 'Strategic Growth',
         features: [
@@ -60,7 +58,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
 }) => {
     const [reportType, setReportType] = useState<'FULL_KUNDLI' | 'GUN_MILAN' | 'CAREER_FINANCE'>(initialReportType);
     const [language, setLanguage] = useState<'en' | 'hi'>('en');
-    const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Lead Details, 2: Payment, 3: Processing/Completed
+    const [step, setStep] = useState<1 | 3>(1); // 1: Lead Details, 3: Completed (free reports skip the old payment step 2)
 
     // Lead Form Fields
     const [fullName, setFullName] = useState('');
@@ -77,7 +75,6 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
     const [partnerTob, setPartnerTob] = useState('12:00');
     const [partnerPob, setPartnerPob] = useState('');
 
-    const [leadId, setLeadId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [reportUrl, setReportUrl] = useState<string | null>(null);
@@ -118,7 +115,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
 
         setLoading(true);
         try {
-            const data = await api.reports.captureLead({
+            const leadData = await api.reports.captureLead({
                 full_name: fullName,
                 phone_number: phoneNumber,
                 email: email || undefined,
@@ -136,77 +133,20 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                 } : {}),
             });
 
-            setLeadId(data.lead_id);
-            // Move to Payment step
-            setStep(2);
-        } catch (err: any) {
-            setError(err.message || 'Something went wrong. Please try again.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDirectPayment = async () => {
-        if (!leadId) {
-            setError('Please fill in your details first.');
-            return;
-        }
-        setLoading(true);
-        setError(null);
-        try {
-            const loaded = await loadRazorpay();
-            if (!loaded) {
-                throw new Error('Failed to load payment SDK. Please try again.');
-            }
-            patchRazorpaySafeArea();
-
+            // Reports are free — no payment step. The order is generated and
+            // delivered (WhatsApp) in this same call.
             const orderData = await api.reports.createDirectOrder({
-                lead_id: leadId,
+                lead_id: leadData.lead_id,
                 report_type: reportType,
                 language,
             });
 
-            const options = {
-                key: orderData.key_id,
-                amount: orderData.amount,
-                currency: orderData.currency,
-                name: 'Aadikarta',
-                description: currentInfo.title,
-                order_id: orderData.gateway_order_id,
-                handler: async function (response: RazorpayResponse) {
-                    try {
-                        const verifyData = await api.reports.verifyPayment({
-                            order_reference: orderData.order_reference,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature,
-                        });
-
-                        setReportUrl(`/reports/${verifyData.order_reference}`);
-                        setPdfUrl(verifyData.pdf_url ? resolveImageUrl(verifyData.pdf_url) : null);
-                        setStep(3);
-                    } catch (err: any) {
-                        setError(err.message || 'Payment verification failed. Please contact support.');
-                    } finally {
-                        setLoading(false);
-                    }
-                },
-                prefill: {
-                    name: fullName,
-                    contact: phoneNumber,
-                    email: email || undefined,
-                },
-                theme: { color: '#F59E0B' },
-            };
-
-            const rzp = new window.Razorpay(options);
-            rzp.on('payment.failed', function (response: RazorpayError) {
-                setError('Payment Failed: ' + response.error.description);
-                setLoading(false);
-            });
-            rzp.open();
+            setReportUrl(`/reports/${orderData.order_reference}`);
+            setPdfUrl(orderData.pdf_url ? resolveImageUrl(orderData.pdf_url) : null);
+            setStep(3);
         } catch (err: any) {
-            setError(err.message || 'Payment failed. Please try again.');
+            setError(err.message || 'Something went wrong. Please try again.');
+        } finally {
             setLoading(false);
         }
     };
@@ -267,7 +207,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                         <div className="flex flex-col items-center text-center w-full md:w-auto">
                             <span className="text-xs text-slate-500 line-through">{currentInfo.strikePrice}</span>
                             <span className="text-2xl font-bold text-amber-400">{currentInfo.price}</span>
-                            <span className="text-[10px] text-slate-400">Direct Payment • No Wallet Req.</span>
+                            <span className="text-[10px] text-slate-400">No Payment • Instant Delivery</span>
                         </div>
                     </div>
 
@@ -283,7 +223,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                             <div className="flex items-start justify-between gap-3">
                                 <h4 className="text-xs uppercase font-bold tracking-wider text-amber-300 flex items-start gap-1.5">
                                     <User className="w-4 h-4 shrink-0 mt-0.5" />
-                                    <span>Enter Your Details<br />(Step 1 of 2)</span>
+                                    <span>Enter Your Details</span>
                                 </h4>
                                 <div className="flex items-center gap-2 shrink-0">
                                     <Globe className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -437,56 +377,13 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                                 disabled={loading}
                                 className="w-full mt-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
                             >
-                                {loading ? 'Saving Details...' : 'Proceed to Payment (Step 2)'} <ArrowRight className="w-4 h-4" />
+                                {loading ? 'Generating Your Report...' : 'Generate My Free Report'} <ArrowRight className="w-4 h-4" />
                             </button>
                             <p className="text-[10px] text-amber-300/80 text-center leading-relaxed">
                                 This AI-generated report is for entertainment and general guidance purposes only, and is not a
                                 substitute for professional advice.
                             </p>
                         </form>
-                    )}
-
-                    {/* STEP 2: DIRECT PAYMENT CHECKOUT */}
-                    {step === 2 && (
-                        <div className="space-y-4">
-                            <h4 className="text-xs uppercase font-bold tracking-wider text-amber-300 flex items-center gap-1.5">
-                                <Lock className="w-4 h-4" /> Secure Direct Gateway Payment
-                            </h4>
-                            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 text-xs text-slate-300">
-                                <div className="flex justify-between">
-                                    <span>Customer:</span>
-                                    <span className="font-semibold text-slate-100">{fullName} ({phoneNumber})</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Selected Report:</span>
-                                    <span className="font-semibold text-amber-200">{currentInfo.title}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Report Language:</span>
-                                    <span className="font-semibold text-slate-100">{language === 'en' ? 'English' : 'Hindi'}</span>
-                                </div>
-                                <div className="border-t border-slate-800 pt-2 flex justify-between text-sm font-bold text-amber-400">
-                                    <span>Total Amount Payable:</span>
-                                    <span>{currentInfo.price}</span>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3 pt-2">
-                                <button
-                                    onClick={() => setStep(1)}
-                                    className="py-2.5 border border-slate-700 text-slate-300 hover:text-slate-100 rounded-xl text-xs"
-                                >
-                                    Back to Details
-                                </button>
-                                <button
-                                    onClick={handleDirectPayment}
-                                    disabled={loading}
-                                    className="py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg transition-all text-xs flex items-center justify-center gap-1.5"
-                                >
-                                    {loading ? 'Processing Payment...' : `Pay ${currentInfo.price} via UPI / Card`}
-                                </button>
-                            </div>
-                        </div>
                     )}
 
                     {/* STEP 3: COMPLETED & WHATSAPP SENT */}
@@ -496,7 +393,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                                 <CheckCircle2 className="w-6 h-6" />
                             </div>
                             <h3 className="text-lg font-bold text-amber-200">
-                                Payment Successful & Report Generated!
+                                Your Free Report is Ready!
                             </h3>
                             <p className="text-xs text-slate-300 max-w-md mx-auto">
                                 Your report has been generated successfully. A WhatsApp link has been dispatched to <strong>{phoneNumber}</strong>.

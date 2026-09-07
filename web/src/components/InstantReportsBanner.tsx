@@ -22,7 +22,7 @@ const InstantReportsBanner: React.FC = () => {
                             <Briefcase className="w-10 h-10 md:w-12 md:h-12 text-amber-300" />
                         </div>
                         <div className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-yellow-500 text-indigo-950 text-xs font-extrabold px-4 py-1.5 rounded-full rotate-6 shadow-lg">
-                            From ₹149
+                            100% Free
                         </div>
                     </div>
 
@@ -36,7 +36,7 @@ const InstantReportsBanner: React.FC = () => {
                             Your Kundli, Ready in <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500">Moments</span>
                         </h2>
                         <p className="reports-banner-description text-lg text-indigo-100/70 font-light mb-8 max-w-xl">
-                            Get a detailed AI-synthesized Vedic report — Full Kundli, Gun Milan compatibility, or Career & Finance — delivered instantly as a web report and PDF. No wallet, no waiting.
+                            Get a detailed AI-synthesized Vedic report — Full Kundli, Gun Milan compatibility, or Career & Finance — delivered instantly as a web report and PDF. Free, no wallet, no waiting.
                         </p>
 
                         <div className="reports-banner-features flex flex-wrap items-center justify-center lg:justify-start gap-x-6 gap-y-2 text-indigo-100/80 text-sm mb-8">

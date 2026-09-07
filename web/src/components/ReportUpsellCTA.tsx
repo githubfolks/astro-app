@@ -7,9 +7,9 @@ interface ReportUpsellCTAProps {
     description: string;
 }
 
-// Cross-sell from a free tool's result screen into the paid AI PDF report
+// Cross-sell from a free tool's result screen into the fuller AI PDF report
 // flow (see ReportPurchaseModal) — the free tools previously only linked to
-// live-astrologer consultation, leaving this built revenue surface unused.
+// live-astrologer consultation, leaving this built surface unused.
 const ReportUpsellCTA: React.FC<ReportUpsellCTAProps> = ({ reportType, description }) => {
     const [isOpen, setIsOpen] = useState(false);
     const info = REPORT_INFO[reportType];
@@ -30,7 +30,7 @@ const ReportUpsellCTA: React.FC<ReportUpsellCTAProps> = ({ reportType, descripti
                     onClick={() => setIsOpen(true)}
                     className="shrink-0 w-full md:w-auto bg-amber-500 hover:bg-amber-400 text-indigo-950 font-bold px-6 py-3 rounded-full text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 hover:scale-105 active:scale-95 transition-all"
                 >
-                    Get Full Report ({info.price}) <ArrowRight size={16} />
+                    Get Full Report — Free <ArrowRight size={16} />
                 </button>
             </div>
 

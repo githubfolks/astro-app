@@ -17742,7 +17742,7 @@
     },
     "/reports/create-direct-order": {
       "post": {
-        "description": "Step 2: Create a real Razorpay order for direct payment (no wallet balance required).",
+        "description": "Step 2: Ad-hoc reports are free \u2014 no payment required. Creates the order\nrecord already marked PAID at \u20b90 (so it still shows up in the existing\nadmin lead/order tracking and analytics) and generates + delivers the\nreport immediately in this same call.\n\nRate-limited by IP (@limiter.limit above) and, since a phone number can\nhop IPs, also by phone number below \u2014 removing the payment step removes\nthe natural throttle payment provided on AI-generation + WhatsApp\ndelivery cost.",
         "operationId": "create_direct_order_reports_create_direct_order_post",
         "requestBody": {
           "content": {

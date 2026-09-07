@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from pydantic import BaseModel, Field, model_validator
 from typing import Optional, Dict, Any
-from datetime import date, time
+from datetime import date, time, datetime, timedelta
 import hmac
 import hashlib
 import json
@@ -18,6 +18,7 @@ from .. import models
 from ..database import get_db
 from .auth import get_current_admin
 from .payment import get_razorpay_client, get_razorpay_mode, get_razorpay_keys
+from ..limiter import limiter
 from ..models_reports import ReportLead, AdHocReportOrder, ReportAnalytics, ReportType, PaymentStatus, ReportStatus
 from ..report_generator_service import generate_full_kundli_report, generate_gun_milan_report, generate_career_finance_report
 from ..report_pdf_service import generate_report_pdf
@@ -36,12 +37,11 @@ router = APIRouter(
     tags=["Ad-Hoc Reports"]
 )
 
-# Pricing Map (in INR) — ad-hoc reports are INR-only for now.
-REPORT_PRICING = {
-    ReportType.FULL_KUNDLI: 199.00,
-    ReportType.GUN_MILAN: 149.00,
-    ReportType.CAREER_FINANCE: 199.00,
-}
+# Ad-hoc reports are free (no payment required) — see create_direct_order.
+# Removing the payment step also removes its natural cost throttle on AI
+# generation + WhatsApp delivery, so free reports are capped per phone
+# number per rolling 24h window in addition to the IP-based @limiter below.
+FREE_REPORTS_PER_PHONE_PER_DAY = 3
 
 
 # --- Request & Response Schemas ---
@@ -243,67 +243,57 @@ def capture_report_lead(
 
 
 @router.post("/create-direct-order")
-def create_direct_order(
+@limiter.limit("5/day")
+async def create_direct_order(
+    request: Request,
     req: DirectOrderRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
-    Step 2: Create a real Razorpay order for direct payment (no wallet balance required).
+    Step 2: Ad-hoc reports are free — no payment required. Creates the order
+    record already marked PAID at ₹0 (so it still shows up in the existing
+    admin lead/order tracking and analytics) and generates + delivers the
+    report immediately in this same call.
+
+    Rate-limited by IP (@limiter.limit above) and, since a phone number can
+    hop IPs, also by phone number below — removing the payment step removes
+    the natural throttle payment provided on AI-generation + WhatsApp
+    delivery cost.
     """
     lead = db.query(ReportLead).filter(ReportLead.id == req.lead_id).first()
     if not lead:
         raise HTTPException(status_code=404, detail="Lead not found")
 
-    amount = REPORT_PRICING.get(req.report_type, 199.00)
-    order_ref = f"AADI_REP_{uuid.uuid4().hex[:8].upper()}"
-
-    mode = get_razorpay_mode()
-    key_id, _ = get_razorpay_keys(mode)
-    client = get_razorpay_client(mode)
-    if not client:
+    since = datetime.utcnow() - timedelta(hours=24)
+    recent_count = (
+        db.query(AdHocReportOrder)
+        .join(ReportLead, AdHocReportOrder.lead_id == ReportLead.id)
+        .filter(ReportLead.phone_number == lead.phone_number, AdHocReportOrder.created_at >= since)
+        .count()
+    )
+    if recent_count >= FREE_REPORTS_PER_PHONE_PER_DAY:
         raise HTTPException(
-            status_code=503,
-            detail=f"Razorpay {mode} keys are not configured. Set them in Admin > Settings > Razorpay Payment Gateway.",
+            status_code=429,
+            detail=f"You've reached today's free report limit ({FREE_REPORTS_PER_PHONE_PER_DAY}/day) for this phone number. Please try again tomorrow.",
         )
 
-    amount_paise = int(amount * 100)
-    try:
-        razorpay_order = client.order.create(data={
-            "amount": amount_paise,
-            "currency": "INR",
-            "receipt": order_ref,
-            "notes": {"order_reference": order_ref, "report_type": req.report_type.value},
-        })
-    except Exception as e:
-        print(f"Error creating Razorpay order for report: {e}")
-        raise HTTPException(status_code=500, detail="Could not create payment order")
-
+    order_ref = f"AADI_REP_{uuid.uuid4().hex[:8].upper()}"
     order = AdHocReportOrder(
         order_reference=order_ref,
         lead_id=lead.id,
         report_type=req.report_type,
         language=req.language,
-        amount=amount,
+        amount=0.00,
         currency="INR",
-        payment_status=PaymentStatus.PENDING,
+        payment_status=PaymentStatus.PAID,
         report_status=ReportStatus.PENDING,
-        gateway_order_id=razorpay_order["id"],
-        razorpay_mode=mode,
     )
     db.add(order)
     db.commit()
     db.refresh(order)
 
-    return {
-        "order_id": order.id,
-        "order_reference": order.order_reference,
-        "gateway_order_id": razorpay_order["id"],
-        "amount": razorpay_order["amount"],
-        "currency": razorpay_order["currency"],
-        "key_id": key_id,
-        "customer_name": lead.full_name,
-        "customer_phone": lead.phone_number,
-    }
+    result = await _complete_report_order(db, order)
+    return {"order_id": order.id, **result}
 
 
 @router.post("/verify-payment")
