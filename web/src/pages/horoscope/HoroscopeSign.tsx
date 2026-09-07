@@ -336,7 +336,7 @@ const HoroscopeSign: React.FC = () => {
 
                 {/* Moon Sign Horoscope */}
                 <section className="max-w-4xl mx-auto px-6 py-6 md:py-12 relative z-10">
-                    <MoonSignHoroscope sunSign={data.name} />
+                    <MoonSignHoroscope />
                 </section>
 
                 {/* Traits */}

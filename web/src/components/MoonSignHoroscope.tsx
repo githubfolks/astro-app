@@ -16,11 +16,7 @@ interface HoroscopeResponse {
     moon_sign: MoonSignData;
 }
 
-interface MoonSignHoroscopeProps {
-    sunSign: string;
-}
-
-const MoonSignHoroscope: React.FC<MoonSignHoroscopeProps> = ({ sunSign }) => {
+const MoonSignHoroscope: React.FC = () => {
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [moonData, setMoonData] = useState<HoroscopeResponse | null>(null);

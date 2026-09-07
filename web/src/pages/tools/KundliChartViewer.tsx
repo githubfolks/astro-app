@@ -7,215 +7,18 @@ import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
-import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
 import PageHeading from '../../components/PageHeading';
 import FAQSection from '../../components/FAQSection';
 import CityAutocomplete from '../../components/CityAutocomplete';
 import DatePicker from '../../components/DatePicker';
 import TimePicker from '../../components/TimePicker';
+import { KundliContent } from '../../components/KundliPanel';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
+import type { ChartData } from '../../types';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
 import '../services/ServicesDetail.css';
-
-interface Planet {
-    name?: string;
-    sign?: string;
-    house?: number;
-    is_retrograde?: boolean;
-    nakshatra?: string;
-    pada?: number;
-}
-
-interface Ascendant {
-    sign?: string;
-    nakshatra?: { name?: string; pada?: number };
-}
-
-interface DashaPeriod {
-    level?: string;
-    lord?: string;
-    start?: string;
-    end?: string;
-    remaining_years?: number;
-}
-
-interface Yoga {
-    name?: string;
-    type?: string;
-    category?: string;
-    active?: boolean;
-    description?: string;
-}
-
-interface PanchangField {
-    name?: string;
-    pada?: number;
-    paksha?: string;
-}
-
-interface Panchang {
-    tithi?: PanchangField;
-    nakshatra?: PanchangField;
-    yoga?: { name?: string };
-    sunrise?: string;
-    sunset?: string;
-    rahu_kalam?: { start?: string; end?: string };
-}
-
-interface FullKundli {
-    chart?: { ascendant?: Ascendant; planets?: Planet[] };
-    vimshottari_dasha?: { active_periods?: DashaPeriod[] };
-    yogas?: { yogas?: Yoga[] };
-    panchang?: Panchang;
-}
-
-// Renders FreeAstroAPI's full-kundli payload — chart (ascendant + planets),
-// active Vimshottari dasha periods, active yogas/doshas, and the birth-moment
-// Panchang — falling back to the generic renderer for any other shape (e.g.
-// legacy cached records saved before this tool switched from the basic chart).
-const KundliChartResult: React.FC<{ data: unknown }> = ({ data }) => {
-    const obj = data && typeof data === 'object' ? (data as FullKundli & { ascendant?: Ascendant; planets?: Planet[] }) : null;
-
-    // Legacy cached rows stored the basic { ascendant, planets } shape directly.
-    const ascendant = obj?.chart?.ascendant ?? obj?.ascendant;
-    const planets = obj?.chart?.planets ?? obj?.planets;
-    const activeDashas = obj?.vimshottari_dasha?.active_periods;
-    const activeYogas = obj?.yogas?.yogas?.filter((y) => y.active);
-    const panchang = obj?.panchang;
-
-    if (!ascendant && !planets) return <FreeToolResult data={data} />;
-
-    return (
-        <div className="space-y-4">
-            {ascendant && (
-                <div className="service-glass-panel p-6 md:p-8 border-l-4 border-l-amber-500">
-                    <div className="flex items-center gap-5">
-                        <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs font-bold uppercase tracking-wider">
-                            Asc
-                        </div>
-                        <div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Ascendant (Lagna)</span>
-                            <h3 className="text-2xl font-normal text-amber-400 mt-1">{ascendant.sign}</h3>
-                            {ascendant.nakshatra?.name && (
-                                <p className="text-gray-400 text-sm mt-1">
-                                    {ascendant.nakshatra.name}
-                                    {ascendant.nakshatra.pada ? ` · Pada ${ascendant.nakshatra.pada}` : ''}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {planets && planets.length > 0 && (
-                <div className="service-glass-panel p-6">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Planetary Positions</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {planets.map((p, idx) => (
-                            <div key={idx} className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 flex items-center justify-between">
-                                <div>
-                                    <span className="text-white text-sm font-medium">{p.name}{p.is_retrograde ? ' (R)' : ''}</span>
-                                    {p.nakshatra && (
-                                        <span className="block text-gray-500 text-xs mt-0.5">
-                                            {p.nakshatra}{p.pada ? ` · Pada ${p.pada}` : ''}
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="text-right">
-                                    <span className="text-amber-400 text-sm font-normal">{p.sign}</span>
-                                    <span className="block text-gray-500 text-xs">House {p.house}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {activeDashas && activeDashas.length > 0 && (
-                <div className="service-glass-panel p-6">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Current Vimshottari Dasha</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {activeDashas.map((d, idx) => (
-                            <div key={idx} className="bg-white/5 rounded-xl border border-white/10 px-4 py-3">
-                                <span className="text-xs uppercase tracking-wider text-gray-500">{d.level}</span>
-                                <h5 className="text-amber-400 font-normal text-lg">{d.lord}</h5>
-                                <p className="text-gray-400 text-xs mt-1">
-                                    {d.start} → {d.end}
-                                    {d.remaining_years != null ? ` · ${d.remaining_years.toFixed(1)}y left` : ''}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {activeYogas && activeYogas.length > 0 && (
-                <div className="service-glass-panel p-6">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Yogas & Doshas Present</h4>
-                    <div className="space-y-3">
-                        {activeYogas.map((y, idx) => (
-                            <div key={idx} className="bg-white/5 rounded-xl border border-white/10 px-4 py-3">
-                                <div className="flex items-center justify-between gap-3">
-                                    <span className="text-white text-sm font-medium">{y.name}</span>
-                                    <span className={`text-[11px] uppercase tracking-wider px-2 py-0.5 rounded-full ${y.type === 'dosha' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
-                                        {y.category}
-                                    </span>
-                                </div>
-                                {y.description && <p className="text-gray-400 text-xs mt-1">{y.description}</p>}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {panchang && (
-                <div className="service-glass-panel p-6">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4">Birth Panchang</h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {panchang.tithi?.name && (
-                            <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 text-center">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider">Tithi</span>
-                                <span className="text-amber-400 text-sm font-normal">{panchang.tithi.name}{panchang.tithi.paksha ? ` (${panchang.tithi.paksha})` : ''}</span>
-                            </div>
-                        )}
-                        {panchang.nakshatra?.name && (
-                            <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 text-center">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider">Nakshatra</span>
-                                <span className="text-amber-400 text-sm font-normal">{panchang.nakshatra.name}</span>
-                            </div>
-                        )}
-                        {panchang.yoga?.name && (
-                            <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 text-center">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider">Yoga</span>
-                                <span className="text-amber-400 text-sm font-normal">{panchang.yoga.name}</span>
-                            </div>
-                        )}
-                        {panchang.sunrise && (
-                            <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 text-center">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider">Sunrise</span>
-                                <span className="text-amber-400 text-sm font-normal">{panchang.sunrise}</span>
-                            </div>
-                        )}
-                        {panchang.sunset && (
-                            <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 text-center">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider">Sunset</span>
-                                <span className="text-amber-400 text-sm font-normal">{panchang.sunset}</span>
-                            </div>
-                        )}
-                        {panchang.rahu_kalam && (
-                            <div className="bg-white/5 rounded-xl border border-white/10 px-4 py-3 text-center">
-                                <span className="block text-gray-500 text-xs uppercase tracking-wider">Rahu Kalam</span>
-                                <span className="text-amber-400 text-sm font-normal">{panchang.rahu_kalam.start} - {panchang.rahu_kalam.end}</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
 
 const faqs = [
     { question: 'What is a Kundli (birth chart)?', answer: 'A Kundli, or Vedic birth chart, is a map of where each planet was placed in the zodiac at your exact time and place of birth. It\'s the foundation every Vedic astrology reading is built on.' },
@@ -259,7 +62,7 @@ const KundliChartViewer: React.FC = () => {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<unknown>(null);
+    const [result, setResult] = useState<ChartData | null>(null);
     const resultRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -383,7 +186,9 @@ const KundliChartViewer: React.FC = () => {
                                 <div className="title-icon-wrapper"><Sparkles size={20} /></div>
                                 <h2 className="text-xl font-normal text-white">Your Birth Chart</h2>
                             </div>
-                            <KundliChartResult data={result} />
+                            <div className="bg-white rounded-2xl overflow-hidden">
+                                <KundliContent chartData={result} />
+                            </div>
                         </div>
                     ) : null}
                 </div>
