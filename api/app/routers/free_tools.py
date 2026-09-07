@@ -27,6 +27,7 @@ from ..free_astro_service import (
     generate_vargas,
     generate_yogas,
     get_bulk_daily_horoscope,
+    get_moon_sign_horoscope,
     get_numerology_methods,
 )
 from ..limiter import limiter
@@ -163,6 +164,39 @@ async def navamsa_chart(
         raise
     db.refresh(record)
     return record
+
+
+@router.post("/moon-sign-horoscope")
+async def moon_sign_horoscope(
+    request: schemas.FreeToolBirthRequest,
+    db: Session = Depends(database.get_db),
+):
+    """Personalized moon sign (nakshatra) horoscope based on birth chart.
+    Calculates the user's moon sign from their birth details and returns
+    moon sign information along with horoscope predictions."""
+    try:
+        lat, lon = await geocode_place(request.place_of_birth)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
+
+    try:
+        horoscope_data = await get_moon_sign_horoscope(
+            year=request.date_of_birth.year,
+            month=request.date_of_birth.month,
+            day=request.date_of_birth.day,
+            hour=request.time_of_birth.hour,
+            minute=request.time_of_birth.minute,
+            latitude=lat,
+            longitude=lon,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+    return horoscope_data
 
 
 @router.post("/numerology", response_model=schemas.NumerologyProfileResponse)

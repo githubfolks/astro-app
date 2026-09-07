@@ -15730,6 +15730,46 @@
         ]
       }
     },
+    "/free-tools/moon-sign-horoscope": {
+      "post": {
+        "description": "Personalized moon sign (nakshatra) horoscope based on birth chart.\nCalculates the user's moon sign from their birth details and returns\nmoon sign information along with horoscope predictions.",
+        "operationId": "moon_sign_horoscope_free_tools_moon_sign_horoscope_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FreeToolBirthRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Moon Sign Horoscope",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
     "/free-tools/navamsa": {
       "post": {
         "description": "Generate the Navamsa (D9) divisional chart for a birth chart.",

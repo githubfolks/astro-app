@@ -318,3 +318,53 @@ async def get_bulk_daily_horoscope(timezone: str = "Asia/Kolkata") -> dict:
     for in the given timezone).
     """
     return await _get("/api/v1/horoscope/daily/bulk", {"timezone": timezone})
+
+
+async def get_moon_sign_horoscope(
+    year: int,
+    month: int,
+    day: int,
+    hour: int,
+    minute: int,
+    latitude: float,
+    longitude: float,
+    timezone: str = "Asia/Kolkata",
+) -> dict:
+    """
+    Fetch daily horoscope for a user's calculated moon sign (nakshatra).
+    Generates the birth chart to determine moon sign, then fetches horoscope
+    for that nakshatra. Returns both the chart data (for moon sign info) and
+    horoscope predictions.
+    """
+    chart_data = await generate_full_kundli(
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        minute=minute,
+        latitude=latitude,
+        longitude=longitude,
+        timezone=timezone,
+        vargas=[],
+        dasha_levels=0,
+        ayanamsha="lahiri",
+        house_system="whole_sign",
+    )
+
+    moon_sign_data = {}
+    if chart_data and chart_data.get("chart"):
+        chart = chart_data.get("chart")
+        moon = chart.get("moon", {})
+        if moon:
+            moon_sign_data = {
+                "sign": moon.get("sign"),
+                "nakshatra": moon.get("nakshatra"),
+                "nakshatra_pada": moon.get("nakshatra_pada"),
+                "sign_lord": moon.get("sign_lord"),
+                "longitude": moon.get("longitude"),
+            }
+
+    return {
+        "chart": chart_data,
+        "moon_sign": moon_sign_data,
+    }

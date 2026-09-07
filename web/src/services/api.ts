@@ -830,6 +830,14 @@ export const api = {
             const response = await customFetch(`${API_URL}/free-tools/daily-horoscope`);
             return handleResponse(response, 'Failed to fetch daily horoscope');
         },
+        moonSignHoroscope: async (data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
+            const response = await customFetch(`${API_URL}/free-tools/moon-sign-horoscope`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to fetch moon sign horoscope');
+        },
         kundliChart: async (data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {
             const response = await customFetch(`${API_URL}/free-tools/kundli-chart`, {
                 method: 'POST',

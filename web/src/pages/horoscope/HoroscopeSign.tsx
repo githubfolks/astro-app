@@ -3,6 +3,7 @@ import { useParams, Link, Navigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import SEO from '../../components/SEO';
+import MoonSignHoroscope from '../../components/MoonSignHoroscope';
 import { api } from '../../services/api';
 import { ZODIAC_SIGNS as SIGNS } from '../../data/zodiacSigns';
 import './HoroscopeSign.css';
@@ -331,6 +332,11 @@ const HoroscopeSign: React.FC = () => {
                             </div>
                         </div>
                     </div>
+                </section>
+
+                {/* Moon Sign Horoscope */}
+                <section className="max-w-4xl mx-auto px-6 py-6 md:py-12 relative z-10">
+                    <MoonSignHoroscope sunSign={data.name} />
                 </section>
 
                 {/* Traits */}
