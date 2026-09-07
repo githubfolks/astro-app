@@ -1,4 +1,4 @@
-import type { BlogPost } from '../types';
+import type { BlogPostSummary } from '../types';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
@@ -8,7 +8,7 @@ import { api } from '../services/api';
 import SEO from '../components/SEO';
 
 const Blog: React.FC = () => {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
+    const [posts, setPosts] = useState<BlogPostSummary[]>([]);
     const [loading, setLoading] = useState(true);
 
     const structuredData = {
@@ -97,6 +97,10 @@ const Blog: React.FC = () => {
                                     <img
                                         src={post.featured_image}
                                         alt={post.title}
+                                        width={400}
+                                        height={192}
+                                        loading="lazy"
+                                        decoding="async"
                                         className="w-full h-48 object-cover"
                                     />
                                 ) : (
@@ -115,8 +119,7 @@ const Blog: React.FC = () => {
                                         {post.title}
                                     </h3>
                                     <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
-                                        {/* Strip HTML tags for preview */}
-                                        {post.content.replace(/<[^>]*>?/gm, '')}
+                                        {post.excerpt}
                                     </p>
                                     <Link
                                         to={`/blog/${post.slug}`}

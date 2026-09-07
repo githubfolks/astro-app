@@ -76,7 +76,7 @@ async function fetchAllPosts() {
 }
 
 const summarize = (post) => {
-    const source = post.excerpt || post.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    const source = (post.excerpt || post.content || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
     return source.length > 160 ? `${source.slice(0, 160).trim()}…` : source;
 };
 

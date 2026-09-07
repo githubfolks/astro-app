@@ -6075,6 +6075,90 @@
         "title": "PostStatus",
         "type": "string"
       },
+      "PostSummary": {
+        "description": "Listing-card view of a post -- deliberately omits the full `content`\n(up to ~16 KB of HTML per post) so the public /blog index doesn't ship\nevery article body just to render 3-line previews.",
+        "properties": {
+          "author_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Name"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "featured_image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Featured Image"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "published_at"
+        ],
+        "title": "PostSummary",
+        "type": "object"
+      },
       "PostUpdate": {
         "properties": {
           "author_name": {
@@ -6247,6 +6331,27 @@
           }
         },
         "title": "PostUpdate",
+        "type": "object"
+      },
+      "PublicPostListResponse": {
+        "properties": {
+          "posts": {
+            "items": {
+              "$ref": "#/components/schemas/PostSummary"
+            },
+            "title": "Posts",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "posts"
+        ],
+        "title": "PublicPostListResponse",
         "type": "object"
       },
       "PublicReview": {
@@ -17525,7 +17630,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PostListResponse"
+                  "$ref": "#/components/schemas/PublicPostListResponse"
                 }
               }
             },

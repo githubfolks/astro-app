@@ -170,6 +170,19 @@ export interface BlogPost {
     updated_at?: string;
 }
 
+// Listing-card shape returned by GET /public/posts — omits the full `content`
+// (the API only sends it from the get-by-slug endpoint now).
+export interface BlogPostSummary {
+    id: number;
+    title: string;
+    slug: string;
+    excerpt?: string;
+    featured_image?: string;
+    author_name?: string;
+    tags?: string[];
+    published_at: string;
+}
+
 export interface CmsPage {
     title?: string;
     content: string;

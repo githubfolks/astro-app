@@ -3,10 +3,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Optional, Literal
 from pydantic import BaseModel
+import io
 import os
 import re
 import uuid
 import httpx
+from PIL import Image, UnidentifiedImageError
 from slugify import slugify
 from datetime import datetime
 from .. import models, database, schemas_cms
@@ -18,6 +20,28 @@ router = APIRouter(
     tags=["CMS"],
     dependencies=[Depends(get_current_admin)]
 )
+
+def encode_web_jpeg(raw: bytes, max_dimension: int = 1200) -> bytes:
+    """Re-encode a generated image as a size-optimised JPEG before it is stored.
+
+    The image generators return large, lightly-compressed files (0.5-1 MB) that
+    are then served as-is to the blog index's ~400px-wide cards. Downscaling to
+    `max_dimension` and re-encoding at quality 80 typically cuts that by 5-8x
+    with no visible loss at display size. Falls back to the original bytes if
+    the payload can't be decoded, so generation never fails on this step.
+    """
+    try:
+        img = Image.open(io.BytesIO(raw))
+        img.load()
+    except (UnidentifiedImageError, OSError):
+        return raw
+    if img.mode not in ("RGB", "L"):
+        img = img.convert("RGB")
+    img.thumbnail((max_dimension, max_dimension), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=80, optimize=True, progressive=True)
+    return buf.getvalue()
+
 
 # --- Posts (Blog) ---
 
@@ -364,6 +388,7 @@ def generate_featured_image(payload: GenerateFeaturedImageRequest):
         raise HTTPException(status_code=502, detail="LLM returned an empty image prompt.")
 
     image_bytes = content_studio_images.generate_image(image_prompt, width=1200, height=630)
+    image_bytes = encode_web_jpeg(image_bytes, max_dimension=1200)
 
     upload_dir = os.path.join("uploads", "cms_posts")
     os.makedirs(upload_dir, exist_ok=True)
@@ -437,6 +462,7 @@ def generate_gallery_image(payload: GenerateGalleryImageRequest, db: Session = D
         raise HTTPException(status_code=502, detail="LLM returned an empty image prompt.")
 
     image_bytes = content_studio_images.generate_image(image_prompt, width=1024, height=1024)
+    image_bytes = encode_web_jpeg(image_bytes, max_dimension=1200)
 
     os.makedirs(GALLERY_UPLOAD_DIR, exist_ok=True)
     filename = f"{uuid.uuid4().hex}.jpg"

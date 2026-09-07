@@ -1,4 +1,4 @@
-import type { BlogPost } from '../types';
+import type { BlogPost, BlogPostSummary } from '../types';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import DOMPurify from 'dompurify';
@@ -79,7 +79,7 @@ const BlogPost: React.FC = () => {
         ]
     });
 
-    const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+    const [relatedPosts, setRelatedPosts] = useState<BlogPostSummary[]>([]);
 
     useEffect(() => {
         if (slug) {
@@ -96,7 +96,7 @@ const BlogPost: React.FC = () => {
             // Fetch related posts for internal backlink grid
             try {
                 const res = await api.cms.getPosts(0, 5);
-                const filtered = (res.posts || []).filter((p: BlogPost) => p.slug !== postSlug).slice(0, 3);
+                const filtered = (res.posts || []).filter((p: BlogPostSummary) => p.slug !== postSlug).slice(0, 3);
                 setRelatedPosts(filtered);
             } catch (relErr) {
                 console.warn('Could not load related posts', relErr);
@@ -303,6 +303,10 @@ const BlogPost: React.FC = () => {
                                                 <img
                                                     src={relPost.featured_image}
                                                     alt={relPost.title}
+                                                    width={320}
+                                                    height={128}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="w-full h-32 object-cover rounded-xl mb-3"
                                                 />
                                             )}

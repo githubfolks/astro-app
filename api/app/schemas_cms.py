@@ -80,6 +80,26 @@ class PostListResponse(BaseModel):
     total: int
     posts: List[Post]
 
+class PostSummary(BaseModel):
+    """Listing-card view of a post -- deliberately omits the full `content`
+    (up to ~16 KB of HTML per post) so the public /blog index doesn't ship
+    every article body just to render 3-line previews."""
+    id: int
+    title: str
+    slug: str
+    excerpt: Optional[str] = None
+    featured_image: Optional[str] = None
+    author_name: Optional[str] = None
+    tags: Optional[List[str]] = None
+    published_at: Optional[datetime]
+
+    class Config:
+        from_attributes = True
+
+class PublicPostListResponse(BaseModel):
+    total: int
+    posts: List[PostSummary]
+
 # Media Gallery Schemas
 class GalleryImage(BaseModel):
     id: int

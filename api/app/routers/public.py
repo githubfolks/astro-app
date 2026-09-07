@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -24,7 +25,7 @@ def get_support_contact():
 
 # --- Posts ---
 
-@router.get("/posts", response_model=schemas_cms.PostListResponse)
+@router.get("/posts", response_model=schemas_cms.PublicPostListResponse)
 def get_public_posts(
     skip: int = 0, 
     limit: int = 10, 
@@ -38,7 +39,27 @@ def get_public_posts(
         
     total = query.count()
     posts = query.order_by(models.Post.published_at.desc()).offset(skip).limit(limit).all()
-    return {"total": total, "posts": posts}
+
+    def summarize(post: models.Post) -> dict:
+        # Fall back to a plain-text slice of the body for older posts that were
+        # created without an explicit excerpt, so listing cards are never blank.
+        excerpt = post.excerpt
+        if not excerpt and post.content:
+            text = re.sub(r"<[^>]*>", " ", post.content)
+            text = re.sub(r"\s+", " ", text).strip()
+            excerpt = (text[:157].rstrip() + "…") if len(text) > 160 else text
+        return {
+            "id": post.id,
+            "title": post.title,
+            "slug": post.slug,
+            "excerpt": excerpt,
+            "featured_image": post.featured_image,
+            "author_name": post.author_name,
+            "tags": post.tags,
+            "published_at": post.published_at,
+        }
+
+    return {"total": total, "posts": [summarize(p) for p in posts]}
 
 @router.get("/posts/{slug}", response_model=schemas_cms.Post)
 def get_public_post(slug: str, db: Session = Depends(database.get_db)):
