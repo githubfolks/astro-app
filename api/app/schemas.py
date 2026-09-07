@@ -585,3 +585,14 @@ class FreeMatchReportResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class EmailKundliChartRequest(FreeToolBirthRequest):
+    email: EmailStr
+
+class EmailKundliMatchRequest(BaseModel):
+    boy: FreeToolBirthRequest
+    girl: FreeToolBirthRequest
+    email: EmailStr
+
+class EmailReportResponse(BaseModel):
+    status: str = "queued"
+

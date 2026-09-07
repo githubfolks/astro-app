@@ -15,6 +15,7 @@ import CityAutocomplete from '../../components/CityAutocomplete';
 import DatePicker from '../../components/DatePicker';
 import TimePicker from '../../components/TimePicker';
 import { MatchContent } from '../../components/MatchPanel';
+import EmailReportForm from '../../components/EmailReportForm';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
@@ -210,6 +211,11 @@ const KundliMatchChecker: React.FC = () => {
                                     girlName={girl.full_name || 'Girl'}
                                     loading={false}
                                     error={null}
+                                />
+                            </div>
+                            <div className="mt-4">
+                                <EmailReportForm
+                                    onSubmit={(email) => api.freeTools.emailKundliMatch({ boy, girl, email })}
                                 />
                             </div>
                             <div className="mt-6">

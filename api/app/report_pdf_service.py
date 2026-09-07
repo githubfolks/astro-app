@@ -547,3 +547,247 @@ def generate_report_pdf(report_type: str, report_data: Dict[str, Any], order_ref
 
     doc.build(elements)
     return buffer.getvalue()
+
+
+def _free_tool_cover(elements: list, styles: dict, title: str, subtitle: str) -> None:
+    """Lighter cover block for the free-tool PDFs (no Ganpati image / page
+    break — these are short, single-purpose reports, not the multi-page paid
+    product)."""
+    elements.append(Paragraph("AADIKARTA.ORG — FREE VEDIC TOOL", styles["eyebrow"]))
+    elements.append(Paragraph(escape(title), styles["title"]))
+    elements.append(Paragraph(escape(subtitle), styles["small"]))
+    _rule(elements)
+
+
+_FREE_TOOL_DISCLAIMER = (
+    "Disclaimer: This report is generated using standard Vedic astrological calculations and is "
+    "intended for general guidance purposes only. It is not a substitute for professional financial, "
+    "legal, medical, or psychological advice. For a personalised reading, please consult a qualified "
+    "live astrologer on Aadikarta.org."
+)
+
+
+def generate_free_kundli_pdf(
+    chart_data: Dict[str, Any],
+    full_name: Optional[str],
+    date_of_birth: str,
+    time_of_birth: str,
+    place_of_birth: str,
+) -> bytes:
+    """Renders the free Kundli tool's chart_data (same shape as the paid
+    FULL_KUNDLI report_type) into a standalone PDF — chart, planets, dasha,
+    yogas/doshas, ashtakavarga, no AI synthesis section."""
+    styles = _styles()
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        topMargin=20 * mm, bottomMargin=20 * mm, leftMargin=18 * mm, rightMargin=18 * mm,
+        title=f"{full_name or 'Free'} Kundli — Aadikarta",
+    )
+    elements: list = []
+    _free_tool_cover(elements, styles, "Free Kundli (Birth Chart) Report", "Vedic Sidereal Chart · Lahiri Ayanamsha")
+
+    try:
+        dob = date.fromisoformat(str(date_of_birth)[:10])
+        day, month, year = dob.day, dob.month, dob.year
+    except (ValueError, TypeError):
+        day = month = year = None
+    try:
+        tob = str(time_of_birth)
+        hour, minute = tob.split(":")[0], tob.split(":")[1]
+    except (IndexError, AttributeError):
+        hour = minute = None
+    elements.append(Paragraph(_birth_line(full_name, day, month, year, hour, minute, place_of_birth), styles["body"]))
+    elements.append(Spacer(1, 3 * mm))
+
+    d1_chart = chart_data.get("chart") or {}
+    if d1_chart.get("houses") and d1_chart.get("planets"):
+        elements.append(Paragraph("Birth Chart (Rashi / D1 — North Indian)", styles["heading"]))
+        elements.append(_north_indian_chart_drawing(d1_chart, "D1"))
+        elements.append(Spacer(1, 3 * mm))
+
+        ascendant = d1_chart.get("ascendant") or {}
+        if ascendant:
+            nak = ascendant.get("nakshatra") or {}
+            asc_line = f"{ascendant.get('sign', '-')} ({ascendant.get('sign_id', '-')})"
+            if ascendant.get("degree") is not None:
+                asc_line += f" — {ascendant['degree']:.2f}°"
+            if nak.get("name"):
+                asc_line += f" — {nak['name']} Pada {nak.get('pada', '-')}"
+            elements.append(Paragraph(f"<b>Lagna (Ascendant):</b> {escape(asc_line)}", styles["body"]))
+            elements.append(Spacer(1, 2 * mm))
+
+        elements.append(Paragraph("Planetary Positions", styles["heading"]))
+        elements.append(_planets_table(d1_chart.get("planets") or []))
+        elements.append(Spacer(1, 3 * mm))
+
+    d9_chart = ((chart_data.get("vargas") or {}).get("vargas", {})).get("D9") or {}
+    if d9_chart.get("houses") and d9_chart.get("planets"):
+        elements.append(Paragraph("Navamsa Chart (D9 — Marriage &amp; Spouse)", styles["heading"]))
+        elements.append(_north_indian_chart_drawing(d9_chart, "D9"))
+        elements.append(Spacer(1, 3 * mm))
+
+    vimshottari = chart_data.get("vimshottari_dasha") or {}
+    if vimshottari.get("active_periods"):
+        elements.append(Paragraph("Vimshottari Dasha — Active Periods", styles["heading"]))
+        elements.append(_dasha_table(vimshottari))
+        elements.append(Spacer(1, 3 * mm))
+
+    yogas = (chart_data.get("yogas") or {}).get("yogas") or []
+    manglik = next((y for y in yogas if y.get("id") == "manglik_dosha" or "manglik" in (y.get("name") or "").lower()), None)
+    kalasarpa = next((y for y in yogas if y.get("id") == "kala_sarpa_yoga" or "kala sarpa" in (y.get("name") or "").lower()), None)
+    active_yogas = [y for y in yogas if y.get("active") and y.get("type") != "dosha"]
+    sade_sati = (chart_data.get("chart") or {}).get("sade_sati") or {}
+    ashtakavarga = chart_data.get("ashtakavarga") or {}
+    sarva = ashtakavarga.get("sarvashtakavarga")
+
+    if manglik or kalasarpa or active_yogas or sade_sati.get("active") or sarva:
+        elements.append(Paragraph("Dosha, Yoga &amp; Strength Analysis", styles["heading"]))
+
+    if manglik:
+        elements.append(_status_table("Manglik Dosha", bool(manglik.get("active")), manglik.get("description", ""), icon="manglik"))
+        elements.append(Spacer(1, 2 * mm))
+        if manglik.get("active"):
+            elements.append(_remedies_paragraph("Manglik Dosha", _MANGLIK_REMEDIES, styles["small"]))
+        elements.append(Spacer(1, 3 * mm))
+    if kalasarpa:
+        elements.append(_status_table("Kala Sarpa Yoga", bool(kalasarpa.get("active")), kalasarpa.get("description", ""), icon="kalasarpa"))
+        elements.append(Spacer(1, 2 * mm))
+        if kalasarpa.get("active"):
+            elements.append(_remedies_paragraph("Kala Sarpa Yoga", _KALASARPA_REMEDIES, styles["small"]))
+        elements.append(Spacer(1, 3 * mm))
+
+    if sade_sati.get("active"):
+        window = sade_sati.get("window") or {}
+        desc = sade_sati.get("description", "")
+        if window.get("start") and window.get("end"):
+            desc = f"{desc} — full cycle approx. {window['start']} to {window['end']}."
+        elements.append(_status_table(f"Shani Sade Sati — {sade_sati.get('phase', '')} Phase", True, desc, icon="sadesati"))
+        elements.append(Spacer(1, 3 * mm))
+
+    if active_yogas:
+        names = ", ".join(escape(y.get("name", "")) for y in active_yogas)
+        elements.append(Paragraph(f"<b>Active Yogas Detected:</b> {names}", styles["body"]))
+        elements.append(Spacer(1, 3 * mm))
+
+    if sarva and len(sarva) == 12:
+        elements.append(Paragraph(f"Ashtakavarga — {ashtakavarga.get('total_points', '-')} Total Bindus", styles["small"]))
+        elements.append(Spacer(1, 1 * mm))
+        elements.append(_ashtakavarga_table(sarva, ashtakavarga.get("total_points")))
+        elements.append(Spacer(1, 3 * mm))
+
+    _rule(elements)
+    elements.append(Paragraph(_FREE_TOOL_DISCLAIMER, styles["small"]))
+
+    doc.build(elements)
+    return buffer.getvalue()
+
+
+def _match_dosha_rows(doshas: Dict[str, Any]) -> list:
+    rows = []
+    manglik = doshas.get("manglik") or {}
+    compat = manglik.get("compatibility") or {}
+    if compat:
+        rows.append(("Manglik Compatibility", compat.get("status", "-"), compat.get("message", "")))
+    nadi = doshas.get("nadi") or {}
+    if nadi:
+        rows.append(("Nadi Dosha", "Present" if nadi.get("active") else "Clear", nadi.get("message", "")))
+    bhakoot = doshas.get("bhakoot") or {}
+    if bhakoot:
+        rows.append(("Bhakoot Dosha", "Present" if bhakoot.get("active") else "Clear", bhakoot.get("message", "")))
+    return rows
+
+
+def _kootas_table(kootas: list) -> Table:
+    header = ["Koota", "Score", "Status"]
+    rows = [header]
+    for k in kootas:
+        rows.append([
+            str(k.get("name", "-")),
+            f"{k.get('score', '-')} / {k.get('max_score', '-')}",
+            str(k.get("status", "-")).title(),
+        ])
+    t = Table(rows, colWidths=[70 * mm, 30 * mm, 30 * mm])
+    t.setStyle(TableStyle([
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#fef3c7")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), _AMBER_DARK),
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#eee")),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 3),
+    ]))
+    return t
+
+
+def generate_free_match_pdf(match_data: Dict[str, Any], boy_name: str, girl_name: str) -> bytes:
+    """Renders the free Kuta (Guna Milan) matching tool's match_data — the
+    real FreeAstroAPI /vedic/compatibility response shape (persons,
+    ashtakoota, doshas, summary) — into a standalone PDF."""
+    styles = _styles()
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4,
+        topMargin=20 * mm, bottomMargin=20 * mm, leftMargin=18 * mm, rightMargin=18 * mm,
+        title=f"{boy_name} & {girl_name} Kundli Match — Aadikarta",
+    )
+    elements: list = []
+    _free_tool_cover(elements, styles, "Free Kundli Matching (Guna Milan) Report", f"{boy_name} &amp; {girl_name}")
+
+    persons = match_data.get("persons") or []
+    if persons:
+        elements.append(Paragraph("Moon Sign &amp; Nakshatra", styles["heading"]))
+        for p in persons:
+            moon_sign = p.get("moon_sign") or {}
+            moon_nak = p.get("moon_nakshatra") or {}
+            line = f"<b>{escape(str(p.get('label', '-')))}:</b> {escape(str(moon_sign.get('name', '-')))} Moon"
+            if moon_nak.get("name"):
+                line += f" — {escape(str(moon_nak['name']))} Pada {escape(str(moon_nak.get('pada', '-')))} (lord {escape(str(moon_nak.get('lord', '-')))})"
+            elements.append(Paragraph(line, styles["body"]))
+        elements.append(Spacer(1, 3 * mm))
+
+    ashtakoota = match_data.get("ashtakoota") or {}
+    summary = match_data.get("summary") or {}
+    total_score = summary.get("total_score", ashtakoota.get("score", "-"))
+    max_score = summary.get("max_score", ashtakoota.get("max_score", 36))
+    elements.append(Paragraph("Guna Milan (Ashtakoota) Score", styles["heading"]))
+    elements.append(Paragraph(
+        f"<b>{escape(str(total_score))} / {escape(str(max_score))}</b>"
+        + (f" &mdash; {escape(str(ashtakoota.get('recommendation')))}" if ashtakoota.get("recommendation") else ""),
+        styles["body"],
+    ))
+    if summary.get("minimum_traditional_threshold") is not None:
+        passes = summary.get("passes_minimum_threshold")
+        elements.append(Paragraph(
+            f"Traditional minimum for marriage: {escape(str(summary['minimum_traditional_threshold']))} "
+            f"— this match {'meets' if passes else 'does not meet'} that threshold.",
+            styles["small"],
+        ))
+    elements.append(Spacer(1, 3 * mm))
+
+    kootas = ashtakoota.get("kootas") or []
+    if kootas:
+        elements.append(Paragraph("Koota-wise Breakdown", styles["heading"]))
+        elements.append(_kootas_table(kootas))
+        elements.append(Spacer(1, 3 * mm))
+
+    doshas = match_data.get("doshas") or {}
+    dosha_rows = _match_dosha_rows(doshas)
+    if dosha_rows:
+        elements.append(Paragraph("Dosha Analysis", styles["heading"]))
+        for title, status, message in dosha_rows:
+            present = status not in ("Clear", "-") and "compatible" not in status.lower() if status else False
+            elements.append(_status_table(title, present, message or status))
+            elements.append(Spacer(1, 2 * mm))
+        elements.append(Spacer(1, 1 * mm))
+
+    risk_flags = summary.get("risk_flags") or []
+    if risk_flags:
+        elements.append(Paragraph(f"<b>Points to Discuss:</b> {escape(', '.join(risk_flags))}", styles["body"]))
+        elements.append(Spacer(1, 3 * mm))
+
+    _rule(elements)
+    elements.append(Paragraph(_FREE_TOOL_DISCLAIMER, styles["small"]))
+
+    doc.build(elements)
+    return buffer.getvalue()

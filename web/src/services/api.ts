@@ -846,6 +846,14 @@ export const api = {
             });
             return handleResponse(response, 'Failed to generate birth chart');
         },
+        emailKundliChart: async (data: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string; email: string }) => {
+            const response = await customFetch(`${API_URL}/free-tools/kundli-chart/email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to email your Kundli report');
+        },
         kundliMatch: async (data: {
             boy: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
             girl: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
@@ -856,6 +864,18 @@ export const api = {
                 body: JSON.stringify(data),
             });
             return handleResponse(response, 'Failed to generate Match report');
+        },
+        emailKundliMatch: async (data: {
+            boy: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+            girl: { full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string };
+            email: string;
+        }) => {
+            const response = await customFetch(`${API_URL}/free-tools/kundli-match/email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            });
+            return handleResponse(response, 'Failed to email your Match report');
         },
         translate: async (text: string, target_lang: 'hi' | 'en') => {
             const response = await customFetch(`${API_URL}/free-tools/translate`, {

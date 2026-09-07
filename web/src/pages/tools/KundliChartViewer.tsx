@@ -14,6 +14,7 @@ import CityAutocomplete from '../../components/CityAutocomplete';
 import DatePicker from '../../components/DatePicker';
 import TimePicker from '../../components/TimePicker';
 import { KundliContent } from '../../components/KundliPanel';
+import EmailReportForm from '../../components/EmailReportForm';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
 import type { ChartData } from '../../types';
@@ -188,6 +189,11 @@ const KundliChartViewer: React.FC = () => {
                             </div>
                             <div className="bg-white rounded-2xl overflow-hidden">
                                 <KundliContent chartData={result} />
+                            </div>
+                            <div className="mt-4">
+                                <EmailReportForm
+                                    onSubmit={(email) => api.freeTools.emailKundliChart({ ...formData, email })}
+                                />
                             </div>
                         </div>
                     ) : null}

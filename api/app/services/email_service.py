@@ -199,6 +199,28 @@ def build_batch_created_admin_email(
     )
 
 
+def build_free_tool_report_email(full_name: Optional[str], report_label: str) -> Tuple[str, str]:
+    """Delivers a free-tool PDF (Kundli chart / Kundli match) as an attachment.
+    `report_label` is a short human title, e.g. "Kundli Report" or "Kundli
+    Matching Report"."""
+    greeting = f"Hi {full_name}," if full_name else "Hi there,"
+    content = f"""
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">{greeting}</p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Your free {report_label} from {APP_NAME} is attached to this email as a PDF.
+      </p>
+      <p style="margin:0 0 16px 0;font-size:15px;line-height:24px;">
+        Want a deeper reading of what's in your chart? Connect live with a verified Vedic astrologer on {APP_NAME}.
+      </p>
+      {_button("Consult an Astrologer", f"{FRONTEND_URL}/astrologers")}
+      <p style="margin:16px 0 0 0;font-size:13px;color:#9ca3af;">
+        If you didn't request this report, you can safely ignore this email.
+      </p>"""
+    return f"Your {report_label} from {APP_NAME}", _layout(
+        f"Your {report_label} is ready", content, preheader=f"Your free {report_label} is attached as a PDF"
+    )
+
+
 # --- Astrologer onboarding step emails ---------------------------------------
 # Copy ported from docs/email-contents/Step 1..5*.txt. ##companyName## -> APP_NAME,
 # and the support/footer line is already supplied by _layout().

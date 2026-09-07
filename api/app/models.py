@@ -790,6 +790,21 @@ class FreeMatchReport(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class FreeToolReportEmail(Base):
+    """Audit log of guest emails captured when someone asks to have their free
+    Kundli chart or Kundli match report emailed to them as a PDF. Not a
+    de-dup cache like the tables above — every submission is logged, even if
+    the same birth details/email are reused, so the list stays chronological
+    (`created_at`) for support/deliverability lookups."""
+    __tablename__ = "free_tool_report_emails"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tool_type = Column(String, nullable=False)  # "kundli_chart" | "kundli_match"
+    email = Column(String, nullable=False, index=True)
+    details = Column(JSON, nullable=True)  # birth details of the person(s), for support lookups
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class DailyHoroscopeBulk(Base):
     """Cached FreeAstroAPI bulk daily horoscope (all 12 signs in one payload),
     keyed by calendar date so the first request of the day fetches it and every

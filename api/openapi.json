@@ -3313,6 +3313,81 @@
         "title": "DisputeResolve",
         "type": "object"
       },
+      "EmailKundliChartRequest": {
+        "properties": {
+          "date_of_birth": {
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "place_of_birth": {
+            "title": "Place Of Birth",
+            "type": "string"
+          },
+          "time_of_birth": {
+            "format": "time",
+            "title": "Time Of Birth",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date_of_birth",
+          "time_of_birth",
+          "place_of_birth",
+          "email"
+        ],
+        "title": "EmailKundliChartRequest",
+        "type": "object"
+      },
+      "EmailKundliMatchRequest": {
+        "properties": {
+          "boy": {
+            "$ref": "#/components/schemas/FreeToolBirthRequest"
+          },
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "girl": {
+            "$ref": "#/components/schemas/FreeToolBirthRequest"
+          }
+        },
+        "required": [
+          "boy",
+          "girl",
+          "email"
+        ],
+        "title": "EmailKundliMatchRequest",
+        "type": "object"
+      },
+      "EmailReportResponse": {
+        "properties": {
+          "status": {
+            "default": "queued",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "title": "EmailReportResponse",
+        "type": "object"
+      },
       "FacebookCopy": {
         "properties": {
           "hashtags": {
@@ -15646,6 +15721,48 @@
         ]
       }
     },
+    "/free-tools/kundli-chart/email": {
+      "post": {
+        "description": "Email a PDF of the free Kundli chart to the given address. Reuses the\ncached chart for these birth details if one already exists (the normal\ncase \u2014 a visitor only sees the email option after generating their chart\non-page), otherwise generates it fresh.",
+        "operationId": "email_kundli_chart_free_tools_kundli_chart_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailKundliChartRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Email Kundli Chart",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
     "/free-tools/kundli-match": {
       "post": {
         "description": "Kuta (Guna Milan) compatibility report between two birth charts.",
@@ -15683,6 +15800,48 @@
           }
         },
         "summary": "Kundli Match",
+        "tags": [
+          "Free Tools"
+        ]
+      }
+    },
+    "/free-tools/kundli-match/email": {
+      "post": {
+        "description": "Email a PDF of the free Kundli match (Guna Milan) report to the given\naddress. Reuses the cached match for these two birth details if one\nalready exists, otherwise generates it fresh.",
+        "operationId": "email_kundli_match_free_tools_kundli_match_email_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailKundliMatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Email Kundli Match",
         "tags": [
           "Free Tools"
         ]

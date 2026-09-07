@@ -12,10 +12,11 @@ an astrologer's account and their seekers (role-gated, saved history per
 astrologer). These are the public-facing equivalents — no auth, no persistence
 tied to any user, just a shared cache keyed by birth details.
 """
+import base64
 import hashlib
 from datetime import datetime, timedelta, timezone
 from typing import Literal
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -31,6 +32,8 @@ from ..free_astro_service import (
     get_numerology_methods,
 )
 from ..limiter import limiter
+from ..report_pdf_service import generate_free_kundli_pdf, generate_free_match_pdf
+from ..services.email_service import build_free_tool_report_email, send_email
 from ..translation_service import translate_text
 from ..vedic_rishi_service import geocode_place
 
@@ -399,6 +402,106 @@ async def kundli_chart(
     return record
 
 
+@router.post("/kundli-chart/email", response_model=schemas.EmailReportResponse)
+async def email_kundli_chart(
+    request: schemas.EmailKundliChartRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db),
+):
+    """Email a PDF of the free Kundli chart to the given address. Reuses the
+    cached chart for these birth details if one already exists (the normal
+    case — a visitor only sees the email option after generating their chart
+    on-page), otherwise generates it fresh."""
+    existing = db.query(models.FreeKundliChart).filter(
+        models.FreeKundliChart.date_of_birth == request.date_of_birth,
+        models.FreeKundliChart.time_of_birth == request.time_of_birth,
+        models.FreeKundliChart.place_of_birth == request.place_of_birth,
+    ).first()
+
+    if existing:
+        chart_data = existing.chart_data
+    else:
+        try:
+            lat, lon = await geocode_place(request.place_of_birth)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception:
+            raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
+
+        try:
+            chart_data = await generate_full_kundli(
+                year=request.date_of_birth.year,
+                month=request.date_of_birth.month,
+                day=request.date_of_birth.day,
+                hour=request.time_of_birth.hour,
+                minute=request.time_of_birth.minute,
+                latitude=lat,
+                longitude=lon,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+        record = models.FreeKundliChart(
+            full_name=request.full_name,
+            date_of_birth=request.date_of_birth,
+            time_of_birth=request.time_of_birth,
+            place_of_birth=request.place_of_birth,
+            chart_data=chart_data,
+        )
+        db.add(record)
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            existing = db.query(models.FreeKundliChart).filter(
+                models.FreeKundliChart.date_of_birth == request.date_of_birth,
+                models.FreeKundliChart.time_of_birth == request.time_of_birth,
+                models.FreeKundliChart.place_of_birth == request.place_of_birth,
+            ).first()
+            if not existing:
+                raise
+            chart_data = existing.chart_data
+
+    try:
+        pdf_bytes = generate_free_kundli_pdf(
+            chart_data=chart_data,
+            full_name=request.full_name,
+            date_of_birth=request.date_of_birth.isoformat(),
+            time_of_birth=request.time_of_birth.strftime("%H:%M:%S"),
+            place_of_birth=request.place_of_birth,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+
+    db.add(models.FreeToolReportEmail(
+        tool_type="kundli_chart",
+        email=request.email,
+        details={
+            "full_name": request.full_name,
+            "date_of_birth": request.date_of_birth.isoformat(),
+            "time_of_birth": request.time_of_birth.isoformat(),
+            "place_of_birth": request.place_of_birth,
+        },
+    ))
+    db.commit()
+
+    subject, html = build_free_tool_report_email(request.full_name, "Kundli Report")
+    send_email(
+        background_tasks,
+        [request.email],
+        subject,
+        html,
+        attachments=[{
+            "filename": "Aadikarta-Kundli-Report.pdf",
+            "content": base64.b64encode(pdf_bytes).decode("ascii"),
+        }],
+    )
+
+    return schemas.EmailReportResponse(status="queued")
+
+
 @router.post("/kundli-match", response_model=schemas.FreeMatchReportResponse)
 async def kundli_match(
     request: schemas.FreeMatchRequest,
@@ -475,3 +578,112 @@ async def kundli_match(
         raise
     db.refresh(record)
     return record
+
+
+@router.post("/kundli-match/email", response_model=schemas.EmailReportResponse)
+async def email_kundli_match(
+    request: schemas.EmailKundliMatchRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(database.get_db),
+):
+    """Email a PDF of the free Kundli match (Guna Milan) report to the given
+    address. Reuses the cached match for these two birth details if one
+    already exists, otherwise generates it fresh."""
+    boy, girl = request.boy, request.girl
+
+    existing = db.query(models.FreeMatchReport).filter(
+        models.FreeMatchReport.boy_date_of_birth == boy.date_of_birth,
+        models.FreeMatchReport.boy_time_of_birth == boy.time_of_birth,
+        models.FreeMatchReport.boy_place_of_birth == boy.place_of_birth,
+        models.FreeMatchReport.girl_date_of_birth == girl.date_of_birth,
+        models.FreeMatchReport.girl_time_of_birth == girl.time_of_birth,
+        models.FreeMatchReport.girl_place_of_birth == girl.place_of_birth,
+    ).first()
+
+    if existing:
+        match_data = existing.match_data
+    else:
+        try:
+            boy_lat, boy_lon = await geocode_place(boy.place_of_birth)
+            girl_lat, girl_lon = await geocode_place(girl.place_of_birth)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception:
+            raise HTTPException(status_code=500, detail="Geocoding service unavailable. Please try again.")
+
+        try:
+            match_data = await generate_kuta_match(
+                person1={
+                    "year": boy.date_of_birth.year, "month": boy.date_of_birth.month, "day": boy.date_of_birth.day,
+                    "hour": boy.time_of_birth.hour, "minute": boy.time_of_birth.minute,
+                    "lat": boy_lat, "lng": boy_lon, "tz_str": "Asia/Kolkata",
+                    "label": boy.full_name or "Boy",
+                },
+                person2={
+                    "year": girl.date_of_birth.year, "month": girl.date_of_birth.month, "day": girl.date_of_birth.day,
+                    "hour": girl.time_of_birth.hour, "minute": girl.time_of_birth.minute,
+                    "lat": girl_lat, "lng": girl_lon, "tz_str": "Asia/Kolkata",
+                    "label": girl.full_name or "Girl",
+                },
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+        record = models.FreeMatchReport(
+            boy_full_name=boy.full_name,
+            boy_date_of_birth=boy.date_of_birth,
+            boy_time_of_birth=boy.time_of_birth,
+            boy_place_of_birth=boy.place_of_birth,
+            girl_full_name=girl.full_name,
+            girl_date_of_birth=girl.date_of_birth,
+            girl_time_of_birth=girl.time_of_birth,
+            girl_place_of_birth=girl.place_of_birth,
+            match_data=match_data,
+        )
+        db.add(record)
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            existing = db.query(models.FreeMatchReport).filter(
+                models.FreeMatchReport.boy_date_of_birth == boy.date_of_birth,
+                models.FreeMatchReport.boy_time_of_birth == boy.time_of_birth,
+                models.FreeMatchReport.boy_place_of_birth == boy.place_of_birth,
+                models.FreeMatchReport.girl_date_of_birth == girl.date_of_birth,
+                models.FreeMatchReport.girl_time_of_birth == girl.time_of_birth,
+                models.FreeMatchReport.girl_place_of_birth == girl.place_of_birth,
+            ).first()
+            if not existing:
+                raise
+            match_data = existing.match_data
+
+    try:
+        pdf_bytes = generate_free_match_pdf(match_data, boy.full_name or "Boy", girl.full_name or "Girl")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF: {str(e)}")
+
+    db.add(models.FreeToolReportEmail(
+        tool_type="kundli_match",
+        email=request.email,
+        details={
+            "boy": {"full_name": boy.full_name, "date_of_birth": boy.date_of_birth.isoformat(), "place_of_birth": boy.place_of_birth},
+            "girl": {"full_name": girl.full_name, "date_of_birth": girl.date_of_birth.isoformat(), "place_of_birth": girl.place_of_birth},
+        },
+    ))
+    db.commit()
+
+    subject, html = build_free_tool_report_email(None, "Kundli Matching Report")
+    send_email(
+        background_tasks,
+        [request.email],
+        subject,
+        html,
+        attachments=[{
+            "filename": "Aadikarta-Kundli-Match-Report.pdf",
+            "content": base64.b64encode(pdf_bytes).decode("ascii"),
+        }],
+    )
+
+    return schemas.EmailReportResponse(status="queued")
