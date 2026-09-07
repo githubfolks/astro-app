@@ -607,6 +607,80 @@ def export_report_leads(
     )
 
 
+@router.get("/free-tool-emails")
+def list_free_tool_report_emails(
+    skip: int = 0,
+    limit: int = 50,
+    search: Optional[str] = None,
+    tool_type: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin),
+):
+    """Paginated, filterable list of guest emails captured on the free Kundli
+    chart / Kundli match tools (POST /free-tools/kundli-chart/email and
+    /kundli-match/email) — see FreeToolReportEmail in models.py. Separate
+    from the paid-report ReportLead list above since these are unrelated,
+    unconverted free-tool captures rather than purchase leads."""
+    query = db.query(models.FreeToolReportEmail)
+    if tool_type:
+        query = query.filter(models.FreeToolReportEmail.tool_type == tool_type)
+    if search:
+        query = query.filter(models.FreeToolReportEmail.email.ilike(f"%{search.strip()}%"))
+
+    total = query.count()
+    rows = (
+        query.order_by(models.FreeToolReportEmail.created_at.desc())
+        .offset(skip).limit(limit).all()
+    )
+    entries = [
+        {
+            "id": r.id,
+            "tool_type": r.tool_type,
+            "email": r.email,
+            "details": r.details,
+            "created_at": r.created_at,
+        }
+        for r in rows
+    ]
+    return {"total": total, "entries": entries}
+
+
+@router.get("/free-tool-emails/export")
+def export_free_tool_report_emails(
+    search: Optional[str] = None,
+    tool_type: Optional[str] = None,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin),
+):
+    """CSV export of captured free-tool emails for marketing follow-up."""
+    import csv
+    import io
+
+    query = db.query(models.FreeToolReportEmail)
+    if tool_type:
+        query = query.filter(models.FreeToolReportEmail.tool_type == tool_type)
+    if search:
+        query = query.filter(models.FreeToolReportEmail.email.ilike(f"%{search.strip()}%"))
+    rows = query.order_by(models.FreeToolReportEmail.created_at.desc()).all()
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["Email", "Tool Type", "Details", "Captured At"])
+    for r in rows:
+        writer.writerow([
+            r.email,
+            r.tool_type,
+            json.dumps(r.details or {}),
+            r.created_at.strftime("%Y-%m-%d %H:%M:%S") if r.created_at else "",
+        ])
+    buffer.seek(0)
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=free-tool-report-emails.csv"},
+    )
+
+
 @router.get("/leads/{lead_id}")
 def get_report_lead_detail(
     lead_id: int,

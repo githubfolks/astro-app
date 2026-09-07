@@ -148,6 +148,7 @@ export const reports = {
     listLeads: (params) => api.get('/reports/leads', { params }),
     getLead: (leadId) => api.get(`/reports/leads/${leadId}`),
     generateInternalTest: (data) => api.post('/reports/internal-test-generate', data),
+    listFreeToolEmails: (params) => api.get('/reports/free-tool-emails', { params }),
 };
 
 export const moderation = {

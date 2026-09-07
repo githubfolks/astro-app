@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Sparkles, TrendingUp, Users, DollarSign, BarChart3, Filter, Download, RefreshCw, FlaskConical, ExternalLink } from 'lucide-react';
+import { Sparkles, TrendingUp, Users, DollarSign, BarChart3, Filter, Download, RefreshCw, FlaskConical, ExternalLink, Mail } from 'lucide-react';
 import api, { reports } from '../services/api';
 import { downloadFile } from '../utils/downloadFile';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
@@ -126,6 +126,7 @@ export default function AdminReportAnalytics() {
             </div>
 
             <LeadsTable />
+            <FreeToolEmailsTable />
         </div>
     );
 }
@@ -475,6 +476,200 @@ function LeadsTable() {
             </Card>
 
             <LeadDetailModal lead={selectedLead} onClose={() => setSelectedLead(null)} />
+        </div>
+    );
+}
+
+const FREE_TOOL_TYPE_LABELS = {
+    kundli_chart: 'Kundli Chart',
+    kundli_match: 'Kundli Match',
+};
+
+function FreeToolEmailsTable() {
+    const [entries, setEntries] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [selected, setSelected] = useState(null);
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
+    const [search, setSearch] = useState('');
+    const [toolType, setToolType] = useState('');
+
+    const fetchEntries = useCallback(async () => {
+        setLoading(true);
+        try {
+            const params = { skip: page * rowsPerPage, limit: rowsPerPage };
+            if (search) params.search = search;
+            if (toolType) params.tool_type = toolType;
+
+            const res = await reports.listFreeToolEmails(params);
+            setEntries(res.data.entries);
+            setTotal(res.data.total);
+        } catch (err) {
+            console.error('Failed to fetch free-tool report emails', err);
+        } finally {
+            setLoading(false);
+        }
+    }, [page, rowsPerPage, search, toolType]);
+
+    useEffect(() => {
+        fetchEntries();
+    }, [fetchEntries]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(0);
+            fetchEntries();
+        }, 500);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, toolType]);
+
+    const handleExport = async () => {
+        setExporting(true);
+        const params = {};
+        if (search) params.search = search;
+        if (toolType) params.tool_type = toolType;
+        await downloadFile('/reports/free-tool-emails/export', params, 'free-tool-report-emails.csv');
+        setExporting(false);
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl text-gray-900 flex items-center gap-2">
+                    <Mail className="text-blue-600" size={20} /> Free Tool Report Emails
+                </h2>
+                <Button onClick={handleExport} disabled={exporting}>
+                    <Download size={16} className="mr-2" /> {exporting ? 'Preparing CSV...' : 'Download CSV'}
+                </Button>
+            </div>
+            <p className="text-sm text-gray-500 -mt-2">
+                Guests who asked to have their free Kundli chart or Kundli match PDF emailed to them.
+            </p>
+
+            <Card className="p-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex-1 w-full">
+                        <Input
+                            label="Search email"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="e.g. name@example.com"
+                        />
+                    </div>
+                    <div className="w-full sm:w-56">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tool</label>
+                        <select
+                            className="h-9 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={toolType}
+                            onChange={(e) => setToolType(e.target.value)}
+                        >
+                            <option value="">All</option>
+                            <option value="kundli_chart">Kundli Chart</option>
+                            <option value="kundli_match">Kundli Match</option>
+                        </select>
+                    </div>
+                    <Button variant="outlined" onClick={fetchEntries}>
+                        <RefreshCw size={16} className="mr-2" /> Refresh
+                    </Button>
+                </div>
+            </Card>
+
+            <Card>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Captured At</TableHead>
+                            <TableHead>Email</TableHead>
+                            <TableHead>Tool</TableHead>
+                            <TableHead>Details</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {entries.map((entry) => (
+                            <TableRow
+                                key={entry.id}
+                                className="cursor-pointer hover:bg-gray-50"
+                                onClick={() => setSelected(entry)}
+                            >
+                                <TableCell className="whitespace-nowrap">
+                                    {new Date(entry.created_at).toLocaleString()}
+                                </TableCell>
+                                <TableCell className="text-xs">{entry.email}</TableCell>
+                                <TableCell>{FREE_TOOL_TYPE_LABELS[entry.tool_type] || entry.tool_type}</TableCell>
+                                <TableCell className="text-xs text-gray-500">
+                                    {entry.tool_type === 'kundli_match'
+                                        ? `${entry.details?.boy?.full_name || 'Boy'} & ${entry.details?.girl?.full_name || 'Girl'}`
+                                        : entry.details?.full_name || '-'}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        {!loading && entries.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4} className="text-center py-8 text-gray-900">
+                                    No captured emails found
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+                    <div className="flex items-center text-sm text-gray-900">
+                        Showing {total === 0 ? 0 : page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, total)} of {total} entries
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <select
+                            className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={rowsPerPage}
+                            onChange={(e) => {
+                                setRowsPerPage(Number(e.target.value));
+                                setPage(0);
+                            }}
+                        >
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                            <option value={50}>50 per page</option>
+                            <option value={100}>100 per page</option>
+                        </select>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setPage((p) => Math.max(0, p - 1))}
+                            disabled={page === 0}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setPage((p) => p + 1)}
+                            disabled={(page + 1) * rowsPerPage >= total}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            </Card>
+
+            <Modal isOpen={!!selected} onClose={() => setSelected(null)} title="Captured Email Detail" className="max-w-lg">
+                {selected && (
+                    <div className="space-y-3 text-sm">
+                        <div><span className="font-medium">Email:</span> {selected.email}</div>
+                        <div><span className="font-medium">Tool:</span> {FREE_TOOL_TYPE_LABELS[selected.tool_type] || selected.tool_type}</div>
+                        <div><span className="font-medium">Captured At:</span> {new Date(selected.created_at).toLocaleString()}</div>
+                        <div className="border-t pt-3">
+                            <div className="font-medium mb-1">Birth Details</div>
+                            <pre className="bg-gray-50 rounded-lg p-3 text-xs overflow-x-auto">
+                                {JSON.stringify(selected.details, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }

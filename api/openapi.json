@@ -17780,6 +17780,164 @@
         ]
       }
     },
+    "/reports/free-tool-emails": {
+      "get": {
+        "description": "Paginated, filterable list of guest emails captured on the free Kundli\nchart / Kundli match tools (POST /free-tools/kundli-chart/email and\n/kundli-match/email) \u2014 see FreeToolReportEmail in models.py. Separate\nfrom the paid-report ReportLead list above since these are unrelated,\nunconverted free-tool captures rather than purchase leads.",
+        "operationId": "list_free_tool_report_emails_reports_free_tool_emails_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tool_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tool Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Free Tool Report Emails",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/free-tool-emails/export": {
+      "get": {
+        "description": "CSV export of captured free-tool emails for marketing follow-up.",
+        "operationId": "export_free_tool_report_emails_reports_free_tool_emails_export_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tool_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tool Type"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Export Free Tool Report Emails",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
     "/reports/internal-test-generate": {
       "post": {
         "description": "Admin-only QA bypass: generates a real AI report end-to-end (synthesis, PDF,\nWhatsApp dispatch to the phone number supplied in the request) WITHOUT going\nthrough Razorpay, so the team can review report quality for free. Marked\nPaymentStatus.INTERNAL_TEST so it's excluded from revenue/conversion metrics\nin the analytics dashboard and leads list. The phone number entered is where\nthe WhatsApp report link is sent \u2014 use your own test number, not a real\ncustomer's, since this dispatches an actual WhatsApp message.",
