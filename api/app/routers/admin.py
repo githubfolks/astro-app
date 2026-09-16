@@ -1513,6 +1513,7 @@ def list_onboarding_astrologers(db: Session = Depends(database.get_db)):
             "id": user.id,
             "email": user.email,
             "phone_number": user.phone_number,
+            "applied_at": user.created_at.isoformat() if user.created_at else None,
             "onboarding_stage": profile.onboarding_stage.value if profile.onboarding_stage else models.OnboardingStage.APPLIED.value,
             "onboarding_meta": profile.onboarding_meta or {},
             "is_approved": profile.is_approved,

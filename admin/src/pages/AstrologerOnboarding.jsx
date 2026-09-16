@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { cms } from '../services/api';
-import { ArrowRight, RotateCcw, X, Mail, Ban, Phone, Languages, Eye } from 'lucide-react';
+import { ArrowRight, RotateCcw, X, Mail, Ban, Phone, Languages, Eye, Calendar } from 'lucide-react';
 import { Avatar } from '../components/ui';
 import Modal from '../components/Modal';
 
@@ -229,6 +229,12 @@ const AstrologerOnboarding = () => {
                                                 {astro.profile?.experience_years ? `${astro.profile.experience_years} yrs experience` : 'Experience N/A'}
                                                 {astro.profile?.city ? ` · ${astro.profile.city}` : ''}
                                             </div>
+                                            {astro.applied_at && (
+                                                <div className="text-xs text-gray-900 mb-1 flex items-center gap-1">
+                                                    <Calendar size={11} className="flex-shrink-0" />
+                                                    Applied {new Date(astro.applied_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </div>
+                                            )}
                                             {astro.phone_number && (
                                                 <div className="text-xs text-gray-900 mb-1 flex items-center gap-1">
                                                     <Phone size={11} className="flex-shrink-0" /> {astro.phone_number}
