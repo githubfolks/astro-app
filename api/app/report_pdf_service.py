@@ -588,7 +588,7 @@ def generate_free_kundli_pdf(
     _free_tool_cover(elements, styles, "Free Kundli (Birth Chart) Report", "Vedic Sidereal Chart · Lahiri Ayanamsha")
 
     try:
-        dob = date.fromisoformat(str(date_of_birth)[:10])
+        dob = _date.fromisoformat(str(date_of_birth)[:10])
         day, month, year = dob.day, dob.month, dob.year
     except (ValueError, TypeError):
         day = month = year = None
