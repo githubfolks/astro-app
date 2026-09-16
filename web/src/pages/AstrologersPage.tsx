@@ -1,9 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AstrologerList from '../components/AstrologerList';
 import SEO from '../components/SEO';
 import { api } from '../services/api';
+
+// Kept in sync with web/scripts/generate-sitemap.js's city list. These pages
+// have no other internal links anywhere on the site — without this, they're
+// only reachable via sitemap.xml, which Search Console was flagging as
+// "Discovered - currently not indexed" for lack of crawl-priority signal.
+const CITIES = [
+    { slug: 'delhi', name: 'Delhi NCR' },
+    { slug: 'mumbai', name: 'Mumbai' },
+    { slug: 'bangalore', name: 'Bangalore' },
+    { slug: 'kolkata', name: 'Kolkata' },
+    { slug: 'chennai', name: 'Chennai' },
+    { slug: 'hyderabad', name: 'Hyderabad' },
+    { slug: 'pune', name: 'Pune' },
+    { slug: 'ahmedabad', name: 'Ahmedabad' },
+];
 
 const buildStructuredData = (trustStats: { total_reviews: number, average_rating: number } | null) => ({
     '@context': 'https://schema.org',
@@ -74,6 +90,20 @@ const AstrologersPage: React.FC = () => {
                 <h1 className="sr-only">Talk to Verified Astrologers Online</h1>
                 <div className="page-content" style={{ minHeight: '60vh' }}>
                     <AstrologerList />
+                </div>
+                <div className="container mx-auto px-4 py-12">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Browse Astrologers by City</h2>
+                    <div className="flex flex-wrap gap-3">
+                        {CITIES.map((city) => (
+                            <Link
+                                key={city.slug}
+                                to={`/astrologers/city/${city.slug}`}
+                                className="px-4 py-2 rounded-full border border-gray-200 text-sm text-gray-700 hover:border-amber-400 hover:text-amber-600 transition-colors"
+                            >
+                                Astrologers in {city.name}
+                            </Link>
+                        ))}
+                    </div>
                 </div>
             </main>
             <Footer />

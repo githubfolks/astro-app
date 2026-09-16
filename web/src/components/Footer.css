@@ -8,8 +8,8 @@
 
 .footer-content {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
-    /* 4 Columns: Brand, Services, Company, Contact */
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr;
+    /* 5 Columns: Brand, Services, Compare, Company, Contact */
     gap: 40px;
     margin-bottom: 60px;
 }

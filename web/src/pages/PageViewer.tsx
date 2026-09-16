@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 import { api } from '../services/api';
 
 const PageViewer: React.FC = () => {
@@ -59,6 +60,12 @@ const PageViewer: React.FC = () => {
     if (error || !page) {
         return (
             <div className="flex flex-col min-h-screen">
+                {/* This route is served by nginx's SPA fallback at HTTP 200 (no
+                    server-side knowledge of which CMS slugs exist), so the real
+                    HTTP status can't be a 404 here. noindex is the only signal
+                    available to stop Google flagging the URL as a soft 404 and
+                    to keep it out of the index. */}
+                <SEO title="Page Not Found" description="The page you're looking for doesn't exist." noindex />
                 <Header />
                 <div className="flex-1 container mx-auto px-4 py-12 text-center">
                     <h1 className="text-4xl text-gray-800 mb-4 mt-4">404</h1>
