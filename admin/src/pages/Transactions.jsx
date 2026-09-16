@@ -59,10 +59,9 @@ export default function Transactions() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setPage(0);
-            fetchTransactions();
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchQuery, fetchTransactions]);
+    }, [searchQuery]);
 
     const handleExportCsv = async () => {
         setCsvLoading(true);

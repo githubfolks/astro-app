@@ -57,14 +57,16 @@ export default function Users() {
         fetchUsers();
     }, [fetchUsers]);
 
-    // Debounce search
+    // Debounce search — reset to page 0 only when the search text itself
+    // changes. Must not depend on fetchUsers: that callback's identity also
+    // changes on page navigation, which previously re-armed this timer and
+    // snapped the page back to 0 shortly after the user paged forward.
     useEffect(() => {
         const timer = setTimeout(() => {
             setPage(0);
-            fetchUsers();
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchQuery, fetchUsers]);
+    }, [searchQuery]);
 
     const handleDelete = async (userId) => {
         if (window.confirm("Are you sure you want to delete this user?")) {

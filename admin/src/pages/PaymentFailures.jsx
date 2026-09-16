@@ -42,10 +42,9 @@ export default function PaymentFailures() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setPage(0);
-            fetchFailures();
         }, 500);
         return () => clearTimeout(timer);
-    }, [searchQuery, fetchFailures]);
+    }, [searchQuery]);
 
     return (
         <div className="space-y-6">

@@ -47,10 +47,9 @@ export default function ErrorLogs() {
     useEffect(() => {
         const timer = setTimeout(() => {
             setPage(0);
-            fetchLogs();
         }, 500);
         return () => clearTimeout(timer);
-    }, [pathFilter, errorTypeFilter, sourceFilter, fetchLogs]);
+    }, [pathFilter, errorTypeFilter, sourceFilter]);
 
     return (
         <div className="space-y-6">
