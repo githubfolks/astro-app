@@ -1591,7 +1591,7 @@ export const Chat: React.FC = () => {
                 which on the mobile build would leave the WebView and strand the chat. */}
             {previewImageUrl && (
                 <div
-                    className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+                    className="fixed inset-0 z-[10000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
                     onClick={() => setPreviewImageUrl(null)}
                 >
                     <button

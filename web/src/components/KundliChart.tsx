@@ -184,7 +184,7 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
                             >
                                 {sign
                                     ? `${lang === 'hi' ? RASHI_SHORT_HI[sign.sign] || sign.sign : RASHI_ABBR[sign.sign] || sign.sign.substring(0, 3)}(${sign.signId})`
-                                    : ''} · {lang === 'hi' ? UI_HI.house.charAt(0) : 'H'}{house}
+                                    : ''}
                                 {house === 1 && (lang === 'hi' ? ` (${UI_HI.lagna})` : ' (Asc)')}
                             </text>
 
