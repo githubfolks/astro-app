@@ -1,8 +1,10 @@
 import type { ChatHistoryItem } from '../types';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { App as CapApp } from '@capacitor/app';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { getErrorMessage } from '../utils/errors';
+import { isNative } from '../utils/platform';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const WS_URL = API_URL.replace(/^http/, 'ws') + '/chat/ws';
@@ -35,6 +37,10 @@ export const useChat = (consultationId: string) => {
     const [sessionError, setSessionError] = useState<string | null>(null);
     const [endedReason, setEndedReason] = useState<string | null>(null);
     const [resumeError, setResumeError] = useState<string | null>(null);
+    // This client's own socket is mid-reconnect (does not affect `status`).
+    const [isReconnecting, setIsReconnecting] = useState(false);
+    // Server-confirmed: the other party's socket is down and within its grace window.
+    const [peerReconnecting, setPeerReconnecting] = useState(false);
 
     // Reconnection state
     const shouldReconnect = useRef(true);
@@ -79,6 +85,7 @@ export const useChat = (consultationId: string) => {
             // query string ends up in access logs/proxies/browser history.
             socket.send(JSON.stringify({ token }));
             reconnectAttempt.current = 0;
+            setIsReconnecting(false);
             startHeartbeat(socket);
             setStatus(prev => (prev === 'ENDED' || prev === 'PAUSED' || prev === 'ACCEPTED') ? prev : 'CONNECTING');
         };
@@ -129,12 +136,17 @@ export const useChat = (consultationId: string) => {
                     setStatus('ENDED');
                     setTimerActive(false);
                     setEndedReason(data.reason ?? null);
+                    setPeerReconnecting(false);
                     break;
                 case 'CONSULTATION_PAUSED':
                     setStatus('PAUSED');
                     setTimerActive(false);
                     setPauseReason(data.reason ?? null);
                     setResumeError(null);
+                    setPeerReconnecting(false);
+                    break;
+                case 'PEER_CONNECTION_STATUS':
+                    setPeerReconnecting(!data.connected);
                     break;
                 case 'CONSULTATION_RESUMED':
                     setStatus('ACTIVE');
@@ -179,7 +191,12 @@ export const useChat = (consultationId: string) => {
                 return;
             }
 
-            setStatus(prev => (prev === 'ENDED' || prev === 'PAUSED') ? prev : 'PAUSED');
+            // A reconnect attempt is about to be scheduled below — this may just be a
+            // transient blip the server's own grace window will absorb, so don't flip
+            // `status` to PAUSED here. The server is authoritative: if the drop outlasts
+            // its grace window it broadcasts CONSULTATION_PAUSED itself, or the next
+            // STATE_SYNC on reconnect will report PAUSED if it already did.
+            setIsReconnecting(true);
 
             // Exponential backoff: 1s, 2s, 4s, 8s, ... capped at 30s
             const delay = Math.min(1000 * 2 ** reconnectAttempt.current, MAX_RECONNECT_DELAY_MS);
@@ -246,9 +263,21 @@ export const useChat = (consultationId: string) => {
         const onVisibilityChange = () => { if (document.visibilityState === 'visible') tryReconnectNow(); };
         document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('online', tryReconnectNow);
+
+        // Android WebViews don't reliably fire visibilitychange on resume —
+        // appStateChange is the native-guaranteed signal (same fix already
+        // applied to RealtimeContext.tsx's presence socket).
+        let appStateHandle: { remove: () => void } | undefined;
+        if (isNative()) {
+            CapApp.addListener('appStateChange', ({ isActive }) => {
+                if (isActive) tryReconnectNow();
+            }).then(h => { appStateHandle = h; });
+        }
+
         return () => {
             document.removeEventListener('visibilitychange', onVisibilityChange);
             window.removeEventListener('online', tryReconnectNow);
+            appStateHandle?.remove();
         };
     }, [connect]);
 
@@ -295,5 +324,6 @@ export const useChat = (consultationId: string) => {
         moderationAlert, dismissModerationAlert: () => setModerationAlert(null),
         sessionError, dismissSessionError: () => setSessionError(null),
         endedReason, resumeError,
+        isReconnecting, peerReconnecting,
     };
 };

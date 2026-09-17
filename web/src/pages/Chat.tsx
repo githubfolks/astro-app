@@ -243,7 +243,7 @@ export const Chat: React.FC = () => {
     }, [activeConsultationId, token, user]);
 
 
-    const { messages, sendMessage, sendTyping, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, isTyping, moderationAlert, dismissModerationAlert, sessionError, endedReason, resumeError } = useChat(activeConsultationId || '');
+    const { messages, sendMessage, sendTyping, endChat, resumeChat, status, pauseReason, billingInfo, timerActive, lowBalance, isTyping, moderationAlert, dismissModerationAlert, sessionError, endedReason, resumeError, isReconnecting, peerReconnecting } = useChat(activeConsultationId || '');
 
     // Groq-generated coaching hint for the astrologer: refreshed whenever the seeker sends a new message.
     const [coachHint, setCoachHint] = useState<string | null>(null);
@@ -1126,13 +1126,20 @@ export const Chat: React.FC = () => {
                                 ) : timerActive ? (
                                     <div className="flex items-center gap-1 md:gap-2 text-green-700 bg-green-50 px-2 md:px-3 py-1 rounded-full border border-green-200 text-xs md:text-sm font-medium">
                                         <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-                                        <span className="font-mono">Active</span>
+                                        <span className="font-mono">{isReconnecting ? 'Reconnecting…' : 'Active'}</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-1 md:gap-2 text-yellow-700 bg-yellow-50 px-2 md:px-3 py-1 rounded-full border border-yellow-200 text-xs md:text-sm font-medium">
                                         <Clock size={14} className="md:hidden" />
                                         <Clock size={16} className="hidden md:block" />
                                         <span className="font-mono">Waiting</span>
+                                    </div>
+                                )}
+
+                                {peerReconnecting && status !== 'PAUSED' && (
+                                    <div className="flex items-center gap-1 text-amber-700 bg-amber-50 px-2 md:px-3 py-1 rounded-full border border-amber-200 text-xs md:text-sm font-medium">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse flex-shrink-0" />
+                                        <span>{opponentName ? `${opponentName} reconnecting…` : 'Reconnecting…'}</span>
                                     </div>
                                 )}
 

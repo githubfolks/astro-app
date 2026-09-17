@@ -51,12 +51,16 @@ class ConnectionManager:
     def __init__(self):
         # Map consultation_id -> List of {ws, role, user_id}
         self.active_connections: dict[int, list[dict]] = {}
+        # Pending "disconnected but might still reconnect" timers, keyed by
+        # (consultation_id, role.value) so each side is tracked independently.
+        self.grace_tasks: dict[tuple[int, str], asyncio.Task] = {}
+        self._grace_locks: dict[int, asyncio.Lock] = {}
 
     async def connect(self, websocket: WebSocket, consultation_id: int, user: models.User):
         # Socket is already accepted by receive_ws_token() during the auth handshake.
         if consultation_id not in self.active_connections:
             self.active_connections[consultation_id] = []
-        
+
         self.active_connections[consultation_id].append({
             "ws": websocket,
             "role": user.role,
@@ -79,6 +83,54 @@ class ConnectionManager:
                     await connection["ws"].send_text(json.dumps(message))
                 except Exception as e:
                     logger.error(f"Error sending message: {e}")
+
+    def role_connected(self, consultation_id: int, role: "models.UserRole") -> bool:
+        return any(c["role"] == role for c in self.active_connections.get(consultation_id, []))
+
+    def _lock_for(self, consultation_id: int) -> asyncio.Lock:
+        lock = self._grace_locks.get(consultation_id)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._grace_locks[consultation_id] = lock
+        return lock
+
+    async def schedule_grace(self, consultation_id: int, role: "models.UserRole"):
+        """Start a grace-period timer for a dropped side instead of pausing immediately.
+        A no-op if one is already counting down for this (consultation, role), so
+        rapid disconnect/reconnect flapping never stacks duplicate timers."""
+        key = (consultation_id, role.value)
+        async with self._lock_for(consultation_id):
+            existing = self.grace_tasks.get(key)
+            if existing and not existing.done():
+                return
+            self.grace_tasks[key] = asyncio.create_task(self._grace_expire(consultation_id, role))
+
+    async def cancel_grace(self, consultation_id: int, role: "models.UserRole") -> bool:
+        """Cancel a pending grace timer (called on reconnect). Returns True if one was cancelled."""
+        key = (consultation_id, role.value)
+        async with self._lock_for(consultation_id):
+            task = self.grace_tasks.pop(key, None)
+            if task and not task.done():
+                task.cancel()
+                return True
+            return False
+
+    async def _grace_expire(self, consultation_id: int, role: "models.UserRole"):
+        from ..services.settings_service import get_setting
+        try:
+            grace_secs = float(get_setting("disconnect_grace_seconds") or 25)
+        except (TypeError, ValueError):
+            grace_secs = 25.0
+        try:
+            await asyncio.sleep(grace_secs)
+        except asyncio.CancelledError:
+            return
+        key = (consultation_id, role.value)
+        async with self._lock_for(consultation_id):
+            self.grace_tasks.pop(key, None)
+            if self.role_connected(consultation_id, role):
+                return
+            await _pause_active_consultation_on_disconnect(consultation_id, role)
 
 manager = ConnectionManager()
 
@@ -632,6 +684,12 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
 
         await manager.connect(websocket, consultation_id, user)
         logger.info(f"WS connected: user={user.id} role={user.role} consultation={consultation_id}")
+        if await manager.cancel_grace(consultation_id, user.role):
+            await manager.broadcast(consultation_id, {
+                "type": "PEER_CONNECTION_STATUS",
+                "peer_role": user.role.value,
+                "connected": True,
+            }, exclude_user_id=user.id)
     except Exception as e:
         logger.error(f"WS exception during handshake (consultation {consultation_id}): {e}")
         await websocket.close(code=4000)
@@ -827,7 +885,7 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, consultation_id)
-        await _pause_active_consultation_on_disconnect(consultation_id, user.role)
+        await _handle_disconnect(consultation_id, user.role)
 
     except Exception as e:
         logger.error(f"WebSocket Error: {e}")
@@ -838,10 +896,29 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
         manager.disconnect(websocket, consultation_id)
         # Any other socket-level failure means the connection is just as gone as a
         # clean disconnect — billing must not keep running against an empty room.
-        await _pause_active_consultation_on_disconnect(consultation_id, user.role)
+        await _handle_disconnect(consultation_id, user.role)
 
     finally:
         db.close()
+
+
+async def _handle_disconnect(consultation_id: int, disconnected_role: "models.UserRole"):
+    """Called the instant a socket drops. Rather than pausing immediately, give the
+    dropped side a grace window to silently reconnect (transient network blips,
+    backgrounded tabs, heartbeat misses) — only escalate to the full PAUSED state
+    if it doesn't reconnect in time. The still-connected peer is told right away
+    via a lightweight, non-blocking status event so the UI can show a small
+    "reconnecting…" indicator instead of the full pause overlay."""
+    with database.SessionLocal() as db_disc:
+        cons = db_disc.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
+        if not cons or cons.status != models.ConsultationStatus.ACTIVE:
+            return
+    await manager.broadcast(consultation_id, {
+        "type": "PEER_CONNECTION_STATUS",
+        "peer_role": disconnected_role.value,
+        "connected": False,
+    })
+    await manager.schedule_grace(consultation_id, disconnected_role)
 
 
 async def _pause_active_consultation_on_disconnect(consultation_id: int, disconnected_role: "models.UserRole"):

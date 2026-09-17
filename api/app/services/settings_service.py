@@ -26,6 +26,9 @@ DEFAULTS: dict[str, str] = {
     "moderation_admin_template": "[ALERT] Moderation flag ({reason}) in consultation {consultation_id} by user {user_id}: {snippet}",
     "request_stale_minutes": "5",
     "presence_ttl_seconds": "60",
+    # How long a dropped chat socket gets to silently reconnect before the
+    # consultation is actually flipped to PAUSED (billing keeps running until then).
+    "disconnect_grace_seconds": "25",
     "promo_first_chat_amount": "49",  # flat ₹ charged for a seeker's first 5 minutes of their very first chat
     "facebook_page_id": "",
     "facebook_access_token": "",
