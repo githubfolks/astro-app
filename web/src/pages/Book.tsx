@@ -1,7 +1,7 @@
 import type { Course, CourseMaterial } from '../types';
 import { getErrorMessage, getErrorStatus } from '../utils/errors';
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
@@ -29,6 +29,7 @@ const bookStructuredData = {
 const Book: React.FC = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -38,7 +39,8 @@ const Book: React.FC = () => {
         loading: boolean;
         success: boolean;
         error: string | null;
-    }>({ loading: false, success: false, error: null });
+        insufficientBalance: boolean;
+    }>({ loading: false, success: false, error: null, insufficientBalance: false });
 
     // AOS is a single shared module instance across the whole app, and its config
     // is merged (not replaced) on every AOS.init() call. AstrologerList.tsx inits
@@ -70,6 +72,21 @@ const Book: React.FC = () => {
         }
     }, [courses, loading]);
 
+    // After being sent to /login mid-enrollment (see handleEnroll below) and coming
+    // back authenticated, Login.tsx forwards us here with the course the user was
+    // viewing so they land back in its details modal instead of the bare course list.
+    useEffect(() => {
+        const returnCourseId = (location.state as { courseId?: number } | null)?.courseId;
+        if (!loading && returnCourseId != null) {
+            const course = courses.find((c) => c.id === returnCourseId);
+            if (course) {
+                handleViewDetails(course);
+            }
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading, courses]);
+
     const loadCourses = async () => {
         try {
             const data = await api.edu.getCourses();
@@ -83,7 +100,7 @@ const Book: React.FC = () => {
 
     const handleViewDetails = async (course: Course) => {
         setSelectedCourse(course);
-        setEnrollmentStatus({ loading: false, success: false, error: null });
+        setEnrollmentStatus({ loading: false, success: false, error: null, insufficientBalance: false });
         setLoadingMaterials(true);
         setMaterials([]);
         try {
@@ -107,17 +124,18 @@ const Book: React.FC = () => {
             setEnrollmentStatus({
                 loading: false,
                 success: false,
-                error: 'No active batches available for this course. Please contact support.'
+                error: 'No active batches available for this course. Please contact support.',
+                insufficientBalance: false
             });
             return;
         }
 
-        setEnrollmentStatus({ loading: true, success: false, error: null });
+        setEnrollmentStatus({ loading: true, success: false, error: null, insufficientBalance: false });
         try {
             if ((selectedCourse.price ?? 0) > 0) {
                 const confirmed = window.confirm(`This course costs ₹${selectedCourse.price}. The amount will be deducted from your wallet balance. Do you want to proceed?`);
                 if (!confirmed) {
-                    setEnrollmentStatus({ loading: false, success: false, error: null });
+                    setEnrollmentStatus({ loading: false, success: false, error: null, insufficientBalance: false });
                     return;
                 }
             }
@@ -126,17 +144,16 @@ const Book: React.FC = () => {
                 user_id: user?.id,
                 batch_id: selectedCourse.batches[0].id
             });
-            setEnrollmentStatus({ loading: false, success: true, error: null });
+            setEnrollmentStatus({ loading: false, success: true, error: null, insufficientBalance: false });
             loadCourses(); // Refresh courses to get updated is_enrolled status
         } catch (e) {
-            let errorMsg = getErrorMessage(e) || 'Enrollment failed. Please try again or contact support.';
-            if (getErrorStatus(e) === 402) {
-                errorMsg = "Insufficient wallet balance. Please recharge your wallet to enroll.";
-            }
+            const isInsufficientBalance = getErrorStatus(e) === 402;
+            const errorMsg = getErrorMessage(e) || 'Enrollment failed. Please try again or contact support.';
             setEnrollmentStatus({
                 loading: false,
                 success: false,
-                error: errorMsg
+                error: errorMsg,
+                insufficientBalance: isInsufficientBalance
             });
         }
     };
@@ -354,9 +371,19 @@ const Book: React.FC = () => {
                             </div>
 
                             {enrollmentStatus.error && (
-                                <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-2 border border-red-100 animate-in slide-in-from-top-2">
-                                    <AlertCircle size={18} />
-                                    <span className="text-sm font-medium">{enrollmentStatus.error}</span>
+                                <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 animate-in slide-in-from-top-2 text-left">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle size={18} className="shrink-0" />
+                                        <span className="text-sm font-medium">{enrollmentStatus.error}</span>
+                                    </div>
+                                    {enrollmentStatus.insufficientBalance && (
+                                        <button
+                                            onClick={() => navigate(`/dashboard?recharge=1`)}
+                                            className="mt-3 w-full bg-red-600 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-red-700 transition-all"
+                                        >
+                                            Recharge Wallet
+                                        </button>
+                                    )}
                                 </div>
                             )}
                         </div>

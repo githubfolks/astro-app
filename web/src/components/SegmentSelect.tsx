@@ -56,7 +56,7 @@ function SegmentSelect<T extends string | number>({ id, value, options, onChange
     const selectedLabel = options.find((o) => o.value === value)?.label;
 
     return (
-        <div ref={containerRef} className="relative">
+        <div ref={containerRef} className="relative min-w-0">
             <button
                 ref={buttonRef}
                 id={id}

@@ -1282,8 +1282,8 @@ export const Dashboard: React.FC = () => {
                                         placeholder="Enter your mobile number"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="min-w-0">
                                         <label className="block text-xs font-bold text-gray-900 mb-1">Date of Birth</label>
                                         <DatePicker
                                             value={seekerProfile.date_of_birth || ''}
@@ -1291,7 +1291,7 @@ export const Dashboard: React.FC = () => {
                                             className="w-full border border-gray-200 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
                                         />
                                     </div>
-                                    <div>
+                                    <div className="min-w-0">
                                         <label className="block text-xs font-bold text-gray-900 mb-1">Time of Birth</label>
                                         <TimePicker
                                             value={seekerProfile.time_of_birth || ''}

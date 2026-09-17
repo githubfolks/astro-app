@@ -17,6 +17,10 @@ export const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const justVerified = location.state?.verified === true;
+    // Pages that redirect here mid-flow (e.g. Book.tsx when an unauthenticated
+    // seeker tries to enroll) pass where to send the user back to on success.
+    const returnTo = typeof location.state?.from === 'string' ? location.state.from : null;
+    const returnState = location.state?.courseId != null ? { courseId: location.state.courseId } : undefined;
     const [isLoading, setIsLoading] = useState(false);
     const [savePassword, setSavePassword] = useState(false);
 
@@ -59,7 +63,7 @@ export const Login: React.FC = () => {
             try {
                 const profile = await api.seekers.getProfile();
                 if (isSeekerProfileComplete(profile)) {
-                    navigate('/');
+                    navigate(returnTo || '/', { state: returnState });
                     return;
                 }
             } catch (e) {
@@ -68,7 +72,7 @@ export const Login: React.FC = () => {
             navigate('/dashboard#seeker-my-profile-card');
             return;
         }
-        navigate('/');
+        navigate(returnTo || '/', { state: returnState });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
