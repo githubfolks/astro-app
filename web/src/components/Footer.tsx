@@ -102,25 +102,6 @@ const Footer: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Compare Column — these /vs/* pages have no other internal
-                        links anywhere on the site, so without this they're only
-                        reachable via sitemap.xml. Sitemap-only URLs get crawled
-                        last (if at all): Search Console was flagging all of them
-                        as "Discovered - currently not indexed". */}
-                    {!isAstrologer && (
-                        <div className="footer-column">
-                            <div className="info-group">
-                                <h3 className="footer-title">Compare</h3>
-                                <ul className="footer-links">
-                                    <li><Link to="/vs/astrotalk" onClick={scrollToTop}>vs AstroTalk</Link></li>
-                                    <li><Link to="/vs/astrosage" onClick={scrollToTop}>vs AstroSage</Link></li>
-                                    <li><Link to="/vs/astroyogi" onClick={scrollToTop}>vs Astroyogi</Link></li>
-                                    <li><Link to="/vs/anytimeastro" onClick={scrollToTop}>vs AnytimeAstro</Link></li>
-                                </ul>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Company Column */}
                     <div className="footer-column">
                         <div className="info-group">

@@ -8,6 +8,7 @@ import PageHeading from '../components/PageHeading';
 import AeoDirectAnswer from '../components/AeoDirectAnswer';
 import FAQSection from '../components/FAQSection';
 import { api } from '../services/api';
+import '../pages/services/ServicesDetail.css';
 
 const CITY_MAP: Record<string, { name: string; state: string; description: string }> = {
     delhi: {
@@ -128,7 +129,7 @@ const CityAstrologers: React.FC = () => {
     };
 
     return (
-        <div className="city-astrologers-page min-h-screen">
+        <div className="city-astrologers-page service-detail-page min-h-screen">
             <SEO
                 title={formattedTitle}
                 description={cityInfo.description}
