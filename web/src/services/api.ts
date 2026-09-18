@@ -91,15 +91,26 @@ const handleResponse = async (response: Response, defaultError: string) => {
         }
         const errorData = await response.json().catch(() => ({}));
         let errorMessage = errorData.detail || defaultError;
+        let structuredDetail: { code?: string; consultation_id?: number } | undefined;
 
         if (Array.isArray(errorData.detail)) {
             errorMessage = (errorData.detail as ValidationError[]).map((err) => {
                 const field = err.loc ? err.loc[err.loc.length - 1] : 'error';
                 return `${String(field).replace('_', ' ')}: ${err.msg}`;
             }).join(', ');
+        } else if (errorData.detail && typeof errorData.detail === 'object') {
+            // Some endpoints (e.g. "you already have an active consultation") return a
+            // structured detail so the caller can act on it, not just display it.
+            errorMessage = errorData.detail.message || defaultError;
+            structuredDetail = errorData.detail;
         }
 
-        throw new Error(errorMessage);
+        const error = new Error(errorMessage);
+        if (structuredDetail) {
+            (error as Error & { code?: string; consultationId?: number }).code = structuredDetail.code;
+            (error as Error & { code?: string; consultationId?: number }).consultationId = structuredDetail.consultation_id;
+        }
+        throw error;
     }
     return response.json();
 };

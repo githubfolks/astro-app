@@ -54,8 +54,14 @@ async def _geocode_and_generate(dob, tob, place: str):
 
 
 def _has_complete_dasha(data: dict) -> bool:
-    levels = {p.get("level") for p in data.get("vimshottari_dasha", {}).get("active_periods", [])}
-    return {"Mahadasha", "Antardasha", "Pratyantardasha"}.issubset(levels)
+    vimshottari = data.get("vimshottari_dasha", {})
+    levels = {p.get("level") for p in vimshottari.get("active_periods", [])}
+    has_active_periods = {"Mahadasha", "Antardasha", "Pratyantardasha"}.issubset(levels)
+    # Also require the full-life timeline (used to show the seeker's next
+    # Mahadasha) — older cached rows generated before it was consumed anywhere
+    # would otherwise pass this check and get reused forever without it.
+    has_timeline = bool(vimshottari.get("timeline"))
+    return has_active_periods and has_timeline
 
 
 def _find_reusable_kundli_chart(db: Session, dob, tob, place: str):
@@ -129,7 +135,8 @@ async def generate_kundli_report(
     # incompatible with the current frontend — treat those as stale and
     # regenerate rather than serving unusable cached data. Same for reports
     # cached before the dasha_levels fix / older FreeAstroAPI contract, whose
-    # active_periods may be missing a level (e.g. no Antardasha) — regenerate
+    # active_periods may be missing a level (e.g. no Antardasha), or missing
+    # the full-life `timeline` (used to show the next Mahadasha) — regenerate
     # those too rather than serving an incomplete dasha chain forever.
     existing = db.query(models.KundliReport).filter(
         models.KundliReport.date_of_birth == dob,

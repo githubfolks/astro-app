@@ -3,6 +3,7 @@ import { X, HelpCircle } from 'lucide-react';
 import CityAutocomplete from './CityAutocomplete';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
+import SegmentSelect from './SegmentSelect';
 
 export interface PreChatAnswers {
     topic: string;
@@ -95,16 +96,13 @@ const PreChatQuestionsModal: React.FC<PreChatQuestionsModalProps> = ({
                         <label className="block text-sm font-semibold text-gray-700 mb-1">
                             What would you like to discuss? *
                         </label>
-                        <select
-                            value={topic}
-                            onChange={(e) => setTopic(e.target.value)}
+                        <SegmentSelect
+                            value={topic || undefined}
+                            onChange={setTopic}
+                            options={TOPICS.map((t) => ({ value: t, label: t }))}
+                            placeholder="Select a topic"
                             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none"
-                        >
-                            <option value="">Select a topic</option>
-                            {TOPICS.map((t) => (
-                                <option key={t} value={t}>{t}</option>
-                            ))}
-                        </select>
+                        />
                     </div>
 
                     {requiresSpouseDetails && (

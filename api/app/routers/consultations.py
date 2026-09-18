@@ -34,7 +34,11 @@ def request_consultation(request: schemas.ConsultationCreate, current_user: mode
     if existing:
         raise HTTPException(
             status_code=409,
-            detail=f"You already have an active consultation (id={existing.id}). End it before starting a new one."
+            detail={
+                "message": f"You already have an active consultation (id={existing.id}). End it before starting a new one.",
+                "code": "ACTIVE_CONSULTATION_EXISTS",
+                "consultation_id": existing.id,
+            }
         )
 
     # Get astrologer fee

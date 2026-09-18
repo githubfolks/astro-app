@@ -198,9 +198,9 @@ export interface Horoscope {
 /** A chat message as returned by the history endpoint. */
 export interface ChatHistoryItem {
     id: number;
-    sender_id: number;
+    sender_id: number | null; // null for system notices (message_type === 'system')
     message: string;
-    message_type?: 'text' | 'image';
+    message_type?: 'text' | 'image' | 'system';
     media_url?: string | null;
     timestamp: string;
 }
@@ -310,6 +310,13 @@ export interface DashaPeriod {
     path: string[];
 }
 
+export interface MahadashaTimelineEntry {
+    lord: string;
+    start: string;
+    end: string;
+    duration_years: number;
+}
+
 export interface VimshottariDasha {
     moon_nakshatra?: NakshatraRef;
     birth_balance?: {
@@ -322,6 +329,8 @@ export interface VimshottariDasha {
         remaining_years: number;
     };
     active_periods?: DashaPeriod[];
+    // Full-life Mahadasha sequence (birth to ~120 years), all 9 planets.
+    timeline?: MahadashaTimelineEntry[];
 }
 
 export interface Yoga {

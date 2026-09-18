@@ -1963,8 +1963,15 @@
             "type": "string"
           },
           "sender_id": {
-            "title": "Sender Id",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sender Id"
           },
           "timestamp": {
             "format": "date-time",
@@ -1974,7 +1981,6 @@
         },
         "required": [
           "id",
-          "sender_id",
           "message",
           "timestamp"
         ],

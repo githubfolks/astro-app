@@ -29,6 +29,11 @@ DEFAULTS: dict[str, str] = {
     # How long a dropped chat socket gets to silently reconnect before the
     # consultation is actually flipped to PAUSED (billing keeps running until then).
     "disconnect_grace_seconds": "25",
+    # If a connected socket sends nothing (not even a heartbeat PING) for this
+    # long, treat it as backgrounded/idle and pause the consultation — the OS
+    # can keep a mobile app's WebSocket technically open for a long time after
+    # it's backgrounded, so billing must not rely on the socket actually closing.
+    "chat_inactivity_timeout_minutes": "5",
     "promo_first_chat_amount": "49",  # flat ₹ charged for a seeker's first 5 minutes of their very first chat
     "facebook_page_id": "",
     "facebook_access_token": "",

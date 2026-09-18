@@ -301,7 +301,7 @@ class TrustStats(BaseModel):
 
 class ChatMessage(BaseModel):
     id: int
-    sender_id: int
+    sender_id: Optional[int] = None  # null for system notices (message_type == "system")
     message: str
     message_type: str = "text"
     media_url: Optional[str] = None

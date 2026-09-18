@@ -1,4 +1,4 @@
-import { getErrorMessage } from '../utils/errors';
+import { getErrorMessage, getErrorConsultationId } from '../utils/errors';
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useChat } from '../hooks/useChat';
@@ -158,8 +158,16 @@ export const Chat: React.FC = () => {
         } catch (error) {
             console.error("Error creating consultation:", error);
             const message = getErrorMessage(error) || "Failed to start chat session. Please try again.";
-            alert(message);
             setShowPreChatModal(false);
+            // Already have a live session (e.g. this request raced with another tab,
+            // or the pre-check below missed it) — resume it instead of bouncing the
+            // seeker back to the dashboard.
+            const existingConsultationId = getErrorConsultationId(error);
+            if (existingConsultationId) {
+                navigate(`/chat/${existingConsultationId}`, { replace: true });
+                return;
+            }
+            alert(message);
             if (message.toLowerCase().includes('insufficient balance')) {
                 navigate('/dashboard?recharge=1');
             } else {
@@ -173,9 +181,24 @@ export const Chat: React.FC = () => {
     // Initialize consultation or set active ID
     useEffect(() => {
         if (astrologerId && !consultationId && token && user) {
-            // Seekers answer a short pre-chat questionnaire before the consultation is created.
+            // Seekers can only be in one chat at a time (server also enforces this,
+            // see createNewConsultation's catch block) — if they already have one
+            // running, jump straight back into it instead of showing the pre-chat
+            // questionnaire for a "new" chat that the server would just reject.
             if (user.role === 'SEEKER') {
-                setShowPreChatModal(true);
+                const BLOCKING_STATUSES = ['REQUESTED', 'ACCEPTED', 'ACTIVE', 'PAUSED'];
+                api.consultations.getHistory().then((history: { id: number; status: string }[]) => {
+                    const existing = history.find(c => BLOCKING_STATUSES.includes(c.status));
+                    if (existing) {
+                        navigate(`/chat/${existing.id}`, { replace: true });
+                    } else {
+                        setShowPreChatModal(true);
+                    }
+                }).catch(() => {
+                    // History check failed — fall through to the normal flow; the
+                    // server-side guard in createNewConsultation still applies.
+                    setShowPreChatModal(true);
+                });
                 return;
             }
             createNewConsultation();
@@ -1312,6 +1335,8 @@ export const Chat: React.FC = () => {
                                         {pauseReason === 'astrologer_disconnected' && 'Astrologer disconnected. Waiting for them to rejoin.'}
                                         {pauseReason === 'seeker_disconnected' && 'You were disconnected. Ready to resume?'}
                                         {pauseReason === 'insufficient_balance' && 'Your wallet balance ran out.'}
+                                        {pauseReason === 'seeker_inactive_timeout' && "You were away for too long, so we paused the chat to stop billing. Tap Resume when you're back."}
+                                        {pauseReason === 'astrologer_inactive_timeout' && 'The astrologer was away for too long and got disconnected. Waiting for them to rejoin.'}
                                         {!pauseReason && 'Chat session is currently paused.'}
                                     </p>
                                 </div>
@@ -1424,13 +1449,22 @@ export const Chat: React.FC = () => {
                                 </div>
                             )}
                             {messages.map((msg, idx) => {
+                                if (msg.type === 'SYSTEM' || msg.message_type === 'system') {
+                                    return (
+                                        <div key={idx} className="flex justify-center animate-fade-in">
+                                            <div className="max-w-[90%] text-center text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
+                                                {msg.content}
+                                            </div>
+                                        </div>
+                                    );
+                                }
                                 const isMe = msg.sender_id === user?.id;
                                 const isImage = msg.message_type === 'image' && !!msg.media_url;
                                 const showTranslation = !isImage && !isMe && chatLanguage === 'hi' && msg.id !== undefined;
                                 const translation = showTranslation ? translatedText[msg.id as number] : undefined;
                                 return (
                                     <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-                                        <div className={`max-w-[85%] md:max-w-[70%] rounded-2xl shadow-sm ${isImage ? 'p-2' : 'px-4 py-2'} ${isMe
+                                        <div className={`min-w-0 max-w-[85%] md:max-w-[70%] rounded-2xl shadow-sm ${isImage ? 'p-2' : 'px-4 py-2'} ${isMe
                                             ? 'bg-[#E91E63] text-white rounded-br-none'
                                             : 'bg-white text-gray-900 border border-gray-100 rounded-bl-none'
                                             }`}>
@@ -1447,7 +1481,7 @@ export const Chat: React.FC = () => {
                                                     />
                                                 </button>
                                             ) : (
-                                                <p className="text-sm md:text-base leading-relaxed">{translation || msg.content}</p>
+                                                <p className="text-sm md:text-base leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap">{translation || msg.content}</p>
                                             )}
                                             {showTranslation && (
                                                 <p className={`text-xs italic mt-1 ${translation ? 'text-gray-400' : 'text-gray-300'}`}>

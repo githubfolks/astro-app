@@ -174,6 +174,13 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     const activePeriods = apiActivePeriods && subDasha
         ? [...apiActivePeriods, subDasha.sukshma, subDasha.prana]
         : apiActivePeriods;
+    // The next Mahadasha always starts exactly when the current one ends — use that
+    // as the join key rather than array position, since it holds regardless of how
+    // many periods FreeAstroAPI includes in active_periods.
+    const currentMahadasha = apiActivePeriods?.find(p => p.level === 'Mahadasha');
+    const nextMahadasha = currentMahadasha
+        ? chartData?.vimshottari_dasha?.timeline?.find(t => t.start === currentMahadasha.end)
+        : undefined;
     const sadeSati = chartData?.chart?.sade_sati;
     const yogas = chartData?.yogas;
     const shadbala = chartData?.shadbala;
@@ -340,6 +347,20 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                 </p>
                             </div>
                         ))}
+                        {nextMahadasha && (
+                            <div className="pt-2 border-t border-gray-100">
+                                <div className="flex justify-between items-baseline">
+                                    <span className="text-xs font-semibold text-indigo-700">
+                                        {lang === 'hi' ? UI_HI.nextMahadasha : 'Next Mahadasha'}: {hi(PLANET_NAME_HI, nextMahadasha.lord, lang)}
+                                    </span>
+                                    <span className="text-[10px] text-gray-400">
+                                        {lang === 'hi' ? UI_HI.startsOn(nextMahadasha.start) : `starts ${nextMahadasha.start}`}
+                                        {' '}
+                                        {lang === 'hi' ? UI_HI.forYears(nextMahadasha.duration_years.toFixed(1)) : `(${nextMahadasha.duration_years.toFixed(1)} yrs)`}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

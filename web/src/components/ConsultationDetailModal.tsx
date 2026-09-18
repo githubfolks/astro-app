@@ -195,6 +195,15 @@ const ConsultationDetailModal: React.FC<Props> = ({ consultation, onClose }) => 
                             ) : (
                                 <div className="space-y-3 pr-1 p-3 rounded-xl border border-gray-100" style={{ backgroundColor: '#F9FAFB' }}>
                                     {messages.map((msg) => {
+                                        if (msg.message_type === 'system') {
+                                            return (
+                                                <div key={msg.id} className="flex justify-center">
+                                                    <div className="max-w-[90%] text-center text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5">
+                                                        {msg.message}
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
                                         const isSeeker = msg.sender_id === consultation.seeker_id;
                                         const isImage = msg.message_type === 'image' && !!msg.media_url;
                                         return (

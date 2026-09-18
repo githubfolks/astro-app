@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { isNative } from '../utils/platform';
 import { getPageTitle } from '../utils/pageTitles';
 import PromoTopBar from './PromoTopBar';
+import ActiveConsultationBanner from './ActiveConsultationBanner';
 import { SERVICES_LIST, ASTROLOGER_TOOLS_LIST } from '../data/servicesList';
 
 const NATIVE_TAB_ROOTS = ['/', '/astrologers', '/dashboard'];
@@ -178,7 +179,12 @@ const Header: React.FC = () => {
     }, []);
 
     if (isNative()) {
-        return <NativeAppBar />;
+        return (
+            <>
+                <ActiveConsultationBanner />
+                <NativeAppBar />
+            </>
+        );
     }
 
     const toggleMenu = () => {
@@ -208,6 +214,7 @@ const Header: React.FC = () => {
 
     return (
         <>
+            <ActiveConsultationBanner />
             <PromoTopBar />
             <header className="site-header">
             <div className="container header-content">

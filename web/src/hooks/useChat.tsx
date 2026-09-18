@@ -14,11 +14,11 @@ const MAX_RECONNECT_DELAY_MS = 30_000;
 
 export interface Message {
     id?: number;
-    sender_id: number;
+    sender_id: number | null;
     content: string;
     timestamp: string;
     type?: 'MESSAGE' | 'SYSTEM';
-    message_type?: 'text' | 'image';
+    message_type?: 'text' | 'image' | 'system';
     media_url?: string | null;
 }
 
@@ -114,7 +114,8 @@ export const useChat = (consultationId: string) => {
                     setMessages(prev => {
                         if (prev.find(m => m.id === data.id)) return prev;
                         return [...prev, {
-                            id: data.id, sender_id: data.sender_id, content: data.content, timestamp: data.timestamp, type: 'MESSAGE',
+                            id: data.id, sender_id: data.sender_id ?? null, content: data.content, timestamp: data.timestamp,
+                            type: data.message_type === 'system' ? 'SYSTEM' : 'MESSAGE',
                             message_type: data.message_type ?? 'text', media_url: data.media_url ?? null,
                         }];
                     });
@@ -228,7 +229,7 @@ export const useChat = (consultationId: string) => {
                 timestamp: msg.timestamp,
                 message_type: msg.message_type ?? 'text',
                 media_url: msg.media_url ?? null,
-                type: 'MESSAGE' as const
+                type: msg.message_type === 'system' ? 'SYSTEM' as const : 'MESSAGE' as const
             })));
         }).catch(console.error);
     }, [consultationId, token]);

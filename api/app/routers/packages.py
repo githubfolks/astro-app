@@ -90,7 +90,11 @@ def checkout_with_package(
     if existing:
         raise HTTPException(
             status_code=409,
-            detail=f"You already have an active consultation (id={existing.id}). End it before starting a new one."
+            detail={
+                "message": f"You already have an active consultation (id={existing.id}). End it before starting a new one.",
+                "code": "ACTIVE_CONSULTATION_EXISTS",
+                "consultation_id": existing.id,
+            }
         )
 
     pkg = db.query(models.ChatPackage).filter(

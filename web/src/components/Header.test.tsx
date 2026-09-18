@@ -1,12 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { http, HttpResponse } from 'msw';
 import Header from './Header';
 import { AuthProvider } from '../context/AuthContext';
+import { server, API } from '../test/server';
 
 function renderHeaderWithUser(user: Record<string, unknown>) {
     sessionStorage.setItem('token', 'tok');
     sessionStorage.setItem('user', JSON.stringify(user));
+    // Rendered Header includes ActiveConsultationBanner, which polls this for
+    // logged-in seekers.
+    server.use(http.get(`${API}/consultations/history`, () => HttpResponse.json([])));
     return render(
         <MemoryRouter>
             <AuthProvider>

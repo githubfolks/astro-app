@@ -55,6 +55,12 @@ class ConnectionManager:
         # (consultation_id, role.value) so each side is tracked independently.
         self.grace_tasks: dict[tuple[int, str], asyncio.Task] = {}
         self._grace_locks: dict[int, asyncio.Lock] = {}
+        # Last time each connected user sent ANY message (including a PING) —
+        # a backgrounded tab/app stops running its heartbeat timer, so this
+        # timestamp is what tells billing_loop the connection is actually idle
+        # even though the socket itself hasn't dropped. Keyed by
+        # consultation_id -> user_id.
+        self.last_seen: dict[int, dict[int, datetime]] = {}
 
     async def connect(self, websocket: WebSocket, consultation_id: int, user: models.User):
         # Socket is already accepted by receive_ws_token() during the auth handshake.
@@ -66,13 +72,18 @@ class ConnectionManager:
             "role": user.role,
             "user_id": user.id
         })
+        self.last_seen.setdefault(consultation_id, {})[user.id] = datetime.utcnow()
         logger.info(f"User {user.id} ({user.role}) connected to chat {consultation_id}")
+
+    def touch(self, consultation_id: int, user_id: int):
+        self.last_seen.setdefault(consultation_id, {})[user_id] = datetime.utcnow()
 
     def disconnect(self, websocket: WebSocket, consultation_id: int):
         if consultation_id in self.active_connections:
             self.active_connections[consultation_id] = [c for c in self.active_connections[consultation_id] if c["ws"] != websocket]
             if not self.active_connections[consultation_id]:
                 del self.active_connections[consultation_id]
+                self.last_seen.pop(consultation_id, None)
 
     async def broadcast(self, consultation_id: int, message: dict, exclude_user_id: int | None = None):
         if consultation_id in self.active_connections:
@@ -538,14 +549,35 @@ async def billing_loop(consultation_id: int, rate_per_min: float, db_session_mak
             
             with db_session_maker() as db:
                 consultation = db.query(models.Consultation).filter(models.Consultation.id == consultation_id).first()
-                
+
                 # Check if still active
                 if not consultation or consultation.status != models.ConsultationStatus.ACTIVE:
                     logger.info(f"Billing loop ended for {consultation_id}: Status is {consultation.status if consultation else 'NOT_FOUND'}")
                     if redis:
                         redis.delete(f"active_consultation:{consultation_id}")
                     break
-                
+
+                # A connected socket that hasn't sent anything (not even a PING) in
+                # chat_inactivity_timeout_minutes is treated as backgrounded/idle —
+                # the OS can keep a mobile app's socket open long after its JS
+                # (and heartbeat) has been suspended, so this is the only reliable
+                # way to stop billing against a session nobody is looking at.
+                from ..services.settings_service import get_setting
+                try:
+                    idle_timeout_mins = float(get_setting("chat_inactivity_timeout_minutes") or 5)
+                except (TypeError, ValueError):
+                    idle_timeout_mins = 5.0
+                now = datetime.utcnow()
+                idle_connection = next((
+                    conn for conn in manager.active_connections.get(consultation_id, [])
+                    if (now - manager.last_seen.get(consultation_id, {}).get(conn["user_id"], now)).total_seconds() > idle_timeout_mins * 60
+                ), None)
+                if idle_connection:
+                    if redis:
+                        redis.delete(f"active_consultation:{consultation_id}")
+                    await _pause_for_inactivity(consultation_id, idle_connection["role"], idle_connection["user_id"])
+                    break
+
                 consultation.duration_seconds = (consultation.duration_seconds or 0) + 60
                 is_package_session = consultation.package_id is not None and (consultation.package_seconds_remaining or 0) > 0
 
@@ -750,6 +782,11 @@ async def websocket_endpoint(websocket: WebSocket, consultation_id: int):
             message_data = json.loads(data)
             msg_type = message_data.get("type")
 
+            # Any message — including PING — proves this connection is genuinely
+            # alive (JS is running, not just an OS-kept-open socket). See
+            # ConnectionManager.last_seen / the inactivity check in billing_loop.
+            manager.touch(consultation_id, user.id)
+
             # Rate limiting (skip PING which is client infrastructure, not user content)
             if msg_type != "PING":
                 now = datetime.utcnow().timestamp()
@@ -921,7 +958,7 @@ async def _handle_disconnect(consultation_id: int, disconnected_role: "models.Us
     await manager.schedule_grace(consultation_id, disconnected_role)
 
 
-async def _pause_active_consultation_on_disconnect(consultation_id: int, disconnected_role: "models.UserRole"):
+async def _pause_active_consultation_on_disconnect(consultation_id: int, disconnected_role: "models.UserRole", reason: str | None = None):
     """Flip an ACTIVE consultation to PAUSED when its socket drops, regardless of
     whether that surfaces as a clean WebSocketDisconnect or some other error —
     a dead connection is a dead connection either way, and billing_loop must stop
@@ -942,9 +979,61 @@ async def _pause_active_consultation_on_disconnect(consultation_id: int, disconn
             "duration_seconds_at_pause": cons.duration_seconds or 0
         })
         db_disc.commit()
-        reason = "astrologer_disconnected" if disconnected_role == models.UserRole.ASTROLOGER else "seeker_disconnected"
+        if reason is None:
+            reason = "astrologer_disconnected" if disconnected_role == models.UserRole.ASTROLOGER else "seeker_disconnected"
         await manager.broadcast(consultation_id, {"type": "CONSULTATION_PAUSED", "reason": reason})
         logger.info(f"Consultation {consultation_id} paused due to {reason}")
+
+
+async def _persist_system_message(consultation_id: int, content: str):
+    """Write a system notice (no sender) into the chat transcript so the reason
+    for a server-initiated disconnect is still visible later in chat history,
+    not just in a live banner that disappears once the session moves on."""
+    with database.SessionLocal() as db:
+        new_msg = models.ChatMessage(
+            consultation_id=consultation_id,
+            sender_id=None,
+            message=content,
+            message_type="system",
+        )
+        db.add(new_msg)
+        db.commit()
+        db.refresh(new_msg)
+        msg_id, timestamp = new_msg.id, new_msg.timestamp
+    await manager.broadcast(consultation_id, {
+        "type": "NEW_MESSAGE",
+        "id": msg_id,
+        "sender_id": None,
+        "content": content,
+        "message_type": "system",
+        "media_url": None,
+        "timestamp": str(timestamp),
+    })
+
+
+async def _pause_for_inactivity(consultation_id: int, idle_role: "models.UserRole", idle_user_id: int):
+    """A connected socket has sent nothing (not even a heartbeat PING) for
+    longer than chat_inactivity_timeout_minutes — most likely the app has been
+    backgrounded and its JS timers suspended, while the OS kept the raw socket
+    open. Force-close that side so billing stops instead of quietly continuing
+    against a session nobody is actually looking at."""
+    reason = "astrologer_inactive_timeout" if idle_role == models.UserRole.ASTROLOGER else "seeker_inactive_timeout"
+    for conn in list(manager.active_connections.get(consultation_id, [])):
+        if conn["user_id"] != idle_user_id:
+            continue
+        try:
+            await conn["ws"].close(code=4008, reason="inactivity_timeout")
+        except Exception:
+            pass
+        manager.disconnect(conn["ws"], consultation_id)
+    await _pause_active_consultation_on_disconnect(consultation_id, idle_role, reason=reason)
+    system_text = (
+        "Astrologer was inactive for 5 minutes and was disconnected. The chat was paused."
+        if idle_role == models.UserRole.ASTROLOGER else
+        "You were inactive for 5 minutes, so the chat was disconnected to stop billing."
+    )
+    await _persist_system_message(consultation_id, system_text)
+    logger.info(f"Consultation {consultation_id}: user {idle_user_id} ({idle_role}) disconnected for inactivity")
 
 
 # --- Message translation (Hindi <-> English) ---
