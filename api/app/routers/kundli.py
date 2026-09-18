@@ -53,6 +53,28 @@ async def _geocode_and_generate(dob, tob, place: str):
     return lat, lon, chart_data
 
 
+async def _regenerate_chart_data(dob, tob, lat: float, lon: float, timezone: str):
+    """Re-hit FreeAstroAPI directly from already-known coordinates — used to
+    self-heal a cached report whose chart_data predates the dasha_levels/
+    timeline fix, without re-geocoding the place of birth."""
+    try:
+        return await generate_full_kundli(
+            year=dob.year,
+            month=dob.month,
+            day=dob.day,
+            hour=tob.hour,
+            minute=tob.minute,
+            latitude=lat,
+            longitude=lon,
+            timezone=timezone,
+            dasha_levels=3,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"FreeAstroAPI error: {str(e)}")
+
+
 def _has_complete_dasha(data: dict) -> bool:
     vimshottari = data.get("vimshottari_dasha", {})
     levels = {p.get("level") for p in vimshottari.get("active_periods", [])}
@@ -254,12 +276,16 @@ async def get_dasha_insights(
 
 
 @router.get("/{report_id}", response_model=schemas.KundliReportResponse)
-def get_kundli_report(
+async def get_kundli_report(
     report_id: int,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(database.get_db)
 ):
-    """Get a specific Kundli report by ID."""
+    """Get a specific Kundli report by ID. Self-heals reports cached before
+    the dasha_levels/timeline fix, whose active_periods stop at Antardasha
+    and carry no timeline — those would otherwise show an incomplete
+    Vimshottari Dasha (no Pratyantardasha/Sukshma/Prana, no next Mahadasha)
+    forever, since nothing else ever revisits an already-created report."""
     _require_astrologer(current_user)
 
     report = db.query(models.KundliReport).filter(
@@ -269,6 +295,27 @@ def get_kundli_report(
 
     if not report:
         raise HTTPException(status_code=404, detail="Kundli report not found")
+
+    if (
+        isinstance(report.chart_data, dict)
+        and "chart" in report.chart_data
+        and not _has_complete_dasha(report.chart_data)
+        and report.latitude is not None
+        and report.longitude is not None
+    ):
+        report.chart_data = await _regenerate_chart_data(
+            report.date_of_birth,
+            report.time_of_birth,
+            float(report.latitude),
+            float(report.longitude),
+            report.timezone or "Asia/Kolkata",
+        )
+        # Birth-derived chart changed shape, so any cached narrative insights
+        # (generated against the old, incomplete dasha data) are stale.
+        report.dasha_insights_data = None
+        report.dasha_insights_date = None
+        db.commit()
+        db.refresh(report)
 
     return report
 

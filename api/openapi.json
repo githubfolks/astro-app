@@ -16337,7 +16337,7 @@
         ]
       },
       "get": {
-        "description": "Get a specific Kundli report by ID.",
+        "description": "Get a specific Kundli report by ID. Self-heals reports cached before\nthe dasha_levels/timeline fix, whose active_periods stop at Antardasha\nand carry no timeline \u2014 those would otherwise show an incomplete\nVimshottari Dasha (no Pratyantardasha/Sukshma/Prana, no next Mahadasha)\nforever, since nothing else ever revisits an already-created report.",
         "operationId": "get_kundli_report_kundli__report_id__get",
         "parameters": [
           {
