@@ -19,6 +19,8 @@ from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle, Image, PageBreak
 from reportlab.graphics.shapes import Drawing, Rect, Line, Polygon, String, Circle
 
+from .dasha_utils import with_sukshma_and_prana
+
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 _GANPATI_IMAGE_PATH = os.path.join(_STATIC_DIR, "ganpati.png")
 
@@ -127,7 +129,8 @@ def _planets_table(planets: list) -> Table:
 def _dasha_table(vimshottari: Dict[str, Any]) -> Table:
     header = ["Level", "Lord", "Start", "End"]
     rows = [header]
-    for period in (vimshottari.get("active_periods") or []):
+    active_periods = with_sukshma_and_prana(vimshottari.get("active_periods") or [])
+    for period in active_periods:
         rows.append([
             str(period.get("level", "-")),
             str(period.get("lord", "-")),

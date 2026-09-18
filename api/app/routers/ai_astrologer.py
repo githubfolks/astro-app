@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
+from ..dasha_utils import with_sukshma_and_prana
 from ..free_astro_service import generate_full_kundli
 from ..limiter import limiter
 from ..models import AiAstrologerUsage, FreeKundliChart, GenderType
@@ -143,7 +144,7 @@ def _format_chart_summary(chart_data: dict, approx_time: bool) -> Optional[str]:
             moon_bits.append(f"{moon['nakshatra']} nakshatra{pada}")
         lines.append("Moon sign (Rashi): " + ", ".join(moon_bits))
 
-    active_periods = (chart_data.get("vimshottari_dasha") or {}).get("active_periods") or []
+    active_periods = with_sukshma_and_prana((chart_data.get("vimshottari_dasha") or {}).get("active_periods") or [])
     dasha_bits = [f"{p.get('level')} — {p.get('lord')}" for p in active_periods if p.get("level") and p.get("lord")]
     if dasha_bits:
         lines.append("Current Vimshottari Dasha: " + "; ".join(dasha_bits))
