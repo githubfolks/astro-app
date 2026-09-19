@@ -427,7 +427,7 @@ def generate_report_pdf(report_type: str, report_data: Dict[str, Any], order_ref
             styles["body"],
         ))
 
-    if report_type == "FULL_KUNDLI":
+    if report_type in ("FULL_KUNDLI", "CAREER_FINANCE"):
         d1_chart = (report_data.get("chart_data") or {}).get("chart") or {}
         if d1_chart.get("houses") and d1_chart.get("planets"):
             elements.append(Paragraph("Birth Chart (Rashi / D1 — North Indian)", styles["heading"]))
@@ -634,6 +634,11 @@ def generate_free_kundli_pdf(
     if vimshottari.get("active_periods"):
         elements.append(Paragraph("Vimshottari Dasha — Active Periods", styles["heading"]))
         elements.append(_dasha_table(vimshottari))
+        elements.append(Spacer(1, 3 * mm))
+
+    if vimshottari.get("timeline"):
+        elements.append(Paragraph("Vimshottari Mahadasha — Full Life Sequence", styles["heading"]))
+        elements.append(_mahadasha_timeline_table(vimshottari["timeline"]))
         elements.append(Spacer(1, 3 * mm))
 
     yogas = (chart_data.get("yogas") or {}).get("yogas") or []
