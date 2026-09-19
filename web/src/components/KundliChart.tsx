@@ -1,6 +1,6 @@
 import type { DivisionChart } from '../types';
 import React from 'react';
-import { type Lang, RASHI_SHORT_HI, PLANET_SHORT_HI, UI_HI } from '../utils/kundliHindi';
+import { type Lang, PLANET_SHORT_HI, UI_HI } from '../utils/kundliHindi';
 import { isExalted, isDebilitated } from '../utils/planetDignity';
 
 /**
@@ -182,9 +182,7 @@ const KundliChart = React.forwardRef<SVGSVGElement, KundliChartProps>(({
                                 fill="#5C3D00"
                                 fontWeight="700"
                             >
-                                {sign
-                                    ? `${lang === 'hi' ? RASHI_SHORT_HI[sign.sign] || sign.sign : RASHI_ABBR[sign.sign] || sign.sign.substring(0, 3)}(${sign.signId})`
-                                    : ''}
+                                {sign ? sign.signId : ''}
                                 {house === 1 && (lang === 'hi' ? ` (${UI_HI.lagna})` : ' (Asc)')}
                             </text>
 
