@@ -62,6 +62,43 @@ function toDashaPeriod(level: 'Sukshma' | 'Prana', period: RawSubPeriod, nowMs: 
     };
 }
 
+export interface DashaChildEntry {
+    lord: string;
+    start: string;
+    end: string;
+    duration_years: number;
+    progress_fraction: number;
+    path: string[];
+}
+
+/**
+ * Splits a single Mahadasha or Antardasha period into its 9 child periods
+ * (Antardashas or Pratyantardashas respectively) using the same classical
+ * Vimshottari proportional-subdivision rule as computeActiveSukshmaAndPrana.
+ * Unlike that function, progress is measured against wall-clock "now" rather
+ * than a reference-date-anchored elapsed_years, since this walks FreeAstroAPI's
+ * full-life `timeline` (all 9 Mahadashas) rather than its reference-date-scoped
+ * active_periods chain.
+ */
+export function computeChildDashas(parent: { lord: string; start: string; duration_years: number; path: string[] }): DashaChildEntry[] {
+    const start = new Date(`${parent.start}T00:00:00Z`);
+    if (Number.isNaN(start.getTime())) return [];
+    const nowMs = Date.now();
+
+    const children = subdivide(start, parent.duration_years, parent.lord, parent.path);
+    return children.map(child => {
+        const elapsedYears = (nowMs - child.start.getTime()) / MS_PER_YEAR;
+        return {
+            lord: child.lord,
+            start: toDateOnlyString(child.start),
+            end: toDateOnlyString(child.end),
+            duration_years: child.duration_years,
+            progress_fraction: child.duration_years > 0 ? Math.min(Math.max(elapsedYears / child.duration_years, 0), 1) : 0,
+            path: child.path,
+        };
+    });
+}
+
 /**
  * Derives the currently-active Sukshma (level 4) and Prana (level 5) dasha from
  * the API-provided active Pratyantardasha, using the classical Vimshottari

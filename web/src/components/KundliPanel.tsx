@@ -2,7 +2,7 @@ import type { ChartData, DivisionChart, PlanetPosition } from '../types';
 import React, { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import html2canvas from 'html2canvas';
-import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { X, Loader2, Star, AlertCircle, Clock, Sparkles, Gauge, Share2, Moon, ZoomIn, ZoomOut, Maximize2, ChevronDown, ChevronRight } from 'lucide-react';
 import KundliChart, { PLANET_SHORT, PLANET_COLORS } from './KundliChart';
 import {
     type Lang, hi,
@@ -11,7 +11,7 @@ import {
     DASHA_LEVEL_HI, SADE_SATI_PHASE_HI, AVASTHA_STATE_HI, UI_HI,
 } from '../utils/kundliHindi';
 import { isExalted, isDebilitated, computeCombustSet, computeVargottamaSet, formatDMS } from '../utils/planetDignity';
-import { computeActiveSukshmaAndPrana } from '../utils/subDasha';
+import { computeActiveSukshmaAndPrana, computeChildDashas } from '../utils/subDasha';
 
 interface KundliPanelProps {
     isOpen: boolean;
@@ -106,6 +106,9 @@ export const KundliContent: React.FC<KundliContentProps> = ({
     const [sharing, setSharing] = useState(false);
     const [shareStatus, setShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [dashaShareStatus, setDashaShareStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    // Full 9-Mahadasha timeline accordion: which Mahadasha/Antardasha row (by index) is expanded.
+    const [expandedMahaIdx, setExpandedMahaIdx] = useState<number | null>(null);
+    const [expandedAntarIdx, setExpandedAntarIdx] = useState<number | null>(null);
     const [chartSize, setChartSize] = useState(DEFAULT_CHART_SIZE);
     const [modalChartSize, setModalChartSize] = useState(MODAL_DEFAULT_CHART_SIZE);
     const [isFullscreen, setIsFullscreen] = useState(false);
@@ -361,6 +364,85 @@ export const KundliContent: React.FC<KundliContentProps> = ({
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Full Vimshottari Dasha Timeline — all 9 Mahadashas from FreeAstroAPI's
+                full-life timeline, each expandable into its 9 Antardashas and, one level
+                deeper, 9 Pratyantardashas. Computed locally via the classical proportional-
+                subdivision rule (same as Sukshma/Prana above) since FreeAstroAPI's timeline
+                only carries top-level Mahadasha lord/dates, not the nested sub-periods. */}
+            {chartData?.vimshottari_dasha?.timeline && chartData.vimshottari_dasha.timeline.length > 0 && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider p-4 pb-2 flex items-center gap-2">
+                        <Clock size={14} className="text-indigo-600" />
+                        {lang === 'hi' ? UI_HI.fullDashaTimeline : 'Full Vimshottari Dasha Timeline (all 9 Mahadashas)'}
+                    </h3>
+                    <div className="divide-y divide-gray-100">
+                        {chartData.vimshottari_dasha.timeline.map((maha, mahaIdx) => {
+                            const mahaOpen = expandedMahaIdx === mahaIdx;
+                            const antardashas = mahaOpen
+                                ? computeChildDashas({ lord: maha.lord, start: maha.start, duration_years: maha.duration_years, path: [maha.lord] })
+                                : [];
+                            return (
+                                <div key={mahaIdx}>
+                                    <button
+                                        onClick={() => {
+                                            setExpandedMahaIdx(mahaOpen ? null : mahaIdx);
+                                            setExpandedAntarIdx(null);
+                                        }}
+                                        className="w-full flex items-center justify-between gap-2 p-3 text-left hover:bg-gray-50 transition-colors"
+                                    >
+                                        <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                                            {mahaOpen ? <ChevronDown size={14} className="text-gray-400 shrink-0" /> : <ChevronRight size={14} className="text-gray-400 shrink-0" />}
+                                            {hi(DASHA_LEVEL_HI, 'Mahadasha', lang)}: {hi(PLANET_NAME_HI, maha.lord, lang)}
+                                        </span>
+                                        <span className="text-[10px] text-gray-400 shrink-0">
+                                            {maha.start} – {maha.end} ({maha.duration_years.toFixed(1)} {lang === 'hi' ? 'वर्ष' : 'yrs'})
+                                        </span>
+                                    </button>
+                                    {mahaOpen && (
+                                        <div className="pl-6 pb-2 divide-y divide-gray-50">
+                                            {antardashas.map((antar, antarIdx) => {
+                                                const antarOpen = expandedAntarIdx === antarIdx;
+                                                const pratyantardashas = antarOpen ? computeChildDashas(antar) : [];
+                                                return (
+                                                    <div key={antarIdx}>
+                                                        <button
+                                                            onClick={() => setExpandedAntarIdx(antarOpen ? null : antarIdx)}
+                                                            className="w-full flex items-center justify-between gap-2 py-2 text-left hover:bg-gray-50 transition-colors"
+                                                        >
+                                                            <span className="flex items-center gap-1.5 text-xs text-gray-600">
+                                                                {antarOpen ? <ChevronDown size={12} className="text-gray-300 shrink-0" /> : <ChevronRight size={12} className="text-gray-300 shrink-0" />}
+                                                                {hi(DASHA_LEVEL_HI, 'Antardasha', lang)}: {antar.path.map(p => hi(PLANET_NAME_HI, p, lang)).join(' → ')}
+                                                            </span>
+                                                            <span className="text-[10px] text-gray-400 shrink-0">
+                                                                {antar.start} – {antar.end} ({antar.duration_years.toFixed(2)} {lang === 'hi' ? 'वर्ष' : 'yrs'})
+                                                            </span>
+                                                        </button>
+                                                        {antarOpen && (
+                                                            <div className="pl-6 pb-1 space-y-1">
+                                                                {pratyantardashas.map((praty, pratyIdx) => (
+                                                                    <div key={pratyIdx} className="flex items-center justify-between gap-2 py-1">
+                                                                        <span className="text-[11px] text-gray-500">
+                                                                            {hi(DASHA_LEVEL_HI, 'Pratyantardasha', lang)}: {praty.path.map(p => hi(PLANET_NAME_HI, p, lang)).join(' → ')}
+                                                                        </span>
+                                                                        <span className="text-[10px] text-gray-400 shrink-0">
+                                                                            {praty.start} – {praty.end}
+                                                                        </span>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             )}

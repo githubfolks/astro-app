@@ -165,6 +165,7 @@ export const UI_HI = {
     nextMahadasha: 'अगली महादशा',
     startsOn: (date: string) => `${date} से शुरू`,
     forYears: (years: string) => `(${years} वर्ष)`,
+    fullDashaTimeline: 'पूर्ण विंशोत्तरी दशा तालिका (सभी 9 महादशा)',
     yogasAndDoshas: 'योग एवं दोष',
     activeOf: (active: number, total: number) => `${total} में से ${active} सक्रिय`,
     noActiveYogas: 'कोई सक्रिय योग या दोष नहीं मिला।',
