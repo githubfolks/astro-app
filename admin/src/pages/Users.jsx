@@ -129,6 +129,7 @@ export default function Users() {
                             <option value="">All Roles</option>
                             <option value="SEEKER">Seeker</option>
                             <option value="ASTROLOGER">Astrologer</option>
+                            <option value="TUTOR">Tutor</option>
                             <option value="ADMIN">Admin</option>
                         </select>
                     </div>
@@ -177,7 +178,8 @@ export default function Users() {
                                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
                                         user.role === 'ADMIN' ? "bg-red-100 text-red-800" :
                                             user.role === 'ASTROLOGER' ? "bg-purple-100 text-purple-800" :
-                                                "bg-gray-100 text-gray-800"
+                                                user.role === 'TUTOR' ? "bg-blue-100 text-blue-800" :
+                                                    "bg-gray-100 text-gray-800"
                                     )}>
                                         {user.role}
                                     </span>

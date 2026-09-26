@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, BackgroundTasks
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from jose import JWTError
@@ -8,6 +9,7 @@ from ..services import miro_service, email_service
 from datetime import datetime, timedelta, timezone
 import os
 import hmac
+import secrets
 
 router = APIRouter(
     prefix="/edu",
@@ -47,28 +49,59 @@ def update_course(course_id: int, course_update: schemas_edu.CourseUpdate, db: S
     db.refresh(db_course)
     return db_course
 
-@router.get("/courses", response_model=List[schemas_edu.CourseResponse])
+OPEN_BATCH_STATUSES = (models_edu.BatchStatus.UPCOMING, models_edu.BatchStatus.ONGOING)
+
+
+@router.get("/courses", response_model=List[schemas_edu.PublicCourse])
 def list_courses(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user_optional)):
+    """Public course catalogue. Only open batches, active sessions, and seat counts —
+    never enrollments or room ids."""
     courses = db.query(models_edu.Course).options(
         joinedload(models_edu.Course.batches).options(
-            joinedload(models_edu.Batch.enrollments).joinedload(models_edu.BatchEnrollment.user),
+            joinedload(models_edu.Batch.enrollments),
             joinedload(models_edu.Batch.sessions)
         )
     ).filter(models_edu.Course.is_active == True).all()
-    
+
+    enrolled_batch_ids = set()
     if current_user:
-        # Get all enrollments for this user
-        enrollments = db.query(models_edu.BatchEnrollment.batch_id).filter(
-            models_edu.BatchEnrollment.user_id == current_user.id
-        ).all()
-        enrolled_batch_ids = {e.batch_id for e in enrollments}
-        
-        for course in courses:
-            # Mark as enrolled if enrolled in ANY batch of this course
-            course_batch_ids = {b.id for b in course.batches}
-            course.is_enrolled = not course_batch_ids.isdisjoint(enrolled_batch_ids)
-            
-    return courses
+        enrolled_batch_ids = {
+            e.batch_id for e in db.query(models_edu.BatchEnrollment.batch_id).filter(
+                models_edu.BatchEnrollment.user_id == current_user.id
+            ).all()
+        }
+
+    result = []
+    for course in courses:
+        enrolled_batch_id = next((b.id for b in course.batches if b.id in enrolled_batch_ids), None)
+        batches = [
+            schemas_edu.PublicBatch(
+                id=b.id,
+                name=b.name,
+                max_students=b.max_students,
+                status=b.status,
+                seats_taken=len(b.enrollments),
+                sessions=[
+                    schemas_edu.PublicSession(id=s.id, title=s.title, scheduled_start=s.scheduled_start, scheduled_end=s.scheduled_end)
+                    for s in sorted(b.sessions, key=lambda s: _as_utc(s.scheduled_start))
+                    if s.is_active
+                ],
+            )
+            for b in sorted(course.batches, key=lambda b: b.id)
+            # Keep the student's own batch visible even once it is no longer open.
+            if b.status in OPEN_BATCH_STATUSES or b.id == enrolled_batch_id
+        ]
+        result.append(schemas_edu.PublicCourse(
+            id=course.id,
+            title=course.title,
+            description=course.description,
+            price=course.price,
+            thumbnail_url=course.thumbnail_url,
+            is_enrolled=enrolled_batch_id is not None,
+            enrolled_batch_id=enrolled_batch_id,
+            batches=batches,
+        ))
+    return result
 
 @router.get("/my/courses", response_model=List[schemas_edu.CourseResponse])
 def my_courses(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -80,10 +113,19 @@ def my_courses(db: Session = Depends(database.get_db), current_user: models.User
             )
         ).filter(models_edu.Course.teacher_id == current_user.id).all()
     elif current_user.role == models.UserRole.SEEKER:
-        # Enrolled courses
-        return db.query(models_edu.Course).options(joinedload(models_edu.Course.batches)).join(models_edu.Batch).join(models_edu.BatchEnrollment).filter(
+        # Enrolled courses, trimmed to the student's own batch and own enrollment so
+        # classmates' details and other batches' room ids are never exposed.
+        courses = db.query(models_edu.Course).options(joinedload(models_edu.Course.batches)).join(models_edu.Batch).join(models_edu.BatchEnrollment).filter(
             models_edu.BatchEnrollment.user_id == current_user.id
         ).all()
+        result = []
+        for course in courses:
+            resp = schemas_edu.CourseResponse.model_validate(course)
+            resp.batches = [b for b in resp.batches if any(e.user_id == current_user.id for e in b.enrollments)]
+            for b in resp.batches:
+                b.enrollments = [e for e in b.enrollments if e.user_id == current_user.id]
+            result.append(resp)
+        return result
     return []
 
 # Batch Management
@@ -91,6 +133,13 @@ def my_courses(db: Session = Depends(database.get_db), current_user: models.User
 def create_batch(batch: schemas_edu.BatchCreate, background_tasks: BackgroundTasks, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.role not in [models.UserRole.ADMIN, models.UserRole.TUTOR]:
         raise HTTPException(status_code=403, detail="Not authorized")
+
+    duplicate = db.query(models_edu.Batch).filter(
+        models_edu.Batch.course_id == batch.course_id,
+        func.lower(func.trim(models_edu.Batch.name)) == batch.name.lower(),
+    ).first()
+    if duplicate:
+        raise HTTPException(status_code=409, detail=f"A batch named '{batch.name}' already exists for this course")
 
     db_batch = models_edu.Batch(**batch.dict())
     db.add(db_batch)
@@ -141,7 +190,11 @@ def schedule_session(session: schemas_edu.ClassSessionCreate, db: Session = Depe
     if current_user.role not in [models.UserRole.ADMIN, models.UserRole.TUTOR]:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    db_session = models_edu.ClassSession(**session.dict())
+    # Room names are generated server-side and unguessable: the SFU admits any holder
+    # of a valid token to any room they can name, so the name itself is a capability.
+    session_data = session.dict()
+    session_data["miro_room_id"] = f"aadikarta-{secrets.token_urlsafe(18)}"
+    db_session = models_edu.ClassSession(**session_data)
     db.add(db_session)
     db.commit()
     db.refresh(db_session)
@@ -157,12 +210,90 @@ def update_session(session_id: int, session: schemas_edu.ClassSessionUpdate, db:
         raise HTTPException(status_code=404, detail="Session not found")
         
     session_data = session.dict(exclude_unset=True)
+    new_start = _as_utc(session_data.get("scheduled_start") or db_session.scheduled_start)
+    new_end = _as_utc(session_data.get("scheduled_end") or db_session.scheduled_end)
+    if new_end <= new_start:
+        raise HTTPException(status_code=422, detail="scheduled_end must be after scheduled_start")
+
     for key, value in session_data.items():
         setattr(db_session, key, value)
         
     db.commit()
     db.refresh(db_session)
     return db_session
+
+def _as_utc(dt: datetime) -> datetime:
+    """Normalise to aware UTC; naive values (e.g. from SQLite) are taken as UTC."""
+    return dt.astimezone(timezone.utc) if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def _require_batch_owner(batch: models_edu.Batch, current_user: models.User):
+    """Only admins or the tutor who teaches the batch's course may modify it."""
+    if current_user.role == models.UserRole.ADMIN:
+        return
+    if current_user.role != models.UserRole.TUTOR or not batch.course or batch.course.teacher_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to modify this batch")
+
+
+def _session_has_attendance(db: Session, session_ids: List[int]) -> bool:
+    if not session_ids:
+        return False
+    return db.query(models_edu.Attendance).filter(models_edu.Attendance.session_id.in_(session_ids)).first() is not None
+
+
+@router.delete("/batches/{batch_id}")
+def delete_batch(batch_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    batch = db.query(models_edu.Batch).filter(models_edu.Batch.id == batch_id).first()
+    if not batch:
+        raise HTTPException(status_code=404, detail="Batch not found")
+    _require_batch_owner(batch, current_user)
+
+    # Enrolled students may have paid for this batch and there is no refund flow,
+    # so deleting it would silently drop their purchase.
+    if batch.enrollments:
+        raise HTTPException(status_code=409, detail="Cannot delete a batch with enrolled students")
+    if _session_has_attendance(db, [s.id for s in batch.sessions]):
+        raise HTTPException(status_code=409, detail="Cannot delete a batch whose sessions have attendance records")
+
+    audit.log(
+        db,
+        action="BATCH_DELETED",
+        actor_id=current_user.id,
+        resource_type="batch",
+        resource_id=batch.id,
+        details={"course_id": batch.course_id, "name": batch.name, "session_count": len(batch.sessions)},
+    )
+    db.delete(batch)
+    db.commit()
+    return {"status": "deleted"}
+
+
+@router.delete("/sessions/{session_id}")
+def delete_session(session_id: int, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
+    db_session = db.query(models_edu.ClassSession).filter(models_edu.ClassSession.id == session_id).first()
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    _require_batch_owner(db_session.batch, current_user)
+
+    if _session_has_attendance(db, [db_session.id]):
+        raise HTTPException(status_code=409, detail="Cannot delete a session that has attendance records")
+
+    audit.log(
+        db,
+        action="CLASS_SESSION_DELETED",
+        actor_id=current_user.id,
+        resource_type="class_session",
+        resource_id=db_session.id,
+        details={
+            "batch_id": db_session.batch_id,
+            "title": db_session.title,
+            "scheduled_start": db_session.scheduled_start.isoformat() if db_session.scheduled_start else None,
+        },
+    )
+    db.delete(db_session)
+    db.commit()
+    return {"status": "deleted"}
+
 
 @router.get("/sessions", response_model=List[schemas_edu.ClassSessionResponse])
 def list_sessions(db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -198,25 +329,35 @@ def list_sessions(db: Session = Depends(database.get_db), current_user: models.U
 # Enrollment
 @router.post("/enroll", response_model=schemas_edu.BatchEnrollmentResponse)
 def enroll_student(enrollment: schemas_edu.BatchEnrollmentCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
-    # Check batch and course
-    batch = db.query(models_edu.Batch).filter(models_edu.Batch.id == enrollment.batch_id).first()
+    if current_user.role != models.UserRole.SEEKER:
+        raise HTTPException(status_code=403, detail="Only students can enroll in a course")
+
+    # Lock the batch row so concurrent enrollments can't both take the last seat.
+    batch = db.query(models_edu.Batch).filter(models_edu.Batch.id == enrollment.batch_id).with_for_update().first()
     if not batch:
         raise HTTPException(status_code=404, detail="Batch not found")
-    
-    course = db.query(models_edu.Course).filter(models_edu.Course.id == batch.course_id).first()
 
-    # Check if already enrolled in this batch
-    existing = db.query(models_edu.BatchEnrollment).filter(
+    course = db.query(models_edu.Course).filter(models_edu.Course.id == batch.course_id).first()
+    if not course or not course.is_active:
+        raise HTTPException(status_code=404, detail="Course not found")
+    if batch.status not in OPEN_BATCH_STATUSES:
+        raise HTTPException(status_code=409, detail="This batch is not open for enrollment")
+
+    # One batch per course: a second enrollment would charge the course fee twice.
+    existing = db.query(models_edu.BatchEnrollment).join(models_edu.Batch).filter(
         models_edu.BatchEnrollment.user_id == current_user.id,
-        models_edu.BatchEnrollment.batch_id == enrollment.batch_id
+        models_edu.Batch.course_id == course.id,
     ).first()
-    
     if existing:
-        raise HTTPException(status_code=400, detail="You are already enrolled in this batch")
+        raise HTTPException(status_code=409, detail="You are already enrolled in this course")
+
+    seats_taken = db.query(models_edu.BatchEnrollment).filter(models_edu.BatchEnrollment.batch_id == batch.id).count()
+    if seats_taken >= batch.max_students:
+        raise HTTPException(status_code=409, detail="This batch is full. Please choose another batch.")
 
     # Payment Logic
-    if course and course.price > 0:
-        wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == current_user.id).first()
+    if course.price > 0:
+        wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == current_user.id).with_for_update().first()
         if not wallet:
             # Auto-create wallet if missing (safety check)
             wallet = models.UserWallet(user_id=current_user.id, balance=0)
@@ -267,12 +408,15 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
-    # Check if session is active (e.g., 10 mins before start)
-    now = datetime.utcnow()
-    
-    # Safely handle mixed tzinfo by using naive UTC for comparison
-    sched_start = session.scheduled_start.replace(tzinfo=None) if session.scheduled_start.tzinfo else session.scheduled_start
-    sched_end = session.scheduled_end.replace(tzinfo=None) if session.scheduled_end.tzinfo else session.scheduled_end
+    if not session.is_active:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This class session is not active.")
+
+    # Joinable from 10 mins before start until the scheduled end. Compare in UTC:
+    # Postgres returns timestamptz in the connection's zone (e.g. +05:30), so
+    # dropping tzinfo without converting would shift the window by the offset.
+    now = datetime.now(timezone.utc)
+    sched_start = _as_utc(session.scheduled_start)
+    sched_end = _as_utc(session.scheduled_end)
 
     if now < sched_start - timedelta(minutes=10):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Class session has not started yet. You can join 10 minutes before the scheduled time.")
@@ -309,19 +453,15 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
     elif current_user.role == models.UserRole.TUTOR:
         full_name = "Tutor" # Or fetch from a tutor profile if it exists
 
+    # Valid until 30 mins after the scheduled end so in-room reconnects keep working.
     token = miro_service.generate_miro_token(
         user_id=current_user.id,
         full_name=full_name,
         room_id=session.miro_room_id,
-        role=role
+        role=role,
+        expires_delta=(sched_end - now) + timedelta(minutes=30),
     )
-    
-    room_url = miro_service.get_join_url(
-        user_id=current_user.id,
-        full_name=full_name,
-        room_id=session.miro_room_id,
-        role=role
-    )
+    room_url = miro_service.get_join_url(full_name=full_name, room_id=session.miro_room_id, token=token)
 
     return {
         "room_url": room_url,
@@ -332,18 +472,24 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
 
 # Webhooks for MiroTalk (Attendance Capture)
 #
-# mirotalk/sfu posts { "event": "join"|"exit"|"disconnect", "data": { room_id, peer_info } }
-# with no auth header. If MIROTALK_WEBHOOK_SECRET is set, we expect it to be supplied
-# via an X-MiroTalk-Secret header injected by a reverse proxy in front of the SFU;
-# otherwise the endpoint is open (rely on network isolation).
-def _peer_user_id(peer_info: dict) -> Optional[int]:
-    """Recover our DB user id from the peer's JWT (carried in peer_info.peer_token)."""
+# mirotalk/sfu (v2.3) posts, with no auth header:
+#   join:            { "event": "join", "data": { room_id, peer_info } }
+#   exit/disconnect: { "event": ..., "data": { room_id, peer } }
+# SFU -> API traffic stays on the Docker network; the public proxy blocks this path
+# (aadikarta_nginx.conf). Each event must also carry a token we signed for this
+# exact room, so a caller can only ever affect their own attendance in their own
+# class. If MIROTALK_WEBHOOK_SECRET is set, an X-MiroTalk-Secret header is also
+# required — only set it when a proxy between the SFU and the API injects it.
+def _peer_user_id(peer_info: dict, room_id: str) -> Optional[int]:
+    """Recover our DB user id from the signed token in peer_info.peer_token."""
     token = (peer_info or {}).get("peer_token")
     if not token:
         return None
     try:
-        username = miro_service.decode_miro_token(token).get("username")
-        return int(username)
+        payload = miro_service.decode_miro_token(token, verify_exp=False)
+        if payload.get("room") != room_id:
+            return None
+        return int(payload["uid"])
     except (ValueError, TypeError, KeyError, JWTError):
         return None
 
@@ -356,11 +502,18 @@ async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_
         if not hmac.compare_digest(provided, webhook_secret):
             raise HTTPException(status_code=401, detail="Invalid webhook secret")
 
-    body = await request.json()
+    try:
+        body = await request.json()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Invalid payload")
     event = body.get("event")
-    data = body.get("data", {}) or {}
+    data = body.get("data") if isinstance(body.get("data"), dict) else {}
     room_id = data.get("room_id")
-    peer_info = data.get("peer_info", {}) or {}
+    peer_info = data.get("peer_info") or data.get("peer") or {}
+    if not isinstance(peer_info, dict):
+        return {"status": "ignored"}
 
     if not room_id:
         return {"status": "ignored"}
@@ -371,7 +524,7 @@ async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_
     if not session:
         return {"status": "ignored"}
 
-    user_id = _peer_user_id(peer_info)
+    user_id = _peer_user_id(peer_info, room_id)
     if not user_id:
         return {"status": "ignored"}
 
@@ -386,7 +539,7 @@ async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_
             db.add(models_edu.Attendance(
                 session_id=session.id,
                 user_id=user_id,
-                joined_at=datetime.utcnow()
+                joined_at=datetime.now(timezone.utc)
             ))
             db.commit()
 
@@ -397,8 +550,8 @@ async def mirotalk_webhook(request: Request, db: Session = Depends(database.get_
             models_edu.Attendance.left_at == None
         ).order_by(models_edu.Attendance.joined_at.desc()).first()
         if attendance:
-            attendance.left_at = datetime.utcnow()
-            delta = attendance.left_at - attendance.joined_at
+            attendance.left_at = datetime.now(timezone.utc)
+            delta = _as_utc(attendance.left_at) - _as_utc(attendance.joined_at)
             attendance.duration_minutes = int(delta.total_seconds() / 60)
             db.commit()
 

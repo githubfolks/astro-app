@@ -28,11 +28,20 @@ MIROTALK_JWT_SECRET = os.getenv("MIROTALK_JWT_SECRET")
 if not MIROTALK_JWT_SECRET:
     raise RuntimeError("MIROTALK_JWT_SECRET environment variable is not set. Refusing to start.")
 
-# password embedded in the token. Only enforced when the SFU runs with host
-# protection / user_auth; harmless otherwise. Keep in sync with the SFU host config.
+# Service account embedded in every token. The SFU runs with HOST_USER_AUTH=true and
+# HOST_USERS="<username>:<password>:..." (see docker-compose.yml), so a join is only
+# accepted with a token we signed carrying these credentials; token-less joins are rejected.
+MIROTALK_PEER_USERNAME = os.getenv("MIROTALK_PEER_USERNAME")
+if not MIROTALK_PEER_USERNAME:
+    raise RuntimeError("MIROTALK_PEER_USERNAME environment variable is not set. Refusing to start.")
+
 MIROTALK_PEER_PASSWORD = os.getenv("MIROTALK_PEER_PASSWORD")
 if not MIROTALK_PEER_PASSWORD:
     raise RuntimeError("MIROTALK_PEER_PASSWORD environment variable is not set. Refusing to start.")
+
+# HOST_USERS is parsed by splitting on '|' (users) and ':' (fields).
+if any(ch in value for value in (MIROTALK_PEER_USERNAME, MIROTALK_PEER_PASSWORD) for ch in ":|"):
+    raise RuntimeError("MIROTALK_PEER_USERNAME/MIROTALK_PEER_PASSWORD must not contain ':' or '|'. Refusing to start.")
 
 ALGORITHM = "HS256"
 
@@ -81,33 +90,38 @@ def generate_miro_token(user_id: int, full_name: str, room_id: str, role: str,
     Generate a MiroTalk SFU-compatible JWT.
 
     ``role`` should be ``'moderator'`` (-> presenter) or ``'participant'``.
-    Note: ``room_id``/``full_name`` are accepted for API compatibility but the SFU
-    reads the room and display name from the URL, not the token.
+    The SFU reads the room and display name from the URL, not the token;
+    ``full_name`` is accepted for API compatibility only.
     """
     expire = datetime.utcnow() + (expires_delta or timedelta(hours=2))
 
-    # username carries our DB user id so the attendance webhook can recover identity
-    # from peer_info.peer_token. When the SFU runs with host protection, set
-    # MIROTALK_PEER_USERNAME/PASSWORD instead and map attendance another way.
+    # username/password are the shared service account the SFU validates. The SFU
+    # ignores extra fields, so "uid"/"room" ride along for the attendance webhook,
+    # which gets the raw token back in peer_info.peer_token.
     inner = json.dumps({
-        "username": str(user_id),
+        "username": MIROTALK_PEER_USERNAME,
         "password": MIROTALK_PEER_PASSWORD,
         "presenter": "true" if role == "moderator" else "false",
+        "uid": str(user_id),
+        "room": room_id,
     })
     encrypted = _cryptojs_aes_encrypt(inner, MIROTALK_JWT_SECRET)
 
     return jwt.encode({"data": encrypted, "exp": expire}, MIROTALK_JWT_SECRET, algorithm=ALGORITHM)
 
 
-def decode_miro_token(token: str) -> dict:
-    """Verify + decrypt a MiroTalk token, returning ``{username, password, presenter}``."""
-    decoded = jwt.decode(token, MIROTALK_JWT_SECRET, algorithms=[ALGORITHM])
+def decode_miro_token(token: str, verify_exp: bool = True) -> dict:
+    """Verify + decrypt a MiroTalk token, returning its inner payload.
+
+    ``verify_exp=False`` still verifies the signature; it lets the webhook record an
+    exit that arrives after the token's expiry (e.g. a class that overran).
+    """
+    decoded = jwt.decode(token, MIROTALK_JWT_SECRET, algorithms=[ALGORITHM], options={"verify_exp": verify_exp})
     return json.loads(_cryptojs_aes_decrypt(decoded["data"], MIROTALK_JWT_SECRET))
 
 
-def get_join_url(user_id: int, full_name: str, room_id: str, role: str) -> str:
+def get_join_url(full_name: str, room_id: str, token: str) -> str:
     """Full MiroTalk SFU join URL: room + display name as query params, token for auth/role."""
-    token = generate_miro_token(user_id, full_name, room_id, role)
     params = urlencode({
         "room": room_id,
         "name": full_name,

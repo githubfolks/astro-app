@@ -89,7 +89,10 @@ services:
           memory: 256M
 
   mirotalk:
-    image: mirotalk/sfu:latest
+    # Pinned (v2.3.00): the API's token format, the user-auth behaviour and the
+    # webhook payload shapes it relies on were verified against this build.
+    # Re-verify the classroom join + attendance flow before changing it.
+    image: mirotalk/sfu@sha256:87ae7265c44804a33cee76503b11139f527024b645e4ac079d64125bf9e700bf
     container_name: astro_mirotalk
     ports:
       - "4020:3010"
@@ -98,6 +101,15 @@ services:
       - TRUST_PROXY=true
       - API_KEY_SECRET=${MIROTALK_API_KEY_SECRET}
       - JWT_SECRET=${MIROTALK_JWT_SECRET}
+      # Only peers holding a token signed by the API (carrying this service
+      # account) may join; token-less joins are rejected.
+      - HOST_USER_AUTH=true
+      - HOST_USERS=${MIROTALK_PEER_USERNAME}:${MIROTALK_PEER_PASSWORD}:Aadikarta:*
+      # Presenter rights come only from the token (tutor/admin), never from joining first.
+      - PRESENTER_JOIN_FIRST=false
+      # Attendance: join/exit/disconnect events go to the API over the Docker network.
+      - WEBHOOK_ENABLED=true
+      - WEBHOOK_URL=http://api:8000/edu/webhooks/mirotalk
     networks:
       - default
     deploy:

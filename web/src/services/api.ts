@@ -972,6 +972,22 @@ export const api = {
             });
             return handleResponse(response, 'Failed to update session');
         },
+        deleteSession: async (sessionId: number) => {
+            const response = await customFetch(`${API_URL}/edu/sessions/${sessionId}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to delete session');
+        },
+        deleteBatch: async (batchId: number) => {
+            const response = await customFetch(`${API_URL}/edu/batches/${batchId}`, {
+                method: 'DELETE',
+                headers: await authHeaders(),
+                credentials: 'include'
+            });
+            return handleResponse(response, 'Failed to delete batch');
+        },
         enroll: async (data: JsonBody) => {
             const response = await customFetch(`${API_URL}/edu/enroll`, {
                 method: 'POST',

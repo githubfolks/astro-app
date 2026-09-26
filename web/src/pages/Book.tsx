@@ -1,11 +1,12 @@
-import type { Course, CourseMaterial } from '../types';
+import type { Batch, Course, CourseMaterial } from '../types';
 import { getErrorMessage, getErrorStatus } from '../utils/errors';
+import { formatDuration, formatSessionWhen, summarizeBatch } from '../utils/classSchedule';
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
-import { Book as BookIcon, ArrowRight, Star, Users, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Book as BookIcon, ArrowRight, Users, Clock, CheckCircle, AlertCircle, Calendar, Video } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import SEO from '../components/SEO';
@@ -26,6 +27,88 @@ const bookStructuredData = {
     ],
 };
 
+const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' });
+
+/** Real facts for a course card, derived from its open batches. */
+const CourseCardFacts: React.FC<{ course: Course }> = ({ course }) => {
+    const summaries = (course.batches || []).map(summarizeBatch);
+    const openCount = summaries.filter((s) => !s.isFull).length;
+    const nextClass = summaries
+        .map((s) => s.nextStart)
+        .filter((d): d is string => !!d)
+        .sort()[0];
+    const hasAnyClass = summaries.some((s) => s.classCount > 0);
+    const dateLabel = nextClass
+        ? `Next class ${formatDate(nextClass)}`
+        : hasAnyClass ? 'No upcoming classes' : 'Dates to be announced';
+    return (
+        <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100 mt-auto">
+            <div className="flex items-center gap-2 text-gray-900">
+                <Users size={16} />
+                <span className="text-sm font-medium">
+                    {openCount ? `${openCount} batch${openCount > 1 ? 'es' : ''} open` : 'No open batches'}
+                </span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-900">
+                <Calendar size={16} />
+                <span className="text-sm font-medium">{dateLabel}</span>
+            </div>
+        </div>
+    );
+};
+
+/** One selectable batch in the course details modal. */
+const BatchOption: React.FC<{
+    batch: Batch;
+    selected: boolean;
+    enrolled: boolean;
+    disabled: boolean;
+    onSelect: () => void;
+}> = ({ batch, selected, enrolled, disabled, onSelect }) => {
+    const s = summarizeBatch(batch);
+    return (
+        <label
+            className={`block p-3 rounded-xl border-2 transition-colors ${selected ? 'border-indigo-600 bg-indigo-50/60' : 'border-gray-100 bg-gray-50'} ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:border-indigo-200'}`}
+        >
+            <div className="flex items-start gap-3">
+                <input
+                    type="radio"
+                    name="batch"
+                    className="mt-1 accent-indigo-600"
+                    checked={selected}
+                    disabled={disabled}
+                    onChange={onSelect}
+                />
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-sm font-bold text-gray-900">{batch.name}</span>
+                        {enrolled ? (
+                            <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-md">Your batch</span>
+                        ) : s.seatsLeft != null && (
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${s.isFull ? 'text-red-700 bg-red-100' : 'text-indigo-700 bg-indigo-100'}`}>
+                                {s.isFull ? 'Full' : `${s.seatsLeft} of ${batch.max_students} seats left`}
+                            </span>
+                        )}
+                    </div>
+                    <div className="mt-1 text-xs text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+                        <span className="flex items-center gap-1">
+                            <Calendar size={12} /> {s.firstStart
+                                ? `${s.hasStarted ? 'Started' : 'Starts'} ${formatDate(s.firstStart)}${s.hasStarted && s.nextStart ? ` · next class ${formatDate(s.nextStart)}` : ''}`
+                                : 'Schedule to be announced'}
+                        </span>
+                        {s.classCount > 0 && (
+                            <span className="flex items-center gap-1">
+                                <Clock size={12} /> {s.classCount} class{s.classCount > 1 ? 'es' : ''}{s.totalTime ? ` · ${s.totalTime} total` : ''}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </label>
+    );
+};
+
 const Book: React.FC = () => {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -33,6 +116,7 @@ const Book: React.FC = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+    const [selectedBatchId, setSelectedBatchId] = useState<number | null>(null);
     const [materials, setMaterials] = useState<CourseMaterial[]>([]);
     const [loadingMaterials, setLoadingMaterials] = useState(false);
     const [enrollmentStatus, setEnrollmentStatus] = useState<{
@@ -101,8 +185,15 @@ const Book: React.FC = () => {
     const handleViewDetails = async (course: Course) => {
         setSelectedCourse(course);
         setEnrollmentStatus({ loading: false, success: false, error: null, insufficientBalance: false });
-        setLoadingMaterials(true);
+        // Pre-select the student's own batch, else the first batch with seats left.
+        const defaultBatch = course.enrolled_batch_id
+            ?? (course.batches || []).find((b) => !summarizeBatch(b).isFull)?.id
+            ?? null;
+        setSelectedBatchId(defaultBatch);
         setMaterials([]);
+        // Materials are only served to enrolled students.
+        if (!course.is_enrolled) return;
+        setLoadingMaterials(true);
         try {
             const data = await api.edu.getCourseMaterials(course.id);
             setMaterials(data);
@@ -120,11 +211,12 @@ const Book: React.FC = () => {
             return;
         }
 
-        if (!selectedCourse.batches || selectedCourse.batches.length === 0) {
+        const batch = (selectedCourse.batches || []).find((b) => b.id === selectedBatchId);
+        if (!batch) {
             setEnrollmentStatus({
                 loading: false,
                 success: false,
-                error: 'No active batches available for this course. Please contact support.',
+                error: 'Please choose a batch to enroll in.',
                 insufficientBalance: false
             });
             return;
@@ -132,8 +224,8 @@ const Book: React.FC = () => {
 
         setEnrollmentStatus({ loading: true, success: false, error: null, insufficientBalance: false });
         try {
-            if ((selectedCourse.price ?? 0) > 0) {
-                const confirmed = window.confirm(`This course costs ₹${selectedCourse.price}. The amount will be deducted from your wallet balance. Do you want to proceed?`);
+            if (Number(selectedCourse.price ?? 0) > 0) {
+                const confirmed = window.confirm(`Enroll in "${batch.name}"? The course fee of ₹${selectedCourse.price} will be deducted from your wallet balance.`);
                 if (!confirmed) {
                     setEnrollmentStatus({ loading: false, success: false, error: null, insufficientBalance: false });
                     return;
@@ -142,10 +234,12 @@ const Book: React.FC = () => {
 
             await api.edu.enroll({
                 user_id: user?.id,
-                batch_id: selectedCourse.batches[0].id
+                batch_id: batch.id
             });
+            // Show the student's batch and load the now-unlocked materials.
+            await handleViewDetails({ ...selectedCourse, is_enrolled: true, enrolled_batch_id: batch.id });
             setEnrollmentStatus({ loading: false, success: true, error: null, insufficientBalance: false });
-            loadCourses(); // Refresh courses to get updated is_enrolled status
+            loadCourses(); // Refresh the list (seat counts, enrolled flags)
         } catch (e) {
             const isInsufficientBalance = getErrorStatus(e) === 402;
             const errorMsg = getErrorMessage(e) || 'Enrollment failed. Please try again or contact support.';
@@ -231,12 +325,9 @@ const Book: React.FC = () => {
                                                 <div className="bg-indigo-100/50 w-16 h-16 rounded-2xl flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform duration-500 group-hover:bg-indigo-600 group-hover:text-white">
                                                     <BookIcon size={32} />
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="flex text-yellow-400">
-                                                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < 4 ? "currentColor" : "none"} />)}
-                                                    </div>
-                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Top Rated</span>
-                                                </div>
+                                                <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider flex items-center gap-1">
+                                                    <Video size={14} /> Live online
+                                                </span>
                                             </div>
 
                                             <h3 className="step-title font-bold mb-1 text-center">
@@ -244,23 +335,14 @@ const Book: React.FC = () => {
                                             </h3>
                                             <div className="mb-2 flex items-baseline justify-center gap-1">
                                                 <span className="text-2xl font-black text-indigo-600">₹{course.price}</span>
-                                                {course.price === 0 && <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded-md">Free</span>}
+                                                {Number(course.price) === 0 && <span className="text-[10px] font-bold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded-md">Free</span>}
                                             </div>
 
-                                            <p className="text-gray-600 leading-snug mb-2 line-clamp-3">
-                                                {course.description || "Unlock the secrets of cosmic wisdom with this comprehensive course guided by our verified experts."}
-                                            </p>
+                                            {course.description && (
+                                                <p className="text-gray-600 leading-snug mb-2 line-clamp-3">{course.description}</p>
+                                            )}
 
-                                            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100 mt-auto">
-                                                <div className="flex items-center gap-2 text-gray-900">
-                                                    <Users size={16} />
-                                                    <span className="text-sm font-medium">1.2k+ Students</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-900">
-                                                    <Clock size={16} />
-                                                    <span className="text-sm font-medium">12+ Hours</span>
-                                                </div>
-                                            </div>
+                                            <CourseCardFacts course={course} />
                                         </div>
 
                                         <div className="p-8 pt-0 mt-auto">
@@ -281,7 +363,7 @@ const Book: React.FC = () => {
 
             {/* Course Details Modal */}
             {selectedCourse && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-sm animate-in fade-in duration-300">
+                <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-indigo-950/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div
                         className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl relative animate-in zoom-in-95 duration-300"
                         data-aos="zoom-in"
@@ -295,31 +377,108 @@ const Book: React.FC = () => {
                             </svg>
                         </button>
 
-                        <div className="p-8 md:p-12 text-center">
-                            <div className="inline-flex items-center gap-2 text-indigo-600 text-sm uppercase tracking-widest mb-3 px-4 py-2 bg-indigo-50 rounded-xl">
+                        <div className="p-6 md:p-8 text-center">
+                            <div className="inline-flex items-center gap-2 text-indigo-600 text-xs uppercase tracking-widest mb-2 px-3 py-1.5 bg-indigo-50 rounded-lg">
                                 <BookIcon size={16} /> Course Curriculum
                             </div>
 
-                            <h2 className="text-2xl md:text-3xl text-gray-900 mb-3 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                            <h2 className="text-xl md:text-2xl text-gray-900 mb-2 leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
                                 {selectedCourse.title}
                             </h2>
 
-                            <div className="bg-indigo-50 inline-flex flex-col items-center px-6 py-3 rounded-2xl border border-indigo-100 mb-4 mx-auto">
+                            <div className="bg-indigo-50 inline-flex flex-col items-center px-4 py-2 rounded-xl border border-indigo-100 mb-3 mx-auto">
                                 <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-0.5">Course Fee</span>
-                                <span className="text-2xl font-black text-indigo-600">₹{selectedCourse.price}</span>
+                                <span className="text-lg font-black text-indigo-600">₹{selectedCourse.price}</span>
                             </div>
 
-                            <div className="prose prose-indigo max-w-none text-gray-600 mb-4 text-base leading-snug text-left">
-                                {selectedCourse.description || "Detailed course overview goes here..."}
+                            {selectedCourse.description && (
+                                <div className="prose prose-indigo max-w-none text-gray-600 mb-4 text-sm leading-snug text-left">
+                                    {selectedCourse.description}
+                                </div>
+                            )}
+
+                            <div className="flex items-start gap-2 p-3 mb-5 bg-indigo-50/60 rounded-xl text-left text-xs text-indigo-900">
+                                <Video size={16} className="shrink-0 text-indigo-600" />
+                                <span>
+                                    Live online classes by video. After enrolling, join each class from your Dashboard — the room opens 10 minutes before the start time.
+                                </span>
                             </div>
 
-                            <div className="space-y-3 text-left">
-                                <h4 className="text-gray-900 text-xl flex items-center gap-2">
-                                    <Users className="text-indigo-600" size={24} />
-                                    What's included in this course:
+                            {(() => {
+                                const batches = selectedCourse.batches || [];
+                                const enrolledId = selectedCourse.enrolled_batch_id ?? null;
+                                const isEnrolled = enrollmentStatus.success || !!selectedCourse.is_enrolled;
+                                const selectedBatch = batches.find((b) => b.id === selectedBatchId);
+                                const sessions = selectedBatch?.sessions || [];
+                                return (
+                                    <div className="space-y-6 text-left">
+                                        <div className="space-y-3">
+                                            <h4 className="text-gray-900 text-base font-semibold flex items-center gap-2">
+                                                <Users className="text-indigo-600" size={18} />
+                                                {isEnrolled ? 'Your batch' : 'Choose a batch'}
+                                            </h4>
+                                            {batches.length === 0 ? (
+                                                <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-500">
+                                                    No batches are open for this course right now.
+                                                </div>
+                                            ) : (
+                                                <div className="grid gap-3">
+                                                    {batches.map((b) => (
+                                                        <BatchOption
+                                                            key={b.id}
+                                                            batch={b}
+                                                            selected={b.id === selectedBatchId}
+                                                            enrolled={b.id === enrolledId}
+                                                            disabled={isEnrolled ? b.id !== enrolledId : summarizeBatch(b).isFull}
+                                                            onSelect={() => setSelectedBatchId(b.id)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {selectedBatch && (
+                                            <div className="space-y-3">
+                                                <h4 className="text-gray-900 text-base font-semibold flex items-center gap-2">
+                                                    <Calendar className="text-indigo-600" size={18} />
+                                                    Class schedule — {selectedBatch.name}
+                                                </h4>
+                                                {sessions.length === 0 ? (
+                                                    <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-500">
+                                                        The tutor hasn't scheduled classes for this batch yet.
+                                                    </div>
+                                                ) : (
+                                                    <ol className="grid gap-2">
+                                                        {sessions.map((s, i) => (
+                                                            <li key={s.id} className="flex gap-3 p-2.5 bg-gray-50 rounded-lg border border-gray-100">
+                                                                <span className="shrink-0 w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-[11px] font-bold flex items-center justify-center">{i + 1}</span>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-sm font-semibold text-gray-900">{s.title}</p>
+                                                                    <p className="text-xs text-gray-600">
+                                                                        {formatSessionWhen(s.scheduled_start, s.scheduled_end)} · {formatDuration(s.scheduled_start, s.scheduled_end)}
+                                                                    </p>
+                                                                </div>
+                                                            </li>
+                                                        ))}
+                                                    </ol>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+
+                            <div className="space-y-3 text-left mt-6">
+                                <h4 className="text-gray-900 text-base font-semibold flex items-center gap-2">
+                                    <BookIcon className="text-indigo-600" size={18} />
+                                    Course materials
                                 </h4>
 
-                                {loadingMaterials ? (
+                                {!(enrollmentStatus.success || selectedCourse.is_enrolled) ? (
+                                    <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-500">
+                                        Course materials become available after you enroll.
+                                    </div>
+                                ) : loadingMaterials ? (
                                     <div className="flex items-center gap-3 text-indigo-600 py-6">
                                         <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full"></div>
                                         <span className="font-medium">Fetching materials...</span>
@@ -327,44 +486,53 @@ const Book: React.FC = () => {
                                 ) : materials.length > 0 ? (
                                     <div className="grid gap-4">
                                         {materials.map((m: CourseMaterial) => (
-                                            <div key={m.id} className="flex items-center gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100 group hover:border-indigo-200 transition-colors">
-                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                                    <BookIcon size={20} />
+                                            <div key={m.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 group hover:border-indigo-200 transition-colors">
+                                                <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center text-indigo-600 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                    <BookIcon size={16} />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <p className="font-bold text-gray-900 leading-none mb-1">{m.title}</p>
-                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{m.material_type}</span>
+                                                    <p className="text-sm font-bold text-gray-900 leading-none mb-1">{m.title}</p>
+                                                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{m.material_type}</span>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="p-8 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-gray-400">
-                                        No specific materials have been shared publicly for this course yet.
+                                    <div className="p-4 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-sm text-gray-500">
+                                        The tutor hasn't shared any materials yet.
                                     </div>
                                 )}
                             </div>
 
-                            <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                            {Number(selectedCourse.price ?? 0) > 0 && !(enrollmentStatus.success || selectedCourse.is_enrolled) && (
+                                <p className="mt-5 text-xs text-gray-500 text-left">
+                                    The course fee is paid from your wallet balance. See our{' '}
+                                    <Link to="/refund-policy" className="text-indigo-600 font-semibold underline">refund policy</Link>.
+                                </p>
+                            )}
+
+                            <div className="mt-5 flex flex-col sm:flex-row gap-3">
                                 {(enrollmentStatus.success || selectedCourse.is_enrolled) ? (
-                                    <div className="flex-1 bg-green-50 text-green-700 py-4 px-6 rounded-xl font-bold text-center flex items-center justify-center gap-2 border border-green-200">
-                                        <CheckCircle size={20} /> Already Enrolled
+                                    <div className="flex-1 bg-green-50 text-green-700 py-3 px-5 rounded-xl text-sm font-bold text-center flex items-center justify-center gap-2 border border-green-200">
+                                        <CheckCircle size={18} /> Already Enrolled
                                     </div>
                                 ) : (
                                     <button
                                         onClick={handleEnroll}
-                                        disabled={enrollmentStatus.loading}
-                                        className="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        disabled={enrollmentStatus.loading || selectedBatchId == null}
+                                        className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-base hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         {enrollmentStatus.loading ? (
                                             <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
                                         ) : null}
-                                        {enrollmentStatus.loading ? 'Processing...' : 'Enroll in Batch'}
+                                        {enrollmentStatus.loading
+                                            ? 'Processing...'
+                                            : `Enroll in ${(selectedCourse.batches || []).find((b) => b.id === selectedBatchId)?.name ?? 'a batch'}`}
                                     </button>
                                 )}
                                 <button
                                     onClick={() => setSelectedCourse(null)}
-                                    className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-200 transition-all"
+                                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-bold text-base hover:bg-gray-200 transition-all"
                                 >
                                     Close Details
                                 </button>

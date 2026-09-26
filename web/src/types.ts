@@ -140,6 +140,9 @@ export interface Batch {
     name?: string;
     created_at?: string;
     max_students?: number;
+    status?: 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+    /** Public catalogue only: number of students already enrolled. */
+    seats_taken?: number;
     enrollments?: Enrollment[];
     sessions?: EduSession[];
 }
@@ -151,6 +154,8 @@ export interface Course {
     price?: number;
     is_active?: boolean;
     is_enrolled?: boolean;
+    /** Public catalogue only: the batch the current student is enrolled in. */
+    enrolled_batch_id?: number | null;
     batches?: Batch[];
 }
 

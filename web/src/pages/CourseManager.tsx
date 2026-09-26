@@ -5,7 +5,16 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { api } from '../services/api';
+import { getErrorMessage } from '../utils/errors';
+import { formatDuration } from '../utils/classSchedule';
 import { Book, Link as LinkIcon, Plus, Trash2, ArrowLeft, Users, Calendar, Edit2 } from 'lucide-react';
+
+// Format a Date as the local-time "YYYY-MM-DDTHH:MM" string a datetime-local input expects.
+const toLocalInputValue = (iso: string) => {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
 
 export const CourseManager: React.FC = () => {
     const { user } = useAuth();
@@ -98,7 +107,7 @@ export const CourseManager: React.FC = () => {
             
             // Re-select course to refresh details if editing
             if (isEditing && selectedCourse) {
-                const updatedCourses = await api.edu.getCourses();
+                const updatedCourses = await api.edu.getMyCourses();
                 const updated = updatedCourses.find((c: Course) => c.id === selectedCourse.id);
                 if (updated) setSelectedCourse(updated);
             }
@@ -130,14 +139,13 @@ export const CourseManager: React.FC = () => {
             setBatchForm({ name: '', max_students: 10 });
         } catch (e) {
             console.error(e);
-            alert("Failed to create batch");
+            alert(getErrorMessage(e) || "Failed to create batch");
         }
     };
 
     const handleEditSession = (session: EduSession, batchId: number) => {
-        // Convert ISO to datetime-local format (YYYY-MM-DDTHH:MM)
-        const start = new Date(session.scheduled_start).toISOString().slice(0, 16);
-        const end = new Date(session.scheduled_end).toISOString().slice(0, 16);
+        const start = toLocalInputValue(session.scheduled_start);
+        const end = toLocalInputValue(session.scheduled_end);
         
         setSessionForm({
             title: session.title || '',
@@ -151,6 +159,10 @@ export const CourseManager: React.FC = () => {
 
     const handleScheduleSession = async (e: React.FormEvent, batchId: number) => {
         e.preventDefault();
+        if (new Date(sessionForm.scheduled_end) <= new Date(sessionForm.scheduled_start)) {
+            alert('End time must be after start time');
+            return;
+        }
         try {
             const data = {
                 ...sessionForm,
@@ -161,13 +173,8 @@ export const CourseManager: React.FC = () => {
             if (editingSessionId) {
                 await api.edu.updateSession(editingSessionId, data);
             } else {
-                // Generate a simple unique room ID if not provided
-                const room_id = `room-${batchId}-${Date.now()}`;
-                await api.edu.scheduleSession({
-                    ...data,
-                    batch_id: batchId,
-                    miro_room_id: room_id
-                });
+                // The server generates the classroom room id.
+                await api.edu.scheduleSession({ ...data, batch_id: batchId });
             }
             
             if (selectedCourse) await loadBatches(selectedCourse.id);
@@ -176,7 +183,7 @@ export const CourseManager: React.FC = () => {
             setSessionForm({ title: '', scheduled_start: '', scheduled_end: '', is_active: true });
         } catch (e) {
             console.error(e);
-            alert(`Failed to ${editingSessionId ? 'update' : 'schedule'} session`);
+            alert(getErrorMessage(e) || `Failed to ${editingSessionId ? 'update' : 'schedule'} session`);
         }
     };
 
@@ -191,6 +198,30 @@ export const CourseManager: React.FC = () => {
         } catch (e) {
             console.error(e);
             alert("Failed to add material");
+        }
+    };
+
+    const handleDeleteBatch = async (batch: Batch) => {
+        const sessionCount = batch.sessions?.length || 0;
+        const extra = sessionCount ? ` Its ${sessionCount} scheduled session(s) will also be deleted.` : '';
+        if (!window.confirm(`Delete batch "${batch.name}"?${extra}`)) return;
+        try {
+            await api.edu.deleteBatch(batch.id);
+            if (selectedCourse) await loadBatches(selectedCourse.id);
+        } catch (e) {
+            console.error(e);
+            alert(getErrorMessage(e) || "Failed to delete batch");
+        }
+    };
+
+    const handleDeleteSession = async (session: EduSession) => {
+        if (!window.confirm(`Delete session "${session.title || 'Untitled session'}"?`)) return;
+        try {
+            await api.edu.deleteSession(session.id);
+            if (selectedCourse) await loadBatches(selectedCourse.id);
+        } catch (e) {
+            console.error(e);
+            alert(getErrorMessage(e) || "Failed to delete session");
         }
     };
 
@@ -381,7 +412,17 @@ export const CourseManager: React.FC = () => {
                                                 <div key={b.id} className="p-4 border border-gray-100 rounded-xl bg-gray-50/50">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <h5 className="font-bold text-gray-900">{b.name}</h5>
-                                                        <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full uppercase">ID: {b.id}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full uppercase">ID: {b.id}</span>
+                                                            <button
+                                                                onClick={() => handleDeleteBatch(b)}
+                                                                title="Delete batch"
+                                                                aria-label={`Delete batch ${b.name}`}
+                                                                className="text-gray-400 hover:text-red-500 p-1"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                     <div className="flex items-center gap-4 text-xs text-gray-900 mb-4">
                                                         <div className="flex items-center gap-1">
@@ -419,6 +460,10 @@ export const CourseManager: React.FC = () => {
 
                                                             {showSessionForm === b.id && (
                                                                 <form onSubmit={(e) => handleScheduleSession(e, b.id)} className="bg-white p-3 rounded-lg border border-indigo-100 mb-3 space-y-2">
+                                                                    <div>
+                                                                        <label className="text-[8px] text-gray-900 block">Topic</label>
+                                                                        <input required type="text" maxLength={200} value={sessionForm.title} onChange={e => setSessionForm({...sessionForm, title: e.target.value})} className="w-full text-[10px] border p-1 rounded" placeholder="e.g. Introduction to 9 Grahas" />
+                                                                    </div>
                                                                     <div className="grid grid-cols-2 gap-2">
                                                                         <div>
                                                                             <label className="text-[8px] text-gray-900 block">Start</label>
@@ -453,19 +498,38 @@ export const CourseManager: React.FC = () => {
                                                                     <div key={s.id} className="flex justify-between items-center p-2 border border-gray-100 rounded-lg bg-white group">
                                                                         <div>
                                                                             <div className="flex items-center gap-2">
-                                                                                <div className="font-bold text-gray-800">{s.title}</div>
+                                                                                <div className="font-bold text-gray-800">{s.title || <span className="italic font-normal text-gray-400">Untitled session</span>}</div>
                                                                                 {!s.is_active && <span className="text-[8px] bg-gray-200 text-gray-600 px-1 rounded font-bold uppercase">Inactive</span>}
                                                                             </div>
                                                                             <div className="text-gray-900">
-                                                                                {new Date(s.scheduled_start).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                                                                                {new Date(s.scheduled_start).toLocaleDateString([], { dateStyle: 'medium' })}
+                                                                                {', '}
+                                                                                {new Date(s.scheduled_start).toLocaleTimeString([], { timeStyle: 'short' })}
+                                                                                {' – '}
+                                                                                {new Date(s.scheduled_end).toLocaleTimeString([], { timeStyle: 'short' })}
+                                                                            </div>
+                                                                            <div className="text-gray-500">
+                                                                                Duration: {formatDuration(s.scheduled_start, s.scheduled_end)}
                                                                             </div>
                                                                         </div>
-                                                                        <button 
-                                                                            onClick={() => handleEditSession(s, b.id)}
-                                                                            className="text-gray-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                        >
-                                                                            <Edit2 size={12} />
-                                                                        </button>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <button
+                                                                                onClick={() => handleEditSession(s, b.id)}
+                                                                                title="Edit session"
+                                                                                aria-label="Edit session"
+                                                                                className="text-gray-400 hover:text-indigo-600"
+                                                                            >
+                                                                                <Edit2 size={12} />
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleDeleteSession(s)}
+                                                                                title="Delete session"
+                                                                                aria-label="Delete session"
+                                                                                className="text-gray-400 hover:text-red-500"
+                                                                            >
+                                                                                <Trash2 size={12} />
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
                                                                 ))}
                                                                 {(!b.sessions || b.sessions.length === 0) && (

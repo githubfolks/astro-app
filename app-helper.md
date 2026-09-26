@@ -16,6 +16,11 @@ raman.bharadwaj@aadikarta.org
 8cSV!DsTbqWYU4q
 
 
+
+Email	tutor@test.com
+Phone	1111111111
+Password	Tutor@12345
+
 # Local
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 

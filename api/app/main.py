@@ -254,6 +254,9 @@ async def csrf_middleware(request: Request, call_next):
         "/reports/create-direct-order",
         "/reports/verify-payment",
         "/reports/payment-webhook",
+        # Server-to-server from the MiroTalk container; authenticated by the signed
+        # classroom token in the payload (see routers/edu.py).
+        "/edu/webhooks/mirotalk",
     ]
     
     # Also exempt requests with Bearer token (JWT) as they are inherently CSRF-protected

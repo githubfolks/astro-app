@@ -1558,6 +1558,8 @@
             "type": "integer"
           },
           "name": {
+            "maxLength": 200,
+            "minLength": 1,
             "title": "Name",
             "type": "string"
           },
@@ -2057,8 +2059,15 @@
             "type": "boolean"
           },
           "miro_room_id": {
-            "title": "Miro Room Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Miro Room Id"
           },
           "scheduled_end": {
             "format": "date-time",
@@ -2075,13 +2084,14 @@
             "default": "UPCOMING"
           },
           "title": {
+            "maxLength": 200,
+            "minLength": 1,
             "title": "Title",
             "type": "string"
           }
         },
         "required": [
           "title",
-          "miro_room_id",
           "scheduled_start",
           "scheduled_end",
           "batch_id"
@@ -2212,6 +2222,8 @@
           "title": {
             "anyOf": [
               {
+                "maxLength": 200,
+                "minLength": 1,
                 "type": "string"
               },
               {
@@ -6339,6 +6351,116 @@
         "title": "PostUpdate",
         "type": "object"
       },
+      "PublicBatch": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "max_students": {
+            "title": "Max Students",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "seats_taken": {
+            "title": "Seats Taken",
+            "type": "integer"
+          },
+          "sessions": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/PublicSession"
+            },
+            "title": "Sessions",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BatchStatus"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "max_students",
+          "status",
+          "seats_taken"
+        ],
+        "title": "PublicBatch",
+        "type": "object"
+      },
+      "PublicCourse": {
+        "properties": {
+          "batches": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/PublicBatch"
+            },
+            "title": "Batches",
+            "type": "array"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "enrolled_batch_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enrolled Batch Id"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_enrolled": {
+            "default": false,
+            "title": "Is Enrolled",
+            "type": "boolean"
+          },
+          "price": {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Price",
+            "type": "string"
+          },
+          "thumbnail_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbnail Url"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "price"
+        ],
+        "title": "PublicCourse",
+        "type": "object"
+      },
       "PublicPostListResponse": {
         "properties": {
           "posts": {
@@ -6392,6 +6514,36 @@
           "astrologer_display_name"
         ],
         "title": "PublicReview",
+        "type": "object"
+      },
+      "PublicSession": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "scheduled_end": {
+            "format": "date-time",
+            "title": "Scheduled End",
+            "type": "string"
+          },
+          "scheduled_start": {
+            "format": "date-time",
+            "title": "Scheduled Start",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "scheduled_start",
+          "scheduled_end"
+        ],
+        "title": "PublicSession",
         "type": "object"
       },
       "QuotaResponse": {
@@ -15181,8 +15333,54 @@
         ]
       }
     },
+    "/edu/batches/{batch_id}": {
+      "delete": {
+        "operationId": "delete_batch_edu_batches__batch_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batch_id",
+            "required": true,
+            "schema": {
+              "title": "Batch Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Batch",
+        "tags": [
+          "Education"
+        ]
+      }
+    },
     "/edu/courses": {
       "get": {
+        "description": "Public course catalogue. Only open batches, active sessions, and seat counts \u2014\nnever enrollments or room ids.",
         "operationId": "list_courses_edu_courses_get",
         "responses": {
           "200": {
@@ -15190,7 +15388,7 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/CourseResponse"
+                    "$ref": "#/components/schemas/PublicCourse"
                   },
                   "title": "Response List Courses Edu Courses Get",
                   "type": "array"
@@ -15610,6 +15808,49 @@
       }
     },
     "/edu/sessions/{session_id}": {
+      "delete": {
+        "operationId": "delete_session_edu_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete Session",
+        "tags": [
+          "Education"
+        ]
+      },
       "put": {
         "operationId": "update_session_edu_sessions__session_id__put",
         "parameters": [
