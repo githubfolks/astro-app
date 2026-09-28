@@ -90,6 +90,30 @@ def test_token_stays_valid_until_after_scheduled_end(client, db_session, make_us
     assert 115 * 60 < expires_in < 125 * 60
 
 
+# --- Join URL -------------------------------------------------------------
+
+def test_room_url_is_the_configured_https_origin(client, db_session, make_user):
+    tutor = make_user(models.UserRole.TUTOR)
+    s, _ = _live_session(db_session, tutor)
+
+    url = urlparse(_join(client, tutor, s.id)["room_url"])
+    # MiroTalk's client redirects http -> https, breaking the iframe's camera/mic grant.
+    assert f"{url.scheme}://{url.netloc}" == miro_service.MIROTALK_URL
+    assert url.scheme == "https"
+    assert url.path == "/join/"
+
+
+@pytest.mark.parametrize("configured", ["", "http://localhost:4020"])
+def test_join_fails_explicitly_when_mirotalk_url_is_not_https(client, db_session, make_user, monkeypatch, configured):
+    monkeypatch.setattr(miro_service, "MIROTALK_URL", configured)
+    tutor = make_user(models.UserRole.TUTOR)
+    s, _ = _live_session(db_session, tutor)
+
+    resp = client.get(f"/edu/sessions/{s.id}/join", headers=auth_headers(tutor))
+    assert resp.status_code == 503
+    assert "room_url" not in resp.json()
+
+
 # --- Room ids ---------------------------------------------------------------
 
 def test_room_id_is_generated_server_side_and_ignores_client_value(client, db_session, make_user):

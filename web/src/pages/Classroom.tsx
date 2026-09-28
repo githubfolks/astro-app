@@ -53,7 +53,8 @@ export const Classroom: React.FC = () => {
     return (
         <div className="classroom-container">
             <div className="classroom-header">
-                <button onClick={() => navigate(-1)} className="exit-btn">
+                {/* Not navigate(-1): MiroTalk pushes history entries inside the iframe, so "back" would only step the iframe. */}
+                <button onClick={() => navigate('/dashboard')} className="exit-btn">
                     <span>&larr;</span> Exit Class
                 </button>
                 <h1>Live Video Class</h1>

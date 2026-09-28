@@ -38,6 +38,10 @@ services:
       - global-proxy-network
 
   mirotalk:
+    environment:
+      # Empty -> MiroTalk auto-detects the VPS public IP. Set MIROTALK_ANNOUNCED_IP
+      # in .env only if that detection is wrong (e.g. the host sits behind NAT).
+      - SFU_ANNOUNCED_IP=${MIROTALK_ANNOUNCED_IP:-}
     networks:
       - default
       - global-proxy-network

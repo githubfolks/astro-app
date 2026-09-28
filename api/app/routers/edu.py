@@ -461,7 +461,10 @@ def join_classroom(session_id: int, db: Session = Depends(database.get_db), curr
         role=role,
         expires_delta=(sched_end - now) + timedelta(minutes=30),
     )
-    room_url = miro_service.get_join_url(full_name=full_name, room_id=session.miro_room_id, token=token)
+    try:
+        room_url = miro_service.get_join_url(full_name=full_name, room_id=session.miro_room_id, token=token)
+    except miro_service.MiroTalkNotConfigured:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="The live classroom is temporarily unavailable. Please try again later or contact support.")
 
     return {
         "room_url": room_url,

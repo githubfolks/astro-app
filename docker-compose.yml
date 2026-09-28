@@ -96,9 +96,18 @@ services:
     container_name: astro_mirotalk
     ports:
       - "4020:3010"
+      # WebRTC media (ICE/DTLS/RTP). Browsers send audio/video straight to these,
+      # not through the proxy. With SFU_SERVER=true and one worker, mediasoup binds
+      # its single WebRtcServer inside SFU_MIN_PORT..SFU_MIN_PORT+1.
+      - "40000-40001:40000-40001/udp"
+      - "40000-40001:40000-40001/tcp"
     environment:
       - PORT=3010
       - TRUST_PROXY=true
+      - SFU_SERVER=true
+      - SFU_NUM_WORKERS=1
+      - SFU_MIN_PORT=40000
+      # IP handed to browsers as the media address; set per environment in the overlays.
       - API_KEY_SECRET=${MIROTALK_API_KEY_SECRET}
       - JWT_SECRET=${MIROTALK_JWT_SECRET}
       # Only peers holding a token signed by the API (carrying this service

@@ -13,6 +13,7 @@ expects (see its ``encodeToken``/``decodeToken`` and ``/join/`` route):
 import base64
 import hashlib
 import json
+import logging
 import os
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
@@ -20,8 +21,19 @@ from urllib.parse import urlencode
 from jose import jwt
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-# MiroTalk Configuration
-MIROTALK_URL = os.getenv("MIROTALK_URL", "http://localhost:4020").rstrip("/")
+logger = logging.getLogger(__name__)
+
+# Public origin browsers load the SFU from. MiroTalk's client (public/js/Room.js)
+# force-redirects http:// to https://, so an http URL never loads in the classroom
+# iframe. A missing/invalid value only disables classroom joins (MiroTalkNotConfigured)
+# instead of refusing to start, so the rest of the API stays up.
+MIROTALK_URL = os.getenv("MIROTALK_URL", "").strip().rstrip("/")
+if not MIROTALK_URL.startswith("https://"):
+    logger.error("MIROTALK_URL must be the https:// origin of the MiroTalk SFU; classroom joins are disabled.")
+
+
+class MiroTalkNotConfigured(RuntimeError):
+    """MIROTALK_URL is unset or not https, so no working join URL can be built."""
 
 # Secret key + peer password settings — must be set in the environment; no insecure fallback
 MIROTALK_JWT_SECRET = os.getenv("MIROTALK_JWT_SECRET")
@@ -122,6 +134,8 @@ def decode_miro_token(token: str, verify_exp: bool = True) -> dict:
 
 def get_join_url(full_name: str, room_id: str, token: str) -> str:
     """Full MiroTalk SFU join URL: room + display name as query params, token for auth/role."""
+    if not MIROTALK_URL.startswith("https://"):
+        raise MiroTalkNotConfigured("MIROTALK_URL must be an https:// URL")
     params = urlencode({
         "room": room_id,
         "name": full_name,

@@ -14,6 +14,16 @@ services:
   api:
     environment:
       APP_ENV: development
+      # MiroTalk forces https in the browser, so the join URL must be https.
+      # The container uses a self-signed cert: open https://localhost:4020 once in
+      # your browser and accept it, otherwise the classroom iframe stays blank.
+      MIROTALK_URL: "https://localhost:4020"
+
+  mirotalk:
+    environment:
+      # Browsers on this Mac reach the published media ports on localhost; without
+      # this MiroTalk announces the home router's public IP and media never flows.
+      - SFU_ANNOUNCED_IP=127.0.0.1
 
   web:
     build:

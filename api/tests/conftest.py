@@ -15,6 +15,7 @@ os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-not-for-production")
 os.environ.setdefault("MIROTALK_JWT_SECRET", "test-mirotalk-secret-not-for-production")
 os.environ.setdefault("MIROTALK_PEER_USERNAME", "test-mirotalk-service")
 os.environ.setdefault("MIROTALK_PEER_PASSWORD", "test-mirotalk-peer-password")
+os.environ.setdefault("MIROTALK_URL", "https://classroom.test")
 os.environ.setdefault("SQLALCHEMY_DATABASE_URL", "sqlite://")
 
 import pytest
