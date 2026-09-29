@@ -116,7 +116,10 @@ def get_trust_stats(db: Session = Depends(database.get_db)):
     verified_astrologers = db.query(models.AstrologerProfile).filter(
         models.AstrologerProfile.is_approved == True
     ).count()
-    total_consultations = db.query(func.coalesce(func.sum(models.AstrologerProfile.total_consultations), 0)).scalar()
+    # Count real completed sessions; AstrologerProfile.total_consultations is never incremented.
+    total_consultations = db.query(models.Consultation).filter(
+        models.Consultation.status.in_(models.COMPLETED_CONSULTATION_STATUSES)
+    ).count()
     total_reviews = db.query(models.Review).count()
     average_rating = db.query(func.coalesce(func.avg(models.Review.rating), 0)).scalar()
     return schemas.TrustStats(

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AOS from 'aos';
 import { Search as SearchIcon, Heart, Briefcase, Scroll, LayoutGrid } from 'lucide-react';
 import AstrologerCard from './AstrologerCard';
-import type { Astrologer, AstrologerListItem, SeekerProfile } from '../types';
+import type { Astrologer, AstrologerCityFilter, AstrologerListItem, SeekerProfile } from '../types';
 import LoginModal from './LoginModal';
 import ProfileCompletionModal from './ProfileCompletionModal';
 import PaymentModal from './PaymentModal';
@@ -16,11 +16,28 @@ interface AstrologerListProps {
     limit?: number;
     topRankingOnly?: boolean;
     showFilters?: boolean;
+    // Parent must keep this referentially stable (useMemo) — a new object refetches.
+    cityFilter?: AstrologerCityFilter;
+    heading?: string;
+    subheading?: string;
+    emptyMessage?: string;
+    // 'dark' renders the section for dark page backgrounds (e.g. city pages).
+    tone?: 'light' | 'dark';
 }
 
-const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly = false, showFilters = true }) => {
+const AstrologerList: React.FC<AstrologerListProps> = ({
+    limit,
+    topRankingOnly = false,
+    showFilters = true,
+    cityFilter,
+    heading = 'Chat with Expert Astrologers',
+    subheading = 'Consult hand-picked celestial experts for personalized guidance on life, career, and relationships.',
+    emptyMessage = 'No astrologers found matching your criteria.',
+    tone = 'light',
+}) => {
     const [astrologers, setAstrologers] = useState<Astrologer[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [pendingChatAstroId, setPendingChatAstroId] = useState<number | null>(null);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -144,8 +161,9 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
         const requestId = ++latestRequestId.current;
         try {
             setLoading(true);
+            setLoadError(false);
             // Always sort by rating as per requirements
-            const data = await api.astrologers.list(skip, PAGE_SIZE, 'rating');
+            const data = await api.astrologers.list(skip, PAGE_SIZE, 'rating', cityFilter);
 
             if (!Array.isArray(data)) throw new Error("Invalid response format");
             if (requestId !== latestRequestId.current) return; // superseded by a newer fetch
@@ -156,11 +174,12 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 full_name: profile.full_name || "Astrologer",
                 display_name: profile.display_name || null,
                 profile_picture_url: profile.profile_picture_url,
-                specialties: profile.specialties || "Vedic",
-                languages: profile.languages || "English",
-                experience_years: profile.experience_years || 5,
-                consultation_fee_per_min: profile.consultation_fee_per_min || 10,
-                rating_avg: profile.rating_avg || 5.0,
+                // Real values only — the card hides fields the astrologer hasn't filled in.
+                specialties: profile.specialties || null,
+                languages: profile.languages || null,
+                experience_years: profile.experience_years ?? null,
+                consultation_fee_per_min: Number(profile.consultation_fee_per_min ?? 0),
+                rating_avg: Number(profile.rating_avg ?? 0),
                 is_online: profile.is_online || false,
                 availability_status: profile.availability_status || (profile.is_online ? 'ONLINE' : 'OFFLINE'),
                 knockable: profile.knockable ?? true,
@@ -169,9 +188,7 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 is_premium: profile.is_premium || false
             }));
 
-            if (data.length < PAGE_SIZE) {
-                setHasMore(false);
-            }
+            setHasMore(data.length >= PAGE_SIZE);
 
             if (append) {
                 setAstrologers(prev => [...prev, ...astros]);
@@ -182,10 +199,11 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
             }
         } catch (err) {
             console.error("Failed to fetch astrologers", err);
+            if (requestId === latestRequestId.current) setLoadError(true);
         } finally {
             setLoading(false);
         }
-    }, [PAGE_SIZE]);
+    }, [PAGE_SIZE, cityFilter]);
 
     useEffect(() => {
         fetchAstrologers(0, false);
@@ -261,14 +279,14 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
 
     const displayAstrologers = filteredAstrologers;
 
-    if (loading) return <div className="loading">Loading Astrologers...</div>;
+    if (loading) return <div className={`loading ${tone === 'dark' ? 'loading--dark' : ''}`}>Loading Astrologers...</div>;
 
     return (
-        <section className="astrologer-section">
+        <section className={`astrologer-section ${tone === 'dark' ? 'astrologer-section--dark' : ''}`}>
             <div className="container">
                 <div className="section-header" data-aos="fade-up">
-                    <h2 className="section-title">Chat with Expert Astrologers</h2>
-                    <p className="section-description">Consult hand-picked celestial experts for personalized guidance on life, career, and relationships.</p>
+                    <h2 className="section-title">{heading}</h2>
+                    {subheading && <p className="section-description">{subheading}</p>}
                 </div>
 
                 {showFilters && (
@@ -298,7 +316,12 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                 )}
 
                 <div className="astro-grid">
-                    {displayAstrologers.length > 0 ? (
+                    {loadError && astrologers.length === 0 ? (
+                        <div className="no-results">
+                            Couldn't load astrologers right now.{' '}
+                            <button className="retry-btn" onClick={() => fetchAstrologers(0, false)}>Try again</button>
+                        </div>
+                    ) : displayAstrologers.length > 0 ? (
                         displayAstrologers.map((astro, index) => (
                             <div key={astro.id} data-aos="fade-up" data-aos-delay={(index % 4) * 100}>
                                 <AstrologerCard
@@ -309,12 +332,13 @@ const AstrologerList: React.FC<AstrologerListProps> = ({ limit, topRankingOnly =
                             </div>
                         ))
                     ) : (
-                        <div className="no-results">No astrologers found matching your criteria.</div>
+                        <div className="no-results">{emptyMessage}</div>
                     )}
                 </div>
 
-                {!topRankingOnly && hasMore && !loading && (
+                {!topRankingOnly && hasMore && !loading && astrologers.length > 0 && (
                     <div className="load-more-container" style={{ textAlign: 'center', marginTop: '2rem' }}>
+                        {loadError && <p className="load-more-error">Couldn't load more astrologers. Please try again.</p>}
                         <button
                             className="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition"
                             onClick={() => fetchAstrologers(page * PAGE_SIZE, true)}

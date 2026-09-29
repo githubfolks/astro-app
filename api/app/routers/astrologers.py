@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File, Request
-from sqlalchemy import func
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, UploadFile, File, Request, Query
+from sqlalchemy import func, or_, not_
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from .. import models, schemas, database
 from ..services import email_service
 from ..limiter import limiter
@@ -123,6 +123,27 @@ def _decorate_review_count_bulk(db: Session, profiles: List[models.AstrologerPro
     )
     for p in profiles:
         p.total_reviews = counts.get(p.user_id, 0)
+    return profiles
+
+
+def _decorate_completed_consultations_bulk(db: Session, profiles: List[models.AstrologerProfile]):
+    """Attach the real count of completed consultations. The
+    AstrologerProfile.total_consultations column is never incremented, so it
+    can't be shown as a stat."""
+    ids = [p.user_id for p in profiles]
+    if not ids:
+        return profiles
+    counts = dict(
+        db.query(models.Consultation.astrologer_id, func.count(models.Consultation.id))
+        .filter(
+            models.Consultation.astrologer_id.in_(ids),
+            models.Consultation.status.in_(models.COMPLETED_CONSULTATION_STATUSES),
+        )
+        .group_by(models.Consultation.astrologer_id)
+        .all()
+    )
+    for p in profiles:
+        p.completed_consultations = counts.get(p.user_id, 0)
     return profiles
 
 
@@ -309,14 +330,47 @@ def _restricted_visibility_filter(db: Session, current_user):
     return models.AstrologerProfile.is_restricted == False
 
 
+MAX_CITY_NAMES = 10
+MAX_CITY_NAME_LENGTH = 60
+
+
+def _normalize_city_names(names: Optional[List[str]]) -> List[str]:
+    normalized = sorted({n.strip().lower() for n in (names or []) if n and n.strip()})
+    if len(normalized) > MAX_CITY_NAMES or any(len(n) > MAX_CITY_NAME_LENGTH for n in normalized):
+        raise HTTPException(status_code=422, detail="Invalid city filter")
+    return normalized
+
+
+def _city_match_filter(names: List[str]):
+    """AstrologerProfile.city is free text from onboarding, so match it
+    case-insensitively either exactly ("Hyderabad") or as the first part of a
+    "City, State" entry ("Hyderabad, Telangana")."""
+    col = func.lower(func.trim(models.AstrologerProfile.city))
+    prefix_matches = [
+        col.like(n.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + ",%", escape="\\")
+        for n in names
+    ]
+    return or_(col.in_(names), *prefix_matches)
+
+
 @router.get("/", response_model=List[schemas.AstrologerProfile])
 def list_astrologers(
     skip: int = 0,
     limit: int = 20,
     sort_by: str = None,
+    # Repeatable (?city=Bangalore&city=Bengaluru) so a city page can pass its
+    # spelling variants. `city` keeps only astrologers based there; `exclude_city`
+    # keeps everyone else, including astrologers with no city on file.
+    city: Optional[List[str]] = Query(None),
+    exclude_city: Optional[List[str]] = Query(None),
     db: Session = Depends(database.get_db),
     current_user: models.User = Depends(get_current_user_optional),
 ):
+    city_names = _normalize_city_names(city)
+    exclude_city_names = _normalize_city_names(exclude_city)
+    if city_names and exclude_city_names:
+        raise HTTPException(status_code=422, detail="Use either city or exclude_city, not both")
+
     query = db.query(models.AstrologerProfile).join(models.User).filter(
         models.AstrologerProfile.is_approved == True,
         models.AstrologerProfile.onboarding_stage == models.OnboardingStage.COMPLETED,
@@ -324,6 +378,13 @@ def list_astrologers(
         models.User.is_verified == True,
         _restricted_visibility_filter(db, current_user),
     )
+    if city_names:
+        query = query.filter(_city_match_filter(city_names))
+    elif exclude_city_names:
+        query = query.filter(or_(
+            models.AstrologerProfile.city.is_(None),
+            not_(_city_match_filter(exclude_city_names)),
+        ))
 
     # Premium astrologers always surface first, regardless of the secondary sort.
     if sort_by == 'rating':
@@ -343,6 +404,7 @@ def list_astrologers(
     profiles = query.offset(skip).limit(limit).all()
     _decorate_availability_bulk(db, profiles)
     _decorate_review_count_bulk(db, profiles)
+    _decorate_completed_consultations_bulk(db, profiles)
     return profiles
 
 @router.get("/profile", response_model=schemas.AstrologerProfile)
@@ -710,6 +772,7 @@ def get_astrologer_by_identifier(
         raise HTTPException(status_code=404, detail="Astrologer not found or not approved")
     _decorate_availability(db, profile)
     _decorate_review_count(db, profile)
+    _decorate_completed_consultations_bulk(db, [profile])
     return profile
 
 

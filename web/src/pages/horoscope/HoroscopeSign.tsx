@@ -402,7 +402,7 @@ const HoroscopeSign: React.FC = () => {
                     <div className="glass-panel p-5 md:p-12 text-center bg-gradient-to-r from-indigo-950/40 to-purple-950/40 border border-indigo-500/10">
                         <h2 className="text-xl md:text-3xl font-normal mb-2 md:mb-4 text-white">Want a Personalised {data.name} Reading?</h2>
                         <p className="text-gray-300 mb-4 md:mb-8 text-sm md:text-lg max-w-xl mx-auto">
-                            Connect with verified Vedic astrologers who specialize in {data.name} birth charts — live, 24/7.
+                            Connect with verified Vedic astrologers who specialize in {data.name} birth charts — live chat whenever they are online.
                         </p>
                         <Link
                             to="/astrologers"

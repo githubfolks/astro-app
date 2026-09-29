@@ -46,6 +46,7 @@ export default function AstrologerForm() {
         experience_years: 0,
         languages: '',
         specialties: '',
+        city: '',
         consultation_fee_per_min: 0,
         commission_percentage: 70,
         availability_start_time: '',
@@ -72,6 +73,7 @@ export default function AstrologerForm() {
                     experience_years: found.profile?.experience_years || 0,
                     languages: found.profile?.languages || '',
                     specialties: found.profile?.specialties || '',
+                    city: found.profile?.city || '',
                     consultation_fee_per_min: found.profile?.consultation_fee_per_min || 0,
                     commission_percentage: found.profile?.commission_percentage ?? 70,
                     availability_start_time: (found.profile?.availability_start_time || '').slice(0, 5),
@@ -333,6 +335,12 @@ export default function AstrologerForm() {
                                 label="Specialties" name="specialties"
                                 value={formData.specialties} onChange={handleChange}
                                 placeholder="Vedic, Tarot, Numerology"
+                            />
+                            <Input
+                                label="City" name="city"
+                                value={formData.city} onChange={handleChange}
+                                placeholder="e.g. Hyderabad"
+                                helperText="City the astrologer is based in — lists them first on that city's page (e.g. /astrologers/city/hyderabad)"
                             />
                         </div>
                     </div>

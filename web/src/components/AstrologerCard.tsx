@@ -61,7 +61,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                 </div>
 
                 <div className="astro-info">
-                    <p className="astro-spec">{astro.specialties}</p>
+                    {astro.specialties && <p className="astro-spec">{astro.specialties}</p>}
                     <Link to={`/astrologers/${astro.slug || astro.id}`} style={{ textDecoration: 'none' }}>
                         <h3 className="astro-name flex items-center gap-1.5">
                             {displayName}
@@ -75,15 +75,19 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
                             )}
                         </h3>
                     </Link>
-                    <div className="astro-lang">
-                        <Languages size={14} />
-                        <span>{astro.languages}</span>
-                    </div>
-                    <div className="astro-exp-row">
-                        <div className="astro-exp">
-                            <Award size={14} />
-                            <span>{astro.experience_years} Years Exp</span>
+                    {astro.languages && (
+                        <div className="astro-lang">
+                            <Languages size={14} />
+                            <span>{astro.languages}</span>
                         </div>
+                    )}
+                    <div className="astro-exp-row">
+                        {astro.experience_years != null ? (
+                            <div className="astro-exp">
+                                <Award size={14} />
+                                <span>{astro.experience_years} Years Exp</span>
+                            </div>
+                        ) : <span />}
                         <span className="price">₹{Number(astro.consultation_fee_per_min)}/min</span>
                     </div>
                 </div>
@@ -92,7 +96,7 @@ const AstrologerCard: React.FC<Props> = ({ astro, onChatClick, canNotify }) => {
             <div className="astro-action-row">
                 <div className="astro-hours-wrap">
                     {astro.availability_hours && (
-                        <div className="astro-hours flex items-center gap-1.5 bg-indigo-50/50 text-indigo-600 px-2 py-1 rounded-md text-[10px] font-bold inline-flex">
+                        <div className="astro-hours flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold inline-flex">
                             <Clock size={12} />
                             <span>{astro.availability_hours}</span>
                         </div>

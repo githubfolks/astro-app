@@ -504,6 +504,7 @@ def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = D
         availability_start_time=astrologer.availability_start_time,
         availability_end_time=astrologer.availability_end_time,
         profile_picture_url=astrologer.profile_picture_url,
+        city=astrologer.city.strip() if astrologer.city and astrologer.city.strip() else None,
         is_online=False,
         is_approved=True,
         commission_percentage=astrologer.commission_percentage
@@ -544,6 +545,7 @@ def list_astrologers_full(skip: int = 0, limit: int = 100, db: Session = Depends
                 "availability_hours": profile.availability_hours,
                 "availability_start_time": profile.availability_start_time,
                 "availability_end_time": profile.availability_end_time,
+                "city": profile.city,
                 "rating_avg": profile.rating_avg,
                 "commission_percentage": float(profile.commission_percentage),
                 "is_approved": profile.is_approved,
@@ -607,6 +609,10 @@ def update_astrologer_full(user_id: int, data: schemas.AdminCreateAstrologer, db
         if data.availability_start_time and data.availability_end_time else None
     )
     profile.profile_picture_url = data.profile_picture_url
+    # Only touch city when the client sent it, so an older admin build that
+    # doesn't know the field can't wipe the city an astrologer entered at onboarding.
+    if "city" in data.model_fields_set:
+        profile.city = data.city.strip() if data.city and data.city.strip() else None
 
     db.commit()
     return {"message": "Astrologer updated successfully"}

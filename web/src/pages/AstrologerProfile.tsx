@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
-import { estimateConsultations } from '../utils/estimateStats';
 import SEO from '../components/SEO';
 
 const AstrologerProfile: React.FC = () => {
@@ -260,12 +259,17 @@ const AstrologerProfile: React.FC = () => {
     const languagesArray = astrologer.languages?.split(',').map((l: string) => l.trim()) || [];
     const status = astrologer.availability_status || (astrologer.is_online ? 'ONLINE' : 'OFFLINE');
     const displayName = getAstrologerDisplayName(astrologer);
+    const completedConsultations = astrologer.completed_consultations ?? 0;
+    const metaFacts = [
+        ...(Number(astrologer.rating_avg) > 0 ? [`${Number(astrologer.rating_avg).toFixed(1)}★ rating`] : []),
+        ...(astrologer.experience_years != null ? [`${astrologer.experience_years}+ yrs exp`] : []),
+    ];
 
     return (
         <div className="flex flex-col min-h-screen bg-[#FFF9F0]">
             <SEO
                 title={`Talk to ${displayName} (${Number(astrologer.rating_avg) > 0 ? `${Number(astrologer.rating_avg).toFixed(1)}★` : 'Verified'}) | Astrologer | Aadikarta`}
-                description={`Consult with ${displayName} (${Number(astrologer.rating_avg) > 0 ? `${Number(astrologer.rating_avg).toFixed(1)}★` : '5.0★'} rating, ${astrologer.experience_years}+ yrs exp) on Aadikarta from ₹${astrologer.consultation_fee_per_min || 10}/min. Expert in ${specialtiesArray.slice(0, 3).join(', ')}.`}
+                description={`Consult with ${displayName}${metaFacts.length ? ` (${metaFacts.join(', ')})` : ''} on Aadikarta at ₹${Number(astrologer.consultation_fee_per_min)}/min.${specialtiesArray.length ? ` Expert in ${specialtiesArray.slice(0, 3).join(', ')}.` : ''}`}
                 keywords={`Aadikarta Vedic Astrology, ${displayName}, talk to ${displayName}, ${specialtiesArray.slice(0, 3).join(', ')}, online astrologer consultation`}
                 image={resolveImageUrl(astrologer.profile_picture_url, displayName)}
                 structuredData={getStructuredData(astrologer)}
@@ -323,14 +327,18 @@ const AstrologerProfile: React.FC = () => {
                                             <span className="font-bold text-indigo-300 text-sm">New</span>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-1 text-gray-300">
-                                        <Clock size={16} />
-                                        <span>{astrologer.experience_years || 5}+ Years</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-gray-300">
-                                        <Users size={16} />
-                                        <span>{astrologer.total_consultations || estimateConsultations(astrologer.user_id || 0, astrologer.experience_years || 5)}+ Consultations</span>
-                                    </div>
+                                    {astrologer.experience_years != null && (
+                                        <div className="flex items-center gap-1 text-gray-300">
+                                            <Clock size={16} />
+                                            <span>{astrologer.experience_years}+ Years</span>
+                                        </div>
+                                    )}
+                                    {completedConsultations > 0 && (
+                                        <div className="flex items-center gap-1 text-gray-300">
+                                            <Users size={16} />
+                                            <span>{completedConsultations} {completedConsultations === 1 ? 'Consultation' : 'Consultations'}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Languages */}
@@ -506,13 +514,15 @@ const AstrologerProfile: React.FC = () => {
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                                 <h3 className="font-normal text-gray-900 mb-4">Quick Stats</h3>
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Experience</span>
-                                        <span className="font-bold text-gray-900">{astrologer.experience_years || 5}+ Years</span>
-                                    </div>
+                                    {astrologer.experience_years != null && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-600">Experience</span>
+                                            <span className="font-bold text-gray-900">{astrologer.experience_years}+ Years</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Consultations</span>
-                                        <span className="font-bold text-gray-900">{astrologer.total_consultations || estimateConsultations(astrologer.user_id || 0, astrologer.experience_years || 5)}+</span>
+                                        <span className="font-bold text-gray-900">{completedConsultations > 0 ? completedConsultations : 'New'}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-gray-600">Rating</span>
@@ -524,10 +534,6 @@ const AstrologerProfile: React.FC = () => {
                                         ) : (
                                             <span className="font-bold text-indigo-600">New</span>
                                         )}
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-600">Response Time</span>
-                                        <span className="font-bold text-green-600">{'< 2 min'}</span>
                                     </div>
                                 </div>
                             </div>

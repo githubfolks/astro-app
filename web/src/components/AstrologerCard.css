@@ -194,6 +194,8 @@
 
 .astro-hours {
     white-space: nowrap;
+    background: rgba(238, 242, 255, 0.5);
+    color: #4f46e5;
 }
 
 .rating {
@@ -281,4 +283,77 @@
 .native-app .astro-card {
     padding: 16px;
     border-radius: 18px;
+}
+
+/* Dark tone (AstrologerList tone="dark"): the default card is translucent white
+   glass meant for light pages; over a dark page it turns grey and the grey/indigo
+   text loses contrast. */
+.astrologer-section--dark .astro-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.astrologer-section--dark .astro-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(129, 140, 248, 0.45);
+    box-shadow: 0 15px 35px rgba(79, 70, 229, 0.25);
+}
+
+.astrologer-section--dark .astro-name {
+    color: #f8fafc;
+}
+
+.astrologer-section--dark .astro-card:hover .astro-name {
+    color: #c7d2fe;
+}
+
+.astrologer-section--dark .astro-spec,
+.astrologer-section--dark .rating-new {
+    color: #a5b4fc;
+}
+
+.astrologer-section--dark .astro-lang,
+.astrologer-section--dark .astro-exp {
+    color: #cbd5e1;
+}
+
+.astrologer-section--dark .price {
+    color: #f8fafc;
+    opacity: 1;
+}
+
+.astrologer-section--dark .rating {
+    color: #fbbf24;
+}
+
+.astrologer-section--dark .astro-hours {
+    background: rgba(129, 140, 248, 0.15);
+    color: #c7d2fe;
+}
+
+.astrologer-section--dark .view-profile-icon {
+    background: rgba(129, 140, 248, 0.12);
+    color: #c7d2fe;
+    border-color: rgba(129, 140, 248, 0.25);
+}
+
+.astrologer-section--dark .view-profile-icon:hover {
+    background: rgba(129, 140, 248, 0.22);
+}
+
+.astrologer-section--dark .offline-badge {
+    background: rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.astrologer-section--dark .notify-btn {
+    background: rgba(129, 140, 248, 0.15);
+    color: #c7d2fe;
+    border-color: rgba(129, 140, 248, 0.35);
+}
+
+.astrologer-section--dark .notify-btn:hover {
+    background: rgba(129, 140, 248, 0.25);
 }

@@ -1,16 +1,24 @@
 export type AvailabilityStatus = 'ONLINE' | 'BUSY' | 'OFFLINE';
 
+/** Public astrologer list filter by the astrologer's city (spelling variants in `names`). */
+export interface AstrologerCityFilter {
+    mode: 'only' | 'exclude';
+    names: string[];
+}
+
 export interface Astrologer {
     id: number;
     slug?: string | null;
     full_name: string;
     display_name?: string | null;
     total_consultations?: number;
+    // Real count of completed consultations (total_consultations is never populated).
+    completed_consultations?: number;
     total_reviews?: number;
     profile_picture_url?: string;
-    specialties: string;
-    languages: string;
-    experience_years: number;
+    specialties: string | null;
+    languages: string | null;
+    experience_years: number | null;
     consultation_fee_per_min: number;
     rating_avg: number;
     is_online: boolean;
@@ -54,9 +62,9 @@ export interface AstrologerListItem {
     full_name?: string;
     display_name?: string | null;
     profile_picture_url?: string;
-    specialties?: string;
-    languages?: string;
-    experience_years?: number;
+    specialties?: string | null;
+    languages?: string | null;
+    experience_years?: number | null;
     consultation_fee_per_min?: number;
     rating_avg?: number;
     is_online?: boolean;

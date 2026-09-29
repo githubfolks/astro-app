@@ -1,5 +1,6 @@
 import { storage } from '../utils/storage';
 import { isNative } from '../utils/platform';
+import type { AstrologerCityFilter } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -197,12 +198,16 @@ export const api = {
         }
     },
     astrologers: {
-        list: async (skip = 0, limit = 20, sort_by?: string) => {
+        list: async (skip = 0, limit = 20, sort_by?: string, cityFilter?: AstrologerCityFilter) => {
             const params = new URLSearchParams({
                 skip: skip.toString(),
                 limit: limit.toString()
             });
             if (sort_by) params.append('sort_by', sort_by);
+            if (cityFilter) {
+                const key = cityFilter.mode === 'only' ? 'city' : 'exclude_city';
+                cityFilter.names.forEach(name => params.append(key, name));
+            }
 
             const response = await customFetch(`${API_URL}/astrologers/?${params.toString()}`, {
                 headers: await authHeaders()

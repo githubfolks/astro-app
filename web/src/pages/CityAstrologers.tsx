@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -8,171 +8,221 @@ import PageHeading from '../components/PageHeading';
 import AeoDirectAnswer from '../components/AeoDirectAnswer';
 import FAQSection from '../components/FAQSection';
 import { api } from '../services/api';
+import type { AstrologerCityFilter } from '../types';
 import '../pages/services/ServicesDetail.css';
 
-const CITY_MAP: Record<string, { name: string; state: string; description: string }> = {
+// Pages are about consulting online *from* a city. `matchNames` lists the spellings
+// an astrologer may have entered as their profile city (matched case-insensitively,
+// also as "City, State"); astrologers based there are listed first.
+interface CityInfo {
+    name: string;
+    state: string;
+    description: string;
+    matchNames: string[];
+}
+
+const CITY_MAP: Record<string, CityInfo> = {
     delhi: {
         name: 'Delhi NCR',
         state: 'Delhi',
-        description: 'Connect with top verified Vedic astrologers in Delhi NCR for instant online chat consultations, Kundli matching, and Jyotish remedies.'
+        description: 'Consult verified Vedic astrologers online from Delhi NCR for private chat consultations, Kundli matching, and Jyotish remedies.',
+        matchNames: ['Delhi', 'New Delhi', 'Noida', 'Greater Noida', 'Gurgaon', 'Gurugram', 'Ghaziabad', 'Faridabad']
     },
     mumbai: {
         name: 'Mumbai',
         state: 'Maharashtra',
-        description: 'Consult expert Vedic astrologers and tarot readers in Mumbai for career guidance, love advice, and Kundli analysis starting from ₹10/min.'
+        description: 'Consult Vedic astrologers and tarot readers online from Mumbai for career guidance, love advice, and Kundli analysis.',
+        matchNames: ['Mumbai', 'Bombay']
     },
     bangalore: {
         name: 'Bangalore',
         state: 'Karnataka',
-        description: 'Find trusted online Vedic astrologers in Bangalore for IT career guidance, Kundli matching, and personal relationship advice.'
+        description: 'Consult trusted Vedic astrologers online from Bangalore for career guidance, Kundli matching, and relationship advice.',
+        matchNames: ['Bangalore', 'Bengaluru']
     },
     kolkata: {
         name: 'Kolkata',
         state: 'West Bengal',
-        description: 'Experienced Vedic astrologers and Kundli experts in Kolkata available 24/7 for online chat and call consultations.'
+        description: 'Consult experienced Vedic astrologers and Kundli experts online from Kolkata through private chat consultations.',
+        matchNames: ['Kolkata', 'Calcutta']
     },
     chennai: {
         name: 'Chennai',
         state: 'Tamil Nadu',
-        description: 'Top Vedic Jyotish experts and marriage Kundli matching astrologers in Chennai for instant online guidance.'
+        description: 'Consult Vedic Jyotish experts online from Chennai for marriage Kundli matching and personal guidance.',
+        matchNames: ['Chennai', 'Madras']
     },
     hyderabad: {
         name: 'Hyderabad',
         state: 'Telangana',
-        description: 'Consult verified online astrologers in Hyderabad for career timing, marriage compatibility, and Vastu Shastra advice.'
+        description: 'Consult verified astrologers online from Hyderabad for career timing, marriage compatibility, and Vastu Shastra advice.',
+        matchNames: ['Hyderabad', 'Secunderabad']
     },
     pune: {
         name: 'Pune',
         state: 'Maharashtra',
-        description: 'Top-rated online Vedic astrologers in Pune offering private consultations, birth chart analysis, and remedies.'
+        description: 'Consult top-rated Vedic astrologers online from Pune for private consultations, birth chart analysis, and remedies.',
+        matchNames: ['Pune']
     },
     ahmedabad: {
         name: 'Ahmedabad',
         state: 'Gujarat',
-        description: 'Experienced Gujarati and English speaking Vedic astrologers in Ahmedabad for business, career, and Kundli matching.'
+        description: 'Consult experienced Vedic astrologers online from Ahmedabad for business, career, and Kundli matching.',
+        matchNames: ['Ahmedabad']
     },
     jaipur: {
         name: 'Jaipur',
         state: 'Rajasthan',
-        description: 'Renowned Vedic astrologers and gemstone advisors in Jaipur available for online Kundli analysis, career decisions, and marriage matching.'
+        description: 'Consult Vedic astrologers online from Jaipur for Kundli analysis, career decisions, and marriage matching.',
+        matchNames: ['Jaipur']
     },
     lucknow: {
         name: 'Lucknow',
         state: 'Uttar Pradesh',
-        description: 'Experienced Jyotish scholars and Vedic palmists in Lucknow offering authentic Kundali Milan, horoscope readings, and remedies.'
+        description: 'Consult Jyotish experts online from Lucknow for Kundali Milan, horoscope readings, and remedies.',
+        matchNames: ['Lucknow']
     },
     chandigarh: {
         name: 'Chandigarh',
         state: 'Punjab & Haryana',
-        description: 'Top online astrologers and tarot card readers in Chandigarh for NRI relationship advice, career timing, and birth chart analysis.'
+        description: 'Consult astrologers and tarot readers online from Chandigarh for relationship advice, career timing, and birth chart analysis.',
+        matchNames: ['Chandigarh', 'Mohali', 'Panchkula']
     },
     indore: {
         name: 'Indore',
         state: 'Madhya Pradesh',
-        description: 'Verified Vedic astrologers in Indore specializing in business Kundli analysis, financial transits, and marriage compatibility.'
+        description: 'Consult verified Vedic astrologers online from Indore for business Kundli analysis, financial transits, and marriage compatibility.',
+        matchNames: ['Indore']
     },
     patna: {
         name: 'Patna',
         state: 'Bihar',
-        description: 'Traditional Vedic Jyotish experts in Patna available 24/7 for Janam Kundli readings, Manglik Dosha remedies, and government job timings.'
+        description: 'Consult Vedic Jyotish experts online from Patna for Janam Kundli readings, Manglik Dosha remedies, and career timing.',
+        matchNames: ['Patna']
     },
     surat: {
         name: 'Surat',
         state: 'Gujarat',
-        description: 'Trusted online Vedic astrologers in Surat for business partnerships, career growth, Kundli matching, and Vastu Shastra.'
+        description: 'Consult trusted Vedic astrologers online from Surat for business partnerships, career growth, Kundli matching, and Vastu Shastra.',
+        matchNames: ['Surat']
     },
     kochi: {
         name: 'Kochi',
         state: 'Kerala',
-        description: 'Authentic Kerala astrology and Prashna Jyotish experts in Kochi for instant online consultations and accurate life predictions.'
+        description: 'Consult Vedic astrologers online from Kochi for private consultations and guidance on career, marriage, and family.',
+        matchNames: ['Kochi', 'Cochin', 'Ernakulam']
     },
     varanasi: {
         name: 'Varanasi',
         state: 'Uttar Pradesh',
-        description: 'Kashi-trained Vedic Jyotish Acharyas and Vedic scholars in Varanasi offering genuine Kundli analysis and spiritual remedies.'
+        description: 'Consult Vedic Jyotish experts online from Varanasi for Kundli analysis and spiritual remedies.',
+        matchNames: ['Varanasi', 'Banaras', 'Kashi']
     },
     nagpur: {
         name: 'Nagpur',
         state: 'Maharashtra',
-        description: 'Consult top-rated Vedic astrologers and numerologists in Nagpur for private chat consultations and birth chart insights.'
+        description: 'Consult Vedic astrologers and numerologists online from Nagpur for private chat consultations and birth chart insights.',
+        matchNames: ['Nagpur']
     },
     bhopal: {
         name: 'Bhopal',
         state: 'Madhya Pradesh',
-        description: 'Experienced Vedic astrologers in Bhopal offering personalized horoscope analysis, career forecasting, and marital compatibility.'
+        description: 'Consult experienced Vedic astrologers online from Bhopal for horoscope analysis, career forecasting, and marital compatibility.',
+        matchNames: ['Bhopal']
     },
     coimbatore: {
         name: 'Coimbatore',
         state: 'Tamil Nadu',
-        description: 'Trusted Vedic and Nadi astrologers in Coimbatore for instant online consultations on business, marriage, and family health.'
+        description: 'Consult trusted Vedic astrologers online from Coimbatore on business, marriage, and family matters.',
+        matchNames: ['Coimbatore']
     },
     ludhiana: {
         name: 'Ludhiana',
         state: 'Punjab',
-        description: 'Leading Vedic astrologers and tarot consultants in Ludhiana for overseas travel, marriage matching, and business growth.'
+        description: 'Consult Vedic astrologers and tarot readers online from Ludhiana for overseas travel, marriage matching, and business growth.',
+        matchNames: ['Ludhiana']
     },
     gurgaon: {
         name: 'Gurgaon',
         state: 'Haryana',
-        description: 'Top corporate and Vedic astrologers in Gurgaon (Gurugram) for executive career guidance, startup timing, and relationship advice.'
+        description: 'Consult Vedic astrologers online from Gurgaon (Gurugram) for career guidance, startup timing, and relationship advice.',
+        matchNames: ['Gurgaon', 'Gurugram']
     },
     noida: {
         name: 'Noida',
         state: 'Uttar Pradesh',
-        description: 'Consult expert Vedic astrologers in Noida for instant 24/7 chat on career change, marriage compatibility, and daily horoscopes.'
+        description: 'Consult Vedic astrologers online from Noida on career change, marriage compatibility, and daily horoscopes.',
+        matchNames: ['Noida', 'Greater Noida']
     },
     dubai: {
         name: 'Dubai',
         state: 'UAE',
-        description: 'Connect with top Indian Vedic astrologers online from Dubai, UAE for confidential Kundli matching, career timing, and business Jyotish.'
+        description: 'Consult Indian Vedic astrologers online from Dubai, UAE for confidential Kundli matching, career timing, and business Jyotish.',
+        matchNames: ['Dubai']
     },
     london: {
         name: 'London',
         state: 'United Kingdom',
-        description: 'Consult authentic Indian Vedic astrologers online from London, UK for NRI relationship guidance, marriage Kundli matching, and career readings.'
+        description: 'Consult Indian Vedic astrologers online from London, UK for relationship guidance, marriage Kundli matching, and career readings.',
+        matchNames: ['London']
     },
     toronto: {
         name: 'Toronto',
         state: 'Canada',
-        description: 'Indian Vedic astrology consultations online in Toronto, Canada for immigration prospects, career timing, and Kundali Milan.'
+        description: 'Consult Indian Vedic astrologers online from Toronto, Canada for immigration prospects, career timing, and Kundali Milan.',
+        matchNames: ['Toronto']
     },
     singapore: {
         name: 'Singapore',
         state: 'Singapore',
-        description: 'Online Vedic astrologer consultations in Singapore for business prosperity, marriage matching, and Vedic birth chart insights.'
+        description: 'Consult Vedic astrologers online from Singapore for business prosperity, marriage matching, and birth chart insights.',
+        matchNames: ['Singapore']
     },
     'new-york': {
         name: 'New York',
         state: 'United States',
-        description: 'Connect with verified Vedic astrologers online from New York, USA for personalized chart analysis, love compatibility, and career timing.'
+        description: 'Consult verified Vedic astrologers online from New York, USA for personalized chart analysis, love compatibility, and career timing.',
+        matchNames: ['New York', 'New York City', 'NYC']
     },
     sydney: {
         name: 'Sydney',
         state: 'Australia',
-        description: 'Consult experienced Indian Vedic astrologers online from Sydney, Australia for private Kundli readings and relationship advice.'
+        description: 'Consult experienced Indian Vedic astrologers online from Sydney, Australia for private Kundli readings and relationship advice.',
+        matchNames: ['Sydney']
     }
 };
 
 const CityAstrologers: React.FC = () => {
     const { cityName = 'delhi' } = useParams<{ cityName: string }>();
     const normalizedKey = cityName.toLowerCase().trim();
-    const cityInfo = CITY_MAP[normalizedKey] || {
-        name: cityName.charAt(0).toUpperCase() + cityName.slice(1),
+    const knownCity = CITY_MAP[normalizedKey];
+    const fallbackName = cityName.trim().replace(/-/g, ' ');
+    const cityInfo: CityInfo = knownCity || {
+        name: fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1),
         state: 'India',
-        description: `Consult top verified Vedic astrologers in ${cityName} for online chat consultations, Kundli matching, and remedies from ₹10/min.`
+        description: `Consult verified Vedic astrologers online from ${fallbackName} for private chat consultations, Kundli matching, and remedies.`,
+        matchNames: [fallbackName]
     };
 
-    const formattedTitle = `Top Astrologers in ${cityInfo.name} | Aadikarta`;
+    const matchKey = cityInfo.matchNames.join('|');
+    const localFilter = useMemo<AstrologerCityFilter>(() => ({ mode: 'only', names: matchKey.split('|') }), [matchKey]);
+    const elsewhereFilter = useMemo<AstrologerCityFilter>(() => ({ mode: 'exclude', names: matchKey.split('|') }), [matchKey]);
+
+    const formattedTitle = `Consult Astrologers Online in ${cityInfo.name} | Aadikarta`;
     const canonicalPath = `/astrologers/city/${normalizedKey}`;
 
     const faqs = [
         {
-            question: `How can I consult an astrologer in ${cityInfo.name} online?`,
-            answer: `You can instantly browse verified Vedic astrologers in ${cityInfo.name} on Aadikarta, select an expert, and start a 100% private chat or call consultation starting from ₹10/min.`
+            question: `How can I consult an astrologer online in ${cityInfo.name}?`,
+            answer: `Browse the astrologers on this page, check who is online, and tap Chat to start a private consultation. You pay per minute at the rate shown on each astrologer's card.`
         },
         {
-            question: `Are astrologers in ${cityInfo.name} available 24/7?`,
-            answer: `Yes, Aadikarta provides 24/7 online availability with verified astrologers speaking Hindi, English, and regional languages.`
+            question: `Are these astrologers based in ${cityInfo.name}?`,
+            answer: `Astrologers who list ${cityInfo.name} as their city on their Aadikarta profile are shown first. Consultations happen online, so you can also consult astrologers based elsewhere, listed below them.`
+        },
+        {
+            question: `When are astrologers available?`,
+            answer: `Each astrologer sets their own hours, shown on their card along with a live Online, Busy or Offline status. You can start a chat whenever an astrologer is online.`
         }
     ];
 
@@ -192,7 +242,7 @@ const CityAstrologers: React.FC = () => {
             {
                 '@type': 'CollectionPage',
                 '@id': `https://aadikarta.org${canonicalPath}#page`,
-                name: `Best Astrologers in ${cityInfo.name} — Aadikarta Vedic Astrology`,
+                name: `Consult Astrologers Online in ${cityInfo.name} — Aadikarta Vedic Astrology`,
                 url: `https://aadikarta.org${canonicalPath}`,
                 description: cityInfo.description,
                 publisher: { '@id': 'https://aadikarta.org/#organization' },
@@ -236,30 +286,46 @@ const CityAstrologers: React.FC = () => {
                 keywords={`best astrologer in ${cityInfo.name}, online astrologer ${cityInfo.name}, Kundli matching ${cityInfo.name}, Vedic astrology consultation ${cityInfo.name}`}
                 canonicalPath={canonicalPath}
                 structuredData={cityStructuredData}
+                // Arbitrary /astrologers/city/<anything> URLs still render, but only
+                // the curated cities are meant to be indexed.
+                noindex={!knownCity}
             />
             <Header />
 
             <main id="main-content" className="pt-8 pb-16">
                 <div className="container mx-auto px-4">
                     <PageHeading
-                        eyebrow={`Verified Experts in ${cityInfo.name}`}
-                        title={<>Top <span className="text-amber-500">Astrologers</span> in {cityInfo.name}</>}
+                        eyebrow={`Online Consultations · ${cityInfo.name}`}
+                        title={<>Consult <span className="text-amber-500">Astrologers</span> Online in {cityInfo.name}</>}
                         subtitle={cityInfo.description}
                     />
 
                     <AeoDirectAnswer
                         question={`How to find the best online Vedic astrologer in ${cityInfo.name}?`}
-                        answer={`On Aadikarta, you can view verified profiles, experience years, specializations, and user ratings for top Vedic astrologers in ${cityInfo.name}. Instant private chat consultations start from ₹10/min.`}
+                        answer={`On Aadikarta, you can view verified profiles, experience years, specializations, and user ratings for Vedic astrologers. Astrologers based in ${cityInfo.name} are listed first, and every consultation is a private online chat you can start from anywhere.`}
                         keyTakeaways={[
                             { label: "Verification", text: "Rigorous 4-step Screening Process" },
-                            { label: "Starting Rate", text: "From ₹10/minute" },
-                            { label: "Availability", text: "24/7 Instant Live Chat & Call" },
+                            { label: "Rates", text: "Per minute, shown on each profile" },
+                            { label: "Availability", text: "Live chat whenever an astrologer is online" },
                             { label: "Privacy", text: "100% Encrypted & Confidential" }
                         ]}
                     />
 
                     <div className="mt-8">
-                        <AstrologerList />
+                        <AstrologerList
+                            tone="dark"
+                            cityFilter={localFilter}
+                            showFilters={false}
+                            heading={`Astrologers based in ${cityInfo.name}`}
+                            subheading={`Astrologers who list ${cityInfo.name} as their city on their profile.`}
+                            emptyMessage={`No astrologers based in ${cityInfo.name} are listed yet. The astrologers below consult online and can help you from wherever they are.`}
+                        />
+                        <AstrologerList
+                            tone="dark"
+                            cityFilter={elsewhereFilter}
+                            heading="Also available online"
+                            subheading={`Astrologers based outside ${cityInfo.name}. Consultations are online, so chatting with them works the same.`}
+                        />
                     </div>
 
                     <div className="mt-16">

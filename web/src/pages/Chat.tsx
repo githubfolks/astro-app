@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useChat } from '../hooks/useChat';
 import { useSpeechToText } from '../hooks/useSpeechToText';
 import { useTextSuggestions, getWordAtCursor } from '../hooks/useTextSuggestions';
-import { estimateConsultations } from '../utils/estimateStats';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -240,6 +239,7 @@ export const Chat: React.FC = () => {
                         full_name: astroData.full_name,
                         display_name: astroData.display_name,
                         total_consultations: astroData.total_consultations,
+                        completed_consultations: astroData.completed_consultations,
                         profile_picture_url: astroData.profile_picture_url,
                         specialties: astroData.specialties,
                         languages: astroData.languages,
@@ -835,11 +835,11 @@ export const Chat: React.FC = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-100">
-                                            <span className="block text-2xl font-bold text-gray-900">{astrologer.rating_avg}</span>
+                                            <span className="block text-2xl font-bold text-gray-900">{Number(astrologer.rating_avg) > 0 ? Number(astrologer.rating_avg).toFixed(1) : 'New'}</span>
                                             <span className="text-xs text-gray-900 uppercase font-semibold">Rating</span>
                                         </div>
                                         <div className="bg-gray-50 p-4 rounded-xl text-center border border-gray-100">
-                                            <span className="block text-2xl font-bold text-gray-900">{astrologer.experience_years}+</span>
+                                            <span className="block text-2xl font-bold text-gray-900">{astrologer.experience_years != null ? `${astrologer.experience_years}+` : '—'}</span>
                                             <span className="text-xs text-gray-900 uppercase font-semibold">Years Exp.</span>
                                         </div>
                                     </div>
@@ -1444,7 +1444,11 @@ export const Chat: React.FC = () => {
                                     <Megaphone size={16} className="flex-shrink-0 text-orange-500 mt-0.5" />
                                     <span>
                                         You are connected with <span className="font-bold">{astrologer.display_name || astrologer.full_name}</span>.{' '}
-                                        {astrologer.full_name.split(' ')[0]} has guided <span className="font-bold">{astrologer.total_consultations || estimateConsultations(astrologer.id, astrologer.experience_years)}+</span> people with {astrologer.specialties}.
+                                        {(astrologer.completed_consultations ?? 0) > 0 && (
+                                            <>
+                                                {getAstrologerDisplayName(astrologer)} has completed <span className="font-bold">{astrologer.completed_consultations}</span> {astrologer.completed_consultations === 1 ? 'consultation' : 'consultations'} on Aadikarta.
+                                            </>
+                                        )}
                                     </span>
                                 </div>
                             )}

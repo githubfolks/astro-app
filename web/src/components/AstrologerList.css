@@ -149,6 +149,21 @@
     border: 1px dashed #cbd5e1;
 }
 
+.retry-btn {
+    color: #4f46e5;
+    font-weight: 600;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.load-more-error {
+    color: #b91c1c;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
 @media (max-width: 768px) {
     .astrologer-section {
         padding: 60px 0;
@@ -220,4 +235,102 @@
 
 .native-app .astro-grid {
     gap: 12px;
+}
+
+/* Dark tone (tone="dark") for dark page backgrounds such as the city pages */
+.astrologer-section--dark {
+    padding: 32px 0;
+    min-height: 0;
+}
+
+.astrologer-section--dark .section-header {
+    margin-bottom: 32px;
+    padding: 28px 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    box-shadow: none;
+}
+
+.astrologer-section--dark .section-header h2 {
+    font-size: 30px;
+    margin-bottom: 10px;
+    color: #f8fafc;
+}
+
+.astrologer-section--dark .section-header p {
+    color: #cbd5e1;
+    font-size: 16px;
+}
+
+.astrologer-section--dark .filters-container {
+    margin-bottom: 32px;
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.astrologer-section--dark .search-box input {
+    background: rgba(15, 10, 40, 0.6);
+    color: #f1f5f9;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.astrologer-section--dark .search-box input::placeholder {
+    color: #94a3b8;
+}
+
+.astrologer-section--dark .search-box .search-icon {
+    color: #a5b4fc;
+}
+
+.astrologer-section--dark .filter-btn {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e2e8f0;
+}
+
+.astrologer-section--dark .filter-btn:hover {
+    background: rgba(129, 140, 248, 0.15);
+    border-color: #818cf8;
+    color: #c7d2fe;
+}
+
+.astrologer-section--dark .filter-btn.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: white;
+}
+
+.astrologer-section--dark .no-results {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #cbd5e1;
+    font-size: 16px;
+    padding: 32px 24px;
+}
+
+.astrologer-section--dark .retry-btn {
+    color: #a5b4fc;
+}
+
+.astrologer-section--dark .load-more-error {
+    color: #fca5a5;
+}
+
+.loading--dark {
+    color: #a5b4fc;
+}
+
+@media (max-width: 768px) {
+    .astrologer-section--dark {
+        padding: 24px 0;
+    }
+
+    .astrologer-section--dark .section-header {
+        padding: 20px 16px;
+    }
+
+    .astrologer-section--dark .section-header h2 {
+        font-size: 24px;
+    }
 }

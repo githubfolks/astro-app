@@ -32,6 +32,9 @@ class ConsultationStatus(str, enum.Enum):
     REJECTED = "REJECTED"
     MISSED = "MISSED"
 
+# Sessions that ran and were billed — the basis for public "consultations completed" stats.
+COMPLETED_CONSULTATION_STATUSES = [ConsultationStatus.COMPLETED, ConsultationStatus.AUTO_ENDED]
+
 class TransactionType(str, enum.Enum):
     DEPOSIT = "DEPOSIT"
     WITHDRAWAL = "WITHDRAWAL"
