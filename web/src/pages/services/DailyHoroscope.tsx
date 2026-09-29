@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { Sun, Sparkles, ShieldAlert, Eye, Compass, Heart } from 'lucide-react';
@@ -88,6 +89,17 @@ const DailyHoroscope: React.FC = () => {
                         eyebrow="Service Details"
                         title="Daily Horoscope"
                         subtitle="Align your actions with the cosmic rhythm every single day."
+                    />
+
+                    <AeoDirectAnswer
+                        question="Should I follow Sun Sign or Moon Sign for Daily Horoscope?"
+                        answer="In authentic Vedic Astrology (Jyotish), daily predictions (Aaj Ka Rashifal) are calculated using your Moon Sign (Chandra Rashi) because the Moon governs your daily emotions, mind, and fast-moving transit effects. Sun signs indicate broad solar traits but lack daily transit precision."
+                        keyTakeaways={[
+                            { label: "Vedic Standard", text: "Moon Sign (Chandra Rashi) for daily transits" },
+                            { label: "Transit Planet", text: "Moon changes zodiac sign every 2.25 days" },
+                            { label: "Coverage", text: "All 12 signs: Aries to Pisces" },
+                            { label: "Personalized Consult", text: "Live reading tailored to exact birth chart from ₹10/min" }
+                        ]}
                     />
                 </div>
             </header>

@@ -40,6 +40,15 @@ const structuredData = {
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
         },
         {
+            "@type": "HowTo",
+            "name": "How to Generate Your Free Janam Kundli Online",
+            "step": [
+                { "@type": "HowToStep", "name": "Provide Birth Data", "text": "Fill in your full name, exact date of birth, time of birth, and birth city." },
+                { "@type": "HowToStep", "name": "Ephemeris Calculation", "text": "The platform calculates your Lagna (Ascendant), planetary longitudes, and houses using Lahiri Ayanamsa." },
+                { "@type": "HowToStep", "name": "Analyze Vedic Chart", "text": "Review your D1 Lagna chart, planetary dasha timeline, and major Vedic yogas immediately." }
+            ]
+        },
+        {
             "@type": "FAQPage",
             "mainEntity": faqs.map(faq => ({
                 "@type": "Question",

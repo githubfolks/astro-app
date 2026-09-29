@@ -6,6 +6,8 @@ import SEO from '../../components/SEO';
 import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
+import FAQSection from '../../components/FAQSection';
 import CityAutocomplete from '../../components/CityAutocomplete';
 import DatePicker from '../../components/DatePicker';
 import TimePicker from '../../components/TimePicker';
@@ -90,14 +92,42 @@ const NavamsaViewer: React.FC = () => {
         }
     }, [result]);
 
+    const navamsaFaqs = [
+        { question: 'What is a Navamsa (D9) Chart?', answer: 'The Navamsa (D9) is the 9th divisional harmonic chart in Vedic astrology, created by dividing each zodiac sign of 30° into nine 3°20\' segments. It reveals your inner soul path (Dharma), spouse characteristics, and post-marriage destiny.' },
+        { question: 'Why is the D9 chart considered the marriage chart?', answer: 'In Vedic Jyotish, the 7th house and Venus/Jupiter in the Navamsa chart indicate your marital life, spiritual compatibility with your spouse, and relationship longevity.' },
+        { question: 'What is Pushkara Navamsa?', answer: 'Pushkara Navamsa refers to specific auspicious segments in the D9 chart that nourish and empower any planet situated in them, producing beneficial outcomes regardless of other debilities.' },
+        { question: 'How do I read my Navamsa chart?', answer: 'Examine your Navamsa Lagna (Ascendant), the condition of your D1 Atmakaraka and D1 7th lord in D9, and planets occupying the 1st, 5th, 7th, and 9th houses in the D9 chart.' },
+    ];
+
     const structuredData = {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Free Navamsa (D9) Chart Viewer | Aadikarta Vedic Astrology",
-        "applicationCategory": "SpiritualApplication",
-        "operatingSystem": "Web",
-        "description": "Generate your free Navamsa (D9) divisional chart online for marriage and relationship insights.",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+        "@graph": [
+            {
+                "@type": "WebApplication",
+                "name": "Free Navamsa (D9) Chart Viewer | Aadikarta Vedic Astrology",
+                "applicationCategory": "SpiritualApplication",
+                "operatingSystem": "Web",
+                "description": "Generate your free Navamsa (D9) divisional chart online for marriage, spouse traits, and relationship insights.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+            },
+            {
+                "@type": "HowTo",
+                "name": "How to Generate Your Navamsa (D9) Chart Online",
+                "step": [
+                    { "@type": "HowToStep", "name": "Enter Birth Details", "text": "Enter your full name, date of birth, time of birth, and place of birth into the form." },
+                    { "@type": "HowToStep", "name": "Calculate Planetary Degrees", "text": "The tool calculates your planetary longitudes using sidereal Lahiri Ayanamsa math." },
+                    { "@type": "HowToStep", "name": "Review D9 Planetary Placements", "text": "Inspect the zodiac signs and house distributions of your 9 Grahas in the D9 harmonic chart." }
+                ]
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": navamsaFaqs.map(faq => ({
+                    "@type": "Question",
+                    "name": faq.question,
+                    "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+                }))
+            }
+        ]
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -130,11 +160,22 @@ const NavamsaViewer: React.FC = () => {
                 <div className="absolute bottom-[10%] right-[-150px] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
                 <div className="max-w-4xl mx-auto relative z-10">
-                       <PageHeading
-                            eyebrow="Free Tool"
-                            title="Free Navamsa (D9) Chart"
-                            subtitle="Enter your birth details to generate your Navamsa divisional chart, used for marriage and relationship insights."
-                        />
+                    <PageHeading
+                        eyebrow="Free Tool"
+                        title="Free Navamsa (D9) Chart"
+                        subtitle="Enter your birth details to generate your Navamsa divisional chart, used for marriage and relationship insights."
+                    />
+
+                    <AeoDirectAnswer
+                        question="What does the Navamsa (D9) Chart reveal in Vedic Astrology?"
+                        answer="The Navamsa (D9) chart is the most important divisional chart in Jyotish. It reveals your soul's true nature (Dharma), spouse characteristics, married life harmony, and planetary strength in the second half of life (after age 30–32)."
+                        keyTakeaways={[
+                            { label: "Harmonic Division", text: "1/9th division of each Rashi (3°20' per Navamsa)" },
+                            { label: "Core Analysis", text: "Marriage, spouse traits, and destiny after 30" },
+                            { label: "Vargottama Planet", text: "Planet in same sign in D1 and D9 gains immense strength" },
+                            { label: "Consultation", text: "Deep D9 reading with verified astrologers from ₹10/min" }
+                        ]}
+                    />
                 </div>
             </header>
              <main className="max-w-5xl mx-auto px-6 py-6 md:py-12 space-y-12 md:space-y-24">
@@ -211,6 +252,7 @@ const NavamsaViewer: React.FC = () => {
                             </p>
                         </div>
                     </section>
+                    <FAQSection faqs={navamsaFaqs} />
                 </div>
             </main>
 

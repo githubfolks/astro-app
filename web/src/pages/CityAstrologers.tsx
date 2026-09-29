@@ -50,6 +50,106 @@ const CITY_MAP: Record<string, { name: string; state: string; description: strin
         name: 'Ahmedabad',
         state: 'Gujarat',
         description: 'Experienced Gujarati and English speaking Vedic astrologers in Ahmedabad for business, career, and Kundli matching.'
+    },
+    jaipur: {
+        name: 'Jaipur',
+        state: 'Rajasthan',
+        description: 'Renowned Vedic astrologers and gemstone advisors in Jaipur available for online Kundli analysis, career decisions, and marriage matching.'
+    },
+    lucknow: {
+        name: 'Lucknow',
+        state: 'Uttar Pradesh',
+        description: 'Experienced Jyotish scholars and Vedic palmists in Lucknow offering authentic Kundali Milan, horoscope readings, and remedies.'
+    },
+    chandigarh: {
+        name: 'Chandigarh',
+        state: 'Punjab & Haryana',
+        description: 'Top online astrologers and tarot card readers in Chandigarh for NRI relationship advice, career timing, and birth chart analysis.'
+    },
+    indore: {
+        name: 'Indore',
+        state: 'Madhya Pradesh',
+        description: 'Verified Vedic astrologers in Indore specializing in business Kundli analysis, financial transits, and marriage compatibility.'
+    },
+    patna: {
+        name: 'Patna',
+        state: 'Bihar',
+        description: 'Traditional Vedic Jyotish experts in Patna available 24/7 for Janam Kundli readings, Manglik Dosha remedies, and government job timings.'
+    },
+    surat: {
+        name: 'Surat',
+        state: 'Gujarat',
+        description: 'Trusted online Vedic astrologers in Surat for business partnerships, career growth, Kundli matching, and Vastu Shastra.'
+    },
+    kochi: {
+        name: 'Kochi',
+        state: 'Kerala',
+        description: 'Authentic Kerala astrology and Prashna Jyotish experts in Kochi for instant online consultations and accurate life predictions.'
+    },
+    varanasi: {
+        name: 'Varanasi',
+        state: 'Uttar Pradesh',
+        description: 'Kashi-trained Vedic Jyotish Acharyas and Vedic scholars in Varanasi offering genuine Kundli analysis and spiritual remedies.'
+    },
+    nagpur: {
+        name: 'Nagpur',
+        state: 'Maharashtra',
+        description: 'Consult top-rated Vedic astrologers and numerologists in Nagpur for private chat consultations and birth chart insights.'
+    },
+    bhopal: {
+        name: 'Bhopal',
+        state: 'Madhya Pradesh',
+        description: 'Experienced Vedic astrologers in Bhopal offering personalized horoscope analysis, career forecasting, and marital compatibility.'
+    },
+    coimbatore: {
+        name: 'Coimbatore',
+        state: 'Tamil Nadu',
+        description: 'Trusted Vedic and Nadi astrologers in Coimbatore for instant online consultations on business, marriage, and family health.'
+    },
+    ludhiana: {
+        name: 'Ludhiana',
+        state: 'Punjab',
+        description: 'Leading Vedic astrologers and tarot consultants in Ludhiana for overseas travel, marriage matching, and business growth.'
+    },
+    gurgaon: {
+        name: 'Gurgaon',
+        state: 'Haryana',
+        description: 'Top corporate and Vedic astrologers in Gurgaon (Gurugram) for executive career guidance, startup timing, and relationship advice.'
+    },
+    noida: {
+        name: 'Noida',
+        state: 'Uttar Pradesh',
+        description: 'Consult expert Vedic astrologers in Noida for instant 24/7 chat on career change, marriage compatibility, and daily horoscopes.'
+    },
+    dubai: {
+        name: 'Dubai',
+        state: 'UAE',
+        description: 'Connect with top Indian Vedic astrologers online from Dubai, UAE for confidential Kundli matching, career timing, and business Jyotish.'
+    },
+    london: {
+        name: 'London',
+        state: 'United Kingdom',
+        description: 'Consult authentic Indian Vedic astrologers online from London, UK for NRI relationship guidance, marriage Kundli matching, and career readings.'
+    },
+    toronto: {
+        name: 'Toronto',
+        state: 'Canada',
+        description: 'Indian Vedic astrology consultations online in Toronto, Canada for immigration prospects, career timing, and Kundali Milan.'
+    },
+    singapore: {
+        name: 'Singapore',
+        state: 'Singapore',
+        description: 'Online Vedic astrologer consultations in Singapore for business prosperity, marriage matching, and Vedic birth chart insights.'
+    },
+    'new-york': {
+        name: 'New York',
+        state: 'United States',
+        description: 'Connect with verified Vedic astrologers online from New York, USA for personalized chart analysis, love compatibility, and career timing.'
+    },
+    sydney: {
+        name: 'Sydney',
+        state: 'Australia',
+        description: 'Consult experienced Indian Vedic astrologers online from Sydney, Australia for private Kundli readings and relationship advice.'
     }
 };
 

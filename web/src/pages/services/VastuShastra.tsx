@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { Home, Compass, Shield, Sun, Activity, Wind, Droplet, Flame, Mountain, Sparkles } from 'lucide-react';
@@ -73,6 +74,17 @@ const VastuShastra: React.FC = () => {
                         eyebrow="Service Details"
                         title="Vastu Shastra"
                         subtitle="Transform your living and working spaces into vessels of prosperity and peace."
+                    />
+
+                    <AeoDirectAnswer
+                        question="Can Vastu Shastra defects (Doshas) be resolved without structural demolition?"
+                        answer="Yes. Over 85% of Vastu Doshas can be corrected without structural damage by rebalancing the Pancha Bhuta (Five Elements) using color therapy, mirrors, directional yantras, pyramid energy deflectors, and elemental realignment in the North-East (Ishanya) and South-East (Agneya) zones."
+                        keyTakeaways={[
+                            { label: "Core Element System", text: "Earth, Water, Fire, Air, and Space (Pancha Bhuta)" },
+                            { label: "Auspicious Entrances", text: "North, North-East, and East entry gates" },
+                            { label: "Non-Demolition Cures", text: "Metals, crystals, sacred plants, and color adjustments" },
+                            { label: "Expert Consultations", text: "Verified Vastu Acharyas available from ₹10/min" }
+                        ]}
                     />
                 </div>
             </header>

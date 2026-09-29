@@ -97,6 +97,15 @@ const structuredData = {
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
         },
         {
+            "@type": "HowTo",
+            "name": "How to Check Kundli Matching for Marriage Online",
+            "step": [
+                { "@type": "HowToStep", "name": "Enter Groom's Details", "text": "Enter the prospective groom's date, exact time, and place of birth." },
+                { "@type": "HowToStep", "name": "Enter Bride's Details", "text": "Enter the prospective bride's date, exact time, and place of birth." },
+                { "@type": "HowToStep", "name": "Calculate 36 Guna Score", "text": "Instantly receive the Ashtakoot score out of 36, along with Nadi, Bhakoot, and Manglik Dosha analysis." }
+            ]
+        },
+        {
             "@type": "FAQPage",
             "mainEntity": faqs.map(faq => ({
                 "@type": "Question",

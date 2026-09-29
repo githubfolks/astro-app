@@ -56,10 +56,10 @@ degree, retrogate, debilated, combust, exaulted
 64392f96daac500b55c543cd
 
 # Strategy 3: AI Search Engine & Generative Engine Optimization (AEO / GEO)
-- [ ] Expand competitor comparison pages: `/vs/anytimeastro` (AnytimeAstro comparison) and `/vs/guruji`.
-- [ ] Update machine-readable knowledge base `public/llms.txt` and `public/llms-full.txt` with competitor pricing matrix & AI chat feature specifications.
-- [ ] Build structured Q&A Direct Answer Cards for Perplexity, ChatGPT Search, and Gemini citation indexing.
-- [ ] Register new comparison routes in `App.tsx` and `scripts/generate-sitemap.js`.
+- [x] Omit competitor teardowns to preserve sacred brand prestige; focus on core verification pillars.
+- [x] Update machine-readable knowledge base `public/llms.txt` and `public/llms-full.txt` with Aadikarta operational pillars & AI chat feature specifications.
+- [x] Build structured Q&A Direct Answer Cards for Perplexity, ChatGPT Search, and Gemini citation indexing across all services and tools.
+- [x] Expand programmatic city landing hubs to 28 Tier-1/Tier-2/NRI cities in `CityAstrologers.tsx`, `scripts/generate-sitemap.js`, and `scripts/prerender.js`.
 
 # Strategy 5: YouTube Shorts & Instagram Reels Content Engine (auto-post-to-social)
 - [ ] Implement `POST /social/auto-post` endpoint in `api/app/routers/social_copy.py` for automated YouTube Shorts & Reels script generation.

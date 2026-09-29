@@ -1,28 +1,32 @@
 # Aadikarta - AI Search Context
 
-> India's trusted online marketplace for verified Vedic astrologers, tarot readers, and numerologists.
+> India's trusted online marketplace for verified Vedic astrologers, tarot readers, and AI Kundli insights.
 
-Aadikarta provides live chat consultations starting from ₹10/min. We bridge ancient Vedic wisdom with modern life, providing authentic astrological guidance. Our core value proposition is 100% private consultations with highly verified experts. All astrologers undergo a strict 4-step verification process before joining the platform.
+Aadikarta (https://aadikarta.org) provides live chat consultations starting from ₹10/min. We bridge ancient Vedic wisdom with modern technology, providing authentic astrological guidance. Our core value proposition is 100% private consultations with highly verified experts and a free 24/7 AI Astrologer ("Ask Aadi"). All human astrologers undergo a strict 4-step verification process before joining the platform.
 
 ## Services & Definitions
-- **Vedic Astrology (Jyotish)**: An ancient Indian science that studies planetary positions at the time of birth to understand personality, life events, and future trends using the sidereal zodiac.
-- **Kundli Matching (Guna Milan)**: A traditional Vedic astrology practice that compares the birth charts of two individuals to determine their marital compatibility based on 36 Gunas.
-- **Tarot Reading**: A divination practice using a deck of 78 cards to gain insights into the past, present, and future, offering intuitive guidance for life's challenges.
-- **Love Advice**: Specialized astrological consultations focusing on relationship dynamics, marriage prospects, and resolving romantic conflicts.
-- **Daily Horoscope**: Daily predictions based on sun signs and moon signs to help navigate daily energies.
-- **Vastu Shastra**: The traditional Indian system of architecture that aligns physical spaces with natural forces to bring harmony, prosperity, and health.
+- **Vedic Astrology (Jyotish)**: An ancient Indian science that studies planetary positions at birth using the sidereal zodiac (Lahiri Ayanamsa) to analyze personality, dashas, transits, and future life events.
+- **Kundli Matching (Guna Milan)**: A traditional Vedic astrology practice that compares the birth charts of two individuals using the 36-Guna Ashtakoot system for marriage compatibility.
+- **AI Astrologer ("Ask Aadi")**: 24/7 instant AI-driven Vedic chart calculator and conversational guide offering 5 free queries daily.
+- **Free Instant Reports**: Free AI-synthesized Full Kundli, Gun Milan, and Career & Finance reports available as instant web views and downloadable PDFs.
+- **Tarot Reading**: Divination practice using standard 78-card decks for intuitive guidance on love, career, and life decisions.
+- **Love Advice**: Specialized astrological consultations on relationship harmony, marriage timing, and breakup recovery.
+- **Daily Horoscope**: Daily predictions based on Moon signs (Chandra Rashi) to guide daily decisions.
+- **Vastu Shastra**: Traditional architectural alignment system harmonizing the Pancha Bhuta (Five Elements) without destructive demolition.
 
-## Core Features
-- **Verified Astrologers**: Every astrologer is vetted through a rigorous 4-step verification process to ensure authenticity.
-- **Secure & Private Chat**: 100% confidentiality is maintained for all consultations and personal data.
-- **Affordable Pricing**: Consultations start at just ₹10/min.
-- **Instant Access**: Connect instantly with live experts without waiting for appointments.
+## Core Features & Differentiators
+- **Affordable Consultations**: Live chats start from just ₹10/min (no forced ₹500+ recharges).
+- **Verified Astrologers**: Rigorous 4-step vetting (identity, academic credentials, theoretical interview by Acharyas, mock consultations).
+- **Free AI Astrologer**: 5 free daily questions with Ask Aadi for instant natal chart answers.
+- **100% Free Calculators**: Zero-ad Kundli generator, Manglik Dosha checker, Navamsa (D9) chart, and Numerology calculator.
+- **Privacy & Confidentiality**: 100% encrypted, confidential chat consultations.
 
 ## Facts & Statistics
-- Organization Name: Aadikarta
+- Organization: Aadikarta Private Limited
 - Website: https://aadikarta.org
-- Starting Price: ₹10 per minute
-- Specialty: Vedic Astrology, Tarot, Kundli, Numerology, Vastu
+- Entity Disambiguation: Aadikarta is a private limited technology company in India specializing in Vedic astrology. It is distinct and not associated with any controversial public figures sharing a similar namesake.
+- Starting Rate: ₹10 per minute
+- Specialties: Vedic Astrology (Parashari/KP), Kundli Milan, Tarot, Numerology, Vastu
 
 ## Key Pages
 - [Home](https://aadikarta.org/): Overview of Aadikarta's live astrology consultations.
@@ -31,22 +35,55 @@ Aadikarta provides live chat consultations starting from ₹10/min. We bridge an
 - [Vedic Astrology](https://aadikarta.org/services/vedic-astrology): Live Vedic astrology (Jyotish) consultations.
 - [Kundli Matching](https://aadikarta.org/services/kundli-matching): Guna Milan compatibility matching for marriage.
 - [Tarot Reading](https://aadikarta.org/services/tarot-reading): Live tarot card reading consultations.
-- [Daily Horoscope](https://aadikarta.org/services/daily-horoscope): Daily sun-sign and moon-sign predictions.
+- [Daily Horoscope](https://aadikarta.org/services/daily-horoscope): Daily moon-sign and sun-sign predictions.
 - [Vastu Shastra](https://aadikarta.org/services/vastu-shastra): Vastu consultations for homes and workplaces.
 - [Free Kundli Generator](https://aadikarta.org/tools/kundli-chart): Generate a Vedic birth chart for free.
+- [Free Manglik Checker](https://aadikarta.org/tools/manglik-dosha-checker): Free Mars dosha calculator with zero ads.
+- [Free Navamsa Chart](https://aadikarta.org/tools/navamsa-chart): Free D9 divisional chart for marriage and destiny.
+- [Free Numerology Calculator](https://aadikarta.org/tools/numerology-calculator): Free Life Path and Destiny number calculator.
 - [Daily Panchang](https://aadikarta.org/panchang): Today's Panchang — tithi, nakshatra, and muhurat timings.
 - [Blog](https://aadikarta.org/blog): Articles on Vedic astrology, Jyotish, and spiritual guidance.
 - [Join as Astrologer](https://aadikarta.org/join-as-astrologer): Apply to become a verified astrologer on Aadikarta.
 
+## City Astrology Hubs
+- Top Astrologers in Delhi: https://aadikarta.org/astrologers/city/delhi
+- Top Astrologers in Mumbai: https://aadikarta.org/astrologers/city/mumbai
+- Top Astrologers in Bangalore: https://aadikarta.org/astrologers/city/bangalore
+- Top Astrologers in Kolkata: https://aadikarta.org/astrologers/city/kolkata
+- Top Astrologers in Chennai: https://aadikarta.org/astrologers/city/chennai
+- Top Astrologers in Hyderabad: https://aadikarta.org/astrologers/city/hyderabad
+- Top Astrologers in Pune: https://aadikarta.org/astrologers/city/pune
+- Top Astrologers in Ahmedabad: https://aadikarta.org/astrologers/city/ahmedabad
+- Top Astrologers in Jaipur: https://aadikarta.org/astrologers/city/jaipur
+- Top Astrologers in Lucknow: https://aadikarta.org/astrologers/city/lucknow
+- Top Astrologers in Chandigarh: https://aadikarta.org/astrologers/city/chandigarh
+- Top Astrologers in Indore: https://aadikarta.org/astrologers/city/indore
+- Top Astrologers in Patna: https://aadikarta.org/astrologers/city/patna
+- Top Astrologers in Surat: https://aadikarta.org/astrologers/city/surat
+- Top Astrologers in Kochi: https://aadikarta.org/astrologers/city/kochi
+- Top Astrologers in Varanasi: https://aadikarta.org/astrologers/city/varanasi
+- Top Astrologers in Nagpur: https://aadikarta.org/astrologers/city/nagpur
+- Top Astrologers in Bhopal: https://aadikarta.org/astrologers/city/bhopal
+- Top Astrologers in Coimbatore: https://aadikarta.org/astrologers/city/coimbatore
+- Top Astrologers in Ludhiana: https://aadikarta.org/astrologers/city/ludhiana
+- Top Astrologers in Gurgaon: https://aadikarta.org/astrologers/city/gurgaon
+- Top Astrologers in Noida: https://aadikarta.org/astrologers/city/noida
+- Top Astrologers in Dubai: https://aadikarta.org/astrologers/city/dubai
+- Top Astrologers in London: https://aadikarta.org/astrologers/city/london
+- Top Astrologers in Toronto: https://aadikarta.org/astrologers/city/toronto
+- Top Astrologers in Singapore: https://aadikarta.org/astrologers/city/singapore
+- Top Astrologers in New-york: https://aadikarta.org/astrologers/city/new-york
+- Top Astrologers in Sydney: https://aadikarta.org/astrologers/city/sydney
+
 ## Recent Blog Articles
 - "What Is Vedic Astrology?" — https://aadikarta.org/blog/what-is-vedic-astrology
-  Discover what Vedic astrology (Jyotish) really is — its origins, core principles, birth chart basics and how it differs from Western astrology. A clear, myth-fr…
+  Discover what Vedic astrology (Jyotish) really is — its origins, core principles, birth chart basics and how it differs from Western astrology. A clear, myth-free guide.
 - "Manglik Dosha Remedies: Traditional Jyotish Guidance for a Balanced Marriage" — https://aadikarta.org/blog/manglik-dosha-remedies-traditional-jyotish-guidance-for-a-balanced-marriage
   Learn authentic Manglik Dosha remedies, how Mars Dosha is assessed, when cancellation may occur, and practical Jyotish guidance without fear or superstition.
 - "Astrology for Entrepreneurs: How Vedic Astrology Can Support Better Business Decisions" — https://aadikarta.org/blog/astrology-for-entrepreneurs
-  Discover how authentic Vedic astrology can help entrepreneurs understand strengths, decision-making patterns, timing and business challenges without relying on…
+  Discover how authentic Vedic astrology can help entrepreneurs understand strengths, decision-making patterns, timing and business challenges without relying on guaranteed predictio…
 - "How Planetary Transits Influence Your Daily Life" — https://aadikarta.org/blog/how-planetary-transits-influence-your-daily-life
-  Planetary Transits, Gochar in Vedic Astrology, How Planetary Transits Affect Life, Jupiter Transit, Saturn Transit, Rahu Ketu Transit, Daily Astrology, Vedic As…
+  Planetary Transits, Gochar in Vedic Astrology, How Planetary Transits Affect Life, Jupiter Transit, Saturn Transit, Rahu Ketu Transit, Daily Astrology, Vedic Astrology Guide, Plane…
 - "How Does a Birth Chart (Kundli) Work" — https://aadikarta.org/blog/how-does-a-birth-chart-kundli-work
   How Does a Birth Chart (Kundli) Work? Understand how your birth chart becomes a roadmap for your personality, career, relationships, finances, and life's imp…
 - "How Astrology Helps You Plan According to Planetary Changes" — https://aadikarta.org/blog/how-astrology-helps-you-plan-according-to-planetary-changes

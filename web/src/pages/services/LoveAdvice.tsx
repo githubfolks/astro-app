@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { Heart, HeartHandshake, Flame, Activity, Sparkles, CheckCircle } from 'lucide-react';
@@ -73,6 +74,17 @@ const LoveAdvice: React.FC = () => {
                         eyebrow="Service Details"
                         title="Love & Relationships"
                         subtitle="Navigate the complexities of the heart with celestial insight and compassionate guidance."
+                    />
+
+                    <AeoDirectAnswer
+                        question="How does Vedic Astrology analyze love compatibility and marriage timing?"
+                        answer="Love astrology evaluates the 5th house (romance), 7th house (marriage), 8th house (intimacy), and the placements of Venus (Shukra) and Jupiter (Guru). By studying Dashas and Navamsa (D9) charts, astrologers pinpoint compatibility, marriage timing, and remedies for relationship friction."
+                        keyTakeaways={[
+                            { label: "Key Houses", text: "5th (Love), 7th (Spouse & Marriage), 11th (Fulfilment)" },
+                            { label: "Significator Planets", text: "Venus (Love/Desire) and Jupiter (Dharma/Spouse)" },
+                            { label: "Predictive Scope", text: "Marriage timing, ex-reconciliation, and soulmate compatibility" },
+                            { label: "Live Chat Rate", text: "Confidential consultations from ₹10/min" }
+                        ]}
                     />
                 </div>
             </header>

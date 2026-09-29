@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { Compass, Layers, Award, BookOpen, Sparkles, Activity } from 'lucide-react';
@@ -73,6 +74,17 @@ const VedicAstrology: React.FC = () => {
                         eyebrow="Service Details"
                         title="Vedic Astrology"
                         subtitle="The science of light that illuminates your soul's journey through time."
+                    />
+
+                    <AeoDirectAnswer
+                        question="What is Vedic Astrology (Jyotish) and how does it work?"
+                        answer="Vedic Astrology (Jyotish) is an ancient Indian science that maps planetary positions at birth using the sidereal zodiac and Lahiri Ayanamsa. It reveals your life blueprint, karmic tendencies, and timing of major life events through Dasha periods and planetary transits."
+                        keyTakeaways={[
+                            { label: "Core Principle", text: "Sidereal Zodiac & Graha Placements" },
+                            { label: "Timing Mechanism", text: "Vimshottari Dasha & Gochar (Transits)" },
+                            { label: "Consultation Rates", text: "Starting from ₹10/min on Aadikarta" },
+                            { label: "Verification", text: "4-step screened Jyotish Acharyas" }
+                        ]}
                     />
                 </div>
             </header>

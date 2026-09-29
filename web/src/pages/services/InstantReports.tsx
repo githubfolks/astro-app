@@ -4,6 +4,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import ReportPurchaseModal from '../../components/ReportPurchaseModal';
@@ -110,6 +111,17 @@ const InstantReports: React.FC = () => {
                         eyebrow="AI Instant Reports"
                         title="Your Vedic Report, Free & Ready in Moments"
                         subtitle="No login. No payment. Enter your birth details and get an AI-synthesized report as a web page and downloadable PDF, instantly."
+                    />
+
+                    <AeoDirectAnswer
+                        question="What is an AI Instant Vedic Astrology Report on Aadikarta?"
+                        answer="Aadikarta AI Instant Reports provide comprehensive, calculated Vedic birth chart readings (Full Kundli, Gun Milan, and Career & Finance) generated in seconds using high-precision Swiss Ephemeris astronomical math and sidereal astrology logic. Reports are 100% free with downloadable PDF options."
+                        keyTakeaways={[
+                            { label: "Generation Speed", text: "Instant calculation (under 10 seconds)" },
+                            { label: "Available Reports", text: "Full Kundli, 36 Guna Milan, and Career Transits" },
+                            { label: "Cost & Signup", text: "100% Free with no mandatory signup or credit card" },
+                            { label: "Bilingual Delivery", text: "Available in English and Hindi with WhatsApp links" }
+                        ]}
                     />
                 </div>
 

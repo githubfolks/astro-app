@@ -7,6 +7,8 @@ import FreeToolResult from '../../components/FreeToolResult';
 import ConnectExpertCTA from '../../components/ConnectExpertCTA';
 import ReportUpsellCTA from '../../components/ReportUpsellCTA';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
+import FAQSection from '../../components/FAQSection';
 import { api } from '../../services/api';
 import { getErrorMessage } from '../../utils/errors';
 import { TOOL_INPUT_CLASS, TOOL_LABEL_CLASS, TOOL_BUTTON_CLASS, TOOL_ERROR_CLASS } from '../../utils/toolFormStyles';
@@ -139,14 +141,42 @@ const NumerologyCalculator: React.FC = () => {
         }
     }, [result]);
 
+    const numerologyFaqs = [
+        { question: 'What is a Life Path Number in Numerology?', answer: 'Your Life Path number is the sum of your full birth date reduced to a single digit (or master numbers 11, 22, 33). It represents your core identity, natural talents, life challenges, and primary karmic trajectory.' },
+        { question: 'How is Destiny / Expression Number calculated?', answer: 'Your Destiny (Expression) number is calculated by assigning numerical values (1–8 in Chaldean or 1–9 in Pythagorean) to the letters of your full legal name, revealing how you express your potential to the world.' },
+        { question: 'What are Master Numbers in Numerology?', answer: 'Master numbers are 11, 22, and 33. In numerology, these numbers are not reduced to single digits because they possess higher spiritual vibration, intuition, and leadership potential.' },
+        { question: 'Can Numerology help with name correction or business names?', answer: 'Yes. By aligning your name spelling with an auspicious numerology vibration that harmonizes with your birth date, you can reduce conflicting energetic influences in career and personal life.' },
+    ];
+
     const structuredData = {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "Free Numerology Calculator | Aadikarta Vedic Astrology",
-        "applicationCategory": "SpiritualApplication",
-        "operatingSystem": "Web",
-        "description": "Calculate your free numerology profile online using just your name and date of birth.",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+        "@graph": [
+            {
+                "@type": "WebApplication",
+                "name": "Free Numerology Calculator | Aadikarta Vedic Astrology",
+                "applicationCategory": "SpiritualApplication",
+                "operatingSystem": "Web",
+                "description": "Calculate your free numerology profile online using just your name and date of birth.",
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" },
+            },
+            {
+                "@type": "HowTo",
+                "name": "How to Calculate Your Free Numerology Numbers Online",
+                "step": [
+                    { "@type": "HowToStep", "name": "Enter Full Name", "text": "Enter your full name to determine your Expression and Soul Urge numbers." },
+                    { "@type": "HowToStep", "name": "Select Birth Date", "text": "Choose your date of birth to calculate your primary Life Path Number and personal year cycles." },
+                    { "@type": "HowToStep", "name": "View Instant Number Profile", "text": "Receive your core numerology breakdown, life cycles, and planetary rulers immediately." }
+                ]
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": numerologyFaqs.map(faq => ({
+                    "@type": "Question",
+                    "name": faq.question,
+                    "acceptedAnswer": { "@type": "Answer", "text": faq.answer }
+                }))
+            }
+        ]
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -183,6 +213,17 @@ const NumerologyCalculator: React.FC = () => {
                         eyebrow="Free Tool"
                         title="Free Numerology Calculator"
                         subtitle="Enter your name and date of birth to calculate your numerology profile — no birth time or place needed."
+                    />
+
+                    <AeoDirectAnswer
+                        question="How does Vedic and Pythagorean Numerology work?"
+                        answer="Numerology decodes the cosmic vibrational frequencies of numbers (1 to 9, plus Master Numbers 11, 22, 33) associated with your name and birth date. It calculates your Life Path, Expression (Destiny), and Soul Urge numbers to highlight your strengths, challenges, and personal cycles."
+                        keyTakeaways={[
+                            { label: "Key Numbers", text: "Life Path Number (Birth date) and Destiny Number (Name)" },
+                            { label: "Required Inputs", text: "Only Full Name and Date of Birth (No time or city required)" },
+                            { label: "Master Numbers", text: "11 (Intuition), 22 (Master Builder), 33 (Master Teacher)" },
+                            { label: "Expert Guidance", text: "Numerology & name correction consultations from ₹10/min" }
+                        ]}
                     />
                 </div>
             </header>
@@ -246,6 +287,7 @@ const NumerologyCalculator: React.FC = () => {
                             </p>
                         </div>
                     </section>
+                    <FAQSection faqs={numerologyFaqs} />
                 </div>
             </main>
 

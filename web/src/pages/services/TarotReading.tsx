@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { Sparkles, Layers, Eye, Compass, Clock } from 'lucide-react';
@@ -73,6 +74,17 @@ const TarotReading: React.FC = () => {
                         eyebrow="Service Details"
                         title="Tarot Reading"
                         subtitle="Unlock the subconscious through the symbolic language of the divine deck."
+                    />
+
+                    <AeoDirectAnswer
+                        question="How accurate is an online Tarot Card reading for life and career decisions?"
+                        answer="Tarot card reading provides intuitive archetypal guidance reflecting your subconscious mind and current vibrational energies. Experienced readers use standard 78-card Rider-Waite or Thoth decks to uncover blind spots, decision pathways, and upcoming relationship transitions."
+                        keyTakeaways={[
+                            { label: "Deck Structure", text: "78 Cards (22 Major Arcana + 56 Minor Arcana)" },
+                            { label: "Best Inquiries", text: "Open-ended questions regarding timing, career choices & love" },
+                            { label: "Spread Types", text: "3-card past/present/future, Celtic Cross, Love spread" },
+                            { label: "Session Pricing", text: "Live Tarot chat starts from ₹10/min" }
+                        ]}
                     />
                 </div>
             </header>

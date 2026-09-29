@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PageHeading from '../../components/PageHeading';
+import AeoDirectAnswer from '../../components/AeoDirectAnswer';
 import SEO from '../../components/SEO';
 import FAQSection from '../../components/FAQSection';
 import { HeartHandshake, Users, CheckCircle, Award, Sparkles, Activity, Briefcase, Link2, Star, Heart } from 'lucide-react';
@@ -73,6 +74,17 @@ const KundliMatching: React.FC = () => {
                         eyebrow="Service Details"
                         title="Kundli Matching"
                         subtitle="Discover divine compatibility and ensure a harmonious union through the ancient wisdom of Vedic Astrology."
+                    />
+
+                    <AeoDirectAnswer
+                        question="How does Kundli Matching (Kundali Milan) work for marriage?"
+                        answer="Kundli Matching is the Vedic practice of comparing the Janam Kundlis of prospective partners across the 36 Gunas of the Ashtakoot system. A minimum of 18 Gunas is required for an auspicious match, assessing mental harmony, progeny, health, and checking for Manglik and Nadi Doshas."
+                        keyTakeaways={[
+                            { label: "Guna Threshold", text: "18+ Acceptable, 24–32 Good, 33–36 Exceptional" },
+                            { label: "Critical Doshas", text: "Nadi Dosha (Genetics/Health) & Manglik Dosha" },
+                            { label: "Free Instant Tool", text: "Online Ashtakoot Milan calculator available" },
+                            { label: "Live Jyotish Chat", text: "Expert compatibility consults from ₹10/min" }
+                        ]}
                     />
                 </div>
             </header>
