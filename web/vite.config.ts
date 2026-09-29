@@ -22,6 +22,10 @@ export default defineConfig({
         react(),
         VitePWA({
             registerType: 'autoUpdate',
+            // Registered in src/main.tsx instead, so a refused registration
+            // (SW-disabled browsers, crawlers) is caught rather than surfacing
+            // as an unhandled rejection in client error reports.
+            injectRegister: false,
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
             manifest: {
                 name: 'Aadikarta',
