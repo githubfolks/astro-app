@@ -671,6 +671,123 @@ def export_free_tool_report_emails(
     )
 
 
+def _ai_astrologer_leads_query(db: Session, search: Optional[str], status: Optional[models.AiAstrologerLeadStatus]):
+    query = db.query(models.AiAstrologerLead)
+    if status:
+        query = query.filter(models.AiAstrologerLead.status == status)
+    if search:
+        like = f"%{search.strip()}%"
+        query = query.filter(
+            (models.AiAstrologerLead.name.ilike(like)) |
+            (models.AiAstrologerLead.phone_number.ilike(like))
+        )
+    return query.order_by(models.AiAstrologerLead.updated_at.desc())
+
+
+def _ai_astrologer_lead_row(r: models.AiAstrologerLead) -> dict:
+    return {
+        "id": r.id,
+        "name": r.name,
+        "phone_number": r.phone_number,
+        "date_of_birth": r.date_of_birth,
+        "time_of_birth": r.time_of_birth,
+        "place_of_birth": r.place_of_birth,
+        "gender": r.gender,
+        "status": r.status,
+        "request_count": r.request_count,
+        "consented_at": r.consented_at,
+        "created_at": r.created_at,
+        "updated_at": r.updated_at,
+    }
+
+
+@router.get("/ai-astrologer-leads")
+def list_ai_astrologer_leads(
+    skip: int = 0,
+    limit: int = 50,
+    search: Optional[str] = None,
+    status: Optional[models.AiAstrologerLeadStatus] = None,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin),
+):
+    """Guests who asked for a callback after using up the AI Astrologer's
+    free questions (POST /ai-astrologer/callback-request)."""
+    query = _ai_astrologer_leads_query(db, search, status)
+    total = query.count()
+    rows = query.offset(skip).limit(limit).all()
+    return {"total": total, "leads": [_ai_astrologer_lead_row(r) for r in rows]}
+
+
+@router.get("/ai-astrologer-leads/export")
+def export_ai_astrologer_leads(
+    search: Optional[str] = None,
+    status: Optional[models.AiAstrologerLeadStatus] = None,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin),
+):
+    """CSV export of AI Astrologer callback leads for follow-up."""
+    import csv
+    import io
+
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(["Name", "Mobile", "Date of Birth", "Time of Birth", "Place of Birth", "Gender", "Status", "Requests", "Consented At", "First Requested", "Last Updated"])
+    for r in _ai_astrologer_leads_query(db, search, status).all():
+        writer.writerow([
+            r.name,
+            r.phone_number,
+            r.date_of_birth.isoformat() if r.date_of_birth else "",
+            r.time_of_birth.strftime("%H:%M") if r.time_of_birth else "",
+            r.place_of_birth,
+            r.gender.value if r.gender else "",
+            r.status.value if r.status else "",
+            r.request_count,
+            r.consented_at.strftime("%Y-%m-%d %H:%M:%S") if r.consented_at else "",
+            r.created_at.strftime("%Y-%m-%d %H:%M:%S") if r.created_at else "",
+            r.updated_at.strftime("%Y-%m-%d %H:%M:%S") if r.updated_at else "",
+        ])
+    buffer.seek(0)
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=ai-astrologer-leads.csv"},
+    )
+
+
+class AiAstrologerLeadStatusUpdate(BaseModel):
+    status: models.AiAstrologerLeadStatus
+
+
+@router.patch("/ai-astrologer-leads/{lead_id}")
+def update_ai_astrologer_lead_status(
+    lead_id: int,
+    body: AiAstrologerLeadStatusUpdate,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin),
+):
+    """Admin follow-up tracking. Every change is written to the audit log."""
+    from .. import audit
+
+    lead = db.query(models.AiAstrologerLead).filter(models.AiAstrologerLead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+
+    previous = lead.status
+    if previous != body.status:
+        lead.status = body.status
+        audit.log(
+            db,
+            action="AI_ASTROLOGER_LEAD_STATUS_CHANGED",
+            actor_id=current_admin.id,
+            resource_type="ai_astrologer_lead",
+            resource_id=lead.id,
+            details={"from": previous.value if previous else None, "to": body.status.value},
+        )
+        db.commit()
+        db.refresh(lead)
+    return _ai_astrologer_lead_row(lead)
+
+
 @router.get("/leads/{lead_id}")
 def get_report_lead_detail(
     lead_id: int,

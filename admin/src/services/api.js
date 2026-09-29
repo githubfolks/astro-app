@@ -149,6 +149,8 @@ export const reports = {
     getLead: (leadId) => api.get(`/reports/leads/${leadId}`),
     generateInternalTest: (data) => api.post('/reports/internal-test-generate', data),
     listFreeToolEmails: (params) => api.get('/reports/free-tool-emails', { params }),
+    listAiAstrologerLeads: (params) => api.get('/reports/ai-astrologer-leads', { params }),
+    updateAiAstrologerLeadStatus: (leadId, status) => api.patch(`/reports/ai-astrologer-leads/${leadId}`, { status }),
 };
 
 export const moderation = {

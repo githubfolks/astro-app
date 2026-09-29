@@ -15,6 +15,10 @@ import { getAstrologerDisplayName, resolveImageUrl } from '../utils/url';
 
 const FREE_QUESTION_LIMIT = 5;
 const GUEST_DETAILS_KEY = 'ai_astrologer_birth_details';
+// Must match CALLBACK_CONSENT_TEXT in api/app/routers/ai_astrologer.py, which
+// is what gets stored with the lead as the record of consent.
+const CALLBACK_CONSENT_TEXT = 'I agree to be contacted by Aadikarta on this number by call or WhatsApp about astrology consultations.';
+const PHONE_PATTERN = /^\d{10,15}$/;
 
 interface BirthDetails {
     name: string;
@@ -131,6 +135,13 @@ const AiAstrologer: React.FC = () => {
 
     const messagesRef = useRef<HTMLDivElement>(null);
 
+    // Guest callback request, offered once the free questions are used up
+    const [callbackPhone, setCallbackPhone] = useState('');
+    const [callbackConsent, setCallbackConsent] = useState(false);
+    const [callbackSubmitting, setCallbackSubmitting] = useState(false);
+    const [callbackError, setCallbackError] = useState('');
+    const [callbackDone, setCallbackDone] = useState(false);
+
     // Verified astrologers shown in the panel beside the chat
     const [verifiedAstros, setVerifiedAstros] = useState<AstrologerListItem[]>([]);
     const [brokenAvatarIds, setBrokenAvatarIds] = useState<Set<number>>(new Set());
@@ -226,6 +237,39 @@ const AiAstrologer: React.FC = () => {
         }
         await syncQuota();
         setDetailsConfirmed(true);
+    };
+
+    const handleCallbackSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCallbackError('');
+        const phone = callbackPhone.replace(/[\s-]/g, '');
+        if (!PHONE_PATTERN.test(phone)) {
+            setCallbackError('Please enter a valid mobile number (digits only, 10–15 digits).');
+            return;
+        }
+        if (!callbackConsent) {
+            setCallbackError('Please tick the box so our astrologers can contact you.');
+            return;
+        }
+        setCallbackSubmitting(true);
+        try {
+            await api.aiAstrologer.requestCallback({
+                birth_details: {
+                    name: details.name.trim(),
+                    date_of_birth: details.date_of_birth,
+                    time_of_birth: details.time_of_birth || null,
+                    place_of_birth: details.place_of_birth.trim(),
+                    gender: details.gender,
+                },
+                phone_number: phone,
+                consent: true,
+            });
+            setCallbackDone(true);
+        } catch (err) {
+            setCallbackError(err instanceof Error ? err.message : 'Could not submit your callback request. Please try again.');
+        } finally {
+            setCallbackSubmitting(false);
+        }
     };
 
     const sendQuestion = async (question: string) => {
@@ -545,6 +589,46 @@ const AiAstrologer: React.FC = () => {
                                             >
                                                 Talk to a Verified Astrologer →
                                             </Link>
+
+                                            {!isAuthenticated && (
+                                                <div className="mt-6 pt-5 border-t border-white/10 text-left max-w-md mx-auto">
+                                                    {callbackDone ? (
+                                                        <p className="text-center text-emerald-300 text-sm font-semibold">
+                                                            Thank you! One of our astrologers will contact you soon. 🙏
+                                                        </p>
+                                                    ) : (
+                                                        <form onSubmit={handleCallbackSubmit} className="space-y-3">
+                                                            <p className="text-white font-semibold text-sm text-center">Prefer a call? Leave your number and an astrologer will reach out.</p>
+                                                            <input
+                                                                type="tel"
+                                                                inputMode="numeric"
+                                                                autoComplete="tel"
+                                                                value={callbackPhone}
+                                                                onChange={(e) => setCallbackPhone(e.target.value)}
+                                                                placeholder="Mobile number, e.g. 9876543210"
+                                                                className="w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-white placeholder:text-indigo-200/50 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                                            />
+                                                            <label className="flex items-start gap-2 text-xs text-indigo-100/80 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={callbackConsent}
+                                                                    onChange={(e) => setCallbackConsent(e.target.checked)}
+                                                                    className="mt-0.5 accent-amber-400"
+                                                                />
+                                                                <span>{CALLBACK_CONSENT_TEXT}</span>
+                                                            </label>
+                                                            {callbackError && <p className="text-xs text-red-300">{callbackError}</p>}
+                                                            <button
+                                                                type="submit"
+                                                                disabled={callbackSubmitting}
+                                                                className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/60 text-amber-200 font-semibold py-3 text-sm hover:bg-amber-400/10 transition-colors disabled:opacity-50"
+                                                            >
+                                                                {callbackSubmitting ? <><Loader2 size={16} className="animate-spin" /> Submitting…</> : 'Request a Callback'}
+                                                            </button>
+                                                        </form>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>

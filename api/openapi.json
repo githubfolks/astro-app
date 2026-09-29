@@ -489,6 +489,28 @@
         "title": "AdvanceOnboardingRequest",
         "type": "object"
       },
+      "AiAstrologerLeadStatus": {
+        "enum": [
+          "NEW",
+          "CONTACTED",
+          "CONVERTED",
+          "CLOSED"
+        ],
+        "title": "AiAstrologerLeadStatus",
+        "type": "string"
+      },
+      "AiAstrologerLeadStatusUpdate": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/AiAstrologerLeadStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "AiAstrologerLeadStatusUpdate",
+        "type": "object"
+      },
       "AiChatMessage": {
         "properties": {
           "content": {
@@ -1901,6 +1923,30 @@
           "file"
         ],
         "title": "Body_upload_video_content_studio_jobs__job_id__upload_video_post",
+        "type": "object"
+      },
+      "CallbackRequest": {
+        "properties": {
+          "birth_details": {
+            "$ref": "#/components/schemas/BirthDetails"
+          },
+          "consent": {
+            "const": true,
+            "title": "Consent",
+            "type": "boolean"
+          },
+          "phone_number": {
+            "pattern": "^\\d{10,15}$",
+            "title": "Phone Number",
+            "type": "string"
+          }
+        },
+        "required": [
+          "birth_details",
+          "phone_number",
+          "consent"
+        ],
+        "title": "CallbackRequest",
         "type": "object"
       },
       "CaptionSuggestion": {
@@ -11618,6 +11664,46 @@
         ]
       }
     },
+    "/ai-astrologer/callback-request": {
+      "post": {
+        "description": "Guest asks a human astrologer to call them back (offered once the free\nquestions are used up). Upserts by phone number, so repeat requests\nrefresh one lead instead of piling up duplicates.",
+        "operationId": "request_callback_ai_astrologer_callback_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CallbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Callback",
+        "tags": [
+          "AI Astrologer"
+        ]
+      }
+    },
     "/ai-astrologer/chat": {
       "post": {
         "operationId": "ai_chat_ai_astrologer_chat_post",
@@ -18080,6 +18166,220 @@
         "summary": "Waplex Inbound",
         "tags": [
           "Public Content"
+        ]
+      }
+    },
+    "/reports/ai-astrologer-leads": {
+      "get": {
+        "description": "Guests who asked for a callback after using up the AI Astrologer's\nfree questions (POST /ai-astrologer/callback-request).",
+        "operationId": "list_ai_astrologer_leads_reports_ai_astrologer_leads_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "skip",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Skip",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AiAstrologerLeadStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "List Ai Astrologer Leads",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/ai-astrologer-leads/export": {
+      "get": {
+        "description": "CSV export of AI Astrologer callback leads for follow-up.",
+        "operationId": "export_ai_astrologer_leads_reports_ai_astrologer_leads_export_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AiAstrologerLeadStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Export Ai Astrologer Leads",
+        "tags": [
+          "Ad-Hoc Reports"
+        ]
+      }
+    },
+    "/reports/ai-astrologer-leads/{lead_id}": {
+      "patch": {
+        "description": "Admin follow-up tracking. Every change is written to the audit log.",
+        "operationId": "update_ai_astrologer_lead_status_reports_ai_astrologer_leads__lead_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lead_id",
+            "required": true,
+            "schema": {
+              "title": "Lead Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiAstrologerLeadStatusUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Update Ai Astrologer Lead Status",
+        "tags": [
+          "Ad-Hoc Reports"
         ]
       }
     },

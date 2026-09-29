@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Sparkles, TrendingUp, Users, DollarSign, BarChart3, Filter, Download, RefreshCw, FlaskConical, ExternalLink, Mail } from 'lucide-react';
+import { Sparkles, TrendingUp, Users, DollarSign, BarChart3, Filter, Download, RefreshCw, FlaskConical, ExternalLink, Mail, PhoneCall } from 'lucide-react';
 import api, { reports } from '../services/api';
 import { downloadFile } from '../utils/downloadFile';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
@@ -127,6 +127,7 @@ export default function AdminReportAnalytics() {
 
             <LeadsTable />
             <FreeToolEmailsTable />
+            <AiAstrologerLeadsTable />
         </div>
     );
 }
@@ -670,6 +671,213 @@ function FreeToolEmailsTable() {
                     </div>
                 )}
             </Modal>
+        </div>
+    );
+}
+
+const AI_LEAD_STATUSES = ['NEW', 'CONTACTED', 'CONVERTED', 'CLOSED'];
+
+function AiAstrologerLeadsTable() {
+    const [leads, setLeads] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [exporting, setExporting] = useState(false);
+    const [updatingId, setUpdatingId] = useState(null);
+
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(20);
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
+
+    const fetchLeads = useCallback(async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const params = { skip: page * rowsPerPage, limit: rowsPerPage };
+            if (search) params.search = search;
+            if (status) params.status = status;
+
+            const res = await reports.listAiAstrologerLeads(params);
+            setLeads(res.data.leads);
+            setTotal(res.data.total);
+        } catch (err) {
+            console.error('Failed to fetch AI Astrologer leads', err);
+            setError('Failed to load AI Astrologer leads.');
+        } finally {
+            setLoading(false);
+        }
+    }, [page, rowsPerPage, search, status]);
+
+    useEffect(() => {
+        fetchLeads();
+    }, [fetchLeads]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(0);
+            fetchLeads();
+        }, 500);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search, status]);
+
+    const handleExport = async () => {
+        setExporting(true);
+        const params = {};
+        if (search) params.search = search;
+        if (status) params.status = status;
+        await downloadFile('/reports/ai-astrologer-leads/export', params, 'ai-astrologer-leads.csv');
+        setExporting(false);
+    };
+
+    const handleStatusChange = async (lead, nextStatus) => {
+        setUpdatingId(lead.id);
+        setError('');
+        try {
+            const res = await reports.updateAiAstrologerLeadStatus(lead.id, nextStatus);
+            setLeads((prev) => prev.map((l) => (l.id === lead.id ? res.data : l)));
+        } catch (err) {
+            console.error('Failed to update lead status', err);
+            setError('Failed to update lead status.');
+        } finally {
+            setUpdatingId(null);
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl text-gray-900 flex items-center gap-2">
+                    <PhoneCall className="text-amber-600" size={20} /> AI Astrologer Callback Leads
+                </h2>
+                <Button onClick={handleExport} disabled={exporting}>
+                    <Download size={16} className="mr-2" /> {exporting ? 'Preparing CSV...' : 'Download CSV'}
+                </Button>
+            </div>
+            <p className="text-sm text-gray-500 -mt-2">
+                Guests who used up their free AI Astrologer questions and asked to be called back (with consent).
+            </p>
+
+            <Card className="p-4">
+                <div className="flex flex-col sm:flex-row gap-4 items-end">
+                    <div className="flex-1 w-full">
+                        <Input
+                            label="Search name or mobile"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="e.g. Asha or 98765"
+                        />
+                    </div>
+                    <div className="w-full sm:w-56">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select
+                            className="h-9 w-full rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            <option value="">All</option>
+                            {AI_LEAD_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </div>
+                    <Button variant="outlined" onClick={fetchLeads}>
+                        <RefreshCw size={16} className="mr-2" /> Refresh
+                    </Button>
+                </div>
+            </Card>
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <Card>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Last Request</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Mobile</TableHead>
+                            <TableHead>Birth Details</TableHead>
+                            <TableHead>Requests</TableHead>
+                            <TableHead>Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {leads.map((lead) => (
+                            <TableRow key={lead.id}>
+                                <TableCell className="whitespace-nowrap">
+                                    {new Date(lead.updated_at).toLocaleString()}
+                                </TableCell>
+                                <TableCell>{lead.name}</TableCell>
+                                <TableCell className="font-mono text-xs">{lead.phone_number}</TableCell>
+                                <TableCell className="text-xs text-gray-600">
+                                    {lead.date_of_birth}{lead.time_of_birth ? ` ${lead.time_of_birth.slice(0, 5)}` : ' (time unknown)'} · {lead.place_of_birth} · {lead.gender}
+                                </TableCell>
+                                <TableCell>{lead.request_count}</TableCell>
+                                <TableCell>
+                                    <select
+                                        className="h-8 rounded-md border border-gray-300 bg-white px-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                                        value={lead.status}
+                                        disabled={updatingId === lead.id}
+                                        onChange={(e) => handleStatusChange(lead, e.target.value)}
+                                    >
+                                        {AI_LEAD_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        {!loading && !error && leads.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-gray-900">
+                                    No callback leads yet
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        {loading && leads.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                    Loading...
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+
+                <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+                    <div className="flex items-center text-sm text-gray-900">
+                        Showing {total === 0 ? 0 : page * rowsPerPage + 1} to {Math.min((page + 1) * rowsPerPage, total)} of {total} leads
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <select
+                            className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            value={rowsPerPage}
+                            onChange={(e) => {
+                                setRowsPerPage(Number(e.target.value));
+                                setPage(0);
+                            }}
+                        >
+                            <option value={10}>10 per page</option>
+                            <option value={20}>20 per page</option>
+                            <option value={50}>50 per page</option>
+                            <option value={100}>100 per page</option>
+                        </select>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setPage((p) => Math.max(0, p - 1))}
+                            disabled={page === 0}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            size="sm"
+                            onClick={() => setPage((p) => p + 1)}
+                            disabled={(page + 1) * rowsPerPage >= total}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            </Card>
         </div>
     );
 }

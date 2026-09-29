@@ -21,7 +21,7 @@ from ..database import get_db
 from ..dasha_utils import with_sukshma_and_prana
 from ..free_astro_service import generate_full_kundli
 from ..limiter import limiter
-from ..models import AiAstrologerUsage, FreeKundliChart, GenderType
+from ..models import AiAstrologerLead, AiAstrologerLeadStatus, AiAstrologerUsage, FreeKundliChart, GenderType
 from ..vedic_rishi_service import geocode_place
 
 router = APIRouter(prefix="/ai-astrologer", tags=["AI Astrologer"])
@@ -96,6 +96,21 @@ def _identity_key(name: str, dob: date) -> str:
     today's date (Asia/Kolkata), so the free-question count resets every day
     instead of being a one-time lifetime cap."""
     return f"{' '.join(name.lower().split())}|{dob.isoformat()}|{_today_ist().isoformat()}"
+
+
+# Shown verbatim beside the checkbox on the AI Astrologer page (web
+# src/pages/AiAstrologer.tsx, CALLBACK_CONSENT_TEXT) — keep the two in sync.
+# Stored with each lead as the record of what the guest agreed to.
+CALLBACK_CONSENT_TEXT = (
+    "I agree to be contacted by Aadikarta on this number by call or WhatsApp "
+    "about astrology consultations."
+)
+
+
+class CallbackRequest(BaseModel):
+    birth_details: BirthDetails
+    phone_number: str = Field(..., pattern=r"^\d{10,15}$")
+    consent: Literal[True]
 
 
 class QuotaResponse(BaseModel):
@@ -294,3 +309,35 @@ async def ai_chat(request: Request, payload: AiChatRequest, db: Session = Depend
         questions_used=usage.questions_used,
         questions_remaining=max(0, FREE_QUESTION_LIMIT - usage.questions_used),
     )
+
+
+@router.post("/callback-request", status_code=201)
+@limiter.limit("3/minute")
+def request_callback(request: Request, payload: CallbackRequest, db: Session = Depends(get_db)):
+    """Guest asks a human astrologer to call them back (offered once the free
+    questions are used up). Upserts by phone number, so repeat requests
+    refresh one lead instead of piling up duplicates."""
+    bd = payload.birth_details
+    lead = db.query(AiAstrologerLead).filter(AiAstrologerLead.phone_number == payload.phone_number).first()
+    if lead is None:
+        lead = AiAstrologerLead(phone_number=payload.phone_number, request_count=0)
+        db.add(lead)
+
+    lead.name = " ".join(bd.name.split())
+    lead.date_of_birth = bd.date_of_birth
+    lead.time_of_birth = bd.time_of_birth
+    lead.place_of_birth = bd.place_of_birth.strip()
+    lead.gender = bd.gender
+    lead.consent_text = CALLBACK_CONSENT_TEXT
+    lead.consented_at = datetime.now(timezone.utc)
+    lead.request_count = (lead.request_count or 0) + 1
+    # A fresh request means they want a call now, whatever happened last time.
+    lead.status = AiAstrologerLeadStatus.NEW
+
+    try:
+        db.commit()
+    except IntegrityError:
+        # Same phone submitted concurrently — the other request already saved it.
+        db.rollback()
+
+    return {"message": "Thank you! One of our astrologers will contact you soon."}

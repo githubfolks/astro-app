@@ -353,6 +353,34 @@ class AiAstrologerUsage(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
 
+class AiAstrologerLeadStatus(str, enum.Enum):
+    NEW = "NEW"
+    CONTACTED = "CONTACTED"
+    CONVERTED = "CONVERTED"
+    CLOSED = "CLOSED"
+
+
+class AiAstrologerLead(Base):
+    """Guest who asked for a callback from a human astrologer after using up
+    the AI Astrologer's free questions. One row per phone number: a repeat
+    request refreshes the details and consent and reopens the lead as NEW."""
+    __tablename__ = "ai_astrologer_leads"
+
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String, nullable=False, unique=True, index=True)
+    name = Column(String, nullable=False)
+    date_of_birth = Column(Date, nullable=False)
+    time_of_birth = Column(Time, nullable=True)
+    place_of_birth = Column(String, nullable=False)
+    gender = Column(Enum(GenderType), nullable=False)
+    consent_text = Column(Text, nullable=False)  # exact wording the guest agreed to
+    consented_at = Column(DateTime(timezone=True), nullable=False)
+    request_count = Column(Integer, nullable=False, default=1)
+    status = Column(Enum(AiAstrologerLeadStatus), nullable=False, default=AiAstrologerLeadStatus.NEW, index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+
+
 class AvailabilityNotification(Base):
     """A seeker's request to be notified when a specific astrologer comes online."""
     __tablename__ = "availability_notifications"

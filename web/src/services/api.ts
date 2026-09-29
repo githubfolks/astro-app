@@ -383,6 +383,14 @@ export const api = {
                 body: JSON.stringify(data)
             });
             return handleResponse(response, 'The AI Astrologer could not read the stars right now. Please try again.');
+        },
+        requestCallback: async (data: JsonBody) => {
+            const response = await customFetch(`${API_URL}/ai-astrologer/callback-request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return handleResponse(response, 'Could not submit your callback request. Please try again.');
         }
     },
 
