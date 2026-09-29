@@ -1335,17 +1335,6 @@
             ],
             "title": "Consultation Fee Per Min"
           },
-          "display_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Display Name"
-          },
           "experience_years": {
             "anyOf": [
               {
@@ -1356,17 +1345,6 @@
               }
             ],
             "title": "Experience Years"
-          },
-          "full_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Full Name"
           },
           "id_proof_url": {
             "anyOf": [
@@ -1422,17 +1400,6 @@
               }
             ],
             "title": "Pan Number"
-          },
-          "profile_picture_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Profile Picture Url"
           },
           "short_bio": {
             "anyOf": [

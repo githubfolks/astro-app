@@ -12,7 +12,6 @@ interface Props {
 
 export const PersonalDetailsCard: React.FC<Props> = ({ profile, onSaved }) => {
     const { user, updateUser } = useAuth();
-    const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [saving, setSaving] = useState(false);
@@ -20,7 +19,6 @@ export const PersonalDetailsCard: React.FC<Props> = ({ profile, onSaved }) => {
     const [saved, setSaved] = useState(false);
 
     useEffect(() => {
-        setFullName(profile.full_name || '');
         setPhoneNumber(user?.phone_number || '');
         setWhatsappNumber(profile.whatsapp_number || '');
     }, [profile, user]);
@@ -30,7 +28,7 @@ export const PersonalDetailsCard: React.FC<Props> = ({ profile, onSaved }) => {
         setError('');
         setSaved(false);
         try {
-            const updated = await api.astrologers.updateProfile({ full_name: fullName, whatsapp_number: whatsappNumber });
+            const updated = await api.astrologers.updateProfile({ whatsapp_number: whatsappNumber });
             onSaved(updated);
             if (phoneNumber && phoneNumber !== user?.phone_number) {
                 const result = await api.astrologers.updatePhoneNumber(phoneNumber);
@@ -56,13 +54,25 @@ export const PersonalDetailsCard: React.FC<Props> = ({ profile, onSaved }) => {
                     <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Full Name</label>
                     <input
                         type="text"
-                        autoComplete="name"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="e.g. Raman Bharadwaj"
-                        className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-[#E91E63] focus:border-transparent outline-none transition-shadow"
+                        value={profile.full_name || ''}
+                        readOnly
+                        disabled
+                        className="w-full border border-gray-200 bg-gray-50 text-gray-600 rounded-lg p-3 text-sm cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Your legal name; seekers see your display name instead.</p>
+                    <p className="text-xs text-gray-400 mt-1">Your legal name; seekers see your nickname instead.</p>
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-gray-900 uppercase mb-1">Nickname</label>
+                    <input
+                        type="text"
+                        value={profile.display_name || ''}
+                        readOnly
+                        disabled
+                        placeholder="Not set"
+                        className="w-full border border-gray-200 bg-gray-50 text-gray-600 rounded-lg p-3 text-sm cursor-not-allowed"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Name and nickname can only be changed by the Aadikarta team — contact support to update them.</p>
                 </div>
 
                 <div>

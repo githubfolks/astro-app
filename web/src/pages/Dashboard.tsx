@@ -269,7 +269,7 @@ export const Dashboard: React.FC = () => {
         const missingOnboardingItems: string[] = [];
         if (astrologerProfile) {
             if (!astrologerProfile.contract_signed_at) missingOnboardingItems.push('sign your contract');
-            if (!astrologerProfile.profile_picture_url) missingOnboardingItems.push('upload a profile photo');
+            if (!astrologerProfile.profile_picture_url) missingOnboardingItems.push('contact support to add your profile photo');
             if (!astrologerProfile.availability_start_time || !astrologerProfile.availability_end_time) missingOnboardingItems.push('set your availability hours');
             if (!astrologerProfile.short_bio) missingOnboardingItems.push('add a short bio');
             if (!astrologerProfile.about_me) missingOnboardingItems.push('write about yourself');

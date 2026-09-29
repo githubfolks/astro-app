@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, AfterValidator
+from pydantic import BaseModel, Field, EmailStr, AfterValidator, model_validator
 from typing import Optional, List, Annotated
 from datetime import date, time, datetime
 from enum import Enum
@@ -164,10 +164,11 @@ class AstrologerProfileBase(BaseModel):
 class AstrologerProfileCreate(AstrologerProfileBase):
     pass
 
+# Identity fields seekers see (legal name, nickname, photo) are admin-only —
+# changed via PUT /admin/astrologers/{user_id}, never by the astrologer.
+ASTROLOGER_ADMIN_ONLY_FIELDS = ("full_name", "display_name", "profile_picture_url")
+
 class AstrologerProfileUPDATE(BaseModel):
-    full_name: Optional[str] = None
-    display_name: Optional[str] = None
-    profile_picture_url: Optional[str] = None
     short_bio: Optional[str] = None
     about_me: Optional[str] = None
     experience_years: Optional[int] = None
@@ -200,6 +201,17 @@ class AstrologerProfileUPDATE(BaseModel):
     # POST /astrologers/contract/sign, so the signature timestamp can't be forged.
     # kyc_verified / kyc_verified_at are NOT here — admin-only, set via
     # POST /admin/astrologers/{user_id}/kyc/verify.
+
+    @model_validator(mode="before")
+    @classmethod
+    def _reject_admin_only_fields(cls, data):
+        if isinstance(data, dict):
+            locked = [f for f in ASTROLOGER_ADMIN_ONLY_FIELDS if f in data]
+            if locked:
+                raise ValueError(
+                    f"{', '.join(locked)} can only be changed by an admin"
+                )
+        return data
 
 class ContractSignRequest(BaseModel):
     signature_name: str = Field(..., min_length=2, max_length=150)
