@@ -18,6 +18,7 @@ import InstantReportsBanner from '../components/InstantReportsBanner';
 import HoroscopeSection from '../components/HoroscopeSection';
 import PanchangSection from '../components/PanchangSection';
 import FAQSection from '../components/FAQSection';
+import LatestBlogPosts from '../components/LatestBlogPosts';
 import { useSupportContact } from '../hooks/useSupportContact';
 
 const homeFaqs = [
@@ -207,6 +208,8 @@ const Home: React.FC = () => {
                 </section>
 
                 <Testimonials />
+
+                <LatestBlogPosts />
 
                 <section className="faq-wrapper-section py-8 relative overflow-hidden bg-gradient-to-b from-[#0f0927] to-[#03010b]">
                     <FAQSection faqs={homeFaqs} title="Frequently Asked Questions" />

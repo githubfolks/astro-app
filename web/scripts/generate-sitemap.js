@@ -8,7 +8,6 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '../public/sitemap.xml');
 const BASE = process.env.VITE_SITE_URL || 'https://aadikarta.org';
 const API_URL = process.env.VITE_API_URL || 'https://api.aadikarta.org';
-const today = new Date().toISOString().slice(0, 10);
 
 const URLS = [
     { loc: '/',                          changefreq: 'daily',   priority: '1.0' },
@@ -116,24 +115,35 @@ async function fetchAllPages(path, mapItem, getItems = (d) => d) {
     return out;
 }
 
-const fetchBlogRoutes = () => fetchAllPages('/public/posts', (p) => `/blog/${p.slug}`, (d) => d.posts);
+// Each post carries its real last-edit date so <lastmod> stays truthful —
+// stamping every URL with the build date teaches Google to ignore lastmod.
+const toDate = (iso) => (iso ? String(iso).slice(0, 10) : undefined);
+const fetchBlogRoutes = () => fetchAllPages(
+    '/public/posts',
+    (p) => ({ loc: `/blog/${p.slug}`, lastmod: toDate(p.updated_at || p.published_at) }),
+    (d) => d.posts,
+);
 const fetchAstrologerRoutes = () => fetchAllPages('/astrologers/', (a) => `/astrologers/${a.slug || a.user_id}`);
 
 const blogRoutes = await fetchBlogRoutes().catch(() => []);
 const astrologerRoutes = await fetchAstrologerRoutes().catch(() => []);
 
+// The /blog index changes only when a post is published or edited.
+const latestBlogDate = blogRoutes.map((r) => r.lastmod).filter(Boolean).sort().pop();
+const staticUrls = URLS.map((u) => (u.loc === '/blog' && latestBlogDate ? { ...u, lastmod: latestBlogDate } : u));
+
 const dynamicUrls = [
-    ...blogRoutes.map(loc => ({ loc, changefreq: 'monthly', priority: '0.7' })),
+    ...blogRoutes.map(({ loc, lastmod }) => ({ loc, lastmod, changefreq: 'monthly', priority: '0.7' })),
     ...astrologerRoutes.map(loc => ({ loc, changefreq: 'weekly', priority: '0.8' }))
 ];
 
-const allUrls = [...URLS, ...dynamicUrls];
+const allUrls = [...staticUrls, ...dynamicUrls];
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allUrls.map(({ loc, changefreq, priority }) => `  <url>
-    <loc>${BASE}${loc}</loc>
-    <lastmod>${today}</lastmod>
+${allUrls.map(({ loc, lastmod, changefreq, priority }) => `  <url>
+    <loc>${BASE}${loc}</loc>${lastmod ? `
+    <lastmod>${lastmod}</lastmod>` : ''}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`).join('\n')}

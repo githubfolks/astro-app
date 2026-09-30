@@ -57,6 +57,7 @@ def get_public_posts(
             "author_name": post.author_name,
             "tags": post.tags,
             "published_at": post.published_at,
+            "updated_at": post.updated_at,
         }
 
     return {"total": total, "posts": [summarize(p) for p in posts]}

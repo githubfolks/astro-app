@@ -60,3 +60,20 @@ def test_public_posts_excludes_drafts(client, make_user, db_session):
     resp = client.get("/public/posts")
     assert resp.status_code == 200
     assert resp.json()["total"] == 0
+
+
+def test_public_posts_exposes_updated_at_for_sitemap_lastmod(client, make_user, db_session):
+    author = make_user()
+    post = _make_post(db_session, author, slug="edited")
+    assert post.updated_at is None  # onupdate only fires on UPDATE
+
+    resp = client.get("/public/posts")
+    assert resp.json()["posts"][0]["updated_at"] is None
+
+    post.title = "Vedic Transits Explained (Revised)"
+    db_session.commit()
+    db_session.refresh(post)
+    assert post.updated_at is not None
+
+    resp = client.get("/public/posts")
+    assert resp.json()["posts"][0]["updated_at"] is not None

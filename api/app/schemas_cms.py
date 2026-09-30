@@ -92,6 +92,8 @@ class PostSummary(BaseModel):
     author_name: Optional[str] = None
     tags: Optional[List[str]] = None
     published_at: Optional[datetime]
+    # Exposed so the build-time sitemap can emit a truthful per-post <lastmod>.
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

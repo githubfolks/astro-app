@@ -137,14 +137,17 @@ const BlogPost: React.FC = () => {
         );
     }
 
-    // Calculate concise SERP title to ensure <= 55-60 chars in Google search results
-    let seoTitle = post.title;
-    if (seoTitle.includes(':')) {
-        seoTitle = seoTitle.split(':')[0].trim();
-    }
-    if (seoTitle.length > 45) {
-        seoTitle = seoTitle.slice(0, 42).trim() + '...';
-    }
+    // Use the full title: Google shortens long titles itself at a sensible point,
+    // whereas cutting it here left literal "..." and dropped keywords from the SERP.
+    const seoTitle = post.title;
+
+    // Meta description: collapse whitespace and cut at a word boundary, never mid-word.
+    const rawDescription = (post.excerpt || post.content.replace(/<[^>]*>/gm, ' ').replace(/&[a-z#0-9]+;/gi, ' '))
+        .replace(/\s+/g, ' ')
+        .trim();
+    const seoDescription = rawDescription.length <= 160
+        ? rawDescription
+        : rawDescription.slice(0, 157).replace(/\s+\S*$/, '').replace(/[\s,;:—–-]+$/, '') + '…';
 
     const derivedKeywords = [
         post.title,
@@ -161,7 +164,7 @@ const BlogPost: React.FC = () => {
         <div className="flex flex-col min-h-screen">
             <SEO
                 title={seoTitle}
-                description={(post.excerpt || post.content.replace(/<[^>]*>/gm, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim()).substring(0, 155)}
+                description={seoDescription}
                 keywords={derivedKeywords}
                 image={post.featured_image}
                 imageAlt={post.title}
