@@ -8,6 +8,7 @@ import { useRealtime } from '../context/RealtimeContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import PaymentModal from '../components/PaymentModal';
+import DeleteAccountCard from '../components/DeleteAccountCard';
 import RatingModal from '../components/RatingModal';
 import ConsultationDetailModal from '../components/ConsultationDetailModal';
 import SeekerChatTranscriptModal from '../components/SeekerChatTranscriptModal';
@@ -1337,6 +1338,8 @@ export const Dashboard: React.FC = () => {
                                 )}
                             </div>
                         </div>
+
+                        <DeleteAccountCard />
                     </div>
                 </div>
             </main>

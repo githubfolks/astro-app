@@ -68,6 +68,10 @@ class User(Base):
     oauth_id = Column(String, nullable=True)  # provider-side subject/user id
     is_verified = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
+    # Set when the user deletes their account: personal fields are anonymized
+    # (see services/account_deletion.py) and the row is kept only so financial
+    # and consultation records still resolve. Any token for it is rejected.
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
@@ -227,6 +231,13 @@ class PaymentOrder(Base):
     # client sends back at verification time.
     wallet_package_id = Column(Integer, ForeignKey("wallet_packages.id"), nullable=True)
     bonus_amount = Column(DECIMAL(10, 2), nullable=False, server_default='0')
+    # GST breakdown snapshotted at creation (see services/gst.py):
+    # amount_paise == (base_amount + gst_amount) * 100, and base_amount is what
+    # gets credited to the wallet. All three are NULL for orders created before
+    # GST was introduced — those credit the full amount paid, as they always did.
+    base_amount = Column(DECIMAL(10, 2), nullable=True)
+    gst_amount = Column(DECIMAL(10, 2), nullable=True)
+    gst_rate_percent = Column(DECIMAL(5, 2), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class WalletPackage(Base):

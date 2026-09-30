@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas, database, audit
 from .auth import get_current_user, get_current_admin
 from ..services.wallet_limits import get_wallet_cap
+from ..services.gst import GstConfigError, compute_gst, get_gst_rate_percent, gst_share_of_refund, to_rupees
 import razorpay
 import hmac
 import hashlib
@@ -97,6 +98,20 @@ def create_payment_order(
         order.amount = float(package.amount)
         bonus_amount = package.bonus_amount
 
+    # GST is charged on top of the recharge: the wallet is credited
+    # base_amount, the seeker pays base_amount + gst_amount. Promotional bonus
+    # credit is free and carries no GST.
+    base_amount = to_rupees(order.amount)
+    if base_amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be positive")
+    try:
+        gst_rate = get_gst_rate_percent()
+    except GstConfigError as e:
+        print(f"GST misconfigured, refusing recharge: {e}")
+        raise HTTPException(status_code=503, detail="Wallet recharge is temporarily unavailable. Please try again later.")
+    gst_amount = compute_gst(base_amount, gst_rate)
+    total_amount = base_amount + gst_amount
+
     # Enforce the wallet balance cap before charging the card — checking
     # post-capture (in /verify or the webhook) would leave a seeker's money
     # taken but un-creditable, which is worse than rejecting the top-up here.
@@ -104,7 +119,7 @@ def create_payment_order(
     if cap is not None:
         wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == current_user.id).first()
         current_balance = wallet.balance if wallet else Decimal("0")
-        total_credit = Decimal(str(order.amount)) + bonus_amount
+        total_credit = base_amount + bonus_amount
         if Decimal(str(current_balance)) + total_credit > cap:
             raise HTTPException(
                 status_code=400,
@@ -112,7 +127,7 @@ def create_payment_order(
             )
 
     # Razorpay expects amount in paise (1 INR = 100 paise)
-    amount_paise = int(order.amount * 100)
+    amount_paise = int(total_amount * 100)
 
     mode = get_razorpay_mode(current_user)
     key_id, key_secret = get_razorpay_keys(mode)
@@ -138,17 +153,45 @@ def create_payment_order(
             razorpay_mode=mode,
             wallet_package_id=order.wallet_package_id,
             bonus_amount=bonus_amount,
+            base_amount=base_amount,
+            gst_amount=gst_amount,
+            gst_rate_percent=gst_rate,
         ))
         db.commit()
         return {
             "order_id": razorpay_order['id'],
-            "amount": razorpay_order['amount'],
+            "amount": razorpay_order['amount'],  # paise, GST inclusive — what Razorpay charges
             "currency": razorpay_order['currency'],
-            "key_id": key_id
+            "key_id": key_id,
+            "base_amount": float(base_amount),
+            "gst_amount": float(gst_amount),
+            "gst_rate_percent": float(gst_rate),
+            "total_amount": float(total_amount),
+            "bonus_amount": float(bonus_amount),
         }
     except Exception as e:
         print(f"Error creating Razorpay order: {e}")
         raise HTTPException(status_code=500, detail="Could not create payment order")
+
+def _wallet_credit_for(order: models.PaymentOrder | None, amount_paid_paise: int) -> Decimal | None:
+    """Wallet credit (excluding any bonus) for a captured payment, or None if
+    the captured amount doesn't match what this order was created for.
+
+    GST orders credit their snapshotted base_amount, never the GST. Orders
+    created before GST existed (base_amount NULL) credit the full amount paid.
+    """
+    if order is None or order.base_amount is None:
+        return to_rupees(Decimal(amount_paid_paise) / 100)
+    if int(amount_paid_paise) != int(order.amount_paise):
+        return None
+    return Decimal(order.base_amount)
+
+
+def _gst_note(order: models.PaymentOrder | None) -> str:
+    if order is None or not order.gst_amount:
+        return ""
+    return f" (paid ₹{Decimal(order.amount_paise) / 100:.2f} incl. ₹{order.gst_amount} GST @ {order.gst_rate_percent}%)"
+
 
 @router.post("/verify")
 def verify_payment(data: PaymentVerification, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_user)):
@@ -198,7 +241,14 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
              raise HTTPException(status_code=400, detail="Invalid Payment Signature")
 
         order_details = client.order.fetch(data.razorpay_order_id)
-        amount_paid_inr = order_details['amount'] / 100.0
+        credit = _wallet_credit_for(order, order_details['amount'])
+        if credit is None:
+            audit.log(db, "PAYMENT_AMOUNT_MISMATCH", actor_id=current_user.id, resource_type="payment_order",
+                      resource_id=data.razorpay_order_id,
+                      details={"expected_paise": order.amount_paise, "gateway_paise": order_details['amount'], "source": "verify"})
+            db.commit()
+            raise HTTPException(status_code=400, detail="Payment amount mismatch. Please contact support.")
+        amount_paid_inr = float(credit)
 
         # Payment Successful -> Update Wallet
         # 1. Check if transaction already recorded (idempotency check using order_id as ref)
@@ -212,8 +262,8 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             wallet = models.UserWallet(user_id=current_user.id, balance=0.0)
             db.add(wallet)
         
-        # 3. Add Balance — the amount actually paid, plus any bonus this
-        # order's wallet package was snapshotted with at creation time.
+        # 3. Add Balance — the recharge amount (GST excluded), plus any bonus
+        # this order's wallet package was snapshotted with at creation time.
         # wallet.balance is a DECIMAL column, so coerce the float amount to
         # Decimal to avoid `Decimal + float` TypeErrors.
         bonus_amount = order.bonus_amount or Decimal("0")
@@ -226,7 +276,7 @@ def verify_payment(data: PaymentVerification, db: Session = Depends(database.get
             user_id=current_user.id,
             amount=amount_paid_inr,
             transaction_type=models.TransactionType.PAYMENT_GATEWAY,
-            description=f"Razorpay Payment: {data.razorpay_payment_id}",
+            description=f"Razorpay Payment: {data.razorpay_payment_id}{_gst_note(order)}",
             reference_id=data.razorpay_order_id,
             gateway_payment_id=data.razorpay_payment_id
         )
@@ -378,7 +428,15 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
     if existing:
         return {"status": "already_processed"}
 
-    amount_inr = amount_paise / 100.0
+    credit = _wallet_credit_for(order, amount_paise)
+    if credit is None:
+        audit.log(db, "PAYMENT_AMOUNT_MISMATCH", actor_id=int(user_id), resource_type="payment_order",
+                  resource_id=order_id,
+                  details={"expected_paise": order.amount_paise, "gateway_paise": amount_paise,
+                           "payment_id": payment_id, "source": "webhook"})
+        db.commit()
+        return {"status": "skipped", "reason": "amount mismatch"}
+    amount_inr = float(credit)
     wallet = db.query(models.UserWallet).filter(models.UserWallet.user_id == int(user_id)).first()
     if not wallet:
         wallet = models.UserWallet(user_id=int(user_id), balance=0.0)
@@ -389,7 +447,7 @@ async def razorpay_webhook(request: Request, db: Session = Depends(database.get_
         user_id=int(user_id),
         amount=amount_inr,
         transaction_type=models.TransactionType.PAYMENT_GATEWAY,
-        description=f"Razorpay webhook: {payment_id}",
+        description=f"Razorpay webhook: {payment_id}{_gst_note(order)}",
         reference_id=order_id,
         gateway_payment_id=payment_id
     )
@@ -468,14 +526,23 @@ def refund_payment(
     refunded_so_far = sum(abs(t.amount) for t in already_refunded) if already_refunded else Decimal("0")
     remaining = Decimal(str(original.amount)) - refunded_so_far
 
-    refund_amount = Decimal(str(data.amount)) if data.amount is not None else remaining
+    # refund_amount is wallet credit being reversed; the GST the seeker paid on
+    # that credit goes back to them on top, so the gateway refund is larger.
+    refund_amount = to_rupees(data.amount) if data.amount is not None else remaining
     if refund_amount <= 0 or refund_amount > remaining:
         raise HTTPException(
             status_code=400,
             detail=f"Invalid refund amount. Remaining refundable: {remaining}"
         )
+    gst_refund = Decimal("0")
+    if original_order is not None and original_order.gst_amount:
+        gst_refund = gst_share_of_refund(
+            Decimal(original_order.gst_amount), Decimal(original_order.base_amount),
+            Decimal(refunded_so_far), refund_amount,
+        )
+    gateway_refund = refund_amount + gst_refund
 
-    amount_paise = int(refund_amount * 100)
+    amount_paise = int(gateway_refund * 100)
     try:
         razorpay_refund = client.payment.refund(original.gateway_payment_id, {
             "amount": amount_paise,
@@ -500,6 +567,7 @@ def refund_payment(
         amount=-refund_amount,
         transaction_type=models.TransactionType.PAYMENT_REFUND,
         description=f"Razorpay refund {razorpay_refund['id']} for payment {original.gateway_payment_id}"
+                    + (f" (₹{gateway_refund} refunded incl. ₹{gst_refund} GST)" if gst_refund else "")
                     + (f": {data.notes}" if data.notes else ""),
         reference_id=original.reference_id,
         gateway_payment_id=razorpay_refund['id']
@@ -507,7 +575,8 @@ def refund_payment(
     db.add(txn)
     audit.log(db, "PAYMENT_REFUNDED", actor_id=admin.id, resource_type="wallet_transaction",
               resource_id=transaction_id,
-              details={"refund_amount": float(refund_amount), "razorpay_refund_id": razorpay_refund['id'],
+              details={"refund_amount": float(refund_amount), "gst_refunded": float(gst_refund),
+                       "gateway_refund_amount": float(gateway_refund), "razorpay_refund_id": razorpay_refund['id'],
                         "user_id": original.user_id})
     db.commit()
 
@@ -515,5 +584,7 @@ def refund_payment(
         "status": "success",
         "razorpay_refund_id": razorpay_refund['id'],
         "refunded_amount": float(refund_amount),
+        "gst_refunded": float(gst_refund),
+        "gateway_refund_amount": float(gateway_refund),
         "new_balance": wallet.balance
     }

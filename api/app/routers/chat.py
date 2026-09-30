@@ -488,6 +488,8 @@ async def get_user_from_token(token: str, db: Session):
         return None
     
     user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is not None and user.deleted_at is not None:
+        return None
     return user
 
 from ..redis_client import get_redis

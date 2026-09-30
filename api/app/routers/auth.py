@@ -75,7 +75,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     except JWTError:
         raise credentials_exception
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user is None:
+    # A deleted (anonymized) account's outstanding tokens must stop working.
+    if user is None or user.deleted_at is not None:
         raise credentials_exception
     return user
 
@@ -90,6 +91,8 @@ def get_current_user_optional(request: Request, db: Session = Depends(database.g
         if user_id is None:
             return None
         user = db.query(models.User).filter(models.User.id == user_id).first()
+        if user is not None and user.deleted_at is not None:
+            return None
         return user
     except JWTError:
         return None

@@ -1,6 +1,19 @@
 {
   "components": {
     "schemas": {
+      "AccountDeleteRequest": {
+        "properties": {
+          "confirm": {
+            "title": "Confirm",
+            "type": "string"
+          }
+        },
+        "required": [
+          "confirm"
+        ],
+        "title": "AccountDeleteRequest",
+        "type": "object"
+      },
       "AddMoneyRequest": {
         "properties": {
           "amount": {
@@ -15212,6 +15225,26 @@
         ]
       }
     },
+    "/cron/retention/purge-chat-messages": {
+      "post": {
+        "description": "Delete chat messages past the retention period. Call once daily.\n\nDestructive, so unlike the other cron endpoints this refuses to run at all\nwhen CRON_SECRET isn't configured.",
+        "operationId": "trigger_chat_retention_purge_cron_retention_purge_chat_messages_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Trigger Chat Retention Purge",
+        "tags": [
+          "Cron"
+        ]
+      }
+    },
     "/disputes/": {
       "get": {
         "operationId": "list_all_disputes_disputes__get",
@@ -17775,6 +17808,26 @@
         ]
       }
     },
+    "/public/business-info": {
+      "get": {
+        "description": "Legal entity, grievance officer and GST rate for the legal pages and\nrecharge checkout, as configured in Admin > Settings > Business & Legal.\ngst_rate_percent is null if misconfigured (recharges are then refused).",
+        "operationId": "get_business_info_public_business_info_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Business Info",
+        "tags": [
+          "Public Content"
+        ]
+      }
+    },
     "/public/contact": {
       "post": {
         "operationId": "submit_contact_inquiry_public_contact_post",
@@ -19696,6 +19749,51 @@
           }
         ],
         "summary": "Register Device Token",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/me": {
+      "delete": {
+        "description": "Permanently delete (anonymize) the caller's seeker account.",
+        "operationId": "delete_my_account_users_me_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDeleteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "summary": "Delete My Account",
         "tags": [
           "Users"
         ]

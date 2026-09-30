@@ -4,6 +4,8 @@ import { api } from '../services/api';
 import { loadRazorpay, patchRazorpaySafeArea } from '../utils/loadRazorpay';
 import type { RazorpayResponse, RazorpayError } from '../types';
 import { getErrorMessage } from '../utils/errors';
+import { useBusinessInfo } from '../hooks/useBusinessInfo';
+import GstBreakdown, { computeRechargeTotal } from './GstBreakdown';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -27,6 +29,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
     const [success, setSuccess] = useState(false);
     const [walletPackages, setWalletPackages] = useState<WalletPackage[]>([]);
     const [selectedPackage, setSelectedPackage] = useState<WalletPackage | null>(null);
+
+    const { info: businessInfo, error: businessInfoError } = useBusinessInfo();
+    const gstRate = businessInfo?.gst_rate_percent;
 
     const presetAmounts = [100, 200, 500, 1000, 2000];
 
@@ -268,6 +273,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
 
                 {/* Footer */}
                 <div className="px-4 pb-4">
+                    <GstBreakdown
+                        amount={amount}
+                        gstRatePercent={gstRate}
+                        bonusAmount={selectedPackage ? Number(selectedPackage.bonus_amount) : 0}
+                        loadFailed={businessInfoError}
+                        className="mb-2"
+                    />
                     {selectedPackage && Number(selectedPackage.bonus_amount) > 0 && (
                         <p className="text-center text-xs text-green-600 font-medium mb-2">
                             You'll get ₹{Number(selectedPackage.amount) + Number(selectedPackage.bonus_amount)} in your wallet
@@ -284,11 +296,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                                 Processing...
                             </>
                         ) : (
-                            <>Pay ₹{amount}</>
+                            <>Pay ₹{gstRate != null ? computeRechargeTotal(amount, gstRate).total.toFixed(2) : amount}{gstRate == null && ' + GST'}</>
                         )}
                     </button>
                     <p className="text-center text-[10px] text-gray-400 mt-2">
-                        Secure payment powered by Razorpay
+                        Secure payment powered by Razorpay · GST is charged on top of the recharge amount; your wallet is credited the recharge amount.{' '}
+                        <a href="/refund-policy" className="underline">Refund Policy</a>
                     </p>
                 </div>
             </div>

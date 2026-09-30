@@ -2,8 +2,12 @@ import React from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import LegalEntityInfo from '../components/LegalEntityInfo';
+import { useBusinessInfo } from '../hooks/useBusinessInfo';
 
 const Disclaimer: React.FC = () => {
+    const { info } = useBusinessInfo();
+    const company = info?.company_legal_name || 'a private limited company';
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
@@ -16,7 +20,7 @@ const Disclaimer: React.FC = () => {
                 <h1 className="text-2xl md:text-4xl text-gray-900 mt-4 mb-4 md:mb-8 text-center">Disclaimer</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: September 30, 2026</p>
 
                     <p>
                         AadiKarta (aadikarta.org) operates as an intermediary marketplace platform that facilitates real-time astrological consultations, Kundli matching, and related readings between independent astrologers and seekers. All content, consultations, predictions, and advice provided on this platform are based on personal beliefs, traditional practices, and the experience of individual astrologers.
@@ -47,8 +51,9 @@ const Disclaimer: React.FC = () => {
 
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Corporate Identity & Entity Disambiguation</h2>
                     <p>
-                        Aadikarta.org is an official digital platform operated by a private limited corporate entity specializing in digital Vedic astrology services, online consultations, Kundli generation, and spiritual education. Aadikarta.org is a commercial web platform and is distinct, independent, and not associated with any public figures, external individuals, or entities sharing a similar name.
+                        Aadikarta.org is an official digital platform operated by {company}, specializing in digital Vedic astrology services, online consultations, Kundli generation, and spiritual education. Aadikarta.org is a commercial web platform and is distinct, independent, and not associated with any public figures, external individuals, or entities sharing a similar name.
                     </p>
+                    <LegalEntityInfo />
 
                     <p className="pt-4 font-semibold">
                         Users are advised to exercise personal judgment and discretion while using the platform.

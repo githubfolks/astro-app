@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from .. import database
 from ..services.onboarding_reminder_service import send_onboarding_reminders
 from ..services.report_nudge_service import send_abandoned_checkout_nudges
+from ..services.retention_service import RetentionConfigError, purge_expired_chat_messages
 
 router = APIRouter(prefix="/cron", tags=["Cron"])
 
@@ -45,3 +46,22 @@ def trigger_report_checkout_nudges(
     _check_cron_secret(request)
     sent = send_abandoned_checkout_nudges(db)
     return {"nudges_sent": sent}
+
+
+@router.post("/retention/purge-chat-messages")
+def trigger_chat_retention_purge(
+    request: Request,
+    db: Session = Depends(database.get_db),
+):
+    """Delete chat messages past the retention period. Call once daily.
+
+    Destructive, so unlike the other cron endpoints this refuses to run at all
+    when CRON_SECRET isn't configured.
+    """
+    if not os.getenv("CRON_SECRET"):
+        raise HTTPException(status_code=503, detail="CRON_SECRET is not configured")
+    _check_cron_secret(request)
+    try:
+        return purge_expired_chat_messages(db)
+    except RetentionConfigError as e:
+        raise HTTPException(status_code=500, detail=str(e))

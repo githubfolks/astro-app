@@ -62,6 +62,21 @@ DEFAULTS: dict[str, str] = {
     ),
     "razorpay_webhook_secret_live": os.getenv("RAZORPAY_WEBHOOK_SECRET", ""),
     "razorpay_webhook_secret_test": os.getenv("RAZORPAY_WEBHOOK_SECRET_TEST", ""),
+    # GST charged on top of every wallet recharge (see services/gst.py). A
+    # blank/invalid value blocks new recharges rather than silently charging 0%.
+    "gst_rate_percent": os.getenv("GST_RATE_PERCENT", "18"),
+    # Business identity shown on the legal pages (Terms, Privacy, Refund, Disclaimer).
+    "company_legal_name": os.getenv("COMPANY_LEGAL_NAME", "AADIKARTA VEDIC ASTRO PRIVATE LIMITED"),
+    "company_registered_address": os.getenv(
+        "COMPANY_REGISTERED_ADDRESS",
+        "27, Anandpuri BSA Engineer, Mathura, HCL Mathura UP India, 281004",
+    ),
+    "company_gstin": os.getenv("COMPANY_GSTIN", ""),
+    "grievance_officer_name": os.getenv("GRIEVANCE_OFFICER_NAME", ""),
+    "grievance_officer_designation": os.getenv("GRIEVANCE_OFFICER_DESIGNATION", ""),
+    # Chat messages (and their image attachments) are purged this many years
+    # after the consultation ends — see services/retention_service.py.
+    "chat_retention_years": os.getenv("CHAT_RETENTION_YEARS", "3"),
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.

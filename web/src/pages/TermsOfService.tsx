@@ -3,9 +3,14 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import { useSupportContact } from '../hooks/useSupportContact';
+import { useBusinessInfo } from '../hooks/useBusinessInfo';
+import LegalEntityInfo from '../components/LegalEntityInfo';
 
 const TermsOfService: React.FC = () => {
-    const { support_email, support_phone } = useSupportContact();
+    const { support_email } = useSupportContact();
+    const { info } = useBusinessInfo();
+    const gstRate = info?.gst_rate_percent;
+    const company = info?.company_legal_name || 'the company operating AadiKarta';
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
@@ -18,10 +23,10 @@ const TermsOfService: React.FC = () => {
                 <h1 className="text-2xl md:text-4xl text-gray-900 mt-4 mb-4 md:mb-8 text-center">Terms of Service</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: September 30, 2026</p>
 
                     <p>
-                        Welcome to AadiKarta. By registering an account, topping up your wallet, or using our live chat, call, or report consultation services, you agree to comply with the following terms and conditions. AadiKarta reserves the right to modify, update, or amend these terms at any time, and it is your responsibility to review this page periodically; continued use of the platform after changes are posted constitutes acceptance of the revised terms.
+                        Welcome to AadiKarta. The AadiKarta website and apps are owned and operated by {company} ("AadiKarta", "we", "us"). By registering an account, topping up your wallet, or using our live chat, call, or report consultation services, you agree to comply with the following terms and conditions. AadiKarta reserves the right to modify, update, or amend these terms at any time, and it is your responsibility to review this page periodically; continued use of the platform after changes are posted constitutes acceptance of the revised terms.
                     </p>
 
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Eligibility and Account Security</h2>
@@ -39,7 +44,8 @@ const TermsOfService: React.FC = () => {
                         <li>Sessions are billed on a per-minute or package basis and automatically end when your wallet balance or package time is exhausted</li>
                         <li>Paid reports (such as Kundli, Compatibility, or Career Path reports) are generated digitally and delivered to your dashboard; once purchased, they are final and non-refundable</li>
                         <li>Subscription plans renew automatically until cancelled from your account dashboard</li>
-                        <li>Prices shown are inclusive of applicable taxes, including Indian GST, as required by law</li>
+                        <li>GST{gstRate != null ? ` at ${gstRate}%` : ''} is charged on top of each wallet recharge and shown before you pay; the full recharge amount is credited to your wallet</li>
+                        <li>Seekers pay only the displayed consultation rate, course fee, or report price, plus GST on wallet recharges — there is no platform fee, convenience fee, or other additional charge</li>
                         <li>For refund eligibility and process, see our <a href="/refund-policy" className="text-orange-600 underline">Refund Policy</a></li>
                     </ul>
 
@@ -47,9 +53,11 @@ const TermsOfService: React.FC = () => {
                     <p>If you register on AadiKarta as an astrologer, tarot reader, numerologist, or Vastu consultant, the following also apply to you:</p>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>Joining is free; you go through a verification process (credentials and ID proof review, typically completed within 2–3 business days) before being listed</li>
-                        <li>AadiKarta charges a 30% platform commission on completed paid consultations; the remainder is paid out to you</li>
+                        <li>AadiKarta retains a platform commission on completed paid consultations — 30% as standard, or as otherwise agreed with you and shown in your dashboard; the remainder is your gross earnings</li>
+                        <li>Consultations shorter than one full minute are not billed and earn nothing</li>
+                        <li>The following are deducted from your gross earnings before payout: TDS at 10% on cumulative earnings above ₹30,000, as required under the Income-tax Act, 1961; and a payment-processing charge of 3% of gross earnings. These are never charged to seekers</li>
                         <li>Payouts are processed weekly, every Monday, to your registered payout details</li>
-                        <li>You are solely responsible for any tax obligations arising from your earnings on the platform</li>
+                        <li>Apart from the TDS we deduct, you are responsible for your own tax obligations on your earnings, including GST registration where applicable</li>
                         <li>You must keep seeker information (birth details, chat history, contact information) confidential and must not use it outside the platform</li>
                         <li>You are an independent service provider, not an employee or agent of AadiKarta; your advice and opinions are your own</li>
                     </ul>
@@ -100,8 +108,9 @@ const TermsOfService: React.FC = () => {
 
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Grievance Redressal</h2>
                     <p>
-                        If you have a complaint or grievance regarding our services, please write to our Grievance Officer at {support_email}{support_phone ? ` or call ${support_phone}` : ''}. We will acknowledge your complaint within 48 hours and aim to resolve it within 30 days.
+                        If you have a complaint or grievance regarding our services, please contact our Grievance Officer using the details below. We will acknowledge your complaint within 48 hours and aim to resolve it within 30 days.
                     </p>
+                    <LegalEntityInfo />
 
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">General</h2>
                     <ul className="list-disc pl-6 space-y-2">
@@ -112,7 +121,7 @@ const TermsOfService: React.FC = () => {
 
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Governing Law & Jurisdiction</h2>
                     <p>
-                        These terms shall be governed by and construed in accordance with the laws of India. Any disputes arising out of the use of this platform shall be subject to the exclusive jurisdiction of the competent courts of India.
+                        These terms shall be governed by and construed in accordance with the laws of India. Any disputes arising out of the use of this platform shall be subject to the exclusive jurisdiction of the competent courts at Mathura, Uttar Pradesh, India.
                     </p>
 
                     <p>

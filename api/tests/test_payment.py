@@ -87,7 +87,7 @@ def test_create_order_returns_key_id_from_active_mode(client, make_user, monkeyp
     resp = client.post("/payment/order", headers=auth_headers(seeker), json={"amount": 100})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["amount"] == 10000  # paise
+    assert body["amount"] == 11800  # paise: ₹100 + 18% GST
     assert body["key_id"] == FAKE_KEY_ID
 
 

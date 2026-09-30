@@ -3,9 +3,13 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 import { useSupportContact } from '../hooks/useSupportContact';
+import { useBusinessInfo } from '../hooks/useBusinessInfo';
+import LegalEntityInfo from '../components/LegalEntityInfo';
 
 const RefundPolicy: React.FC = () => {
     const { support_email } = useSupportContact();
+    const { info } = useBusinessInfo();
+    const gstRate = info?.gst_rate_percent;
     return (
         <div className="flex flex-col min-h-screen">
             <SEO
@@ -18,16 +22,24 @@ const RefundPolicy: React.FC = () => {
                 <h1 className="text-2xl md:text-4xl text-gray-900 mt-4 mb-4 md:mb-8 text-center">Refund Policy</h1>
 
                 <div className="prose prose-lg max-w-none text-gray-700 space-y-6">
-                    <p className="text-sm text-gray-900">Last Updated: July 9, 2026</p>
+                    <p className="text-sm text-gray-900">Last Updated: September 30, 2026</p>
 
                     <p>
                         AadiKarta is committed to a transparent, fair, and automated billing process. Because our platform runs on a real-time, server-side wallet deduction engine, we've set out clear rules below for when a refund or wallet credit applies.
                     </p>
 
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Wallet Recharges and GST</h2>
+                    <ul className="list-disc pl-6 space-y-2">
+                        <li>GST{gstRate != null ? ` at ${gstRate}%` : ''} is charged on top of every wallet recharge. For example{gstRate != null ? `, a ₹100 recharge costs ₹${(100 + gstRate).toFixed(2)}` : ''} — the full recharge amount (₹100) is added to your wallet, and the GST is shown separately before you pay</li>
+                        <li>Because GST is collected at recharge, no further GST, platform fee, or convenience fee is added when you spend your wallet balance on consultations or courses</li>
+                        <li>Bonus credit from recharge offers is free promotional credit; no GST is charged on it</li>
+                    </ul>
+
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">How Chat Billing Works</h2>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>Your wallet is not billed the moment a chat is requested — billing starts only when the astrologer sends the first message</li>
                         <li>If an astrologer accepts a chat but never replies, no balance is deducted</li>
+                        <li>You are billed at the astrologer's displayed per-minute rate for each completed minute; a final partial minute is not charged</li>
                         <li>A session automatically ends the moment your wallet balance reaches zero or your purchased time package is exhausted</li>
                     </ul>
 
@@ -36,8 +48,8 @@ const RefundPolicy: React.FC = () => {
                     <ul className="list-disc pl-6 space-y-2">
                         <li>An astrologer accepts your chat but never sends a single message — the session is cancelled and no credits are deducted</li>
                         <li>A verified platform-side technical failure (server disconnection, WebSocket crash, or system error) cuts the session short</li>
-                        <li>A session ends early due to a verified astrologer-side disconnection or network failure — you're only charged for the seconds actually elapsed, and the remaining balance stays in your wallet</li>
-                        <li>You were billed twice for a single wallet top-up due to a payment gateway error — the duplicate charge is refunded to your original payment source</li>
+                        <li>A session ends early due to a verified astrologer-side disconnection or network failure — you're only charged for the completed minutes, and the remaining balance stays in your wallet</li>
+                        <li>You were billed twice for a single wallet top-up due to a payment gateway error — the duplicate charge, including the GST paid on it, is refunded to your original payment source</li>
                     </ul>
 
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Non-Refundable Cases</h2>
@@ -59,16 +71,23 @@ const RefundPolicy: React.FC = () => {
                         <li>If a scheduled class is cancelled or not delivered due to a platform-side issue, you'll be offered a make-up session or a refund for that class</li>
                     </ul>
 
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Unused Wallet Balance When Closing Your Account</h2>
+                    <p>
+                        Your account can only be deleted once your wallet balance is zero. If you want to close your account while it still holds paid balance, contact {support_email} to request a refund of the unused paid balance, together with the GST paid on it, to your original payment source. Promotional and bonus credit is not refundable.
+                    </p>
+
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 pt-4">Refund Process</h2>
                     <ul className="list-disc pl-6 space-y-2">
                         <li>Refund or dispute claims must be raised within 48 hours of the transaction by emailing {support_email} with your transaction ID and (for chats) chat ID</li>
-                        <li>Verified refunds for payment gateway failures are processed within 7–10 working days to your original payment source</li>
+                        <li>Verified refunds to your original payment source (including the GST paid on the refunded amount) are processed within 7–10 working days</li>
                         <li>Wallet credit adjustments are applied immediately once approved by our support team</li>
                     </ul>
 
                     <p className="pt-4 font-semibold">
                         AadiKarta reserves the right to approve or reject refund requests after review.
                     </p>
+
+                    <LegalEntityInfo />
                 </div>
             </main>
             <Footer />

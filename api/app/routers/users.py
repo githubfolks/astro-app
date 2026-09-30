@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas, database
+from ..services import account_deletion
 from .auth import get_current_user
 from pydantic import BaseModel
 
@@ -35,9 +36,26 @@ def update_my_profile(profile_update: schemas.SeekerProfileCreate, current_user:
     db.refresh(db_profile)
     return db_profile
 
-    db.delete(current_user) # This will cascade delete profile
-    db.commit()
-    return {"message": "Account deleted successfully"}
+
+class AccountDeleteRequest(BaseModel):
+    # Must be exactly "DELETE" — guards against an accidental or replayed call.
+    confirm: str
+
+
+@router.delete("/me")
+def delete_my_account(
+    body: AccountDeleteRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(database.get_db),
+):
+    """Permanently delete (anonymize) the caller's seeker account."""
+    if body.confirm != "DELETE":
+        raise HTTPException(status_code=400, detail='Type "DELETE" to confirm account deletion.')
+    try:
+        account_deletion.delete_seeker_account(db, current_user)
+    except account_deletion.AccountDeletionBlocked as e:
+        raise HTTPException(status_code=409, detail={"code": e.code, "message": e.message})
+    return {"message": "Your account has been deleted."}
 
 @router.get("/{user_id}/profile", response_model=schemas.SeekerProfile)
 def get_user_profile(user_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(database.get_db)):

@@ -77,7 +77,7 @@ def test_order_with_package_uses_server_side_amount_not_client_amount(client, ma
 
     resp = client.post("/payment/order", headers=auth_headers(seeker), json={"amount": 1, "wallet_package_id": pkg.id})
     assert resp.status_code == 200
-    assert resp.json()["amount"] == 50000  # 500 INR in paise, not the tampered 1
+    assert resp.json()["amount"] == 59000  # 500 INR + 18% GST in paise, not the tampered 1
 
     order = db_session.query(models.PaymentOrder).filter(models.PaymentOrder.order_id == resp.json()["order_id"]).first()
     assert order.wallet_package_id == pkg.id

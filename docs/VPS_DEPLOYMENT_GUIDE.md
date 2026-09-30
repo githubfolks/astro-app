@@ -173,3 +173,22 @@ Runs are logged to `/var/log/aadikarta-rebuild.log`. Most ticks are a no-op
 `published_at`/`updated_at` is newer than what's recorded in
 `.last-content-build` next to the compose files.
 
+
+## Chat retention purge (daily cron)
+
+The Privacy Policy promises that chat messages and chat images are deleted a
+set number of years after a consultation ends (Admin > Settings > Business &
+Legal > "Chat Retention Period", default 3). Nothing deletes them unless this
+endpoint is called. It is destructive, so it refuses to run unless
+`CRON_SECRET` is set in the api container's environment.
+
+```bash
+# api .env: CRON_SECRET=<long random string>
+crontab -e
+# add (03:30 daily):
+30 3 * * * curl -fsS -X POST -H "X-Cron-Secret: $CRON_SECRET" https://api.aadikarta.org/cron/retention/purge-chat-messages >> /var/log/aadikarta-retention.log 2>&1
+```
+
+Consultations with an open or investigating dispute are skipped. Each run
+writes a `CHAT_RETENTION_PURGE` audit-log entry with the number of messages
+deleted.

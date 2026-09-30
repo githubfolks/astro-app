@@ -6,6 +6,7 @@ from typing import List, Optional
 from .. import models, database, schemas_cms, schemas
 from ..limiter import limiter
 from ..services import settings_service
+from ..services.gst import GstConfigError, get_gst_rate_percent
 from fastapi import Request
 
 router = APIRouter(
@@ -21,6 +22,27 @@ def get_support_contact():
     return {
         "support_email": settings_service.get_setting("support_email"),
         "support_phone": settings_service.get_setting("support_phone"),
+    }
+
+
+@router.get("/business-info")
+def get_business_info():
+    """Legal entity, grievance officer and GST rate for the legal pages and
+    recharge checkout, as configured in Admin > Settings > Business & Legal.
+    gst_rate_percent is null if misconfigured (recharges are then refused)."""
+    try:
+        gst_rate = float(get_gst_rate_percent())
+    except GstConfigError:
+        gst_rate = None
+    get = settings_service.get_setting
+    return {
+        "company_legal_name": get("company_legal_name") or "",
+        "company_registered_address": get("company_registered_address") or "",
+        "company_gstin": get("company_gstin") or "",
+        "grievance_officer_name": get("grievance_officer_name") or "",
+        "grievance_officer_designation": get("grievance_officer_designation") or "",
+        "gst_rate_percent": gst_rate,
+        "chat_retention_years": get("chat_retention_years") or "",
     }
 
 # --- Posts ---

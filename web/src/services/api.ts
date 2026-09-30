@@ -2,6 +2,30 @@ import { storage } from '../utils/storage';
 import { isNative } from '../utils/platform';
 import type { AstrologerCityFilter } from '../types';
 
+export interface BusinessInfo {
+    company_legal_name: string;
+    company_registered_address: string;
+    company_gstin: string;
+    grievance_officer_name: string;
+    grievance_officer_designation: string;
+    /** null when the server's GST rate is misconfigured (recharges are refused). */
+    gst_rate_percent: number | null;
+    chat_retention_years: string;
+}
+
+/** POST /payment/order. `amount` is in paise and GST-inclusive; the rupee fields are the breakdown. */
+export interface PaymentOrderResponse {
+    order_id: string;
+    amount: number;
+    currency: string;
+    key_id: string;
+    base_amount: number;
+    gst_amount: number;
+    gst_rate_percent: number;
+    total_amount: number;
+    bonus_amount: number;
+}
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 /** FastAPI request-validation error item (from response.detail array) */
@@ -318,6 +342,18 @@ export const api = {
     },
 
     seekers: {
+        /** Permanently delete (anonymize) the signed-in seeker's account. Must pass confirm "DELETE". */
+        deleteAccount: async (): Promise<{ message: string }> => {
+            const response = await customFetch(`${API_URL}/users/me`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(await authHeaders())
+                },
+                body: JSON.stringify({ confirm: 'DELETE' })
+            });
+            return handleResponse(response, 'Failed to delete account');
+        },
         getOne: async (userId: number | string) => {
             const response = await customFetch(`${API_URL}/users/${userId}/profile`, {
                 headers: await authHeaders()
@@ -558,6 +594,10 @@ export const api = {
             const response = await customFetch(`${API_URL}/public/support-contact`);
             return handleResponse(response, 'Failed to fetch support contact');
         },
+        getBusinessInfo: async (): Promise<BusinessInfo> => {
+            const response = await customFetch(`${API_URL}/public/business-info`);
+            return handleResponse(response, 'Failed to fetch business info');
+        },
         getTrustStats: async (): Promise<{ verified_astrologers: number, total_consultations: number, total_reviews: number, average_rating: number }> => {
             const response = await customFetch(`${API_URL}/public/trust-stats`);
             return handleResponse(response, 'Failed to fetch trust stats');
@@ -570,7 +610,7 @@ export const api = {
         }
     },
     payment: {
-        createOrder: async (amount: number, walletPackageId?: number) => {
+        createOrder: async (amount: number, walletPackageId?: number): Promise<PaymentOrderResponse> => {
             const response = await customFetch(`${API_URL}/payment/order`, {
                 method: 'POST',
                 headers: {

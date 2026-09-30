@@ -20,6 +20,8 @@ import type { Astrologer, SeekerProfile, ChartData, MatchData, RazorpayResponse,
 import { api } from '../services/api';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { loadRazorpay } from '../utils/loadRazorpay';
+import { useBusinessInfo } from '../hooks/useBusinessInfo';
+import GstBreakdown from '../components/GstBreakdown';
 
 export const Chat: React.FC = () => {
     const { consultationId, astrologerId } = useParams<{ consultationId: string; astrologerId: string }>();
@@ -329,6 +331,7 @@ export const Chat: React.FC = () => {
 
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [isRecharging, setIsRecharging] = useState(false);
+    const { info: businessInfo, error: businessInfoError } = useBusinessInfo();
 
     const handleInChatRecharge = async () => {
         const amt = Number(rechargeAmount);
@@ -1370,6 +1373,13 @@ export const Chat: React.FC = () => {
                                                 className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#E91E63]"
                                             />
                                         </div>
+
+                                        <GstBreakdown
+                                            amount={Number(rechargeAmount) || 0}
+                                            gstRatePercent={businessInfo?.gst_rate_percent}
+                                            loadFailed={businessInfoError}
+                                            className="text-left"
+                                        />
 
                                         <button
                                             onClick={handleInChatRecharge}

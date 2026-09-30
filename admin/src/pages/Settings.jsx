@@ -22,6 +22,19 @@ const GROUPS = [
         ],
     },
     {
+        title: 'Business & Legal',
+        desc: 'Shown on the Terms of Service, Privacy Policy, Refund Policy and Disclaimer pages, and on the wallet recharge checkout. Get the GST rate confirmed by your CA — it is charged on top of every wallet recharge, and an invalid value blocks recharges.',
+        fields: [
+            { key: 'company_legal_name', label: 'Company Legal Name' },
+            { key: 'company_registered_address', label: 'Registered Address', textarea: true },
+            { key: 'company_gstin', label: 'GSTIN' },
+            { key: 'grievance_officer_name', label: 'Grievance Officer Name' },
+            { key: 'grievance_officer_designation', label: 'Grievance Officer Designation' },
+            { key: 'gst_rate_percent', label: 'GST Rate on Wallet Recharge (%)' },
+            { key: 'chat_retention_years', label: 'Chat Retention Period (years, minimum 1)' },
+        ],
+    },
+    {
         title: 'Tunables',
         fields: [
             { key: 'request_stale_minutes', label: 'Auto-expire unanswered requests after (minutes)' },
