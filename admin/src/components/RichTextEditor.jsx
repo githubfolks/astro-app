@@ -388,7 +388,12 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
     // Keep the editor in sync when `value` changes from outside (e.g. the
     // post finishes loading async, or the source-view toggle writes back).
     useEffect(() => {
-        if (!editor) return;
+        // React can re-run this effect against an editor instance useEditor
+        // has already destroyed (e.g. when a Suspense boundary re-shows the
+        // page); TipTap nulls `schema` on destroy and getHTML() then throws,
+        // taking the whole post editor down. The replacement editor re-runs
+        // this effect, so skipping the destroyed one loses nothing.
+        if (!editor || !editor.schema) return;
         const current = editor.getHTML();
         const incoming = value || '';
         if (incoming !== current && !showSource) {
@@ -398,7 +403,7 @@ export const RichTextEditor = ({ value, onChange, placeholder, style, className 
     }, [value, editor]);
 
     const toggleSource = () => {
-        if (!editor) return;
+        if (!editor || !editor.schema) return;
         if (!showSource) {
             setSourceText(formatHtml(editor.getHTML()));
             setShowSource(true);

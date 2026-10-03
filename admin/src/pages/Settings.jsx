@@ -779,6 +779,7 @@ export default function Settings() {
                     {GROUPS.filter(g => g.title === 'Facebook & Instagram Integration').map(renderGroup)}
                     <SocialTokenStatusPanel />
                     {GROUPS.filter(g => ['Content Studio (Bhashini Hindi Voice)', 'Content Studio (Google TTS Fallback)', 'Content Studio (Social Posting)'].includes(g.title)).map(renderGroup)}
+                    {GROUPS.filter(g => g.title === 'SEO Agent').map(renderGroup)}
                 </div>
             </div>
 
