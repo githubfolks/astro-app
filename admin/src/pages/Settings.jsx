@@ -770,7 +770,7 @@ export default function Settings() {
                         error={waError}
                     />
 
-                    {GROUPS.filter(g => ['Support Contact', 'Tunables', 'Promotions', 'Razorpay Payment Gateway'].includes(g.title)).map(renderGroup)}
+                    {GROUPS.filter(g => ['Support Contact', 'Business & Legal', 'Tunables', 'Promotions', 'Razorpay Payment Gateway'].includes(g.title)).map(renderGroup)}
                 </div>
 
                 {/* Right Column */}
