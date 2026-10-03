@@ -6978,6 +6978,17 @@
             ],
             "title": "Full Name"
           },
+          "is_new_user": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is New User"
+          },
           "role": {
             "title": "Role",
             "type": "string"

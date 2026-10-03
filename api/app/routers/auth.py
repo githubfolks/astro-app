@@ -208,6 +208,7 @@ def _social_login(db: Session, provider: str, provider_user_id: str, email: Opti
         models.User.oauth_id == provider_user_id
     ).first()
 
+    is_new_user = False
     if not user:
         user = db.query(models.User).filter(models.User.email == email).first()
         if user:
@@ -235,6 +236,7 @@ def _social_login(db: Session, provider: str, provider_user_id: str, email: Opti
             wallet = models.UserWallet(user_id=user.id)
             db.add(wallet)
             db.commit()
+            is_new_user = True
 
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
@@ -250,7 +252,7 @@ def _social_login(db: Session, provider: str, provider_user_id: str, email: Opti
     elif user.role == models.UserRole.ASTROLOGER and user.astrologer_profile:
         resolved_full_name = user.astrologer_profile.full_name
 
-    return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "role": user.role, "full_name": resolved_full_name}
+    return {"access_token": access_token, "token_type": "bearer", "user_id": user.id, "role": user.role, "full_name": resolved_full_name, "is_new_user": is_new_user}
 
 @router.post("/auth/google", response_model=schemas.Token)
 @limiter.limit("10/minute")

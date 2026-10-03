@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getErrorMessage } from '../utils/errors';
 import { api } from '../services/api';
 import { socialAuth, socialAuthConfigured, ensureInitialized } from '../services/socialAuth';
+import { trackSignUp } from '../utils/analytics';
 import './SocialLoginButtons.css';
 
 interface SocialLoginData {
@@ -10,6 +11,7 @@ interface SocialLoginData {
     user_id: number;
     role: string;
     full_name?: string;
+    is_new_user?: boolean | null;
 }
 
 interface Props {
@@ -38,7 +40,8 @@ const SocialLoginButtons: React.FC<Props> = ({ onSuccess, onError, disabled }) =
         setLoadingProvider('google');
         try {
             const idToken = await socialAuth.loginWithGoogle();
-            const data = await api.auth.google(idToken);
+            const data: SocialLoginData = await api.auth.google(idToken);
+            if (data.is_new_user) trackSignUp('google');
             onSuccess(data);
         } catch (err) {
             onError(getErrorMessage(err) || 'Google sign-in failed');
@@ -51,7 +54,8 @@ const SocialLoginButtons: React.FC<Props> = ({ onSuccess, onError, disabled }) =
         setLoadingProvider('facebook');
         try {
             const accessToken = await socialAuth.loginWithFacebook();
-            const data = await api.auth.facebook(accessToken);
+            const data: SocialLoginData = await api.auth.facebook(accessToken);
+            if (data.is_new_user) trackSignUp('facebook');
             onSuccess(data);
         } catch (err) {
             onError(getErrorMessage(err) || 'Facebook sign-in failed');

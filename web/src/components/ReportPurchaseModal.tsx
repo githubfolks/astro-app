@@ -5,6 +5,7 @@ import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
 import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
+import { trackGenerateLead } from '../utils/analytics';
 
 interface ReportPurchaseModalProps {
     isOpen: boolean;
@@ -141,6 +142,7 @@ export const ReportPurchaseModal: React.FC<ReportPurchaseModalProps> = ({
                 language,
             });
 
+            trackGenerateLead(`ai_report_${reportType.toLowerCase()}`);
             setReportUrl(`/reports/${orderData.order_reference}`);
             setPdfUrl(orderData.pdf_url ? resolveImageUrl(orderData.pdf_url) : null);
             setStep(3);

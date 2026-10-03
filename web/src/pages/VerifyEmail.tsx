@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Auth.css';
+import { trackSignUp } from '../utils/analytics';
 
 export const VerifyEmail: React.FC = () => {
     const location = useLocation();
@@ -25,6 +26,7 @@ export const VerifyEmail: React.FC = () => {
         setInfo('');
         try {
             await api.auth.verifyEmail(email, otp);
+            trackSignUp('email');
             navigate('/login', { state: { verified: true } });
         } catch (err) {
             setError(getErrorMessage(err) || 'Verification failed');

@@ -6,6 +6,7 @@ import type { RazorpayResponse, RazorpayError } from '../types';
 import { getErrorMessage } from '../utils/errors';
 import { useBusinessInfo } from '../hooks/useBusinessInfo';
 import GstBreakdown, { computeRechargeTotal } from './GstBreakdown';
+import { trackWalletPurchase } from '../utils/analytics';
 
 interface PaymentModalProps {
     isOpen: boolean;
@@ -82,6 +83,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSuccess 
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
+                        });
+                        trackWalletPurchase({
+                            transactionId: orderData.order_id,
+                            value: orderData.base_amount,
+                            tax: orderData.gst_amount,
+                            currency: orderData.currency,
                         });
                         setSuccess(true);
                         setTimeout(() => {

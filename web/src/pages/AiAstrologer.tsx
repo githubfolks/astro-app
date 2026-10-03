@@ -12,6 +12,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import type { AstrologerListItem } from '../types';
 import { getAstrologerDisplayName, resolveImageUrl } from '../utils/url';
+import { trackGenerateLead } from '../utils/analytics';
 
 const FREE_QUESTION_LIMIT = 5;
 const GUEST_DETAILS_KEY = 'ai_astrologer_birth_details';
@@ -264,6 +265,7 @@ const AiAstrologer: React.FC = () => {
                 phone_number: phone,
                 consent: true,
             });
+            trackGenerateLead('ai_astrologer_callback');
             setCallbackDone(true);
         } catch (err) {
             setCallbackError(err instanceof Error ? err.message : 'Could not submit your callback request. Please try again.');

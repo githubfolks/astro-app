@@ -78,6 +78,9 @@ class Token(BaseModel):
     user_id: int
     role: str
     full_name: Optional[str] = None
+    # Set only by social sign-in: True when this call created the account,
+    # so the client can report a sign_up (not a login) conversion.
+    is_new_user: Optional[bool] = None
 
 class GoogleLoginRequest(BaseModel):
     id_token: str

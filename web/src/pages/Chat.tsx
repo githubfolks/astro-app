@@ -22,6 +22,7 @@ import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { loadRazorpay } from '../utils/loadRazorpay';
 import { useBusinessInfo } from '../hooks/useBusinessInfo';
 import GstBreakdown from '../components/GstBreakdown';
+import { trackWalletPurchase } from '../utils/analytics';
 
 export const Chat: React.FC = () => {
     const { consultationId, astrologerId } = useParams<{ consultationId: string; astrologerId: string }>();
@@ -358,6 +359,12 @@ export const Chat: React.FC = () => {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature
+                        });
+                        trackWalletPurchase({
+                            transactionId: orderData.order_id,
+                            value: orderData.base_amount,
+                            tax: orderData.gst_amount,
+                            currency: orderData.currency,
                         });
                         setRechargeAmount('');
                         resumeChat();
