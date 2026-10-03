@@ -2,7 +2,7 @@
 
 **Goal:** Bring new visitors to aadikarta.org and route them into the funnel: free tool / free AI report (lead) → wallet recharge (the only paid step) → astrologer chat.
 **Date:** 2026-10-03
-**Status:** Phase 0 implemented in code (commit `01bac9e`, 2026-10-03); not yet deployed, and the GTM-side setup is pending. Everything else is still a plan unless marked **Existing** or **Done**.
+**Status:** Phase 0 implemented in code (commit `01bac9e`, 2026-10-03); not yet deployed, and the GTM-side setup is pending. Phase 1 SEO Agent MVP (keyword queue, Claude drafting, quality check, review-and-publish) implemented 2026-10-03, see `docs/SEO-AGENT.md`; not yet deployed, and no live Claude call has succeeded yet (account credit balance too low). Everything else is still a plan unless marked **Existing** or **Done**.
 
 Legend used throughout:
 - **Existing** — verified in this codebase on 2026-10-03.
@@ -65,7 +65,7 @@ GSC + keyword list ─► Opportunity finder ─► Brief ─► Draft (Claude) 
 
 ### 3.3 Agent steps (Proposed)
 
-1. **Opportunity finder** (weekly cron): pull GSC query/page data through `gsc_service`, store it in a new `seo_opportunities` table (query, page, impressions, clicks, avg position, status), and rank by impressions × position gap. Optionally add keyword volumes from Google Keyword Planner (access is **Unverified**). No volumes are invented: if data is missing, the opportunity has no score.
+1. **Topic queue (Done, changed from the original plan):** Search Console had only ~150 impressions over 28 days on 2026-10-03, too little to pick topics from. Topics now come from an admin-curated queue: admin entry, Claude suggestions (no search-volume data) and one-click Search Console import. Original idea: **Opportunity finder** (weekly cron): pull GSC query/page data through `gsc_service`, store it in a new `seo_opportunities` table (query, page, impressions, clicks, avg position, status), and rank by impressions × position gap. Optionally add keyword volumes from Google Keyword Planner (access is **Unverified**). No volumes are invented: if data is missing, the opportunity has no score.
 2. **Brief**: target query, search intent, outline, required data fields, the internal link to the relevant free tool, and the CTA (free report or wallet package; chat only if astrologers are online).
 3. **Draft**: Claude writes a `Post` in **DRAFT** status. Every astrological fact must come from our computed data or a cited classical source passed into the prompt. The model may not make up planetary positions, dates or timings.
 4. **Automated quality gate** (fails the draft back to the queue):
