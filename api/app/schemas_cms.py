@@ -76,9 +76,18 @@ class Post(PostBase):
     class Config:
         from_attributes = True
 
+class AdminPost(Post):
+    """Admin/CMS view of a post: adds SEO Agent provenance. Never used by
+    public endpoints (agent_meta holds model/usage details and reviewed_by is
+    an internal user id)."""
+    generated_by: str = "manual"
+    agent_meta: Optional[Dict[str, Any]] = None
+    reviewed_by: Optional[int] = None
+    reviewed_at: Optional[datetime] = None
+
 class PostListResponse(BaseModel):
     total: int
-    posts: List[Post]
+    posts: List[AdminPost]
 
 class PostSummary(BaseModel):
     """Listing-card view of a post -- deliberately omits the full `content`

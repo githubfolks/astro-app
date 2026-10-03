@@ -50,6 +50,34 @@ def get_gsc_service():
         logger.error(f"Failed to build searchconsole service: {e}")
         return None
 
+class GSCUnavailableError(Exception):
+    """Search Console credentials are missing/invalid or the API call failed."""
+
+
+def fetch_query_page_rows(days: int = 28) -> List[Dict[str, Any]]:
+    """Raw (query, page) rows for the last `days` days, ending 3 days ago
+    (Search Console data lags by a few days). Raises GSCUnavailableError
+    rather than returning an empty list, so callers never mistake a failure
+    for "no data"."""
+    service = get_gsc_service()
+    if not service:
+        raise GSCUnavailableError("Google Search Console credentials not found or invalid.")
+    end_date = datetime.now().date() - timedelta(days=3)
+    start_date = end_date - timedelta(days=days)
+    body = {
+        'startDate': start_date.strftime('%Y-%m-%d'),
+        'endDate': end_date.strftime('%Y-%m-%d'),
+        'dimensions': ['query', 'page'],
+        'rowLimit': 25000,
+    }
+    try:
+        response = service.searchanalytics().query(siteUrl=SITE_URL, body=body).execute()
+    except Exception as e:
+        logger.error(f"Error querying GSC API: {e}")
+        raise GSCUnavailableError(f"Search Console API error: {e}") from e
+    return response.get('rows', [])
+
+
 def fetch_seo_analytics() -> Dict[str, Any]:
     """Fetches clicks, impressions, ctr, position over the last 30 days and top queries/pages"""
     service = get_gsc_service()

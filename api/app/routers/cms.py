@@ -13,7 +13,7 @@ from slugify import slugify
 from datetime import datetime
 from .. import models, database, schemas_cms
 from .auth import get_current_admin
-from ..services import settings_service, content_studio_images
+from ..services import settings_service, content_studio_images, seo_agent
 
 router = APIRouter(
     prefix="/cms",
@@ -45,7 +45,7 @@ def encode_web_jpeg(raw: bytes, max_dimension: int = 1200) -> bytes:
 
 # --- Posts (Blog) ---
 
-@router.post("/posts", response_model=schemas_cms.Post)
+@router.post("/posts", response_model=schemas_cms.AdminPost)
 def create_post(post: schemas_cms.PostCreate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_admin)):
     # Generate slug from provided slug or title
     slug = slugify(post.slug) if post.slug else slugify(post.title)
@@ -97,15 +97,15 @@ def list_posts(
     posts = query.order_by(models.Post.created_at.desc()).offset(skip).limit(limit).all()
     return {"total": total, "posts": posts}
 
-@router.get("/posts/{post_id}", response_model=schemas_cms.Post)
+@router.get("/posts/{post_id}", response_model=schemas_cms.AdminPost)
 def get_post(post_id: int, db: Session = Depends(database.get_db)):
     post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     return post
 
-@router.put("/posts/{post_id}", response_model=schemas_cms.Post)
-def update_post(post_id: int, post_update: schemas_cms.PostUpdate, db: Session = Depends(database.get_db)):
+@router.put("/posts/{post_id}", response_model=schemas_cms.AdminPost)
+def update_post(post_id: int, post_update: schemas_cms.PostUpdate, db: Session = Depends(database.get_db), current_user: models.User = Depends(get_current_admin)):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
     if not db_post:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -136,11 +136,28 @@ def update_post(post_id: int, post_update: schemas_cms.PostUpdate, db: Session =
         db_post.seo_keywords_instagram = post_update.seo_keywords_instagram
     if post_update.seo_keywords_youtube is not None:
         db_post.seo_keywords_youtube = post_update.seo_keywords_youtube
+    publishing = (
+        post_update.status == schemas_cms.PostStatus.PUBLISHED
+        and db_post.status != models.PostStatus.PUBLISHED
+    )
     if post_update.status:
         db_post.status = post_update.status
         if post_update.status == schemas_cms.PostStatus.PUBLISHED and not db_post.published_at:
             db_post.published_at = datetime.utcnow()
-            
+
+    # AI drafts must pass the SEO Agent quality gate on their current
+    # (possibly admin-edited) content before they can go live.
+    if publishing and db_post.generated_by == seo_agent.AGENT_NAME:
+        report = seo_agent.check_post(db, db_post)
+        if not report.passed:
+            db.rollback()
+            raise HTTPException(
+                status_code=400,
+                detail={"message": "This AI draft fails the quality check. Fix the issues below, then publish.",
+                        "issues": report.issues},
+            )
+        seo_agent.on_post_published(db, db_post, current_user)
+
     db.commit()
     db.refresh(db_post)
     return db_post

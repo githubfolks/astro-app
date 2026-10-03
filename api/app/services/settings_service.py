@@ -77,6 +77,34 @@ DEFAULTS: dict[str, str] = {
     # Chat messages (and their image attachments) are purged this many years
     # after the consultation ends — see services/retention_service.py.
     "chat_retention_years": os.getenv("CHAT_RETENTION_YEARS", "3"),
+    # SEO Agent (services/seo_agent). Drafts are always DRAFT posts; an admin
+    # reviews and publishes them. These are the cost and quality guard rails.
+    "seo_agent_daily_draft_limit": "5",      # max agent drafts created per day (UTC)
+    "seo_agent_min_words": "800",            # quality gate: minimum article length
+    "seo_agent_min_faqs": "3",               # quality gate: minimum FAQ entries
+    "seo_agent_suggestion_count": "10",      # topics per "Suggest topics" click
+    # Quality gate: case-insensitive phrases a draft may not contain. Starter
+    # list — needs legal review (Growth Plan risk R4). One phrase per line.
+    "seo_agent_banned_phrases": "\n".join([
+        "guarantee", "guaranteed", "100%", "cure", "cures", "permanent solution",
+        "definitely will", "will definitely", "assured result", "black magic",
+        "vashikaran", "money back", "miracle", "instant result",
+    ]),
+    # Internal links a draft may use, one per line: "<path> | <what it is>".
+    # Every path must be a live public route. /blog/<slug> links to existing
+    # published posts are always allowed in addition to these.
+    "seo_agent_internal_links": "\n".join([
+        "/tools/kundli-chart | Free Kundli (birth chart) generator",
+        "/tools/kundli-matching | Free Kundli matching (Gun Milan) calculator",
+        "/tools/manglik-dosha-checker | Free Manglik Dosha checker",
+        "/tools/numerology-calculator | Free numerology calculator",
+        "/tools/navamsa-chart | Free Navamsa (D9) chart",
+        "/panchang | Today's Panchang",
+        "/services/horoscope | Daily horoscope for all 12 signs",
+        "/services/ai-instant-reports | Free AI Vedic reports",
+        "/ai-astrologer | AI Astrologer chat",
+        "/astrologers | Talk to verified astrologers",
+    ]),
 }
 
 # Keys whose values are secret and should be masked when read by the admin UI.

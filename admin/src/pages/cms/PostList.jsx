@@ -63,7 +63,12 @@ export default function PostList() {
                     <TableBody>
                         {posts.map((post) => (
                             <TableRow key={post.id}>
-                                <TableCell className="font-medium">{post.title}</TableCell>
+                                <TableCell className="font-medium">
+                                    {post.title}
+                                    {post.generated_by === 'seo_agent' && (
+                                        <span className="ml-2 inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">AI draft</span>
+                                    )}
+                                </TableCell>
                                 <TableCell>
                                     <span className={clsx(
                                         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",

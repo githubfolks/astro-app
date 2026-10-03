@@ -57,6 +57,18 @@ api.interceptors.response.use(
 );
 
 
+export const seoAgent = {
+    status: () => api.get('/admin/seo-agent/status'),
+    listKeywords: (params) => api.get('/admin/seo-agent/keywords', { params }),
+    addKeywords: (keywords, notes) => api.post('/admin/seo-agent/keywords', { keywords, notes }),
+    importGsc: (minImpressions) => api.post('/admin/seo-agent/keywords/import-gsc', { min_impressions: minImpressions }),
+    suggest: () => api.post('/admin/seo-agent/keywords/suggest'),
+    draft: (keywordId) => api.post(`/admin/seo-agent/keywords/${keywordId}/draft`),
+    ignore: (keywordId) => api.post(`/admin/seo-agent/keywords/${keywordId}/ignore`),
+    restore: (keywordId) => api.post(`/admin/seo-agent/keywords/${keywordId}/restore`),
+    postQuality: (postId) => api.get(`/admin/seo-agent/posts/${postId}/quality`),
+};
+
 export const cms = {
     posts: {
         list: (params) => api.get('/cms/posts', { params }),

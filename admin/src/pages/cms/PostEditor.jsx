@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { cms } from '../../services/api';
+import { cms, seoAgent } from '../../services/api';
+import SeoQualityReport from '../../components/SeoQualityReport';
 import { RichTextEditor } from '../../components/RichTextEditor';
 import { GalleryModal } from '../../components/GalleryModal';
 import { Button, Input, Card } from '../../components/ui';
@@ -68,6 +69,12 @@ export default function PostEditor() {
         status: 'DRAFT',
     });
 
+    // SEO Agent provenance (AI drafts only) and the latest quality report.
+    const [agentInfo, setAgentInfo] = useState(null);
+    const [quality, setQuality] = useState(null);
+    const [checkingQuality, setCheckingQuality] = useState(false);
+    const [saveError, setSaveError] = useState(null);
+
     const slugify = (text) => {
         if (!text) return '';
         return text
@@ -95,6 +102,10 @@ export default function PostEditor() {
                     seo_keywords_instagram: response.data.seo_keywords_instagram || '',
                     status: response.data.status,
                 });
+                if (response.data.generated_by === 'seo_agent') {
+                    setAgentInfo({ meta: response.data.agent_meta || {}, reviewed_at: response.data.reviewed_at });
+                    setQuality(response.data.agent_meta?.quality || null);
+                }
             } catch (error) {
                 console.error('Failed to fetch post', error);
             }
@@ -332,6 +343,25 @@ export default function PostEditor() {
             navigate('/cms/posts');
         } catch (error) {
             console.error('Failed to save post', error);
+            const detail = error.response?.data?.detail;
+            if (detail && typeof detail === 'object' && !Array.isArray(detail)) {
+                setSaveError({ message: detail.message, issues: detail.issues || [] });
+                if (detail.issues) setQuality({ passed: false, issues: detail.issues, stats: {} });
+            } else {
+                setSaveError({ message: error.message || 'Failed to save post.', issues: [] });
+            }
+        }
+    };
+
+    const recheckQuality = async () => {
+        setCheckingQuality(true);
+        try {
+            const res = await seoAgent.postQuality(id);
+            setQuality(res.data);
+        } catch (e) {
+            setSaveError({ message: e.message || 'Quality check failed to run.', issues: [] });
+        } finally {
+            setCheckingQuality(false);
         }
     };
 
@@ -383,6 +413,32 @@ export default function PostEditor() {
                     </Button>
                 </div>
             </div>
+
+            {saveError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                    {saveError.message}
+                </div>
+            )}
+
+            {agentInfo && (
+                <Card className="space-y-3 border-purple-200 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="text-sm text-slate-700">
+                            <span className="mr-2 inline-flex rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-800">AI draft</span>
+                            Target keyword: <strong>{agentInfo.meta.keyword || 'unknown'}</strong>
+                            {agentInfo.meta.model && <> · {agentInfo.meta.model}</>}
+                            {agentInfo.reviewed_at && <> · Published after review on {new Date(agentInfo.reviewed_at).toLocaleString()}</>}
+                        </div>
+                        <Button variant="outlined" size="sm" type="button" onClick={recheckQuality} disabled={checkingQuality}>
+                            {checkingQuality ? 'Checking…' : 'Re-check saved version'}
+                        </Button>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                        Review every claim before publishing. The quality check runs again when you set this post to Published and save; it checks the content you save, so fix the issues, then save.
+                    </p>
+                    <SeoQualityReport report={quality} />
+                </Card>
+            )}
 
             {showPreview && (
                 <PreviewModal post={formData} onClose={() => setShowPreview(false)} />

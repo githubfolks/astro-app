@@ -14,6 +14,7 @@ redis
 firebase-admin
 bcrypt
 httpx
+anthropic>=0.116.0,<1.0
 slowapi
 Pillow
 pillow-heif

@@ -4,7 +4,7 @@ import os
 import json
 import asyncio
 from .database import engine, Base
-from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, wallet_packages, disputes, realtime, ai_astrologer, content_studio, social_copy, panchang, matching, cron, free_tools, places, muhurat, client_errors, reports
+from .routers import auth, users, astrologers, consultations, admin, wallet, chat, seekers, cms, public, payment, payouts, kundli, edu, wallet_packages, disputes, realtime, ai_astrologer, content_studio, social_copy, panchang, matching, cron, free_tools, places, muhurat, client_errors, reports, seo_agent
 from . import models_edu, models_reports # To ensure tables are created
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -450,6 +450,7 @@ app.include_router(ai_astrologer.router)
 app.include_router(content_studio.router)
 app.include_router(social_copy.router)
 app.include_router(reports.router)
+app.include_router(seo_agent.router)
 app.include_router(cron.router)
 
 @app.get("/")

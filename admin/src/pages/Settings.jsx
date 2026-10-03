@@ -104,6 +104,18 @@ const GROUPS = [
             { key: 'content_studio_caption_cta', label: 'Caption Call-to-Action (appended to every AI-generated caption)', textarea: true },
         ],
     },
+    {
+        title: 'SEO Agent',
+        desc: 'Limits and quality rules for AI-drafted blog posts. Drafts are never published automatically — an admin reviews and publishes each one.',
+        fields: [
+            { key: 'seo_agent_daily_draft_limit', label: 'Max AI drafts per day' },
+            { key: 'seo_agent_min_words', label: 'Minimum words per draft' },
+            { key: 'seo_agent_min_faqs', label: 'Minimum FAQs per draft' },
+            { key: 'seo_agent_suggestion_count', label: 'Topics per "Suggest topics" click' },
+            { key: 'seo_agent_banned_phrases', label: 'Banned phrases (one per line; drafts containing any are flagged and cannot be published)', textarea: true },
+            { key: 'seo_agent_internal_links', label: 'Allowed internal links (one per line: /path | description)', textarea: true },
+        ],
+    },
 ];
 
 function TokenStatusRow({ label, status }) {

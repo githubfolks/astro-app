@@ -475,8 +475,55 @@ class Post(Base):
     published_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    # "manual" for admin-written posts, "seo_agent" for SEO Agent drafts.
+    generated_by = Column(String(20), nullable=False, server_default="manual", default="manual")
+    # SEO Agent drafts only: target keyword, model, token usage, quality report.
+    agent_meta = Column(JSON, nullable=True)
+    # Admin who published an agent-generated draft, and when.
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime(timezone=True), nullable=True)
 
-    author = relationship("User", backref="posts")
+    author = relationship("User", backref="posts", foreign_keys=[author_id])
+
+
+class SeoKeywordSource(str, enum.Enum):
+    ADMIN = "ADMIN"            # typed in by an admin
+    AI_SUGGESTION = "AI_SUGGESTION"  # proposed by Claude; carries no search-volume data
+    GSC = "GSC"                # a Search Console query the site already appears for
+
+
+class SeoKeywordStatus(str, enum.Enum):
+    NEW = "NEW"
+    DRAFTED = "DRAFTED"        # a DRAFT post exists for it
+    PUBLISHED = "PUBLISHED"    # that post has been published
+    IGNORED = "IGNORED"
+    FAILED = "FAILED"          # last drafting attempt errored; see last_error
+
+
+class SeoKeyword(Base):
+    """SEO Agent topic queue: one target keyword per row, admin-curated."""
+    __tablename__ = "seo_keywords"
+
+    id = Column(Integer, primary_key=True, index=True)
+    keyword = Column(String(200), nullable=False, unique=True, index=True)  # lowercased, whitespace-collapsed
+    source = Column(Enum(SeoKeywordSource, native_enum=False, length=20), nullable=False)
+    status = Column(Enum(SeoKeywordStatus, native_enum=False, length=20), nullable=False,
+                    default=SeoKeywordStatus.NEW, index=True)
+    notes = Column(Text, nullable=True)
+    # Search Console metrics at import time (GSC source only; NULL otherwise —
+    # never estimated).
+    gsc_impressions = Column(Integer, nullable=True)
+    gsc_clicks = Column(Integer, nullable=True)
+    gsc_position = Column(DECIMAL(6, 2), nullable=True)
+    gsc_page = Column(String, nullable=True)
+    gsc_captured_at = Column(DateTime(timezone=True), nullable=True)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="SET NULL"), nullable=True)
+    last_error = Column(Text, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    post = relationship("Post")
 
 class MediaGalleryImage(Base):
     __tablename__ = "media_gallery_images"

@@ -21,6 +21,7 @@ const ErrorLogs = lazy(() => import('./pages/ErrorLogs'));
 const AstrologerOnboarding = lazy(() => import('./pages/AstrologerOnboarding'));
 const PostList = lazy(() => import('./pages/cms/PostList'));
 const PostEditor = lazy(() => import('./pages/cms/PostEditor'));
+const SeoAgent = lazy(() => import('./pages/cms/SeoAgent'));
 const HoroscopeList = lazy(() => import('./pages/cms/HoroscopeList'));
 const HoroscopeEditor = lazy(() => import('./pages/cms/HoroscopeEditor'));
 const ContactInquiries = lazy(() => import('./pages/cms/ContactInquiries'));
@@ -76,6 +77,7 @@ function App() {
             <Route path="/cms/posts" element={<PostList />} />
             <Route path="/cms/posts/new" element={<PostEditor />} />
             <Route path="/cms/posts/edit/:id" element={<PostEditor />} />
+            <Route path="/seo-agent" element={<SeoAgent />} />
 
             <Route path="/cms/horoscopes" element={<HoroscopeList />} />
             <Route path="/cms/horoscopes/new" element={<HoroscopeEditor />} />
