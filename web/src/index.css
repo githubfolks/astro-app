@@ -415,18 +415,10 @@ a {
   padding: 0 16px;
 }
 
-/* Authenticated app shell (Layout.tsx nav, Dashboard.tsx <main>) compaction.
+/* Authenticated app shell (Dashboard.tsx <main>) compaction.
    These pages are built from raw Tailwind utility classes with no semantic
    hooks, so we override the utility classes directly, scoped to the
    dashboard wrapper, rather than touching every card in the JSX. */
-.native-app .dashboard-nav {
-  padding: 10px 16px;
-}
-
-.native-app .dashboard-nav h1 {
-  font-size: 18px;
-}
-
 .native-app main.dashboard-main {
   padding: 16px;
   /* Restore the fixed-bottom-nav clearance from the generic ".native-app main"

@@ -49,17 +49,3 @@ class LinkedInCopy(BaseModel):
     text: str
     hashtags: str
 
-
-class AutoPostSocialRequest(BaseModel):
-    topic: str = Field(..., min_length=1, max_length=300)
-    target_platform: str = Field("all", max_length=50)
-    cta_link: str = Field("https://aadikarta.org/tools/kundli-matching", max_length=200)
-
-
-class AutoPostSocialResponse(BaseModel):
-    status: str
-    content_id: str
-    script_30s: str
-    viral_hook: str
-    target_platforms: list[str]
-

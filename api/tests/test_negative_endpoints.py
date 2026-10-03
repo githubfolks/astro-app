@@ -1,5 +1,5 @@
 """Negative testing across routers with no dedicated test file: users, seekers,
-packages, disputes, and matching. Focuses on authorization/IDOR boundaries,
+disputes, and matching. Focuses on authorization/IDOR boundaries,
 invalid input, malformed payloads, and invalid state transitions rather than
 happy-path behavior (already covered elsewhere).
 """
@@ -74,102 +74,6 @@ def test_seeker_profile_endpoint_rejects_admin(client, make_user):
 def test_seeker_profile_requires_auth(client):
     resp = client.get("/seekers/profile")
     assert resp.status_code == 401
-
-
-# --- packages.py ------------------------------------------------------------
-
-def test_create_package_requires_admin(client, make_user):
-    seeker = make_user(models.UserRole.SEEKER)
-    resp = client.post(
-        "/packages/",
-        headers=auth_headers(seeker),
-        json={"name": "Pkg", "duration_minutes": 30, "price": "100.00"},
-    )
-    assert resp.status_code == 403
-
-
-def test_deactivate_nonexistent_package_returns_404(client, make_user):
-    admin = make_user(models.UserRole.ADMIN)
-    resp = client.delete("/packages/999999", headers=auth_headers(admin))
-    assert resp.status_code == 404
-
-
-def test_checkout_rejected_for_astrologer_role(client, make_user):
-    astro = make_user(models.UserRole.ASTROLOGER)
-    resp = client.post(
-        "/packages/checkout",
-        headers=auth_headers(astro),
-        json={"package_id": 1, "astrologer_id": astro.id},
-    )
-    assert resp.status_code == 403
-
-
-def test_checkout_nonexistent_package_returns_404(client, make_user):
-    seeker = make_user(models.UserRole.SEEKER, balance=1000.0)
-    other_astro = make_user(models.UserRole.ASTROLOGER)
-    resp = client.post(
-        "/packages/checkout",
-        headers=auth_headers(seeker),
-        json={"package_id": 999999, "astrologer_id": other_astro.id},
-    )
-    assert resp.status_code == 404
-
-
-def test_checkout_nonexistent_astrologer_returns_404(client, make_user, db_session):
-    seeker = make_user(models.UserRole.SEEKER, balance=1000.0)
-    pkg = models.ChatPackage(name="Pkg", duration_minutes=30, price=50.0, is_active=True)
-    db_session.add(pkg)
-    db_session.commit()
-    db_session.refresh(pkg)
-
-    resp = client.post(
-        "/packages/checkout",
-        headers=auth_headers(seeker),
-        json={"package_id": pkg.id, "astrologer_id": 999999},
-    )
-    assert resp.status_code == 404
-
-
-def test_checkout_insufficient_balance_returns_400(client, make_user, db_session):
-    seeker = make_user(models.UserRole.SEEKER, balance=1.0)
-    astro = make_user(models.UserRole.ASTROLOGER)
-    astro.astrologer_profile.is_approved = True
-    pkg = models.ChatPackage(name="Pkg", duration_minutes=30, price=500.0, is_active=True)
-    db_session.add(pkg)
-    db_session.commit()
-    db_session.refresh(pkg)
-
-    resp = client.post(
-        "/packages/checkout",
-        headers=auth_headers(seeker),
-        json={"package_id": pkg.id, "astrologer_id": astro.id},
-    )
-    assert resp.status_code in (400, 404)  # 404 if approval flag not persisted this way
-
-
-def test_checkout_requires_auth(client):
-    resp = client.post("/packages/checkout", json={"package_id": 1, "astrologer_id": 1})
-    assert resp.status_code == 401
-
-
-def test_create_package_rejects_missing_fields(client, make_user):
-    admin = make_user(models.UserRole.ADMIN)
-    resp = client.post("/packages/", headers=auth_headers(admin), json={"name": "Pkg"})
-    assert resp.status_code == 422
-
-
-def test_create_package_rejects_negative_price(client, make_user, db_session):
-    """Negative-price packages aren't rejected by the schema (Decimal accepts any
-    sign); document current behavior so a future validation gap is visible."""
-    admin = make_user(models.UserRole.ADMIN)
-    resp = client.post(
-        "/packages/",
-        headers=auth_headers(admin),
-        json={"name": "Negative", "duration_minutes": 10, "price": "-50.00"},
-    )
-    # Currently accepted (no server-side floor check) — flags a validation gap.
-    assert resp.status_code == 200
-    assert float(resp.json()["price"]) == -50.0
 
 
 # --- disputes.py --------------------------------------------------------------

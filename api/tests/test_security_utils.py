@@ -65,8 +65,8 @@ def test_csrf_middleware_blocks_unauthenticated_post_without_token(client):
     # Set csrf_token cookie, but omit X-CSRF-Token header on POST request to non-exempt route
     client.cookies.set("csrf_token", "valid_cookie_token")
     response = client.post(
-        "/wallet/add-money",
-        json={"user_id": 1, "amount": 10},
+        "/admin/users/1/wallet/credit",
+        json={"amount": 10},
         headers={"X-CSRF-Token": "invalid_header_token"}
     )
     assert response.status_code == 403

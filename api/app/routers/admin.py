@@ -439,27 +439,6 @@ def request_astrologer_missing_info(user_id: int, request: RequestMissingInfoReq
 
     return {"message": "Request for missing info sent successfully"}
 
-# Specific endpoint to create an Admin (only by another admin)
-@router.post("/create_admin", response_model=schemas.Token)
-def create_admin(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
-    db_user = db.query(models.User).filter((models.User.email == user.email) | (models.User.phone_number == user.phone_number)).first()
-    if db_user:
-        raise HTTPException(status_code=400, detail="User already exists")
-    
-    hashed_password = get_password_hash(user.password)
-    new_user = models.User(
-        email=user.email,
-        phone_number=user.phone_number,
-        hashed_password=hashed_password,
-        role=models.UserRole.ADMIN,
-        is_verified=True
-    )
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    return {"access_token": "created_by_admin", "token_type": "bearer", "user_id": new_user.id, "role": new_user.role}
-
 @router.post("/astrologers", response_model=schemas.Token)
 def create_astrologer(astrologer: schemas.AdminCreateAstrologer, db: Session = Depends(database.get_db)):
     # Check if user exists
