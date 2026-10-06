@@ -122,7 +122,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     // Backgrounding/locking the app freezes the heartbeat interval and the OS
     // often drops the underlying socket outright — an astrologer's Redis presence
-    // key (60s TTL) then lapses and they show OFFLINE to every seeker until the
+    // key (presence_ttl_seconds TTL) then lapses and they show OFFLINE to every seeker until the
     // socket reconnects. Left alone, that reconnect only happens via onclose's
     // exponential backoff (up to 30s), which may not even fire promptly since the
     // OS can kill the connection silently instead of closing it cleanly. Reconnect
@@ -137,7 +137,16 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             connect(token);
         };
 
-        const onVisibilityChange = () => { if (document.visibilityState === 'visible') tryReconnectNow(); };
+        const onVisibilityChange = () => {
+            if (document.visibilityState !== 'visible') return;
+            // The socket may have survived while hidden, but its throttled heartbeat
+            // left presence stale — refresh it now rather than on the next tick.
+            if (ws.current?.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({ type: 'PING' }));
+                return;
+            }
+            tryReconnectNow();
+        };
         document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('online', tryReconnectNow);
 

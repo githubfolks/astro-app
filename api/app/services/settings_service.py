@@ -25,7 +25,7 @@ DEFAULTS: dict[str, str] = {
     "moderation_admin_whatsapp": "",    # WhatsApp number for moderation alerts
     "moderation_admin_template": "[ALERT] Moderation flag ({reason}) in consultation {consultation_id} by user {user_id}: {snippet}",
     "request_stale_minutes": "5",
-    "presence_ttl_seconds": "60",
+    "presence_ttl_seconds": "180",
     # How long a dropped chat socket gets to silently reconnect before the
     # consultation is actually flipped to PAUSED (billing keeps running until then).
     "disconnect_grace_seconds": "25",

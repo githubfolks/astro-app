@@ -28,10 +28,15 @@ def _presence_key(user_id: int) -> str:
 
 
 def _presence_ttl() -> int:
+    # Must comfortably exceed the client's heartbeat interval *as throttled by the
+    # browser*: Chrome checks timers only once per minute in a tab hidden for
+    # 5+ minutes, so a 60s TTL lapsed and flipped an astrologer OFFLINE whenever
+    # they switched to another window/tab. A real disconnect clears the key
+    # immediately (NotificationManager.disconnect), so this is only a backstop.
     try:
-        return int(get_setting("presence_ttl_seconds") or 60)
+        return int(get_setting("presence_ttl_seconds") or 180)
     except (TypeError, ValueError):
-        return 60
+        return 180
 
 
 def mark_present(user_id: int):
