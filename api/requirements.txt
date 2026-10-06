@@ -20,6 +20,9 @@ python-slugify==8.0.4
 razorpay==2.0.1
 redis==7.4.0
 firebase-admin==7.4.0
+# Standard Web Push (VAPID) for browser/Home Screen web app notifications —
+# iOS Safari only supports this, not FCM web tokens.
+pywebpush==2.5.0
 bcrypt==5.0.0
 httpx==0.28.1
 anthropic==0.116.0

@@ -8,6 +8,7 @@ import { api } from '../services/api';
 import { resolveImageUrl } from '../utils/url';
 import { isNative } from '../utils/platform';
 import type { Consultation, AstrologerProfile as AstrologerProfileType, ProfileSummary, PerformanceStats } from '../types';
+import WebPushPrompt from '../components/WebPushPrompt';
 
 interface RepeatSeeker {
     seekerId: number;
@@ -161,6 +162,7 @@ const AstrologerHome: React.FC = () => {
                   <p className="text-xs text-gray-500">Here's how today looks</p>
               </div>
 
+              <WebPushPrompt />
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 <div className="lg:col-span-3 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

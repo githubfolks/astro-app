@@ -27,6 +27,10 @@ export default defineConfig({
             // as an unhandled rejection in client error reports.
             injectRegister: false,
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+            // Web Push handlers (public/push-sw.js) for browser astrologers.
+            workbox: {
+                importScripts: ['push-sw.js'],
+            },
             manifest: {
                 name: 'Aadikarta',
                 short_name: 'Aadikarta',

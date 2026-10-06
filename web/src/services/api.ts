@@ -709,6 +709,12 @@ export const api = {
         });
         return handleResponse(response, 'Failed to clear device token');
     },
+    getWebPushConfig: async (): Promise<{ public_key: string }> => {
+        const response = await customFetch(`${API_URL}/users/web-push/config`, {
+            headers: { ...(await authHeaders()) }
+        });
+        return handleResponse(response, 'Web push notifications are not available');
+    },
 
     kundli: {
         generate: async (data: { seeker_id?: number; full_name?: string; date_of_birth: string; time_of_birth: string; place_of_birth: string }) => {

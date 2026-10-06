@@ -18,6 +18,7 @@ import TimePicker from '../components/TimePicker';
 import SegmentSelect from '../components/SegmentSelect';
 import { AstrologerOnboardingTabs } from '../components/AstrologerOnboardingTabs';
 import { ImportantPoliciesCard } from '../components/ImportantPoliciesCard';
+import WebPushPrompt from '../components/WebPushPrompt';
 import { resolveImageUrl, getAstrologerDisplayName } from '../utils/url';
 import { playNotificationSound } from '../utils/notificationSound';
 import { Star, MessageCircle, Calendar, Clock, Wallet, Search, ChevronLeft, ChevronRight, User, Book, Link as LinkIcon, AlertTriangle, Eye } from 'lucide-react';
@@ -325,6 +326,7 @@ export const Dashboard: React.FC = () => {
                             </span>
                         </a>
                     )}
+                    <WebPushPrompt />
                     <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 gap-4">
                         <div className="w-full text-center md:w-auto md:text-left">
                             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">

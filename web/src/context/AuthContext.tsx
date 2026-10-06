@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { api } from '../services/api';
 import { fcmService } from '../services/fcm';
-import { isNative } from '../utils/platform';
 
 interface User {
     id: number;
@@ -25,9 +24,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Astrologers need a registered device token to receive "knock" ring pushes
-// while offline; seekers/admins don't need it today.
+// while offline; seekers/admins don't need it today. On the web this only
+// re-registers an existing permission grant — the first prompt comes from the
+// Dashboard's "Enable notifications" button (iOS requires a user tap).
 const registerPushIfAstrologer = (role: User['role']) => {
-    if (role === 'ASTROLOGER' && isNative()) {
+    if (role === 'ASTROLOGER') {
         fcmService.requestPermissionAndGetToken().catch(e => console.error('FCM registration failed:', e));
     }
 };

@@ -128,6 +128,32 @@ Secrets (DB URL, JWT, SMTP, MiroTalk, AstroAPI) live in the `.env` file in each 
 > `Access to fetch at 'http://localhost:9000/...' from origin 'https://aadikarta.org' has been blocked by CORS policy`
 > it means the frontend image was built with the local overlay. Rebuild with the **VPS overlay**.
 
+### Web Push (browser astrologer notifications)
+
+Browser astrologers (including iPhone, once the site is added to the Home
+Screen — iOS 16.4+) get new-request/knock notifications through standard Web
+Push. While they have a working subscription, the backend keeps them ONLINE for
+`presence_push_grace_seconds` (Admin > Settings > Tunables, default 300) after
+their browser suspends the page. Without these variables, web push is disabled:
+`GET /users/web-push/config` returns 503 and browser astrologers go OFFLINE as
+soon as their page is suspended.
+
+Add to the api `.env` (generate the key pair **once** — changing it invalidates
+every existing browser subscription):
+
+```bash
+# Prints {"public": ..., "private": ...} (base64url)
+docker compose -f docker-compose.yml -f docker-compose.vps.yml exec api python -c "import base64,json;from py_vapid import Vapid;from cryptography.hazmat.primitives import serialization as s;v=Vapid();v.generate_keys();b=lambda x:base64.urlsafe_b64encode(x).rstrip(b'=').decode();print(json.dumps({'public':b(v.public_key.public_bytes(s.Encoding.X962,s.PublicFormat.UncompressedPoint)),'private':b(v.private_key.private_numbers().private_value.to_bytes(32,'big'))}))"
+```
+
+```
+VAPID_PUBLIC_KEY=<public>
+VAPID_PRIVATE_KEY=<private>
+VAPID_SUBJECT=mailto:<support email>
+```
+
+Then `docker compose ... up -d api` to load them.
+
 ### How to rebuild the frontend on the VPS:
 
 ```bash

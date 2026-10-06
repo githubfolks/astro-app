@@ -71,37 +71,111 @@ export const fcmService = {
             }
         }
 
-        // Web path: browser Notification API
-        if (!('Notification' in window)) {
-            console.log('This browser does not support desktop notification');
-            return null;
-        }
-
-        try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                console.log('Notification permission granted.');
-                const mockToken = "mock_fcm_token_" + Date.now();
-                await api.updateDeviceToken(mockToken, 'web');
-                lastRegisteredToken = { value: mockToken, platform: 'web' };
-                return mockToken;
-            } else {
-                console.log('Unable to get permission to notify.');
-            }
-        } catch (error) {
-            console.error('Error getting permission or token', error);
-        }
-        return null;
+        // Web: never prompt here (iOS only allows the permission prompt from a
+        // user tap — see enableWebPush); just re-register an existing grant.
+        return syncWebPushSubscription();
     },
 
     async clearRegisteredToken(): Promise<void> {
-        if (!lastRegisteredToken) return;
+        let target = lastRegisteredToken;
+        if (!target && !isNative()) {
+            // Page was reloaded since registering — read the live subscription.
+            const sub = await getExistingSubscription();
+            if (sub) target = { value: JSON.stringify(sub.toJSON()), platform: WEB_PUSH_PLATFORM };
+        }
+        if (!target) return;
         try {
-            await api.clearDeviceToken(lastRegisteredToken.value, lastRegisteredToken.platform);
+            await api.clearDeviceToken(target.value, target.platform);
         } catch (error) {
             console.error('Error clearing device token on logout:', error);
         } finally {
             lastRegisteredToken = null;
         }
     }
+};
+
+// --- Standard Web Push (browsers / Home Screen web apps) ---
+// iOS Safari supports only this (16.4+, and only once the site is added to the
+// Home Screen), not FCM web tokens. The subscription JSON is sent to the backend
+// as the device token with platform "webpush"; api/app/notifications.py sends to it.
+
+const WEB_PUSH_PLATFORM = 'webpush';
+
+export type WebPushSupport = 'supported' | 'needs-home-screen' | 'unsupported';
+
+const isIOS = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    // iPadOS reports itself as a Mac but has touch.
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+const isStandalone = () =>
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+export const getWebPushSupport = (): WebPushSupport => {
+    if (isNative()) return 'unsupported';
+    if (isIOS() && !isStandalone()) return 'needs-home-screen';
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        return 'unsupported';
+    }
+    return 'supported';
+};
+
+const urlBase64ToUint8Array = (base64: string): Uint8Array => {
+    const padded = (base64 + '='.repeat((4 - (base64.length % 4)) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+    const raw = atob(padded);
+    return Uint8Array.from(raw, c => c.charCodeAt(0));
+};
+
+const getExistingSubscription = async (): Promise<PushSubscription | null> => {
+    if (getWebPushSupport() !== 'supported') return null;
+    try {
+        const reg = await navigator.serviceWorker.ready;
+        return await reg.pushManager.getSubscription();
+    } catch {
+        return null;
+    }
+};
+
+const registerSubscription = async (sub: PushSubscription): Promise<string> => {
+    const token = JSON.stringify(sub.toJSON());
+    await api.updateDeviceToken(token, WEB_PUSH_PLATFORM);
+    lastRegisteredToken = { value: token, platform: WEB_PUSH_PLATFORM };
+    return token;
+};
+
+const subscribe = async (): Promise<PushSubscription> => {
+    const { public_key } = await api.getWebPushConfig();
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) return existing;
+    return reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(public_key) as BufferSource,
+    });
+};
+
+/** Re-register this browser's subscription after login, without prompting. */
+export const syncWebPushSubscription = async (): Promise<string | null> => {
+    if (getWebPushSupport() !== 'supported' || Notification.permission !== 'granted') return null;
+    try {
+        return await registerSubscription(await subscribe());
+    } catch (error) {
+        console.error('Web push sync failed:', error);
+        return null;
+    }
+};
+
+/**
+ * Ask for notification permission and subscribe. Must be called directly from
+ * a user tap (iOS rejects the prompt otherwise). Throws with a user-facing
+ * message on failure so the caller can show it.
+ */
+export const enableWebPush = async (): Promise<void> => {
+    if (getWebPushSupport() !== 'supported') throw new Error('Notifications are not supported in this browser.');
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+        throw new Error('Notifications are blocked. Allow them in your browser settings to get new chat requests.');
+    }
+    await registerSubscription(await subscribe());
 };

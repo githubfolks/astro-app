@@ -3,7 +3,14 @@ from sqlalchemy.orm import Session
 from .. import models, schemas, database
 from ..services import account_deletion
 from .auth import get_current_user
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from ..notifications import (
+    WEB_PUSH_PLATFORM,
+    VAPID_PUBLIC_KEY,
+    web_push_configured,
+    parse_web_push_subscription,
+    normalize_web_push_subscription,
+)
 
 router = APIRouter(
     prefix="/users",
@@ -100,8 +107,21 @@ def update_user_profile(user_id: int, profile_update: schemas.SeekerProfileCreat
     return db_profile
 
 class DeviceTokenSchema(BaseModel):
-    token: str
+    token: str = Field(..., min_length=1, max_length=4096)
     platform: str = "web"
+
+
+class WebPushConfig(BaseModel):
+    public_key: str
+
+
+@router.get("/web-push/config", response_model=WebPushConfig)
+def get_web_push_config(current_user: models.User = Depends(get_current_user)):
+    """VAPID public key the browser needs to create a push subscription."""
+    if not web_push_configured():
+        raise HTTPException(status_code=503, detail="Web push notifications are not configured")
+    return WebPushConfig(public_key=VAPID_PUBLIC_KEY)
+
 
 @router.post("/device-token")
 def register_device_token(
@@ -110,8 +130,17 @@ def register_device_token(
     current_user: models.User = Depends(get_current_user)
 ):
     """
-    Register a Firebase Cloud Messaging (FCM) token for push notifications.
+    Register a push token: a native FCM token, or (platform="webpush") a
+    browser Push API subscription serialized as JSON.
     """
+    if data.platform == WEB_PUSH_PLATFORM:
+        subscription = parse_web_push_subscription(data.token)
+        if subscription is None:
+            raise HTTPException(status_code=422, detail="Invalid web push subscription")
+        data.token = normalize_web_push_subscription(subscription)
+    elif parse_web_push_subscription(data.token) is not None:
+        raise HTTPException(status_code=422, detail="Web push subscriptions must use platform 'webpush'")
+
     # Check if token exists
     existing = db.query(models.DeviceToken).filter(models.DeviceToken.fcm_token == data.token).first()
     if existing:
@@ -141,6 +170,10 @@ def clear_device_token(
     Unregister an FCM token on logout so a device that later logs into a
     different account doesn't keep receiving this user's push notifications.
     """
+    if data.platform == WEB_PUSH_PLATFORM:
+        subscription = parse_web_push_subscription(data.token)
+        if subscription is not None:
+            data.token = normalize_web_push_subscription(subscription)
     db.query(models.DeviceToken).filter(
         models.DeviceToken.fcm_token == data.token,
         models.DeviceToken.user_id == current_user.id

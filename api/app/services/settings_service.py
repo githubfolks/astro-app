@@ -26,6 +26,14 @@ DEFAULTS: dict[str, str] = {
     "moderation_admin_template": "[ALERT] Moderation flag ({reason}) in consultation {consultation_id} by user {user_id}: {snippet}",
     "request_stale_minutes": "5",
     "presence_ttl_seconds": "180",
+    # An astrologer whose realtime socket drops but who can still be reached by
+    # push (native app, or Home Screen web app with notifications enabled) stays
+    # ONLINE this long — iPhone Safari suspends a backgrounded page and kills its
+    # socket within seconds. Matches request_stale_minutes so a request sent in
+    # the window can still be answered. 0 = go OFFLINE immediately.
+    "presence_push_grace_seconds": "300",
+    # How long the browser push service holds an undelivered web push.
+    "web_push_ttl_seconds": "600",
     # How long a dropped chat socket gets to silently reconnect before the
     # consultation is actually flipped to PAUSED (billing keeps running until then).
     "disconnect_grace_seconds": "25",
