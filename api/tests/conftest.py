@@ -107,7 +107,7 @@ def make_user(db_session):
     """
     counter = {"n": 0}
 
-    def _make(role=models.UserRole.SEEKER, *, full_name=None, fee=10.0, balance=0.0):
+    def _make(role=models.UserRole.SEEKER, *, full_name=None, fee=10.0, balance=0.0, is_online=True):
         counter["n"] += 1
         n = counter["n"]
         user = models.User(
@@ -129,6 +129,9 @@ def make_user(db_session):
                 user_id=user.id,
                 full_name=full_name or "Astro Test",
                 consultation_fee_per_min=fee,
+                # Requests are only accepted for an astrologer who is Online
+                # (inside their window); pass is_online=False to test Offline.
+                is_online=is_online,
             ))
             db_session.add(models.UserWallet(user_id=user.id, balance=balance))
         db_session.commit()

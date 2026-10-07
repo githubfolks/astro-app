@@ -23,11 +23,10 @@ const RealtimeContext = createContext<{ subscribe: (listener: Listener) => () =>
 
 /**
  * Owns the single /realtime/ws connection for the whole authenticated session
- * (mounted once in App.tsx, not per-page). Its heartbeat PINGs are what keep an
- * astrologer's Redis presence key alive, which drives availability_status on the
- * backend — a page-scoped socket used to drop the moment an astrologer navigated
- * off the Dashboard into a chat, flipping them OFFLINE for every other seeker
- * mid-conversation.
+ * (mounted once in App.tsx, not per-page), so live events (new requests, queue
+ * updates, ASTRO_ONLINE/OFFLINE) keep arriving while navigating between pages.
+ * It does not decide whether an astrologer is shown Online — the backend uses
+ * is_online + availability window — so a dropped socket never flips anyone OFFLINE.
  */
 export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { token } = useAuth();
@@ -121,9 +120,9 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [token, connect]);
 
     // Backgrounding/locking the app freezes the heartbeat interval and the OS
-    // often drops the underlying socket outright — an astrologer's Redis presence
-    // key (presence_ttl_seconds TTL) then lapses and they show OFFLINE to every seeker until the
-    // socket reconnects. Left alone, that reconnect only happens via onclose's
+    // often drops the underlying socket outright, so live events (new requests,
+    // status changes) stop arriving until it reconnects. Left alone, that
+    // reconnect only happens via onclose's
     // exponential backoff (up to 30s), which may not even fire promptly since the
     // OS can kill the connection silently instead of closing it cleanly. Reconnect
     // immediately on resume instead of waiting that out.
@@ -137,16 +136,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             connect(token);
         };
 
-        const onVisibilityChange = () => {
-            if (document.visibilityState !== 'visible') return;
-            // The socket may have survived while hidden, but its throttled heartbeat
-            // left presence stale — refresh it now rather than on the next tick.
-            if (ws.current?.readyState === WebSocket.OPEN) {
-                ws.current.send(JSON.stringify({ type: 'PING' }));
-                return;
-            }
-            tryReconnectNow();
-        };
+        const onVisibilityChange = () => { if (document.visibilityState === 'visible') tryReconnectNow(); };
         document.addEventListener('visibilitychange', onVisibilityChange);
         window.addEventListener('online', tryReconnectNow);
 

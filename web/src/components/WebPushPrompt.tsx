@@ -13,9 +13,9 @@ const readDismissed = () => {
 
 /**
  * Lets a browser astrologer turn on push notifications so new chat requests and
- * knocks reach them while the page is in the background — and so the backend
- * keeps them ONLINE for a grace period when the browser (notably iPhone Safari)
- * suspends the page. Renders nothing on native or once notifications work.
+ * knocks reach them while the page is in the background (notably iPhone Safari,
+ * which suspends it) — a request that expires unanswered switches them Offline.
+ * Renders nothing on native or once notifications work.
  */
 const WebPushPrompt: React.FC = () => {
     const [state, setState] = useState<State>('hidden');
@@ -68,7 +68,7 @@ const WebPushPrompt: React.FC = () => {
                     <>
                         <p className="font-semibold">Get chat requests on your iPhone</p>
                         <p className="text-gray-600">
-                            iPhone stops this page when you switch apps, so seekers see you as Offline.
+                            iPhone pauses this page when you switch apps, so new chat requests can't reach you.
                             Tap <Share size={14} className="inline -mt-0.5" /> <b>Share → Add to Home Screen</b>, open
                             Aadikarta from your Home Screen, and turn on notifications to stay reachable.
                         </p>
@@ -77,7 +77,7 @@ const WebPushPrompt: React.FC = () => {
                 {state === 'prompt' && (
                     <>
                         <p className="font-semibold">Turn on notifications</p>
-                        <p className="text-gray-600">Get new chat requests even when this page is in the background, and stay Online for seekers.</p>
+                        <p className="text-gray-600">Get new chat requests even when this page is in the background. A request you miss switches you Offline.</p>
                     </>
                 )}
                 {state === 'denied' && (

@@ -267,7 +267,7 @@ export const useChat = (consultationId: string) => {
 
         // Android WebViews don't reliably fire visibilitychange on resume —
         // appStateChange is the native-guaranteed signal (same fix already
-        // applied to RealtimeContext.tsx's presence socket).
+        // applied to RealtimeContext.tsx's realtime socket).
         let appStateHandle: { remove: () => void } | undefined;
         if (isNative()) {
             CapApp.addListener('appStateChange', ({ isActive }) => {

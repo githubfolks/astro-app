@@ -132,11 +132,12 @@ Secrets (DB URL, JWT, SMTP, MiroTalk, AstroAPI) live in the `.env` file in each 
 
 Browser astrologers (including iPhone, once the site is added to the Home
 Screen — iOS 16.4+) get new-request/knock notifications through standard Web
-Push. While they have a working subscription, the backend keeps them ONLINE for
-`presence_push_grace_seconds` (Admin > Settings > Tunables, default 300) after
-their browser suspends the page. Without these variables, web push is disabled:
-`GET /users/web-push/config` returns 503 and browser astrologers go OFFLINE as
-soon as their page is suspended.
+Push. Seekers see an astrologer Online whenever they have switched Online and it
+is inside their availability window, whatever window/app they are on; a request
+that expires unanswered switches them Offline
+(`auto_offline_after_missed_requests`, Admin > Settings > Tunables, default 1).
+Notifications are how a backgrounded astrologer avoids missing requests. Without
+these variables web push is disabled and `GET /users/web-push/config` returns 503.
 
 Add to the api `.env` (generate the key pair **once** — changing it invalidates
 every existing browser subscription):

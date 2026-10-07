@@ -38,8 +38,7 @@ const GROUPS = [
         title: 'Tunables',
         fields: [
             { key: 'request_stale_minutes', label: 'Auto-expire unanswered requests after (minutes)' },
-            { key: 'presence_ttl_seconds', label: 'Presence heartbeat TTL (seconds)' },
-            { key: 'presence_push_grace_seconds', label: 'Keep push-reachable astrologers online after disconnect (seconds, 0 = off)' },
+            { key: 'auto_offline_after_missed_requests', label: 'Switch astrologer Offline after this many missed requests in a row (0 = never)' },
             { key: 'web_push_ttl_seconds', label: 'Web push delivery TTL (seconds)' },
         ],
     },

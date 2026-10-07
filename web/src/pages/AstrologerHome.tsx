@@ -59,6 +59,16 @@ const AstrologerHome: React.FC = () => {
         if (['NEW_REQUEST', 'QUEUE_UPDATE'].includes(event.type)) {
             api.consultations.getHistory().then(setHistory).catch(console.error);
         }
+        // Server switched us Offline after a missed request.
+        if (event.type === 'AUTO_OFFLINE') {
+            setIsOnline(false);
+            api.consultations.getHistory().then(setHistory).catch(console.error);
+        }
+        // Events sent while the page was suspended (e.g. iPhone app switch) are
+        // lost — resync the Online switch in case it was changed server-side.
+        if (event.type === 'REALTIME_RECONNECTED') {
+            api.astrologers.getProfile().then(p => setIsOnline(p.is_online)).catch(console.error);
+        }
     });
 
     const toggleOnline = async () => {

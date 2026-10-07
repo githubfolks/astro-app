@@ -258,7 +258,8 @@ def promote_next_in_queue(db: Session, astrologer_id: int):
     profile = db.query(models.AstrologerProfile).filter(
         models.AstrologerProfile.user_id == astrologer_id
     ).first()
-    if profile and profile.is_online and not astrologer_has_other_active(db, astrologer_id, exclude_id=-1):
+    from .astrologers import is_astrologer_available
+    if profile and is_astrologer_available(profile) and not astrologer_has_other_active(db, astrologer_id, exclude_id=-1):
         broadcast_event({"type": "ASTRO_ONLINE", "astrologer_id": astrologer_id})
 
     next_req = db.query(models.Consultation).filter(

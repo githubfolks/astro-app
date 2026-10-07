@@ -45,6 +45,15 @@ def request_consultation(request: schemas.ConsultationCreate, current_user: mode
     astro_profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == request.astrologer_id).first()
     if not astro_profile:
         raise HTTPException(status_code=404, detail="Astrologer not found")
+    # The UI hides Chat for OFFLINE astrologers, but that's UX only — a request
+    # must never be created for an astrologer who isn't Online inside their
+    # availability window. BUSY astrologers are allowed (the request queues).
+    from .astrologers import is_astrologer_available
+    if not is_astrologer_available(astro_profile):
+        raise HTTPException(
+            status_code=409,
+            detail={"message": "This astrologer is offline right now.", "code": "ASTROLOGER_OFFLINE"},
+        )
 
     # A seeker's very first-ever consultation is billed at a flat promotional rate
     # for the first 5 minutes (see billing_loop in chat.py), instead of the

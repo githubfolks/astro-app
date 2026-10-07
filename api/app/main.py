@@ -64,6 +64,7 @@ async def _stale_request_sweep():
     from . import models, audit
     from .services.settings_service import get_setting
     from .routers.realtime import notify_user
+    from .routers.astrologers import handle_missed_request
     from .notifications import send_push_notification
 
     while True:
@@ -96,6 +97,14 @@ async def _stale_request_sweep():
                             body="Your consultation request expired. Please try another astrologer.",
                             data={"consultation_id": str(cons.id), "type": "REQUEST_EXPIRED"},
                         )
+                # An astrologer who lets a request expire is most likely away —
+                # switch them Offline so the next seeker isn't sent to them too.
+                for astrologer_id in {cons.astrologer_id for cons in stale}:
+                    try:
+                        handle_missed_request(db, astrologer_id)
+                    except Exception as e:
+                        db.rollback()
+                        print(f"auto-offline after missed request failed for {astrologer_id}: {e}")
         except Exception as e:
             print(f"Stale request sweep error: {e}")
 

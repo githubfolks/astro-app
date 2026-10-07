@@ -25,13 +25,11 @@ DEFAULTS: dict[str, str] = {
     "moderation_admin_whatsapp": "",    # WhatsApp number for moderation alerts
     "moderation_admin_template": "[ALERT] Moderation flag ({reason}) in consultation {consultation_id} by user {user_id}: {snippet}",
     "request_stale_minutes": "5",
-    "presence_ttl_seconds": "180",
-    # An astrologer whose realtime socket drops but who can still be reached by
-    # push (native app, or Home Screen web app with notifications enabled) stays
-    # ONLINE this long — iPhone Safari suspends a backgrounded page and kills its
-    # socket within seconds. Matches request_stale_minutes so a request sent in
-    # the window can still be answered. 0 = go OFFLINE immediately.
-    "presence_push_grace_seconds": "300",
+    # Seekers see an astrologer Online whenever they've switched Online and it's
+    # inside their availability window — regardless of which window/app they're
+    # on. To keep absent astrologers from staying Online, this many consecutive
+    # requests expiring unanswered (MISSED) switches them Offline. 0 = never.
+    "auto_offline_after_missed_requests": "1",
     # How long the browser push service holds an undelivered web push.
     "web_push_ttl_seconds": "600",
     # How long a dropped chat socket gets to silently reconnect before the

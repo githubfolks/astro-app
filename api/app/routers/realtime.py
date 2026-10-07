@@ -1,9 +1,11 @@
-"""Per-user realtime inbox + presence.
+"""Per-user realtime inbox.
 
 A lightweight WebSocket, separate from the chat socket, that delivers
 server->client notifications (new requests, queue updates, your-turn,
-astrologer-online, moderation alerts) and maintains live presence in Redis so
-seekers see accurate Online/Busy/Offline status.
+astrologer-online/offline, moderation alerts). It does NOT decide whether an
+astrologer is shown Online — that is is_online + availability window (see
+astrologers.is_astrologer_available), so a backgrounded/suspended browser
+never flips an astrologer OFFLINE.
 
 One user can hold several sockets (dashboard + chat tab); messages fan out to all.
 """
@@ -15,85 +17,10 @@ from datetime import datetime
 
 from .. import models, database
 from .chat import get_user_from_token, receive_ws_token
-from ..redis_client import get_redis
-from ..services.settings_service import get_setting
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/realtime", tags=["Realtime"])
-
-
-def _presence_key(user_id: int) -> str:
-    return f"astro_presence:{user_id}"
-
-
-def _presence_ttl() -> int:
-    # Must comfortably exceed the client's heartbeat interval *as throttled by the
-    # browser*: Chrome checks timers only once per minute in a tab hidden for
-    # 5+ minutes, so a 60s TTL lapsed and flipped an astrologer OFFLINE whenever
-    # they switched to another window/tab. A real disconnect clears the key
-    # immediately (NotificationManager.disconnect), so this is only a backstop.
-    try:
-        return int(get_setting("presence_ttl_seconds") or 180)
-    except (TypeError, ValueError):
-        return 180
-
-
-def _presence_push_grace() -> int:
-    """How long an astrologer who can still be reached by push stays ONLINE
-    after their last realtime socket drops (e.g. iPhone Safari backgrounded,
-    which suspends the page and kills the socket within seconds). 0 disables."""
-    try:
-        return max(0, int(get_setting("presence_push_grace_seconds") or 0))
-    except (TypeError, ValueError):
-        return 0
-
-
-def has_reachable_push_token(user_id: int) -> bool:
-    """True if the user has a push target that can actually deliver: a native
-    FCM token (android/ios) or a browser subscription while VAPID is configured."""
-    from ..notifications import WEB_PUSH_PLATFORM, web_push_configured
-    platforms = ["android", "ios"]
-    if web_push_configured():
-        platforms.append(WEB_PUSH_PLATFORM)
-    db = database.SessionLocal()
-    try:
-        return db.query(models.DeviceToken.id).filter(
-            models.DeviceToken.user_id == user_id,
-            models.DeviceToken.platform.in_(platforms),
-        ).first() is not None
-    finally:
-        db.close()
-
-
-def mark_present(user_id: int, ttl: int | None = None):
-    redis = get_redis()
-    if redis:
-        try:
-            redis.set(_presence_key(user_id), "1", ex=ttl or _presence_ttl())
-        except Exception as e:
-            logger.error(f"presence set failed for {user_id}: {e}")
-
-
-def clear_present(user_id: int):
-    redis = get_redis()
-    if redis:
-        try:
-            redis.delete(_presence_key(user_id))
-        except Exception as e:
-            logger.error(f"presence clear failed for {user_id}: {e}")
-
-
-def is_present(user_id: int) -> bool:
-    redis = get_redis()
-    if not redis:
-        # Without Redis we cannot track live presence; fall back to "present"
-        # so the manual is_online toggle remains the source of truth.
-        return True
-    try:
-        return redis.exists(_presence_key(user_id)) == 1
-    except Exception:
-        return True
 
 
 class NotificationManager:
@@ -102,66 +29,23 @@ class NotificationManager:
         self.connections: dict[int, list[WebSocket]] = {}
         # Unauthenticated sockets (logged-out visitors browsing the astrologer
         # list/profile) — they get public broadcasts (ASTRO_ONLINE/OFFLINE) only,
-        # never per-user sends, and never affect presence.
+        # never per-user sends.
         self.guest_connections: list[WebSocket] = []
-        # user_id -> pending "grace expired, announce ASTRO_OFFLINE" task
-        self.offline_tasks: dict[int, asyncio.Task] = {}
 
     def is_user_connected(self, user_id: int) -> bool:
         return user_id in self.connections
 
-    def _cancel_offline_task(self, user_id: int):
-        task = self.offline_tasks.pop(user_id, None)
-        if task and not task.done():
-            task.cancel()
-
     async def connect(self, user_id: int, websocket: WebSocket):
         # Socket is already accepted by receive_ws_token() during the auth handshake.
-        self._cancel_offline_task(user_id)
         self.connections.setdefault(user_id, []).append(websocket)
-        mark_present(user_id)
 
-    def disconnect(self, user_id: int, websocket: WebSocket) -> bool:
-        """Remove a socket. Returns True if it was the user's last one."""
+    def disconnect(self, user_id: int, websocket: WebSocket):
         conns = self.connections.get(user_id)
         if not conns:
-            return False
+            return
         self.connections[user_id] = [w for w in conns if w != websocket]
         if not self.connections[user_id]:
             del self.connections[user_id]
-            return True
-        return False
-
-    def handle_last_disconnect(self, user_id: int, is_astrologer: bool):
-        """The user has no realtime socket left. An astrologer who can still be
-        reached by push keeps presence for the grace period (their phone may
-        just have suspended the page) and is announced OFFLINE only if they
-        don't come back in time; anyone else goes OFFLINE immediately."""
-        grace = _presence_push_grace() if is_astrologer else 0
-        try:
-            reachable = bool(grace) and has_reachable_push_token(user_id)
-        except Exception as e:
-            # Can't confirm they're reachable — don't advertise them as ONLINE.
-            logger.error(f"push-reachability check failed for {user_id}: {e}")
-            reachable = False
-        if reachable:
-            mark_present(user_id, ttl=grace)
-            self._cancel_offline_task(user_id)
-            self.offline_tasks[user_id] = asyncio.create_task(self._announce_offline_after(user_id, grace))
-            logger.info(f"Realtime: astrologer {user_id} disconnected, push-reachable — keeping presence {grace}s")
-            return
-        clear_present(user_id)
-        if is_astrologer:
-            asyncio.create_task(self.broadcast({"type": "ASTRO_OFFLINE", "astrologer_id": user_id}))
-
-    async def _announce_offline_after(self, user_id: int, delay: int):
-        try:
-            await asyncio.sleep(delay)
-        except asyncio.CancelledError:
-            return
-        self.offline_tasks.pop(user_id, None)
-        if not self.is_user_connected(user_id):
-            await self.broadcast({"type": "ASTRO_OFFLINE", "astrologer_id": user_id})
 
     def connect_guest(self, websocket: WebSocket):
         self.guest_connections.append(websocket)
@@ -289,19 +173,15 @@ async def realtime_endpoint(websocket: WebSocket):
     await notifier.connect(user.id, websocket)
     logger.info(f"Realtime connected: user={user.id} role={user.role}")
 
-    # If astrologer connects and is set to online manually, broadcast online status
+    # Availability doesn't depend on this socket, so connecting changes nothing
+    # seekers see. Still resolve any pending Knocks for an available astrologer —
+    # e.g. ones recorded before availability stopped depending on the socket.
     if user.role == models.UserRole.ASTROLOGER:
         db = database.SessionLocal()
         try:
+            from .astrologers import is_astrologer_available, _notify_waiting_seekers
             profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == user.id).first()
-            if profile and profile.is_online:
-                asyncio.create_task(notifier.broadcast({"type": "ASTRO_ONLINE", "astrologer_id": user.id}))
-                # Reconnecting (e.g. unlocking the phone and reopening the app,
-                # without tapping the notification) makes the astrologer reachable
-                # again just like the manual online toggle does — resolve pending
-                # Knock subscriptions here too, not only from that toggle endpoint,
-                # otherwise seekers who knocked never get told the astrologer is back.
-                from .astrologers import _notify_waiting_seekers
+            if profile and is_astrologer_available(profile):
                 try:
                     _notify_waiting_seekers(db, user.id)
                 except Exception as e:
@@ -317,18 +197,12 @@ async def realtime_endpoint(websocket: WebSocket):
             except json.JSONDecodeError:
                 continue
             if msg.get("type") == "PING":
-                mark_present(user.id)  # heartbeat refreshes presence TTL
                 await websocket.send_text(json.dumps({"type": "PONG"}))
     except WebSocketDisconnect:
         logger.info(f"Realtime disconnected: user={user.id}")
-        # Presence (is_present, Redis TTL) already makes _apply_availability show this
-        # astrologer as OFFLINE while no socket is connected — don't also overwrite the
-        # manual is_online preference, or navigating between pages (e.g. into a chat,
-        # which doesn't hold this socket) permanently flips them offline even after
-        # they return and reconnect.
-        if notifier.disconnect(user.id, websocket):
-            notifier.handle_last_disconnect(user.id, user.role == models.UserRole.ASTROLOGER)
+        # Disconnecting (switching window/app, phone suspending the page) must
+        # not change availability or the manual is_online preference.
+        notifier.disconnect(user.id, websocket)
     except Exception as e:
         logger.error(f"Realtime socket error (user {user.id}): {e}")
-        if notifier.disconnect(user.id, websocket):
-            notifier.handle_last_disconnect(user.id, user.role == models.UserRole.ASTROLOGER)
+        notifier.disconnect(user.id, websocket)

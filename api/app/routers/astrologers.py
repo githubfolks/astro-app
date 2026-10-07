@@ -7,7 +7,7 @@ from ..services import email_service
 from ..limiter import limiter
 from .auth import get_current_user, get_current_user_optional, get_password_hash, create_access_token, SECRET_KEY, ALGORITHM
 from jose import JWTError, jwt
-import re, unicodedata, uuid, os, io
+import re, unicodedata, uuid, os, io, logging
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from PIL import Image
@@ -16,6 +16,8 @@ import pillow_heif
 # Lets Pillow open HEIC/HEIF (the default photo format on iPhones) so we can
 # convert it to JPEG on upload — browsers can't render HEIC in <img> tags.
 pillow_heif.register_heif_opener()
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/astrologers",
@@ -66,18 +68,98 @@ def is_within_availability_window(profile: models.AstrologerProfile) -> bool:
     return now >= start or now <= end  # window spans midnight, e.g. 22:00-06:00
 
 
+def is_astrologer_available(profile: models.AstrologerProfile) -> bool:
+    """Seeker-facing availability: the astrologer has switched Online and it is
+    inside their daily availability window. Deliberately independent of which
+    window/app/tab they are looking at — a backgrounded browser (e.g. iPhone
+    Safari, which suspends the page) must not flip them OFFLINE. Absent
+    astrologers are caught instead by auto-offline on a missed request
+    (see set_astrologer_offline / main._stale_request_sweep)."""
+    return bool(profile.is_online) and is_within_availability_window(profile)
+
+
+def set_astrologer_offline(db: Session, profile: models.AstrologerProfile):
+    """Switch an astrologer Offline server-side (logout, expired session,
+    missed request): clear is_online, close the open online session, and tell
+    every open astrologer list/profile page."""
+    profile.is_online = False
+    open_session = db.query(models.AstrologerOnlineSession).filter(
+        models.AstrologerOnlineSession.astrologer_id == profile.user_id,
+        models.AstrologerOnlineSession.ended_at.is_(None)
+    ).order_by(models.AstrologerOnlineSession.started_at.desc()).first()
+    if open_session:
+        open_session.ended_at = datetime.utcnow()
+    db.commit()
+
+    from .realtime import broadcast_event
+    broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": profile.user_id})
+
+
+def handle_missed_request(db: Session, astrologer_id: int) -> bool:
+    """Called after a request to this astrologer expired unanswered (MISSED).
+    Availability no longer depends on a live connection, so this is what stops
+    an absent astrologer (laptop closed, phone in pocket) from staying Online:
+    after `auto_offline_after_missed_requests` consecutive misses in their
+    current online session they are switched Offline and told why.
+    Returns True if they were switched Offline."""
+    from .. import audit
+    from ..services.settings_service import get_setting
+    from ..notifications import send_push_notification
+    from .realtime import notify_user
+
+    try:
+        threshold = int(get_setting("auto_offline_after_missed_requests") or 0)
+    except (TypeError, ValueError):
+        threshold = 0
+    if threshold <= 0:
+        return False
+
+    profile = db.query(models.AstrologerProfile).filter(models.AstrologerProfile.user_id == astrologer_id).first()
+    if not profile or not profile.is_online:
+        return False
+
+    # Only misses since they last went Online count — a miss from before they
+    # switched back on must not knock them straight off again.
+    session_start = db.query(models.AstrologerOnlineSession.started_at).filter(
+        models.AstrologerOnlineSession.astrologer_id == astrologer_id,
+        models.AstrologerOnlineSession.ended_at.is_(None),
+    ).order_by(models.AstrologerOnlineSession.started_at.desc()).limit(1).scalar_subquery()
+    q = db.query(models.Consultation).filter(
+        models.Consultation.astrologer_id == astrologer_id,
+        models.Consultation.status != models.ConsultationStatus.REQUESTED,
+        # No open session (legacy data) -> NULL -> count all of their history.
+        or_(session_start.is_(None), models.Consultation.created_at >= session_start),
+    )
+    recent = q.order_by(models.Consultation.created_at.desc()).limit(threshold).all()
+    if len(recent) < threshold or any(c.status != models.ConsultationStatus.MISSED for c in recent):
+        return False
+
+    audit.log(db, "ASTROLOGER_AUTO_OFFLINE", resource_type="astrologer", resource_id=astrologer_id,
+              details={"reason": "missed_requests", "consecutive_missed": threshold})
+    set_astrologer_offline(db, profile)  # commits
+
+    notify_user(astrologer_id, {"type": "AUTO_OFFLINE", "reason": "missed_request"})
+    for tok in db.query(models.DeviceToken).filter(models.DeviceToken.user_id == astrologer_id).all():
+        send_push_notification(
+            token=tok.fcm_token,
+            title="You've been set Offline",
+            body="You missed a chat request. Go Online again when you're available.",
+            data={"type": "AUTO_OFFLINE"},
+        )
+    logger.info(f"Astrologer {astrologer_id} auto-set Offline after {threshold} missed request(s)")
+    return True
+
+
 def _apply_availability(profile: models.AstrologerProfile, queue_length: int, is_busy: bool):
     """Attach computed availability_status + queue_length to a profile instance
     so they serialize through schemas.AstrologerProfile."""
-    from .realtime import is_present
-
     # Identity protection: seekers see the public stage name, never the legal name.
     if profile.display_name:
         profile.full_name = profile.display_name
 
     profile.queue_length = queue_length
 
-    if not profile.is_online or not is_present(profile.user_id):
+    if not is_astrologer_available(profile):
         profile.availability_status = "OFFLINE"
         profile.knockable = is_within_availability_window(profile)
     elif is_busy:
@@ -454,8 +536,8 @@ def update_astrologer_profile(profile_update: schemas.AstrologerProfileUPDATE, c
         db.add(models.AstrologerOnlineSession(astrologer_id=current_user.id))
         db.commit()
         _notify_waiting_seekers(db, current_user.id)
-        from .realtime import broadcast_event, is_present
-        if is_present(current_user.id):
+        from .realtime import broadcast_event
+        if is_within_availability_window(db_profile):
             broadcast_event({"type": "ASTRO_ONLINE", "astrologer_id": current_user.id})
     elif was_online and not db_profile.is_online:
         open_session = db.query(models.AstrologerOnlineSession).filter(
@@ -519,17 +601,7 @@ def force_offline(request: Request, db: Session = Depends(database.get_db)):
     if not db_profile or not db_profile.is_online:
         return
 
-    db_profile.is_online = False
-    open_session = db.query(models.AstrologerOnlineSession).filter(
-        models.AstrologerOnlineSession.astrologer_id == db_profile.user_id,
-        models.AstrologerOnlineSession.ended_at.is_(None)
-    ).order_by(models.AstrologerOnlineSession.started_at.desc()).first()
-    if open_session:
-        open_session.ended_at = datetime.utcnow()
-    db.commit()
-
-    from .realtime import broadcast_event
-    broadcast_event({"type": "ASTRO_OFFLINE", "astrologer_id": db_profile.user_id})
+    set_astrologer_offline(db, db_profile)
 
 
 # --- Post-login onboarding checklist: KYC docs, gallery, certificates -------
@@ -702,8 +774,7 @@ def notify_when_online(astrologer_id: int, current_user: models.User = Depends(g
     if not astro:
         raise HTTPException(status_code=404, detail="Astrologer not found")
 
-    from .realtime import is_present
-    if astro.is_online and is_present(astrologer_id):
+    if is_astrologer_available(astro):
         raise HTTPException(status_code=400, detail="Astrologer is already online")
     if not is_within_availability_window(astro):
         raise HTTPException(status_code=400, detail="Astrologer is outside their availability window")

@@ -1,11 +1,9 @@
-"""Web Push (VAPID) delivery for browser astrologers + push-aware presence grace.
+"""Web Push (VAPID) delivery for browser astrologers.
 
 iPhone Safari suspends a backgrounded page and kills its realtime socket within
-seconds, so an astrologer there used to flip OFFLINE immediately. They can now
-subscribe to standard Web Push (iOS 16.4+ Home Screen web app); while they have a
-deliverable push target the backend keeps them ONLINE for a grace period.
+seconds, so new requests can't reach a browser astrologer through the socket.
+They can subscribe to standard Web Push (iOS 16.4+ Home Screen web app) instead.
 """
-import asyncio
 import json
 from unittest.mock import MagicMock
 
@@ -13,7 +11,6 @@ import pytest
 from pywebpush import WebPushException
 
 from app import database, models, notifications
-from app.routers import realtime
 from sqlalchemy.orm import sessionmaker
 
 from tests.conftest import auth_headers
@@ -155,112 +152,3 @@ def test_expired_subscription_is_removed(monkeypatch, vapid, test_sessions, make
     db_session.expire_all()
     remaining = db_session.query(models.DeviceToken).count()
     assert remaining == (0 if deleted else 1)
-
-
-# --- presence grace on last disconnect ---
-
-class _PresenceSpy:
-    def __init__(self, monkeypatch):
-        self.marked: list[tuple[int, int | None]] = []
-        self.cleared: list[int] = []
-        monkeypatch.setattr(realtime, "mark_present", lambda uid, ttl=None: self.marked.append((uid, ttl)))
-        monkeypatch.setattr(realtime, "clear_present", lambda uid: self.cleared.append(uid))
-
-
-def _run_last_disconnect(manager, user_id, is_astrologer, broadcasts):
-    async def go():
-        async def fake_broadcast(msg):
-            broadcasts.append(msg)
-        manager.broadcast = fake_broadcast
-        manager.handle_last_disconnect(user_id, is_astrologer)
-        await asyncio.sleep(0)  # let fire-and-forget broadcast tasks run
-        pending = manager.offline_tasks.get(user_id)
-        if pending:
-            pending.cancel()
-    asyncio.run(go())
-
-
-def test_push_reachable_astrologer_keeps_presence_for_grace(monkeypatch, vapid, test_sessions, make_user, db_session):
-    spy = _PresenceSpy(monkeypatch)
-    monkeypatch.setattr(realtime, "get_setting", lambda key: {"presence_push_grace_seconds": "300"}.get(key))
-    astro = make_user(models.UserRole.ASTROLOGER)
-    db_session.add(models.DeviceToken(user_id=astro.id, fcm_token=notifications.normalize_web_push_subscription(SUB), platform="webpush"))
-    db_session.commit()
-
-    broadcasts = []
-    _run_last_disconnect(realtime.NotificationManager(), astro.id, True, broadcasts)
-
-    assert spy.marked == [(astro.id, 300)]
-    assert spy.cleared == []
-    assert broadcasts == []  # not announced OFFLINE during the grace window
-
-
-def test_astrologer_without_push_goes_offline_immediately(monkeypatch, test_sessions, make_user):
-    spy = _PresenceSpy(monkeypatch)
-    monkeypatch.setattr(realtime, "get_setting", lambda key: {"presence_push_grace_seconds": "300"}.get(key))
-    astro = make_user(models.UserRole.ASTROLOGER)
-
-    broadcasts = []
-    _run_last_disconnect(realtime.NotificationManager(), astro.id, True, broadcasts)
-
-    assert spy.cleared == [astro.id]
-    assert broadcasts == [{"type": "ASTRO_OFFLINE", "astrologer_id": astro.id}]
-
-
-def test_legacy_web_token_does_not_count_as_reachable(monkeypatch, vapid, test_sessions, make_user, db_session):
-    astro = make_user(models.UserRole.ASTROLOGER)
-    db_session.add(models.DeviceToken(user_id=astro.id, fcm_token="mock_fcm_token_123", platform="web"))
-    db_session.commit()
-    assert realtime.has_reachable_push_token(astro.id) is False
-
-
-def test_webpush_token_not_reachable_without_vapid(monkeypatch, test_sessions, make_user, db_session):
-    monkeypatch.setattr(notifications, "VAPID_PRIVATE_KEY", "")
-    astro = make_user(models.UserRole.ASTROLOGER)
-    db_session.add(models.DeviceToken(user_id=astro.id, fcm_token=notifications.normalize_web_push_subscription(SUB), platform="webpush"))
-    db_session.commit()
-    assert realtime.has_reachable_push_token(astro.id) is False
-
-
-def test_grace_zero_disables(monkeypatch, vapid, test_sessions, make_user, db_session):
-    spy = _PresenceSpy(monkeypatch)
-    monkeypatch.setattr(realtime, "get_setting", lambda key: {"presence_push_grace_seconds": "0"}.get(key))
-    astro = make_user(models.UserRole.ASTROLOGER)
-    db_session.add(models.DeviceToken(user_id=astro.id, fcm_token="native-fcm-token", platform="ios"))
-    db_session.commit()
-
-    broadcasts = []
-    _run_last_disconnect(realtime.NotificationManager(), astro.id, True, broadcasts)
-    assert spy.cleared == [astro.id]
-    assert broadcasts == [{"type": "ASTRO_OFFLINE", "astrologer_id": astro.id}]
-
-
-def test_offline_announced_after_grace_unless_reconnected(monkeypatch):
-    manager = realtime.NotificationManager()
-    broadcasts = []
-
-    async def go():
-        async def fake_broadcast(msg):
-            broadcasts.append(msg)
-        manager.broadcast = fake_broadcast
-        await manager._announce_offline_after(1, 0)          # still disconnected -> announce
-        manager.connections[2] = [object()]
-        await manager._announce_offline_after(2, 0)          # reconnected meanwhile -> silent
-    asyncio.run(go())
-
-    assert broadcasts == [{"type": "ASTRO_OFFLINE", "astrologer_id": 1}]
-
-
-def test_reconnect_cancels_pending_offline_announcement(monkeypatch):
-    monkeypatch.setattr(realtime, "mark_present", lambda uid, ttl=None: None)
-    manager = realtime.NotificationManager()
-
-    async def go():
-        task = asyncio.create_task(asyncio.sleep(60))
-        manager.offline_tasks[5] = task
-        await manager.connect(5, object())
-        await asyncio.sleep(0)
-        return task
-    task = asyncio.run(go())
-    assert task.cancelled()
-    assert 5 not in manager.offline_tasks
